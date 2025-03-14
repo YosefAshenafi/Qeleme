@@ -1,5 +1,5 @@
-import { useState, useRef } from 'react';
-import { StyleSheet, TouchableOpacity, ScrollView, View, Dimensions } from 'react-native';
+import { useState, useRef, useEffect } from 'react';
+import { StyleSheet, TouchableOpacity, ScrollView, View, Dimensions, Animated } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
@@ -77,10 +77,69 @@ export default function MCQScreen() {
   const scrollViewRef = useRef<ScrollView>(null);
   const explanationRef = useRef<View>(null);
   const [score, setScore] = useState(0);
+  const [showResult, setShowResult] = useState(false);
+  
+  // Animation refs for result screen
+  const scaleAnim = useRef(new Animated.Value(0)).current;
+  const rotateAnim = useRef(new Animated.Value(0)).current;
+  const confettiAnim = useRef(new Animated.Value(0)).current;
 
   const currentQuestion = mcqData[currentQuestionIndex];
   const isLastQuestion = currentQuestionIndex === mcqData.length - 1;
   const isFirstQuestion = currentQuestionIndex === 0;
+  const percentage = Math.round((score / mcqData.length) * 100);
+
+  useEffect(() => {
+    if (showResult) {
+      // Celebration animation
+      Animated.sequence([
+        Animated.spring(scaleAnim, {
+          toValue: 1,
+          useNativeDriver: true,
+        }),
+        Animated.timing(rotateAnim, {
+          toValue: 1,
+          duration: 1000,
+          useNativeDriver: true,
+        }),
+      ]).start();
+
+      if (percentage >= 90) {
+        // Start confetti animation for high scores
+        Animated.loop(
+          Animated.sequence([
+            Animated.timing(confettiAnim, {
+              toValue: 1,
+              duration: 2000,
+              useNativeDriver: true,
+            }),
+            Animated.timing(confettiAnim, {
+              toValue: 0,
+              duration: 2000,
+              useNativeDriver: true,
+            }),
+          ])
+        ).start();
+      }
+    }
+  }, [showResult]);
+
+  const spin = rotateAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: ['0deg', '360deg'],
+  });
+
+  const confettiScale = confettiAnim.interpolate({
+    inputRange: [0, 0.5, 1],
+    outputRange: [1, 1.2, 1],
+  });
+
+  const getMessage = () => {
+    if (percentage >= 90) return "Outstanding! You're a genius!";
+    if (percentage >= 70) return "Great job! You're doing well!";
+    if (percentage >= 50) return "Not bad! Keep practicing!";
+    return "Keep learning! You can do better!";
+  };
 
   const handleAnswerSelect = (answerId: string) => {
     if (selectedAnswer) return; // Prevent multiple selections
@@ -132,14 +191,17 @@ export default function MCQScreen() {
       setShowAnswerMessage(true);
       return;
     }
-    // Navigate to result screen with score and total questions
-    router.push({
-      pathname: '/(tabs)/mcq/result',
-      params: {
-        score,
-        total: mcqData.length
-      }
-    });
+    setShowResult(true);
+  };
+
+  const handleRetry = () => {
+    setCurrentQuestionIndex(0);
+    setSelectedAnswer(null);
+    setShowExplanation(false);
+    setShowAnswerMessage(false);
+    setScore(0);
+    setShowResult(false);
+    setAnsweredQuestions({});
   };
 
   const getOptionStyle = (optionId: string) => {
@@ -154,6 +216,65 @@ export default function MCQScreen() {
   };
 
   const progress = ((currentQuestionIndex + 1) / mcqData.length) * 100;
+
+  if (showResult) {
+    return (
+      <SafeAreaView style={styles.safeArea}>
+        <Header title="Quiz Results" />
+        <ThemedView style={styles.container}>
+          <View style={styles.resultCard}>
+            <LinearGradient
+              colors={['#F3E5F5', '#E1BEE7']}
+              style={StyleSheet.absoluteFill}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+            />
+            
+            {percentage >= 90 && (
+              <Animated.View style={[styles.confettiContainer, { transform: [{ scale: confettiScale }] }]}>
+                <IconSymbol name="sparkles" size={24} color="#FFD700" style={styles.confettiLeft} />
+                <IconSymbol name="sparkles" size={24} color="#FFD700" style={styles.confettiRight} />
+              </Animated.View>
+            )}
+            
+            <View style={styles.trophyContainer}>
+              <Animated.View style={{ transform: [{ scale: scaleAnim }, { rotate: spin }] }}>
+                <IconSymbol name="trophy.fill" size={80} color="#6B54AE" />
+              </Animated.View>
+            </View>
+            
+            <ThemedText style={styles.scoreText}>
+              {score}/{mcqData.length}
+            </ThemedText>
+            
+            <ThemedText style={styles.percentageText}>
+              {percentage}%
+            </ThemedText>
+            
+            <ThemedText style={styles.messageText}>
+              {getMessage()}
+            </ThemedText>
+          </View>
+
+          <ThemedView style={styles.actionButtons}>
+            <TouchableOpacity
+              style={[styles.button, styles.retryButton]}
+              onPress={handleRetry}
+            >
+              <ThemedText style={styles.retryButtonText}>Try Again</ThemedText>
+            </TouchableOpacity>
+            
+            <TouchableOpacity
+              style={[styles.button, styles.homeButton]}
+              onPress={() => router.push('/(tabs)')}
+            >
+              <ThemedText style={styles.homeButtonText}>Back to Home</ThemedText>
+            </TouchableOpacity>
+          </ThemedView>
+        </ThemedView>
+      </SafeAreaView>
+    );
+  }
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -450,5 +571,93 @@ const styles = StyleSheet.create({
   resultButtonText: {
     color: '#fff',
     fontWeight: '600',
+  },
+  resultCard: {
+    width: Dimensions.get('window').width - 40,
+    borderRadius: 20,
+    alignItems: 'center',
+    elevation: 4,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    backgroundColor: '#F3E5F5',
+    paddingBottom: 60,
+    paddingTop: 30,
+  },
+  trophyContainer: {
+    width: '100%',
+    alignItems: 'center',
+    paddingTop: 30,
+    paddingBottom: 20,
+    backgroundColor: 'transparent',
+  },
+  scoreText: {
+    paddingTop: 30,
+    fontSize: 50,
+    fontWeight: '700',
+    color: '#6B54AE',
+    marginBottom: 8,
+    textAlign: 'center',
+    backgroundColor: 'transparent',
+  },
+  percentageText: {
+    paddingTop: 20,
+    fontSize: 30,
+    fontWeight: '600',
+    color: '#6B54AE',
+    marginBottom: 16,
+    textAlign: 'center',
+    backgroundColor: 'transparent',
+  },
+  messageText: {
+    fontSize: 18,
+    textAlign: 'center',
+    color: '#6B54AE',
+    lineHeight: 24,
+    paddingHorizontal: 20,
+    backgroundColor: 'transparent',
+  },
+  actionButtons: {
+    marginTop: 20,
+    width: '100%',
+    gap: 16,
+  },
+  button: {
+    padding: 16,
+    borderRadius: 12,
+    alignItems: 'center',
+  },
+  retryButton: {
+    backgroundColor: '#6B54AE',
+  },
+  homeButton: {
+    backgroundColor: 'transparent',
+    borderWidth: 1,
+    borderColor: '#6B54AE',
+  },
+  retryButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  homeButtonText: {
+    color: '#6B54AE',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  confettiContainer: {
+    position: 'absolute',
+    top: 20,
+    width: '100%',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    paddingHorizontal: 20,
+  },
+  confettiLeft: {
+    transform: [{ rotate: '-45deg' }],
+  },
+  confettiRight: {
+    transform: [{ rotate: '45deg' }],
   },
 }); 
