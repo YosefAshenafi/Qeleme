@@ -7,6 +7,7 @@ import Animated, {
   interpolate,
   useSharedValue,
   withSpring,
+  Easing,
 } from 'react-native-reanimated';
 import { LinearGradient } from 'expo-linear-gradient';
 
@@ -39,30 +40,46 @@ const CARD_WIDTH = SCREEN_WIDTH - 40;
 
 export default function FlashcardsScreen() {
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [isFlipped, setIsFlipped] = useState(false);
-  const flipAnimation = useSharedValue(0);
+  const [isRevealed, setIsRevealed] = useState(false);
+  const revealAnimation = useSharedValue(0);
   const progressAnimation = useSharedValue(0);
 
   const currentCard = flashcards[currentIndex];
   const progress = ((currentIndex + 1) / flashcards.length) * 100;
 
   const frontAnimatedStyle = useAnimatedStyle(() => {
+    const rotateY = interpolate(revealAnimation.value, [0, 1], [0, 180]);
+    const scale = interpolate(revealAnimation.value, [0, 0.5, 1], [1, 1.1, 1]);
+    const shadowOpacity = interpolate(revealAnimation.value, [0, 0.5, 1], [0.1, 0.5, 0.1]);
+    const shadowOffset = interpolate(revealAnimation.value, [0, 0.5, 1], [2, 20, 2]);
+    
     return {
       transform: [
-        {
-          rotateY: `${interpolate(flipAnimation.value, [0, 1], [0, 180])}deg`,
-        },
+        { perspective: 2000 },
+        { rotateY: `${rotateY}deg` },
+        { scale },
       ],
+      shadowOpacity,
+      shadowOffset: { width: 0, height: shadowOffset },
+      shadowRadius: interpolate(revealAnimation.value, [0, 0.5, 1], [8, 24, 8]),
     };
   });
 
   const backAnimatedStyle = useAnimatedStyle(() => {
+    const rotateY = interpolate(revealAnimation.value, [0, 1], [180, 360]);
+    const scale = interpolate(revealAnimation.value, [0, 0.5, 1], [1, 1.1, 1]);
+    const shadowOpacity = interpolate(revealAnimation.value, [0, 0.5, 1], [0.1, 0.5, 0.1]);
+    const shadowOffset = interpolate(revealAnimation.value, [0, 0.5, 1], [2, 20, 2]);
+    
     return {
       transform: [
-        {
-          rotateY: `${interpolate(flipAnimation.value, [0, 1], [180, 360])}deg`,
-        },
+        { perspective: 2000 },
+        { rotateY: `${rotateY}deg` },
+        { scale },
       ],
+      shadowOpacity,
+      shadowOffset: { width: 0, height: shadowOffset },
+      shadowRadius: interpolate(revealAnimation.value, [0, 0.5, 1], [8, 24, 8]),
     };
   });
 
@@ -72,19 +89,24 @@ export default function FlashcardsScreen() {
     };
   });
 
-  const handleFlip = () => {
-    setIsFlipped(!isFlipped);
-    flipAnimation.value = withSpring(isFlipped ? 0 : 1, {
-      damping: 15,
-      stiffness: 100,
+  const handleReveal = () => {
+    setIsRevealed(!isRevealed);
+    revealAnimation.value = withSpring(isRevealed ? 0 : 1, {
+      damping: 12,
+      stiffness: 80,
+      mass: 0.8,
     });
   };
 
   const handleNext = () => {
     if (currentIndex < flashcards.length - 1) {
       setCurrentIndex(prev => prev + 1);
-      setIsFlipped(false);
-      flipAnimation.value = withTiming(0);
+      setIsRevealed(false);
+      revealAnimation.value = withSpring(0, {
+        damping: 12,
+        stiffness: 80,
+        mass: 0.8,
+      });
       progressAnimation.value = withTiming(((currentIndex + 2) / flashcards.length) * 100);
     }
   };
@@ -92,8 +114,12 @@ export default function FlashcardsScreen() {
   const handlePrevious = () => {
     if (currentIndex > 0) {
       setCurrentIndex(prev => prev - 1);
-      setIsFlipped(false);
-      flipAnimation.value = withTiming(0);
+      setIsRevealed(false);
+      revealAnimation.value = withSpring(0, {
+        damping: 12,
+        stiffness: 80,
+        mass: 0.8,
+      });
       progressAnimation.value = withTiming((currentIndex / flashcards.length) * 100);
     }
   };
@@ -119,42 +145,48 @@ export default function FlashcardsScreen() {
 
         {/* Flashcard */}
         <ThemedView style={styles.cardContainer}>
-          <TouchableOpacity onPress={handleFlip} activeOpacity={0.9}>
-            <ThemedView style={styles.card}>
+          <TouchableOpacity onPress={handleReveal} activeOpacity={0.9}>
+            <View style={styles.card}>
               <Animated.View style={[styles.cardFace, styles.cardFront, frontAnimatedStyle]}>
-                <View style={styles.cardGradient}>
+                <View style={styles.cardContent}>
                   <ThemedText style={styles.questionText}>{currentCard.question}</ThemedText>
-                  <ThemedText style={styles.flipHint}>Tap to reveal answer</ThemedText>
+                  <ThemedText style={styles.revealHint}>Tap to reveal answer</ThemedText>
                 </View>
               </Animated.View>
               <Animated.View style={[styles.cardFace, styles.cardBack, backAnimatedStyle]}>
-                <View style={styles.cardGradient}>
+                <View style={styles.cardContent}>
                   <ThemedText style={styles.answerText}>{currentCard.answer}</ThemedText>
-                  <ThemedText style={styles.flipHint}>Tap to see question</ThemedText>
+                  <ThemedText style={styles.revealHint}>Tap to see question</ThemedText>
                 </View>
               </Animated.View>
-            </ThemedView>
+            </View>
           </TouchableOpacity>
         </ThemedView>
 
         {/* Navigation Buttons */}
         <ThemedView style={styles.navigationContainer}>
-          <TouchableOpacity
-            style={[styles.navButton, styles.prevButton]}
-            onPress={handlePrevious}
-            disabled={currentIndex === 0}
-          >
-            <IconSymbol name="chevron.left" size={24} color="#6B54AE" />
-            <ThemedText style={styles.prevButtonText}>Previous</ThemedText>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={[styles.navButton, styles.nextButton]}
-            onPress={handleNext}
-            disabled={currentIndex === flashcards.length - 1}
-          >
-            <ThemedText style={styles.nextButtonText}>Next</ThemedText>
-            <IconSymbol name="chevron.right" size={24} color="#fff" />
-          </TouchableOpacity>
+          <ThemedView style={styles.navButtonContainer}>
+            {currentIndex > 0 && (
+              <TouchableOpacity
+                style={[styles.navButton, styles.prevButton]}
+                onPress={handlePrevious}
+              >
+                <IconSymbol name="chevron.left" size={24} color="#6B54AE" />
+                <ThemedText style={styles.prevButtonText}>Previous Card</ThemedText>
+              </TouchableOpacity>
+            )}
+          </ThemedView>
+          <ThemedView style={styles.navButtonContainer}>
+            {currentIndex < flashcards.length - 1 && (
+              <TouchableOpacity
+                style={[styles.navButton, styles.nextButton]}
+                onPress={handleNext}
+              >
+                <ThemedText style={styles.nextButtonText}>Next Card</ThemedText>
+                <IconSymbol name="chevron.right" size={24} color="#fff" />
+              </TouchableOpacity>
+            )}
+          </ThemedView>
         </ThemedView>
       </ThemedView>
     </SafeAreaView>
@@ -197,14 +229,13 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   cardContainer: {
-    height: 300,
     justifyContent: 'center',
     alignItems: 'center',
     marginVertical: 16,
   },
   card: {
     width: CARD_WIDTH,
-    height: 280,
+    minHeight: 280,
     position: 'relative',
   },
   cardFace: {
@@ -214,11 +245,12 @@ const styles = StyleSheet.create({
     backfaceVisibility: 'hidden',
     borderRadius: 16,
     overflow: 'hidden',
-    elevation: 4,
+    elevation: 12,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
-    shadowRadius: 4,
+    shadowRadius: 8,
+    backgroundColor: '#fff',
   },
   cardFront: {
     borderWidth: 1,
@@ -229,7 +261,7 @@ const styles = StyleSheet.create({
     borderColor: '#E0E0E0',
     transform: [{ rotateY: '180deg' }],
   },
-  cardGradient: {
+  cardContent: {
     flex: 1,
     padding: 24,
     justifyContent: 'center',
@@ -250,7 +282,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     lineHeight: 26,
   },
-  flipHint: {
+  revealHint: {
     fontSize: 14,
     color: '#666',
     marginTop: 16,
@@ -261,8 +293,12 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginTop: 'auto',
     paddingVertical: 16,
+    width: CARD_WIDTH,
+  },
+  navButtonContainer: {
+    flex: 1,
+    alignItems: 'center',
   },
   navButton: {
     flexDirection: 'row',
