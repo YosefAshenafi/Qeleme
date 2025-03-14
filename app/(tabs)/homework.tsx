@@ -1,20 +1,19 @@
-import { StyleSheet, ScrollView } from 'react-native';
+import { StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { Header } from '@/components/Header';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 
 export default function HomeworkScreen() {
   return (
     <SafeAreaView style={styles.safeArea}>
-      <ScrollView style={styles.scrollView}>
-        <ThemedView style={styles.container}>
-          <ThemedText type="title">Homework Help</ThemedText>
-          <ThemedView style={styles.content}>
-            {/* Add ChatGPT wrapper and chat interface here */}
-          </ThemedView>
+      <Header title="Homework Help" />
+      <ThemedView style={styles.container}>
+        <ThemedView style={styles.content}>
+          {/* Add homework help content here */}
         </ThemedView>
-      </ScrollView>
+      </ThemedView>
     </SafeAreaView>
   );
 }
@@ -24,15 +23,13 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#fff',
   },
-  scrollView: {
-    flex: 1,
-  },
   container: {
     flex: 1,
     padding: 20,
-    gap: 20,
+    backgroundColor: '#fff',
   },
   content: {
     flex: 1,
+    marginTop: 20,
   },
 }); 

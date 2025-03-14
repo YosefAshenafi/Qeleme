@@ -91,19 +91,6 @@ export default function TabLayout() {
           ),
         }}
       />
-      <Tabs.Screen
-        name="profile"
-        options={{
-          title: 'Profile',
-          tabBarIcon: ({ color, focused }) => (
-            <IconSymbol 
-              size={28} 
-              name={focused ? "person.fill" : "person"} 
-              color={color} 
-            />
-          ),
-        }}
-      />
     </Tabs>
   );
 }

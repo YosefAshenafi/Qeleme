@@ -1,25 +1,20 @@
-import { StyleSheet, ScrollView, TouchableOpacity, Image } from 'react-native';
+import { StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 
+import { Header } from '@/components/Header';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 
 export default function HomeScreen() {
   return (
     <SafeAreaView style={styles.safeArea}>
+      <Header 
+        title="Welcome back, Student!"
+        subtitle="Ready to learn something new today?"
+      />
       <ScrollView style={styles.scrollView}>
         <ThemedView style={styles.container}>
-          {/* Welcome Section */}
-          <ThemedView style={styles.welcomeSection}>
-            <ThemedText type="title" style={styles.welcomeTitle}>
-              Welcome back, Student!
-            </ThemedText>
-            <ThemedText style={styles.welcomeSubtitle}>
-              Ready to learn something new today?
-            </ThemedText>
-          </ThemedView>
-
           {/* Quick Actions Grid */}
           <ThemedView style={styles.gridContainer}>
             <TouchableOpacity 
@@ -101,17 +96,6 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 20,
     gap: 24,
-  },
-  welcomeSection: {
-    gap: 8,
-  },
-  welcomeTitle: {
-    fontSize: 28,
-    fontWeight: 'bold',
-  },
-  welcomeSubtitle: {
-    fontSize: 16,
-    color: '#666',
   },
   gridContainer: {
     flexDirection: 'row',

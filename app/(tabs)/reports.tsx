@@ -1,14 +1,15 @@
 import { StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { Header } from '@/components/Header';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 
 export default function ReportsScreen() {
   return (
     <SafeAreaView style={styles.safeArea}>
+      <Header title="Reports" />
       <ThemedView style={styles.container}>
-        <ThemedText type="title">Reports</ThemedText>
         <ThemedView style={styles.content}>
           {/* Add reports and analytics content here */}
         </ThemedView>
