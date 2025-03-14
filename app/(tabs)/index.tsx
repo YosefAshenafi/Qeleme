@@ -1,74 +1,164 @@
-import { Image, StyleSheet, Platform } from 'react-native';
+import { StyleSheet, ScrollView, TouchableOpacity, Image } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { router } from 'expo-router';
 
-import { HelloWave } from '@/components/HelloWave';
-import ParallaxScrollView from '@/components/ParallaxScrollView';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 
 export default function HomeScreen() {
   return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#A1CEDC', dark: '#1D3D47' }}
-      headerImage={
-        <Image
-          source={require('@/assets/images/partial-react-logo.png')}
-          style={styles.reactLogo}
-        />
-      }>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Welcome!</ThemedText>
-        <HelloWave />
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 1: Try it</ThemedText>
-        <ThemedText>
-          Edit <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> to see changes.
-          Press{' '}
-          <ThemedText type="defaultSemiBold">
-            {Platform.select({
-              ios: 'cmd + d',
-              android: 'cmd + m',
-              web: 'F12'
-            })}
-          </ThemedText>{' '}
-          to open developer tools.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 2: Explore</ThemedText>
-        <ThemedText>
-          Tap the Explore tab to learn more about what's included in this starter app.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 3: Get a fresh start</ThemedText>
-        <ThemedText>
-          When you're ready, run{' '}
-          <ThemedText type="defaultSemiBold">npm run reset-project</ThemedText> to get a fresh{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> directory. This will move the current{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> to{' '}
-          <ThemedText type="defaultSemiBold">app-example</ThemedText>.
-        </ThemedText>
-      </ThemedView>
-    </ParallaxScrollView>
+    <SafeAreaView style={styles.safeArea}>
+      <ScrollView style={styles.scrollView}>
+        <ThemedView style={styles.container}>
+          {/* Welcome Section */}
+          <ThemedView style={styles.welcomeSection}>
+            <ThemedText type="title" style={styles.welcomeTitle}>
+              Welcome back, Student!
+            </ThemedText>
+            <ThemedText style={styles.welcomeSubtitle}>
+              Ready to learn something new today?
+            </ThemedText>
+          </ThemedView>
+
+          {/* Quick Actions Grid */}
+          <ThemedView style={styles.gridContainer}>
+            <TouchableOpacity 
+              style={styles.gridItem} 
+              onPress={() => router.push('/(tabs)/mcq')}
+            >
+              <ThemedView style={[styles.gridItemContent, { backgroundColor: '#E3F2FD' }]}>
+                <ThemedText style={styles.gridItemTitle}>Practice MCQ</ThemedText>
+                <ThemedText style={styles.gridItemSubtitle}>Test your knowledge</ThemedText>
+              </ThemedView>
+            </TouchableOpacity>
+
+            <TouchableOpacity 
+              style={styles.gridItem} 
+              onPress={() => router.push('/(tabs)/flashcards')}
+            >
+              <ThemedView style={[styles.gridItemContent, { backgroundColor: '#F3E5F5' }]}>
+                <ThemedText style={styles.gridItemTitle}>Flashcards</ThemedText>
+                <ThemedText style={styles.gridItemSubtitle}>Review key concepts</ThemedText>
+              </ThemedView>
+            </TouchableOpacity>
+
+            <TouchableOpacity 
+              style={styles.gridItem} 
+              onPress={() => router.push('/(tabs)/homework')}
+            >
+              <ThemedView style={[styles.gridItemContent, { backgroundColor: '#E8F5E9' }]}>
+                <ThemedText style={styles.gridItemTitle}>Homework Help</ThemedText>
+                <ThemedText style={styles.gridItemSubtitle}>Get expert assistance</ThemedText>
+              </ThemedView>
+            </TouchableOpacity>
+
+            <TouchableOpacity 
+              style={styles.gridItem} 
+              onPress={() => router.push('/(tabs)/reports')}
+            >
+              <ThemedView style={[styles.gridItemContent, { backgroundColor: '#FFF3E0' }]}>
+                <ThemedText style={styles.gridItemTitle}>Progress Report</ThemedText>
+                <ThemedText style={styles.gridItemSubtitle}>Track your learning</ThemedText>
+              </ThemedView>
+            </TouchableOpacity>
+          </ThemedView>
+
+          {/* Recent Activity Section */}
+          <ThemedView style={styles.section}>
+            <ThemedText type="title" style={styles.sectionTitle}>
+              Recent Activity
+            </ThemedText>
+            <ThemedView style={styles.activityList}>
+              <ThemedView style={styles.activityItem}>
+                <ThemedText style={styles.activityTitle}>Math Quiz</ThemedText>
+                <ThemedText style={styles.activitySubtitle}>Completed 10 questions</ThemedText>
+              </ThemedView>
+              <ThemedView style={styles.activityItem}>
+                <ThemedText style={styles.activityTitle}>Science Flashcards</ThemedText>
+                <ThemedText style={styles.activitySubtitle}>Reviewed 5 cards</ThemedText>
+              </ThemedView>
+              <ThemedView style={styles.activityItem}>
+                <ThemedText style={styles.activityTitle}>English Homework</ThemedText>
+                <ThemedText style={styles.activitySubtitle}>Asked 2 questions</ThemedText>
+              </ThemedView>
+            </ThemedView>
+          </ThemedView>
+        </ThemedView>
+      </ScrollView>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  titleContainer: {
+  safeArea: {
+    flex: 1,
+    backgroundColor: '#fff',
+  },
+  scrollView: {
+    flex: 1,
+  },
+  container: {
+    flex: 1,
+    padding: 20,
+    gap: 24,
+  },
+  welcomeSection: {
+    gap: 8,
+  },
+  welcomeTitle: {
+    fontSize: 28,
+    fontWeight: 'bold',
+  },
+  welcomeSubtitle: {
+    fontSize: 16,
+    color: '#666',
+  },
+  gridContainer: {
     flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
+    flexWrap: 'wrap',
+    gap: 16,
   },
-  stepContainer: {
-    gap: 8,
-    marginBottom: 8,
+  gridItem: {
+    width: '47%',
+    aspectRatio: 1,
   },
-  reactLogo: {
-    height: 178,
-    width: 290,
-    bottom: 0,
-    left: 0,
-    position: 'absolute',
+  gridItemContent: {
+    flex: 1,
+    padding: 16,
+    borderRadius: 16,
+    justifyContent: 'flex-end',
   },
-});
+  gridItemTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    marginBottom: 4,
+  },
+  gridItemSubtitle: {
+    fontSize: 14,
+    color: '#666',
+  },
+  section: {
+    gap: 16,
+  },
+  sectionTitle: {
+    fontSize: 20,
+    fontWeight: '600',
+  },
+  activityList: {
+    gap: 12,
+  },
+  activityItem: {
+    padding: 16,
+    backgroundColor: '#F5F5F5',
+    borderRadius: 12,
+  },
+  activityTitle: {
+    fontSize: 16,
+    fontWeight: '500',
+    marginBottom: 4,
+  },
+  activitySubtitle: {
+    fontSize: 14,
+    color: '#666',
+  },
+}); 
