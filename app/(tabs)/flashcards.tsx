@@ -1,6 +1,7 @@
 import { useState, useRef } from 'react';
 import { StyleSheet, TouchableOpacity, Dimensions, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { router } from 'expo-router';
 import Animated, {
   useAnimatedStyle,
   withTiming,
@@ -177,13 +178,24 @@ export default function FlashcardsScreen() {
             )}
           </ThemedView>
           <ThemedView style={styles.navButtonContainer}>
-            {currentIndex < flashcards.length - 1 && (
+            {currentIndex < flashcards.length - 1 ? (
               <TouchableOpacity
                 style={[styles.navButton, styles.nextButton]}
                 onPress={handleNext}
               >
                 <ThemedText style={styles.nextButtonText}>Next Card</ThemedText>
                 <IconSymbol name="chevron.right" size={24} color="#fff" />
+              </TouchableOpacity>
+            ) : (
+              <TouchableOpacity
+                style={[styles.navButton, styles.finishButton]}
+                onPress={() => {
+                  setCurrentIndex(0);
+                  progressAnimation.value = withTiming((1 / flashcards.length) * 100);
+                }}
+              >
+                <IconSymbol name="arrow.clockwise" size={24} color="#fff" />
+                <ThemedText style={styles.finishButtonText}>Go to First</ThemedText>
               </TouchableOpacity>
             )}
           </ThemedView>
@@ -322,6 +334,13 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   nextButtonText: {
+    color: '#fff',
+    fontWeight: '600',
+  },
+  finishButton: {
+    backgroundColor: '#6B54AE',
+  },
+  finishButtonText: {
     color: '#fff',
     fontWeight: '600',
   },
