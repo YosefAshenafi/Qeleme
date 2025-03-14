@@ -135,7 +135,7 @@ export default function HomeScreen() {
                 end={{ x: 1, y: 1 }}
               >
                 <View style={styles.gridIconContainer}>
-                  <IconSymbol name="list.bullet.clipboard" size={32} color="#6B54AE" />
+                  <IconSymbol name="questionmark.circle" size={32} color="#6B54AE" />
                 </View>
                 <View style={styles.gridTextContainer}>
                   <ThemedText style={styles.gridItemTitle}>Practice MCQ</ThemedText>

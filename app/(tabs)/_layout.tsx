@@ -46,7 +46,7 @@ export default function TabLayout() {
           tabBarIcon: ({ color, focused }) => (
             <IconSymbol 
               size={28} 
-              name={focused ? "list.bullet.clipboard.fill" : "list.bullet.clipboard"} 
+              name={focused ? "questionmark.circle.fill" : "questionmark.circle"} 
               color={color} 
             />
           ),

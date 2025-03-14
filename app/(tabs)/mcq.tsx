@@ -198,7 +198,7 @@ export default function MCQScreen() {
                   </TouchableOpacity>
                 )}
               </ThemedView>
-              <ThemedView style={styles.navButtonContainer}>
+              <ThemedView style={styles.navButtonContainerRight}>
                 {!isLastQuestion && (
                   <TouchableOpacity
                     style={[styles.navButton, styles.nextButton]}
@@ -333,10 +333,15 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderTopColor: '#E0E0E0',
     borderBottomColor: '#E0E0E0',
+    paddingHorizontal: 0,
   },
   navButtonContainer: {
     flex: 1,
-    alignItems: 'center',
+    alignItems: 'flex-start',
+  },
+  navButtonContainerRight: {
+    flex: 1,
+    alignItems: 'flex-end',
   },
   navButton: {
     flexDirection: 'row',
