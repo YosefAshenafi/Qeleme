@@ -62,7 +62,7 @@ export default function HomeScreen() {
   return (
     <SafeAreaView style={styles.safeArea}>
       <Header 
-        title="Welcome back, Student!"
+        title="Welcome back, Yosef!"
         subtitle="Ready to learn something new today?"
       />
       <ScrollView style={styles.scrollView}>
