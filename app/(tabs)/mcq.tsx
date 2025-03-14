@@ -2,6 +2,7 @@ import { useState, useRef } from 'react';
 import { StyleSheet, TouchableOpacity, ScrollView, View, Dimensions } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
+import { router } from 'expo-router';
 
 import { Header } from '@/components/Header';
 import { ThemedText } from '@/components/ThemedText';
@@ -75,6 +76,7 @@ export default function MCQScreen() {
   const [showAnswerMessage, setShowAnswerMessage] = useState(false);
   const scrollViewRef = useRef<ScrollView>(null);
   const explanationRef = useRef<View>(null);
+  const [score, setScore] = useState(0);
 
   const currentQuestion = mcqData[currentQuestionIndex];
   const isLastQuestion = currentQuestionIndex === mcqData.length - 1;
@@ -87,11 +89,17 @@ export default function MCQScreen() {
     setShowExplanation(true);
     setShowAnswerMessage(false);
     
+    // Update score if answer is correct
+    const isCorrect = currentQuestion.options.find(opt => opt.id === answerId)?.isCorrect;
+    if (isCorrect) {
+      setScore(prev => prev + 1);
+    }
+    
     // Scroll to explanation after a short delay to ensure it's rendered
     setTimeout(() => {
       explanationRef.current?.measure((x: number, y: number, width: number, height: number, pageX: number, pageY: number) => {
         scrollViewRef.current?.scrollTo({
-          y: pageY - 100, // Scroll to slightly above the explanation
+          y: pageY - 100,
           animated: true
         });
       });
@@ -117,6 +125,21 @@ export default function MCQScreen() {
       setSelectedAnswer(answeredQuestions[currentQuestionIndex - 1] || null);
       setShowExplanation(true);
     }
+  };
+
+  const handleResult = () => {
+    if (!selectedAnswer) {
+      setShowAnswerMessage(true);
+      return;
+    }
+    // Navigate to result screen with score and total questions
+    router.push({
+      pathname: '/(tabs)/mcq/result',
+      params: {
+        score,
+        total: mcqData.length
+      }
+    });
   };
 
   const getOptionStyle = (optionId: string) => {
@@ -199,7 +222,15 @@ export default function MCQScreen() {
                 )}
               </ThemedView>
               <ThemedView style={styles.navButtonContainerRight}>
-                {!isLastQuestion && (
+                {isLastQuestion ? (
+                  <TouchableOpacity
+                    style={[styles.navButton, styles.resultButton]}
+                    onPress={handleResult}
+                  >
+                    <ThemedText style={styles.resultButtonText}>View Results</ThemedText>
+                    <IconSymbol name="trophy" size={24} color="#fff" />
+                  </TouchableOpacity>
+                ) : (
                   <TouchableOpacity
                     style={[styles.navButton, styles.nextButton]}
                     onPress={handleNextQuestion}
@@ -412,5 +443,12 @@ const styles = StyleSheet.create({
     color: '#F57C00',
     fontSize: 14,
     fontWeight: '500',
+  },
+  resultButton: {
+    backgroundColor: '#FF9800',
+  },
+  resultButtonText: {
+    color: '#fff',
+    fontWeight: '600',
   },
 }); 
