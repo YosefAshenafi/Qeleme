@@ -83,6 +83,13 @@ export default function MCQScreen() {
   const scaleAnim = useRef(new Animated.Value(0)).current;
   const rotateAnim = useRef(new Animated.Value(0)).current;
   const confettiAnim = useRef(new Animated.Value(0)).current;
+  const particleAnims = useRef(Array(64).fill(0).map(() => ({
+    scale: new Animated.Value(0),
+    translateX: new Animated.Value(0),
+    translateY: new Animated.Value(0),
+    opacity: new Animated.Value(1),
+    rotate: new Animated.Value(0),
+  }))).current;
 
   const currentQuestion = mcqData[currentQuestionIndex];
   const isLastQuestion = currentQuestionIndex === mcqData.length - 1;
@@ -120,6 +127,64 @@ export default function MCQScreen() {
             }),
           ])
         ).start();
+
+        // Get screen dimensions
+        const screenWidth = Dimensions.get('window').width;
+        const screenHeight = Dimensions.get('window').height;
+        const maxDistance = Math.sqrt(Math.pow(screenWidth, 2) + Math.pow(screenHeight, 2)) / 2;
+
+        // Start firework animation
+        const createParticleAnimation = (anim: any, index: number) => {
+          const angle = (index * 5.625) * (Math.PI / 180); // Distribute particles in a circle (64 particles)
+          const distance = maxDistance; // Travel to screen edges
+          const burstDuration = 3000; // Slower movement (3 seconds)
+          const rotationDuration = 2000 + Math.random() * 1000; // Random rotation duration
+
+          return Animated.parallel([
+            Animated.timing(anim.scale, {
+              toValue: 1,
+              duration: burstDuration,
+              useNativeDriver: true,
+            }),
+            Animated.timing(anim.translateX, {
+              toValue: Math.cos(angle) * distance,
+              duration: burstDuration,
+              useNativeDriver: true,
+            }),
+            Animated.timing(anim.translateY, {
+              toValue: Math.sin(angle) * distance,
+              duration: burstDuration,
+              useNativeDriver: true,
+            }),
+            Animated.timing(anim.opacity, {
+              toValue: 0,
+              duration: 100, // Very quick fade out
+              delay: burstDuration - 100, // Start fading just before reaching the edge
+              useNativeDriver: true,
+            }),
+            Animated.timing(anim.rotate, {
+              toValue: 1,
+              duration: rotationDuration,
+              useNativeDriver: true,
+            }),
+          ]);
+        };
+
+        // Create a single explosion with all particles
+        const explosion = particleAnims.map((anim, index) => 
+          createParticleAnimation(anim, index)
+        );
+
+        // Start all particles simultaneously
+        Animated.parallel(explosion).start();
+
+        // Create a second explosion after a longer delay
+        setTimeout(() => {
+          const secondExplosion = particleAnims.map((anim, index) => 
+            createParticleAnimation(anim, index)
+          );
+          Animated.parallel(secondExplosion).start();
+        }, 3500); // Start second explosion after 3.5 seconds
       }
     }
   }, [showResult]);
@@ -132,6 +197,11 @@ export default function MCQScreen() {
   const confettiScale = confettiAnim.interpolate({
     inputRange: [0, 0.5, 1],
     outputRange: [1, 1.2, 1],
+  });
+
+  const explosionScale = scaleAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: [0.5, 1.5],
   });
 
   const getMessage = () => {
@@ -222,6 +292,38 @@ export default function MCQScreen() {
       <SafeAreaView style={styles.safeArea}>
         <Header title="Quiz Results" />
         <ThemedView style={styles.container}>
+          {percentage >= 90 && (
+            <View style={styles.fireworkContainer}>
+              {particleAnims.map((anim, index) => (
+                <Animated.View
+                  key={index}
+                  style={[
+                    styles.particle,
+                    {
+                      transform: [
+                        { scale: anim.scale },
+                        { translateX: anim.translateX },
+                        { translateY: anim.translateY },
+                        { rotate: anim.rotate.interpolate({
+                          inputRange: [0, 1],
+                          outputRange: ['0deg', '360deg'],
+                        })},
+                      ],
+                      opacity: anim.opacity,
+                    },
+                  ]}
+                >
+                  <IconSymbol 
+                    name="sparkles" 
+                    size={36} 
+                    color={index % 4 === 0 ? '#FFD700' : 
+                           index % 4 === 1 ? '#FFA500' : 
+                           index % 4 === 2 ? '#FF69B4' : '#FF1493'} 
+                  />
+                </Animated.View>
+              ))}
+            </View>
+          )}
           <View style={styles.resultCard}>
             <LinearGradient
               colors={['#F3E5F5', '#E1BEE7']}
@@ -229,13 +331,6 @@ export default function MCQScreen() {
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 1 }}
             />
-            
-            {percentage >= 90 && (
-              <Animated.View style={[styles.confettiContainer, { transform: [{ scale: confettiScale }] }]}>
-                <IconSymbol name="sparkles" size={24} color="#FFD700" style={styles.confettiLeft} />
-                <IconSymbol name="sparkles" size={24} color="#FFD700" style={styles.confettiRight} />
-              </Animated.View>
-            )}
             
             <View style={styles.trophyContainer}>
               <Animated.View style={{ transform: [{ scale: scaleAnim }, { rotate: spin }] }}>
@@ -646,18 +741,18 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
   },
-  confettiContainer: {
+  fireworkContainer: {
     position: 'absolute',
-    top: 20,
-    width: '100%',
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    paddingHorizontal: 20,
+    top: '50%',
+    left: '50%',
+    width: 0,
+    height: 0,
+    zIndex: 1000,
   },
-  confettiLeft: {
-    transform: [{ rotate: '-45deg' }],
-  },
-  confettiRight: {
-    transform: [{ rotate: '45deg' }],
+  particle: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    transform: [{ translateX: -20 }, { translateY: -20 }],
   },
 }); 
