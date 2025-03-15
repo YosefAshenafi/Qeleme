@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { StyleSheet, TouchableOpacity, Dimensions, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
@@ -47,6 +47,11 @@ export default function FlashcardsScreen() {
 
   const currentCard = flashcards[currentIndex];
   const progress = ((currentIndex + 1) / flashcards.length) * 100;
+
+  useEffect(() => {
+    // Initialize progress animation when component mounts
+    progressAnimation.value = withTiming((1 / flashcards.length) * 100);
+  }, []);
 
   const frontAnimatedStyle = useAnimatedStyle(() => {
     const rotateY = interpolate(revealAnimation.value, [0, 1], [0, 180]);
