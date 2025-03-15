@@ -1,15 +1,72 @@
-import React from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image } from 'react-native';
+import React, { useState } from 'react';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, Animated } from 'react-native';
 import { useColorScheme } from '@/hooks/useColorScheme';
 import { Colors } from '@/constants/Colors';
-import { IconSymbol } from '@/components/ui/IconSymbol';
+import { IconSymbol, IconSymbolName } from '@/components/ui/IconSymbol';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
+import { AccountSettings } from '../components/profile/AccountSettings';
+
+interface AccordionItemProps {
+  title: string;
+  icon: IconSymbolName;
+  children: React.ReactNode;
+  isOpen: boolean;
+  onToggle: () => void;
+  colors: any;
+}
+
+type MenuItem = {
+  title: string;
+  icon: IconSymbolName;
+  content?: React.ReactNode;
+  action?: () => void;
+};
+
+const AccordionItem: React.FC<AccordionItemProps> = ({ title, icon, children, isOpen, onToggle, colors }) => {
+  const rotateAnim = React.useRef(new Animated.Value(0)).current;
+
+  React.useEffect(() => {
+    Animated.timing(rotateAnim, {
+      toValue: isOpen ? 1 : 0,
+      duration: 200,
+      useNativeDriver: true,
+    }).start();
+  }, [isOpen]);
+
+  const rotate = rotateAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: ['0deg', '90deg'],
+  });
+
+  return (
+    <View style={[styles.accordionItem, { backgroundColor: colors.card }]}>
+      <TouchableOpacity
+        style={styles.accordionHeader}
+        onPress={onToggle}
+      >
+        <View style={styles.accordionHeaderLeft}>
+          <IconSymbol name={icon} size={24} color={colors.tint} />
+          <Text style={[styles.accordionTitle, { color: colors.text }]}>{title}</Text>
+        </View>
+        <Animated.View style={{ transform: [{ rotate }] }}>
+          <IconSymbol name="chevron.right" size={20} color={colors.text} />
+        </Animated.View>
+      </TouchableOpacity>
+      {isOpen && (
+        <View style={styles.accordionContent}>
+          {children}
+        </View>
+      )}
+    </View>
+  );
+};
 
 export default function ProfileScreen() {
   const colorScheme = useColorScheme();
   const colors = Colors[colorScheme ?? 'light'];
+  const [openAccordion, setOpenAccordion] = useState<string | null>(null);
 
   const profileData = {
     englishName: 'Yosef Ashenafi',
@@ -27,23 +84,35 @@ export default function ProfileScreen() {
     { label: 'Study Hours', value: '234', icon: 'clock.fill' as const },
   ];
 
-  const menuItems = [
-    { title: 'Account Settings', icon: 'person.fill' as const, action: () => {} },
-    { title: 'Study History', icon: 'clock.fill' as const, action: () => {} },
-    { title: 'Achievements', icon: 'trophy.fill' as const, action: () => {} },
-    { title: 'Notifications', icon: 'bell.fill' as const, action: () => {} },
-    { title: 'Help & Support', icon: 'questionmark.circle.fill' as const, action: () => {} },
-    { title: 'Privacy Policy', icon: 'lock.fill' as const, action: () => {} },
-    { title: 'Terms of Service', icon: 'doc.text.fill' as const, action: () => {} },
-    { title: 'Logout', icon: 'rectangle.portrait.and.arrow.right' as const, action: () => router.replace('/(auth)/login') },
+  const menuItems: MenuItem[] = [
+    { 
+      title: 'Account Settings', 
+      icon: 'person.fill' as const,
+      content: <AccountSettings colors={colors} profileData={profileData} />
+    },
+    { title: 'Study History', icon: 'clock.fill' as const, content: null },
+    { title: 'Achievements', icon: 'trophy.fill' as const, content: null },
+    { title: 'Notifications', icon: 'bell.fill' as const, content: null },
+    { title: 'Help & Support', icon: 'questionmark.circle.fill' as const, content: null },
+    { title: 'Privacy Policy', icon: 'lock.fill' as const, content: null },
+    { title: 'Terms of Service', icon: 'doc.text.fill' as const, content: null },
+    { 
+      title: 'Logout', 
+      icon: 'rectangle.portrait.and.arrow.right' as const, 
+      action: () => router.replace('/(auth)/login')
+    },
   ];
+
+  const handleAccordionToggle = (title: string) => {
+    setOpenAccordion(openAccordion === title ? null : title);
+  };
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
       <StatusBar style="light" backgroundColor={colors.tint} />
       <View style={[styles.header, { backgroundColor: colors.tint }]}>
         <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
-          <IconSymbol name="chevron.left" size={24} color={colors.background} />
+          <IconSymbol name="chevron.right" size={24} color={colors.background} style={{ transform: [{ rotate: '180deg' }] }} />
         </TouchableOpacity>
       </View>
       <ScrollView style={styles.scrollView}>
@@ -54,7 +123,7 @@ export default function ProfileScreen() {
               source={require('@/assets/images/profile/YOSEF.jpeg')}
               style={styles.profileImage}
             />
-            <TouchableOpacity style={styles.editButton}>
+            <TouchableOpacity style={styles.profileEditButton}>
               <IconSymbol name="pencil.circle.fill" size={24} color={colors.background} />
             </TouchableOpacity>
           </View>
@@ -80,17 +149,30 @@ export default function ProfileScreen() {
         {/* Menu Items */}
         <View style={styles.menuContainer}>
           {menuItems.map((item, index) => (
-            <TouchableOpacity
-              key={index}
-              style={[styles.menuItem, { backgroundColor: colors.card }]}
-              onPress={item.action}
-            >
-              <View style={styles.menuItemLeft}>
-                <IconSymbol name={item.icon} size={24} color={colors.tint} />
-                <Text style={[styles.menuItemText, { color: colors.text }]}>{item.title}</Text>
-              </View>
-              <IconSymbol name="chevron.right" size={20} color={colors.text} />
-            </TouchableOpacity>
+            item.action ? (
+              <TouchableOpacity
+                key={index}
+                style={[styles.menuItem, { backgroundColor: colors.card }]}
+                onPress={item.action}
+              >
+                <View style={styles.menuItemLeft}>
+                  <IconSymbol name={item.icon} size={24} color={colors.tint} />
+                  <Text style={[styles.menuItemText, { color: colors.text }]}>{item.title}</Text>
+                </View>
+                <IconSymbol name="chevron.right" size={20} color={colors.text} />
+              </TouchableOpacity>
+            ) : (
+              <AccordionItem
+                key={index}
+                title={item.title}
+                icon={item.icon}
+                isOpen={openAccordion === item.title}
+                onToggle={() => handleAccordionToggle(item.title)}
+                colors={colors}
+              >
+                {item.content}
+              </AccordionItem>
+            )
           ))}
         </View>
       </ScrollView>
@@ -131,7 +213,7 @@ const styles = StyleSheet.create({
     borderWidth: 4,
     borderColor: 'white',
   },
-  editButton: {
+  profileEditButton: {
     position: 'absolute',
     bottom: 0,
     right: 0,
@@ -205,5 +287,29 @@ const styles = StyleSheet.create({
   menuItemText: {
     fontSize: 16,
     fontWeight: '500',
+  },
+  accordionItem: {
+    borderRadius: 12,
+    overflow: 'hidden',
+  },
+  accordionHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    padding: 15,
+  },
+  accordionHeaderLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 15,
+  },
+  accordionTitle: {
+    fontSize: 16,
+    fontWeight: '500',
+  },
+  accordionContent: {
+    padding: 15,
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(0,0,0,0.1)',
   },
 }); 
