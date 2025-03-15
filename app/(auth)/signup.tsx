@@ -33,7 +33,7 @@ export default function SignupScreen() {
     { label: 'Grade 10', value: '10' },
     { label: 'Grade 11', value: '11' },
     { label: 'Grade 12', value: '12' },
-    { label: 'University Student', value: 'UNI' },
+    { label: 'University Student', value: 'UNI1' },
   ];
 
   const handleGradeSelect = (value: string) => {
@@ -158,23 +158,25 @@ export default function SignupScreen() {
                             <Ionicons name="close" size={24} color="#6B7280" />
                           </TouchableOpacity>
                         </View>
-                        {grades.map((item) => (
-                          <TouchableOpacity
-                            key={item.value}
-                            style={[
-                              styles.gradeOption,
-                              grade === item.value && styles.gradeOptionSelected
-                            ]}
-                            onPress={() => handleGradeSelect(item.value)}
-                          >
-                            <ThemedText style={[
-                              styles.gradeOptionText,
-                              grade === item.value && styles.gradeOptionTextSelected
-                            ]}>
-                              {item.label}
-                            </ThemedText>
-                          </TouchableOpacity>
-                        ))}
+                        <ScrollView style={styles.gradeScrollView}>
+                          {grades.map((item) => (
+                            <TouchableOpacity
+                              key={item.value}
+                              style={[
+                                styles.gradeOption,
+                                grade === item.value && styles.gradeOptionSelected
+                              ]}
+                              onPress={() => handleGradeSelect(item.value)}
+                            >
+                              <ThemedText style={[
+                                styles.gradeOptionText,
+                                grade === item.value && styles.gradeOptionTextSelected
+                              ]}>
+                                {item.label}
+                              </ThemedText>
+                            </TouchableOpacity>
+                          ))}
+                        </ScrollView>
                       </View>
                     </Pressable>
                   </Modal>
@@ -391,6 +393,7 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   footer: {
+    marginTop: 20,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
@@ -428,7 +431,6 @@ const styles = StyleSheet.create({
     width: '100%',
     borderRadius: 24,
     padding: 16,
-    gap: 8,
     maxHeight: '80%',
   },
   modalHeader: {
@@ -443,6 +445,9 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: '600',
     color: '#1F2937',
+  },
+  gradeScrollView: {
+    maxHeight: 400,
   },
   gradeOption: {
     paddingVertical: 12,
