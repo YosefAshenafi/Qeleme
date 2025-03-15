@@ -3,7 +3,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 import { IconSymbol } from '@/components/ui/IconSymbol';
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 
 import { Header } from '@/components/Header';
 import { ThemedText } from '@/components/ThemedText';
@@ -13,16 +13,62 @@ const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const CARD_WIDTH = SCREEN_WIDTH - 40; // Full width minus padding
 const CARD_SPACING = 16;
 
+const motivationalQuotes = [
+  {
+    quote: "The only way to do great work is to love what you do.",
+    author: "Steve Jobs"
+  },
+  {
+    quote: "Education is not preparation for life; education is life itself.",
+    author: "John Dewey"
+  },
+  {
+    quote: "The beautiful thing about learning is that no one can take it away from you.",
+    author: "B.B. King"
+  }
+];
+
+type ReportCard = {
+  title: string;
+  number: string;
+  subtitle: string;
+  gradient: readonly [string, string, string];
+  icon: 'chart.bar' | 'trophy.fill' | 'clock.fill';
+  stats: Array<{ label: string; value: string }>;
+};
+
 export default function HomeScreen() {
   const [activeIndex, setActiveIndex] = useState(0);
+  const [quoteIndex, setQuoteIndex] = useState(0);
   const scrollViewRef = useRef<ScrollView>(null);
+  const fadeAnim = useRef(new Animated.Value(0)).current;
 
-  const reportCards = [
+  useEffect(() => {
+    const interval = setInterval(() => {
+      Animated.sequence([
+        Animated.timing(fadeAnim, {
+          toValue: 0,
+          duration: 500,
+          useNativeDriver: true,
+        }),
+        Animated.timing(fadeAnim, {
+          toValue: 1,
+          duration: 500,
+          useNativeDriver: true,
+        }),
+      ]).start();
+      setQuoteIndex((prev) => (prev + 1) % motivationalQuotes.length);
+    }, 5000);
+
+    return () => clearInterval(interval);
+  }, []);
+
+  const reportCards: ReportCard[] = [
     {
       title: 'Study Progress',
       number: '85%',
       subtitle: 'Overall Completion',
-      gradient: ['#6B54AE', '#8B6BCE', '#A78BFA'] as const,
+      gradient: ['#5B3A9E', '#6B54AE', '#7B6EBE'] as const,
       icon: 'chart.bar',
       stats: [
         { label: 'Topics Completed', value: '12/15' },
@@ -33,8 +79,8 @@ export default function HomeScreen() {
       title: 'Performance',
       number: '92%',
       subtitle: 'Average Score',
-      gradient: ['#2E7D32', '#4CAF50', '#81C784'] as const,
-      icon: 'star',
+      gradient: ['#1B5E20', '#2E7D32', '#4CAF50'] as const,
+      icon: 'trophy.fill',
       stats: [
         { label: 'Quizzes Taken', value: '24' },
         { label: 'Success Rate', value: '92%' }
@@ -44,8 +90,8 @@ export default function HomeScreen() {
       title: 'Learning Streak',
       number: '7',
       subtitle: 'Days Active',
-      gradient: ['#1976D2', '#2196F3', '#64B5F6'] as const,
-      icon: 'flame',
+      gradient: ['#0D47A1', '#1976D2', '#2196F3'] as const,
+      icon: 'clock.fill',
       stats: [
         { label: 'Current Streak', value: '7d' },
         { label: 'Best Streak', value: '12d' }
@@ -67,6 +113,18 @@ export default function HomeScreen() {
       />
       <ScrollView style={styles.scrollView}>
         <ThemedView style={styles.container}>
+          {/* Motivational Quote Section */}
+          <ThemedView style={styles.quoteSection}>
+            <Animated.View style={{ opacity: fadeAnim }}>
+              <ThemedText style={styles.quoteText}>
+                "{motivationalQuotes[quoteIndex].quote}"
+              </ThemedText>
+              <ThemedText style={styles.quoteAuthor}>
+                - {motivationalQuotes[quoteIndex].author}
+              </ThemedText>
+            </Animated.View>
+          </ThemedView>
+
           {/* Report Cards Carousel */}
           <View style={styles.carouselSection}>
             <ScrollView 
@@ -234,11 +292,14 @@ export default function HomeScreen() {
             <ThemedView style={styles.activityList}>
               <ThemedView style={styles.activityItem}>
                 <ThemedView style={[styles.activityIcon, { backgroundColor: '#F3E5F5' }]}>
-                  <IconSymbol name="list.bullet.clipboard" size={24} color="#6B54AE" />
+                  <IconSymbol name="questionmark.circle" size={24} color="#6B54AE" />
                 </ThemedView>
                 <ThemedView style={styles.activityContent}>
                   <ThemedText style={styles.activityTitle}>Math Quiz</ThemedText>
                   <ThemedText style={styles.activitySubtitle}>Completed 10 questions</ThemedText>
+                  <View style={styles.activityProgress}>
+                    <View style={[styles.activityProgressBar, { width: '80%' }]} />
+                  </View>
                 </ThemedView>
                 <View style={[styles.activityBadge, { backgroundColor: '#6B54AE' }]}>
                   <ThemedText style={styles.activityBadgeText}>New</ThemedText>
@@ -507,5 +568,35 @@ const styles = StyleSheet.create({
   paginationDotActive: {
     backgroundColor: '#fff',
     width: 18,
+  },
+  quoteSection: {
+    padding: 20,
+    marginBottom: 20,
+    borderRadius: 16,
+    backgroundColor: '#F8F9FA',
+  },
+  quoteText: {
+    fontSize: 18,
+    fontStyle: 'italic',
+    color: '#6B54AE',
+    marginBottom: 8,
+    lineHeight: 24,
+  },
+  quoteAuthor: {
+    fontSize: 14,
+    color: '#6B54AE',
+    opacity: 0.8,
+  },
+  activityProgress: {
+    height: 4,
+    backgroundColor: '#E9ECEF',
+    borderRadius: 2,
+    marginTop: 8,
+    overflow: 'hidden',
+  },
+  activityProgressBar: {
+    height: '100%',
+    backgroundColor: '#6B54AE',
+    borderRadius: 2,
   },
 }); 
