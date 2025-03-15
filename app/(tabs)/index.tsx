@@ -221,42 +221,6 @@ export default function HomeScreen() {
             </TouchableOpacity>
           </ThemedView>
 
-          {/* Today's Schedule */}
-          <ThemedView style={styles.section}>
-            <View style={styles.sectionHeader}>
-              <ThemedText type="title" style={styles.sectionTitle}>
-                Today's Schedule
-              </ThemedText>
-              <TouchableOpacity>
-                <ThemedText style={styles.seeAllButton}>See All</ThemedText>
-              </TouchableOpacity>
-            </View>
-            <ThemedView style={styles.scheduleList}>
-              <ThemedView style={styles.scheduleItem}>
-                <View style={[styles.scheduleTime, { backgroundColor: '#F3E5F5' }]}>
-                  <ThemedText style={[styles.timeText, { color: '#6B54AE' }]}>09:00</ThemedText>
-                  <ThemedText style={[styles.durationText, { color: '#6B54AE' }]}>1h</ThemedText>
-                </View>
-                <View style={styles.scheduleContent}>
-                  <ThemedText style={styles.scheduleTitle}>Mathematics Class</ThemedText>
-                  <ThemedText style={styles.scheduleSubtitle}>Chapter 5: Algebra</ThemedText>
-                </View>
-                <IconSymbol name="chevron.right" size={20} color="#666" />
-              </ThemedView>
-              <ThemedView style={styles.scheduleItem}>
-                <View style={[styles.scheduleTime, { backgroundColor: '#E8F5E9' }]}>
-                  <ThemedText style={[styles.timeText, { color: '#2E7D32' }]}>11:00</ThemedText>
-                  <ThemedText style={[styles.durationText, { color: '#2E7D32' }]}>1.5h</ThemedText>
-                </View>
-                <View style={styles.scheduleContent}>
-                  <ThemedText style={styles.scheduleTitle}>Science Lab</ThemedText>
-                  <ThemedText style={styles.scheduleSubtitle}>Physics Experiment</ThemedText>
-                </View>
-                <IconSymbol name="chevron.right" size={20} color="#666" />
-              </ThemedView>
-            </ThemedView>
-          </ThemedView>
-
           {/* Recent Activity Section */}
           <ThemedView style={styles.section}>
             <View style={styles.sectionHeader}>
@@ -402,48 +366,6 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#6B54AE',
     fontWeight: '500',
-  },
-  scheduleList: {
-    gap: 12,
-  },
-  scheduleItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    padding: 16,
-    backgroundColor: '#F8F9FA',
-    borderRadius: 12,
-    elevation: 1,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
-  },
-  scheduleTime: {
-    alignItems: 'center',
-    marginRight: 16,
-    padding: 8,
-    borderRadius: 8,
-  },
-  timeText: {
-    fontSize: 16,
-    fontWeight: '600',
-    marginBottom: 4,
-  },
-  durationText: {
-    fontSize: 12,
-  },
-  scheduleContent: {
-    flex: 1,
-  },
-  scheduleTitle: {
-    fontSize: 16,
-    fontWeight: '500',
-    color: '#333',
-    marginBottom: 4,
-  },
-  scheduleSubtitle: {
-    fontSize: 14,
-    color: '#666',
   },
   activityList: {
     gap: 12,
