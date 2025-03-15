@@ -40,20 +40,44 @@ type ReportCard = {
 export default function HomeScreen() {
   const [activeIndex, setActiveIndex] = useState(0);
   const [quoteIndex, setQuoteIndex] = useState(0);
+  const [isLoading, setIsLoading] = useState(true);
   const scrollViewRef = useRef<ScrollView>(null);
   const fadeAnim = useRef(new Animated.Value(0)).current;
+  const shimmerAnim = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
+    // Simulate loading time
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+      // Set initial opacity to 1 when loading is complete
+      fadeAnim.setValue(1);
+    }, 1500);
+
+    return () => clearTimeout(timer);
+  }, []);
+
+  useEffect(() => {
+    // Shimmer animation
+    Animated.loop(
+      Animated.sequence([
+        Animated.timing(shimmerAnim, {
+          toValue: 1,
+          duration: 1500,
+          useNativeDriver: true,
+        }),
+      ])
+    ).start();
+
     const interval = setInterval(() => {
       Animated.sequence([
         Animated.timing(fadeAnim, {
           toValue: 0,
-          duration: 500,
+          duration: 300,
           useNativeDriver: true,
         }),
         Animated.timing(fadeAnim, {
           toValue: 1,
-          duration: 500,
+          duration: 300,
           useNativeDriver: true,
         }),
       ]).start();
@@ -63,12 +87,24 @@ export default function HomeScreen() {
     return () => clearInterval(interval);
   }, []);
 
+  const getShimmerStyle = () => {
+    const translateX = shimmerAnim.interpolate({
+      inputRange: [0, 1],
+      outputRange: [-SCREEN_WIDTH, SCREEN_WIDTH],
+    });
+
+    return {
+      transform: [{ translateX }],
+      backgroundColor: 'rgba(255, 255, 255, 0.5)',
+    };
+  };
+
   const reportCards: ReportCard[] = [
     {
       title: 'Study Progress',
       number: '85%',
       subtitle: 'Overall Completion',
-      gradient: ['#5B3A9E', '#6B54AE', '#7B6EBE'] as const,
+      gradient: ['#4A2B8E', '#6B54AE', '#8B6BCE'] as const,
       icon: 'chart.bar',
       stats: [
         { label: 'Topics Completed', value: '12/15' },
@@ -79,7 +115,7 @@ export default function HomeScreen() {
       title: 'Performance',
       number: '92%',
       subtitle: 'Average Score',
-      gradient: ['#1B5E20', '#2E7D32', '#4CAF50'] as const,
+      gradient: ['#0A3D0A', '#1B5E20', '#2E7D32'] as const,
       icon: 'trophy.fill',
       stats: [
         { label: 'Quizzes Taken', value: '24' },
@@ -90,7 +126,7 @@ export default function HomeScreen() {
       title: 'Learning Streak',
       number: '7',
       subtitle: 'Days Active',
-      gradient: ['#0D47A1', '#1976D2', '#2196F3'] as const,
+      gradient: ['#002171', '#0D47A1', '#1976D2'] as const,
       icon: 'clock.fill',
       stats: [
         { label: 'Current Streak', value: '7d' },
@@ -115,14 +151,29 @@ export default function HomeScreen() {
         <ThemedView style={styles.container}>
           {/* Motivational Quote Section */}
           <ThemedView style={styles.quoteSection}>
-            <Animated.View style={{ opacity: fadeAnim }}>
-              <ThemedText style={styles.quoteText}>
-                "{motivationalQuotes[quoteIndex].quote}"
-              </ThemedText>
-              <ThemedText style={styles.quoteAuthor}>
-                - {motivationalQuotes[quoteIndex].author}
-              </ThemedText>
-            </Animated.View>
+            {isLoading ? (
+              <View style={styles.quoteSkeleton}>
+                <View style={styles.quoteSkeletonLine} />
+                <View style={styles.quoteSkeletonLine} />
+                <View style={styles.quoteSkeletonLineShort} />
+                <View style={styles.quoteSkeletonAuthor} />
+                <Animated.View 
+                  style={[
+                    styles.shimmer,
+                    getShimmerStyle(),
+                  ]} 
+                />
+              </View>
+            ) : (
+              <Animated.View style={{ opacity: fadeAnim }}>
+                <ThemedText style={styles.quoteText}>
+                  "{motivationalQuotes[quoteIndex].quote}"
+                </ThemedText>
+                <ThemedText style={styles.quoteAuthor}>
+                  - {motivationalQuotes[quoteIndex].author}
+                </ThemedText>
+              </Animated.View>
+            )}
           </ThemedView>
 
           {/* Report Cards Carousel */}
@@ -571,9 +622,8 @@ const styles = StyleSheet.create({
   },
   quoteSection: {
     padding: 20,
-    marginBottom: 20,
     borderRadius: 16,
-    backgroundColor: '#F8F9FA',
+    backgroundColor: '#f0f2f4',
   },
   quoteText: {
     fontSize: 18,
@@ -598,5 +648,39 @@ const styles = StyleSheet.create({
     height: '100%',
     backgroundColor: '#6B54AE',
     borderRadius: 2,
+  },
+  quoteSkeleton: {
+    padding: 20,
+    position: 'relative',
+    overflow: 'hidden',
+    backgroundColor: '#F8F9FA',
+  },
+  quoteSkeletonLine: {
+    height: 20,
+    backgroundColor: '#E9ECEF',
+    borderRadius: 4,
+    marginBottom: 12,
+  },
+  quoteSkeletonLineShort: {
+    height: 20,
+    backgroundColor: '#E9ECEF',
+    borderRadius: 4,
+    marginBottom: 12,
+    width: '80%',
+  },
+  quoteSkeletonAuthor: {
+    height: 16,
+    backgroundColor: '#E9ECEF',
+    borderRadius: 4,
+    width: '40%',
+  },
+  shimmer: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'transparent',
+    transform: [{ translateX: -SCREEN_WIDTH }],
   },
 }); 
