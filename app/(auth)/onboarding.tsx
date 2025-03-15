@@ -45,14 +45,14 @@ const onboardingSteps = [
     title: 'Master with Flashcards',
     subtitle: 'Review key concepts',
     icon: 'rectangle.stack.fill',
-    image: { uri: 'https://cdn-icons-png.flaticon.com/512/2436/2436823.png' },
+    image: { uri: 'https://cdn-icons-png.flaticon.com/512/1170/1170170.png' },
     description: 'Create and study with interactive flashcards to reinforce your learning.',
   },
   {
     title: 'Get Homework Help',
     subtitle: 'Expert assistance',
     icon: 'message.fill',
-    image: { uri: 'https://cdn-icons-png.flaticon.com/512/2436/2436833.png' },
+    image: { uri: 'https://cdn-icons-png.flaticon.com/512/3976/3976631.png' },
     description: 'Connect with tutors and get help with your homework questions.',
   },
 ];
@@ -223,7 +223,6 @@ const styles = StyleSheet.create({
     marginBottom: 40,
     borderRadius: 20,
     padding: 20,
-    backgroundColor: '#F5F3FF',
   },
   logoImage: {
     width: '180%',
