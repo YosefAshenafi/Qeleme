@@ -39,10 +39,10 @@ const onboardingSteps = [
     subtitle: 'Test your knowledge',
     icon: 'questionmark.circle.fill',
     image: require('@/assets/images/onboarding/mcq.png'),
-    description: 'Challenge yourself with multiple-choice questions and track your progress.',
+    description: 'Challenge yourself with questions and track your progress.',
   },
   {
-    title: 'Master with Flashcards',
+    title: 'Learn with Flashcards',
     subtitle: 'Review key concepts',
     icon: 'rectangle.stack.fill',
     image: require('@/assets/images/onboarding/flashcard.png'),
@@ -238,6 +238,7 @@ const styles = StyleSheet.create({
     color: '#6B54AE',
     textAlign: 'center',
     marginBottom: 12,
+    marginTop: -20,
     lineHeight: 40,
   },
   subtitle: {

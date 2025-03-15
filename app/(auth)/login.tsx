@@ -10,6 +10,10 @@ import { ThemedView } from '@/components/ThemedView';
 
 const { width, height } = Dimensions.get('window');
 
+// Phone number validation regex for Ethiopian numbers
+// Matches formats: +251912345678, 0912345678, 251912345678
+const PHONE_REGEX = /^(?:\+251|0|251)?([9][0-9]{8})$/;
+
 export default function LoginScreen() {
   const [phoneNumber, setPhoneNumber] = useState('');
   const [password, setPassword] = useState('');
@@ -35,6 +39,16 @@ export default function LoginScreen() {
     ]).start();
   }, []);
 
+  const validatePhoneNumber = (phone: string) => {
+    if (!phone.trim()) {
+      return 'Phone number is required';
+    }
+    if (!PHONE_REGEX.test(phone)) {
+      return 'Please enter a valid Ethiopian phone number';
+    }
+    return '';
+  };
+
   const validateForm = () => {
     let isValid = true;
     const newErrors = {
@@ -42,11 +56,14 @@ export default function LoginScreen() {
       password: ''
     };
 
-    if (!phoneNumber.trim()) {
-      newErrors.phoneNumber = 'Phone number is required';
+    // Validate phone number
+    const phoneError = validatePhoneNumber(phoneNumber);
+    if (phoneError) {
+      newErrors.phoneNumber = phoneError;
       isValid = false;
     }
 
+    // Validate password
     if (!password.trim()) {
       newErrors.password = 'Password is required';
       isValid = false;
@@ -54,6 +71,17 @@ export default function LoginScreen() {
 
     setErrors(newErrors);
     return isValid;
+  };
+
+  const formatPhoneNumber = (text: string) => {
+    // Remove any non-digit characters except plus sign
+    const cleaned = text.replace(/[^\d+]/g, '');
+    
+    // Ensure only one plus sign at the start
+    if (cleaned.startsWith('+')) {
+      return '+' + cleaned.substring(1).replace(/\+/g, '');
+    }
+    return cleaned;
   };
 
   const handleLogin = () => {
@@ -97,17 +125,19 @@ export default function LoginScreen() {
                   <Ionicons name="call-outline" size={20} color="#6B7280" style={styles.inputIcon} />
                   <TextInput
                     style={styles.input}
-                    placeholder="Phone number"
+                    placeholder="Phone number (e.g., +251912345678)"
                     placeholderTextColor="#9CA3AF"
                     value={phoneNumber}
                     onChangeText={(text) => {
-                      setPhoneNumber(text);
+                      const formatted = formatPhoneNumber(text);
+                      setPhoneNumber(formatted);
                       if (errors.phoneNumber) {
                         setErrors(prev => ({ ...prev, phoneNumber: '' }));
                       }
                     }}
                     keyboardType="phone-pad"
                     autoCapitalize="none"
+                    maxLength={13}
                   />
                 </View>
                 {errors.phoneNumber ? (
