@@ -96,12 +96,12 @@ export default function OnboardingScreen() {
     if (Math.abs(translationX) > SWIPE_THRESHOLD) {
       if (translationX > 0 && currentStep > 0) {
         // Swipe right - go to previous
-        setDirection('left');
+        setDirection('right');
         setCurrentStep(prev => prev - 1);
         progress.value = withSpring(currentStep / onboardingSteps.length);
       } else if (translationX < 0 && currentStep < onboardingSteps.length - 1) {
         // Swipe left - go to next
-        setDirection('right');
+        setDirection('left');
         setCurrentStep(prev => prev + 1);
         progress.value = withSpring((currentStep + 2) / onboardingSteps.length);
       }

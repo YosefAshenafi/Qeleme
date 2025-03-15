@@ -4,19 +4,21 @@
     "slug": "Qelem",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/icon.png",
+    "icon": "./assets/images/logo/app-icon.png",
     "scheme": "myapp",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.yosefashenafi.Qelem"
+      "bundleIdentifier": "com.yosefashenafi.Qelem",
+      "icon": "./assets/images/logo/app-icon.png"
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/images/adaptive-icon.png",
+        "foregroundImage": "./assets/images/logo/app-icon.png",
         "backgroundColor": "#ffffff"
-      }
+      },
+      "package": "com.yosefashenafi.Qelem"
     },
     "web": {
       "bundler": "metro",
