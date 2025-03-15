@@ -7,6 +7,12 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { AccountSettings } from '../components/profile/AccountSettings';
+import { StudyHistory } from '../components/profile/StudyHistory';
+import { Achievements } from '../components/profile/Achievements';
+import { Notifications } from '../components/profile/Notifications';
+import { HelpAndSupport } from '../components/profile/HelpAndSupport';
+import { PrivacyPolicy } from '../components/profile/PrivacyPolicy';
+import { TermsOfService } from '../components/profile/TermsOfService';
 
 interface AccordionItemProps {
   title: string;
@@ -90,12 +96,36 @@ export default function ProfileScreen() {
       icon: 'person.fill' as const,
       content: <AccountSettings colors={colors} profileData={profileData} />
     },
-    { title: 'Study History', icon: 'clock.fill' as const, content: null },
-    { title: 'Achievements', icon: 'trophy.fill' as const, content: null },
-    { title: 'Notifications', icon: 'bell.fill' as const, content: null },
-    { title: 'Help & Support', icon: 'questionmark.circle.fill' as const, content: null },
-    { title: 'Privacy Policy', icon: 'lock.fill' as const, content: null },
-    { title: 'Terms of Service', icon: 'doc.text.fill' as const, content: null },
+    { 
+      title: 'Study History', 
+      icon: 'clock.fill' as const, 
+      content: <StudyHistory colors={colors} />
+    },
+    { 
+      title: 'Achievements', 
+      icon: 'trophy.fill' as const, 
+      content: <Achievements colors={colors} />
+    },
+    { 
+      title: 'Notifications', 
+      icon: 'bell.fill' as const, 
+      content: <Notifications colors={colors} />
+    },
+    { 
+      title: 'Help & Support', 
+      icon: 'questionmark.circle.fill' as const, 
+      content: <HelpAndSupport colors={colors} />
+    },
+    { 
+      title: 'Privacy Policy', 
+      icon: 'lock.fill' as const, 
+      content: <PrivacyPolicy colors={colors} />
+    },
+    { 
+      title: 'Terms of Service', 
+      icon: 'doc.text.fill' as const, 
+      content: <TermsOfService colors={colors} />
+    },
     { 
       title: 'Logout', 
       icon: 'rectangle.portrait.and.arrow.right' as const, 
