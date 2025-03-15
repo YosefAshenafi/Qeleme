@@ -271,14 +271,15 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     borderWidth: 1,
     borderColor: 'rgba(107, 84, 174, 0.1)',
+    boxShadow: '10px 10px 5px 0px rgba(170, 170, 170, 0.75)',
   },
   cardFront: {
-    borderWidth: 1.5,
+    borderWidth: 0.5,
     borderColor: '#6B54AE',
     backgroundColor: '#fff',
   },
   cardBack: {
-    borderWidth: 1.5,
+    borderWidth: 0.5,
     borderColor: '#6B54AE',
     backgroundColor: '#fff',
     transform: [{ rotateY: '180deg' }],
