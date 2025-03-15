@@ -1,8 +1,7 @@
-import { StyleSheet, Dimensions, TouchableOpacity, View } from 'react-native';
+import { StyleSheet, Dimensions, TouchableOpacity, View, Image } from 'react-native';
 import { Link, router } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useState, useRef } from 'react';
-import { LinearGradient } from 'expo-linear-gradient';
 import Animated, {
   useAnimatedStyle,
   withSpring,
@@ -32,28 +31,28 @@ const onboardingSteps = [
     title: 'Welcome to Qelem',
     subtitle: 'Your personal learning companion',
     icon: 'house.fill',
-    gradient: ['#2C3E50', '#3498DB'] as const,
+    image: require('@/assets/images/logo/logo-icon-white.png'),
     description: 'Start your learning journey with personalized study materials and interactive exercises.',
   },
   {
     title: 'Practice with MCQs',
     subtitle: 'Test your knowledge',
     icon: 'questionmark.circle.fill',
-    gradient: ['#8E44AD', '#9B59B6'] as const,
+    image: { uri: 'https://cdn-icons-png.flaticon.com/512/2436/2436806.png' },
     description: 'Challenge yourself with multiple-choice questions and track your progress.',
   },
   {
     title: 'Master with Flashcards',
     subtitle: 'Review key concepts',
     icon: 'rectangle.stack.fill',
-    gradient: ['#27AE60', '#2ECC71'] as const,
+    image: { uri: 'https://cdn-icons-png.flaticon.com/512/2436/2436823.png' },
     description: 'Create and study with interactive flashcards to reinforce your learning.',
   },
   {
     title: 'Get Homework Help',
     subtitle: 'Expert assistance',
     icon: 'message.fill',
-    gradient: ['#E67E22', '#F39C12'] as const,
+    image: { uri: 'https://cdn-icons-png.flaticon.com/512/2436/2436833.png' },
     description: 'Connect with tutors and get help with your homework questions.',
   },
 ];
@@ -120,89 +119,82 @@ export default function OnboardingScreen() {
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
-      <LinearGradient
-        colors={currentStepData.gradient}
-        style={styles.gradient}
-      >
-        <SafeAreaView style={styles.safeArea}>
-          <View style={styles.container}>
-            {/* Content */}
-            <PanGestureHandler
-              onGestureEvent={handleGestureEvent}
-              onEnded={handleGestureEnd}
-              activeOffsetX={[-20, 20]}
-              enabled={true}
+      <SafeAreaView style={styles.safeArea}>
+        <View style={styles.container}>
+          {/* Content */}
+          <PanGestureHandler
+            onGestureEvent={handleGestureEvent}
+            onEnded={handleGestureEnd}
+            activeOffsetX={[-20, 20]}
+            enabled={true}
+          >
+            <Animated.View 
+              style={[styles.content, animatedStyle]}
+              entering={direction === 'right' ? SlideInRight : SlideInLeft}
+              exiting={direction === 'right' ? SlideOutLeft : SlideOutRight}
             >
-              <Animated.View 
-                style={[styles.content, animatedStyle]}
-                entering={direction === 'right' ? SlideInRight : SlideInLeft}
-                exiting={direction === 'right' ? SlideOutLeft : SlideOutRight}
+              <View style={currentStep === 0 ? styles.logoContainer : styles.imageContainer}>
+                <Image 
+                  source={currentStepData.image}
+                  style={ currentStep === 0 ? styles.logoImage : styles.image}
+                  resizeMode="contain"
+                />
+              </View>
+              
+              <ThemedText style={styles.title}>{currentStepData.title}</ThemedText>
+              <ThemedText style={styles.subtitle}>{currentStepData.subtitle}</ThemedText>
+              <ThemedText style={styles.description}>{currentStepData.description}</ThemedText>
+            </Animated.View>
+          </PanGestureHandler>
+
+          {/* Navigation and Progress */}
+          <View style={styles.bottomContainer}>
+            <View style={styles.progressDots}>
+              {onboardingSteps.map((_, index) => (
+                <TouchableOpacity
+                  key={index}
+                  onPress={() => handleDotPress(index)}
+                  style={[
+                    styles.progressDot,
+                    index === currentStep && styles.progressDotActive,
+                  ]}
+                />
+              ))}
+            </View>
+
+            <View style={styles.navigation}>
+              <TouchableOpacity 
+                style={styles.skipButton} 
+                onPress={handleSkip}
               >
-                <View style={styles.iconContainer}>
-                  <IconSymbol 
-                    name={currentStepData.icon as any} 
-                    size={80} 
-                    color="#fff" 
-                  />
-                </View>
-                
-                <ThemedText style={styles.title}>{currentStepData.title}</ThemedText>
-                <ThemedText style={styles.subtitle}>{currentStepData.subtitle}</ThemedText>
-                <ThemedText style={styles.description}>{currentStepData.description}</ThemedText>
-              </Animated.View>
-            </PanGestureHandler>
+                <ThemedText style={styles.skipButtonText}>Skip</ThemedText>
+              </TouchableOpacity>
 
-            {/* Navigation and Progress */}
-            <View style={styles.bottomContainer}>
-              <View style={styles.progressDots}>
-                {onboardingSteps.map((_, index) => (
-                  <TouchableOpacity
-                    key={index}
-                    onPress={() => handleDotPress(index)}
-                    style={[
-                      styles.progressDot,
-                      index === currentStep && styles.progressDotActive,
-                    ]}
-                  />
-                ))}
-              </View>
-
-              <View style={styles.navigation}>
-                <TouchableOpacity 
-                  style={styles.skipButton} 
-                  onPress={handleSkip}
-                >
-                  <ThemedText style={styles.skipButtonText}>Skip</ThemedText>
-                </TouchableOpacity>
-
-                <TouchableOpacity 
-                  style={styles.nextButton} 
-                  onPress={handleNext}
-                >
-                  <ThemedText style={styles.nextButtonText}>
-                    {currentStep === onboardingSteps.length - 1 ? 'Get Started' : 'Next'}
-                  </ThemedText>
-                  <IconSymbol 
-                    name="chevron.right" 
-                    size={24} 
-                    color="#fff" 
-                  />
-                </TouchableOpacity>
-              </View>
+              <TouchableOpacity 
+                style={styles.nextButton} 
+                onPress={handleNext}
+              >
+                <ThemedText style={styles.nextButtonText}>
+                  {currentStep === onboardingSteps.length - 1 ? 'Get Started' : 'Next'}
+                </ThemedText>
+                <IconSymbol 
+                  name="chevron.right" 
+                  size={24} 
+                  color="#fff" 
+                />
+              </TouchableOpacity>
             </View>
           </View>
-        </SafeAreaView>
-      </LinearGradient>
+        </View>
+      </SafeAreaView>
     </GestureHandlerRootView>
   );
 }
 
 const styles = StyleSheet.create({
-  gradient: {
-    flex: 1,
-  },
   safeArea: {
     flex: 1,
+    backgroundColor: '#fff',
   },
   container: {
     flex: 1,
@@ -214,32 +206,51 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     paddingHorizontal: 20,
   },
-  iconContainer: {
-    width: 120,
-    height: 120,
-    borderRadius: 60,
-    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+  logoContainer: {
+    width: SCREEN_WIDTH * 0.8,
+    height: SCREEN_WIDTH * 0.8,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: -50,
+    borderRadius: 20,
+    padding: 20,
+  },
+  imageContainer: {
+    width: SCREEN_WIDTH * 0.5,
+    height: SCREEN_WIDTH * 0.5,
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 40,
+    borderRadius: 20,
+    padding: 20,
+    backgroundColor: '#F5F3FF',
+  },
+  logoImage: {
+    width: '180%',
+    height: '180%',
+  },
+  image: {
+    width: '100%',
+    height: '100%',
   },
   title: {
     fontSize: 32,
     fontWeight: 'bold',
-    color: '#fff',
+    color: '#6B54AE',
     textAlign: 'center',
     marginBottom: 12,
     lineHeight: 40,
   },
   subtitle: {
     fontSize: 20,
-    color: 'rgba(255, 255, 255, 0.9)',
+    color: '#6B54AE',
     textAlign: 'center',
     marginBottom: 20,
+    opacity: 0.8,
   },
   description: {
     fontSize: 16,
-    color: 'rgba(255, 255, 255, 0.8)',
+    color: '#666',
     textAlign: 'center',
     lineHeight: 24,
   },
@@ -256,10 +267,10 @@ const styles = StyleSheet.create({
     width: 8,
     height: 8,
     borderRadius: 4,
-    backgroundColor: 'rgba(255, 255, 255, 0.3)',
+    backgroundColor: '#E0E0E0',
   },
   progressDotActive: {
-    backgroundColor: '#fff',
+    backgroundColor: '#6B54AE',
     width: 24,
     borderRadius: 4,
   },
@@ -272,20 +283,21 @@ const styles = StyleSheet.create({
     padding: 12,
   },
   skipButtonText: {
-    color: 'rgba(255, 255, 255, 0.8)',
+    color: '#6B54AE',
     fontSize: 16,
+    opacity: 0.8,
   },
   nextButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#fff',
+    backgroundColor: '#6B54AE',
     paddingVertical: 12,
     paddingHorizontal: 24,
     borderRadius: 8,
     gap: 8,
   },
   nextButtonText: {
-    color: '#2C3E50',
+    color: '#fff',
     fontSize: 16,
     fontWeight: '600',
   },
