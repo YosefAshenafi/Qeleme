@@ -35,7 +35,7 @@ export default function ProfileScreen() {
     { title: 'Help & Support', icon: 'questionmark.circle.fill' as const, action: () => {} },
     { title: 'Privacy Policy', icon: 'lock.fill' as const, action: () => {} },
     { title: 'Terms of Service', icon: 'doc.text.fill' as const, action: () => {} },
-    { title: 'Logout', icon: 'rectangle.portrait.and.arrow.right' as const, action: () => {} },
+    { title: 'Logout', icon: 'rectangle.portrait.and.arrow.right' as const, action: () => router.replace('/(auth)/login') },
   ];
 
   return (
