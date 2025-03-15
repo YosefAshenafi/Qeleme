@@ -22,7 +22,7 @@ export default function ProfileScreen() {
 
   const stats = [
     { label: 'MCQs Completed', value: '156', icon: 'questionmark.circle.fill' as const },
-    { label: 'Flashcards Created', value: '89', icon: 'rectangle.stack.fill' as const },
+    { label: 'Flashcards Clicked', value: '89', icon: 'rectangle.stack.fill' as const },
     { label: 'Homework Questions', value: '45', icon: 'message.fill' as const },
     { label: 'Study Hours', value: '234', icon: 'clock.fill' as const },
   ];
