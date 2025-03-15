@@ -10,12 +10,28 @@ const MAPPING = {
   // See MaterialIcons here: https://icons.expo.fyi
   // See SF Symbols in the SF Symbols app on Mac.
   'house.fill': 'home',
+  'house': 'home',
   'paperplane.fill': 'send',
   'chevron.left.forwardslash.chevron.right': 'code',
   'chevron.right': 'chevron-right',
   'photo': 'photo',
   'message.fill': 'message',
-  'message': 'messenger-outline',
+  'message': 'message',
+  'questionmark.circle.fill': 'help',
+  'questionmark.circle': 'help',
+  'rectangle.stack.fill': 'layers',
+  'rectangle.stack': 'layers',
+  'chart.bar.fill': 'bar-chart',
+  'chart.bar': 'bar-chart',
+  'person.fill': 'person',
+  'person': 'person',
+  'pencil.circle.fill': 'edit',
+  'clock.fill': 'schedule',
+  'trophy.fill': 'emoji-events',
+  'bell.fill': 'notifications',
+  'lock.fill': 'lock',
+  'doc.text.fill': 'description',
+  'rectangle.portrait.and.arrow.right': 'logout',
 } as const;
 
 export type IconSymbolName = keyof typeof MAPPING;

@@ -1,6 +1,7 @@
 import { Tabs } from 'expo-router';
 import React from 'react';
-import { Platform } from 'react-native';
+import { Platform, TouchableOpacity, View, StyleSheet } from 'react-native';
+import { router } from 'expo-router';
 
 import { HapticTab } from '@/components/HapticTab';
 import { IconSymbol } from '@/components/ui/IconSymbol';
@@ -15,7 +16,23 @@ export default function TabLayout() {
     <Tabs
       screenOptions={{
         tabBarActiveTintColor: Colors[colorScheme ?? 'light'].tint,
-        headerShown: false,
+        headerShown: true,
+        headerTitle: '',
+        headerShadowVisible: false,
+        headerRight: () => (
+          <TouchableOpacity 
+            onPress={() => router.push('/profile')}
+            style={{ marginRight: 15, marginTop: 35 }}
+          >
+            <View style={[styles.profileIconContainer, { backgroundColor: Colors[colorScheme ?? 'light'].tint + '20' }]}>
+              <IconSymbol 
+                name="person.fill" 
+                size={24} 
+                color={Colors[colorScheme ?? 'light'].tint} 
+              />
+            </View>
+          </TouchableOpacity>
+        ),
         tabBarButton: HapticTab,
         tabBarBackground: TabBarBackground,
         tabBarStyle: Platform.select({
@@ -94,3 +111,13 @@ export default function TabLayout() {
     </Tabs>
   );
 }
+
+const styles = StyleSheet.create({
+  profileIconContainer: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+});

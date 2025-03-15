@@ -1,9 +1,6 @@
-import { StyleSheet, TouchableOpacity } from 'react-native';
-import { router } from 'expo-router';
-
+import { StyleSheet } from 'react-native';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
-import { IconSymbol } from '@/components/ui/IconSymbol';
 import { Colors } from '@/constants/Colors';
 import { useColorScheme } from '@/hooks/useColorScheme';
 
@@ -21,16 +18,6 @@ export function Header({ title, subtitle }: HeaderProps) {
         <ThemedText type="title" style={styles.title}>
           {title}
         </ThemedText>
-        <TouchableOpacity 
-          style={styles.profileButton}
-          onPress={() => router.push('/(tabs)/profile')}
-        >
-          <IconSymbol 
-            size={32} 
-            name="person.circle.fill" 
-            color={Colors[colorScheme ?? 'light'].tint} 
-          />
-        </TouchableOpacity>
       </ThemedView>
       {subtitle && (
         <ThemedText style={styles.subtitle}>
@@ -44,6 +31,7 @@ export function Header({ title, subtitle }: HeaderProps) {
 const styles = StyleSheet.create({
   header: {
     padding: 20,
+    marginTop: -80,
     gap: 8,
   },
   headerContent: {
@@ -59,8 +47,5 @@ const styles = StyleSheet.create({
   subtitle: {
     fontSize: 16,
     color: '#666',
-  },
-  profileButton: {
-    padding: 8,
   },
 }); 
