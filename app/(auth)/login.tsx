@@ -13,6 +13,10 @@ const { width, height } = Dimensions.get('window');
 export default function LoginScreen() {
   const [phoneNumber, setPhoneNumber] = useState('');
   const [password, setPassword] = useState('');
+  const [errors, setErrors] = useState({
+    phoneNumber: '',
+    password: ''
+  });
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const slideAnim = useRef(new Animated.Value(50)).current;
 
@@ -31,8 +35,31 @@ export default function LoginScreen() {
     ]).start();
   }, []);
 
+  const validateForm = () => {
+    let isValid = true;
+    const newErrors = {
+      phoneNumber: '',
+      password: ''
+    };
+
+    if (!phoneNumber.trim()) {
+      newErrors.phoneNumber = 'Phone number is required';
+      isValid = false;
+    }
+
+    if (!password.trim()) {
+      newErrors.password = 'Password is required';
+      isValid = false;
+    }
+
+    setErrors(newErrors);
+    return isValid;
+  };
+
   const handleLogin = () => {
-    router.replace('/(tabs)');
+    if (validateForm()) {
+      router.replace('/(tabs)');
+    }
   };
 
   return (
@@ -66,30 +93,46 @@ export default function LoginScreen() {
 
             <View style={styles.formContainer}>
               <View style={styles.inputWrapper}>
-                <View style={styles.inputContainer}>
+                <View style={[styles.inputContainer, errors.phoneNumber ? styles.inputError : null]}>
                   <Ionicons name="call-outline" size={20} color="#6B7280" style={styles.inputIcon} />
                   <TextInput
                     style={styles.input}
                     placeholder="Phone number"
                     placeholderTextColor="#9CA3AF"
                     value={phoneNumber}
-                    onChangeText={setPhoneNumber}
+                    onChangeText={(text) => {
+                      setPhoneNumber(text);
+                      if (errors.phoneNumber) {
+                        setErrors(prev => ({ ...prev, phoneNumber: '' }));
+                      }
+                    }}
                     keyboardType="phone-pad"
                     autoCapitalize="none"
                   />
                 </View>
+                {errors.phoneNumber ? (
+                  <ThemedText style={styles.errorText}>{errors.phoneNumber}</ThemedText>
+                ) : null}
 
-                <View style={styles.inputContainer}>
+                <View style={[styles.inputContainer, errors.password ? styles.inputError : null]}>
                   <Ionicons name="lock-closed-outline" size={20} color="#6B7280" style={styles.inputIcon} />
                   <TextInput
                     style={styles.input}
                     placeholder="Password"
                     placeholderTextColor="#9CA3AF"
                     value={password}
-                    onChangeText={setPassword}
+                    onChangeText={(text) => {
+                      setPassword(text);
+                      if (errors.password) {
+                        setErrors(prev => ({ ...prev, password: '' }));
+                      }
+                    }}
                     secureTextEntry
                   />
                 </View>
+                {errors.password ? (
+                  <ThemedText style={styles.errorText}>{errors.password}</ThemedText>
+                ) : null}
               </View>
 
               <TouchableOpacity 
@@ -194,6 +237,15 @@ const styles = StyleSheet.create({
     height: 60,
     borderWidth: 1,
     borderColor: '#E5E7EB',
+  },
+  inputError: {
+    borderColor: '#EF4444',
+  },
+  errorText: {
+    color: '#EF4444',
+    fontSize: 12,
+    marginTop: -8,
+    marginLeft: 16,
   },
   inputIcon: {
     marginRight: 12,
