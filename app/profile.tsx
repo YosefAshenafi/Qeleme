@@ -13,6 +13,9 @@ import { Notifications } from '../components/profile/Notifications';
 import { HelpAndSupport } from '../components/profile/HelpAndSupport';
 import { PrivacyPolicy } from '../components/profile/PrivacyPolicy';
 import { TermsOfService } from '../components/profile/TermsOfService';
+import { ThemeChooser } from '@/components/profile/ThemeChooser';
+import { getColors } from '@/constants/Colors';
+import { useTheme } from '@/contexts/ThemeContext';
 
 interface AccordionItemProps {
   title: string;
@@ -70,8 +73,8 @@ const AccordionItem: React.FC<AccordionItemProps> = ({ title, icon, children, is
 };
 
 export default function ProfileScreen() {
-  const colorScheme = useColorScheme();
-  const colors = Colors[colorScheme ?? 'light'];
+  const { isDarkMode } = useTheme();
+  const colors = getColors(isDarkMode);
   const [openAccordion, setOpenAccordion] = useState<string | null>(null);
 
   const profileData = {
@@ -105,6 +108,11 @@ export default function ProfileScreen() {
       title: 'Achievements', 
       icon: 'trophy.fill' as const, 
       content: <Achievements colors={colors} />
+    },
+    { 
+      title: 'Theme Settings', 
+      icon: 'sun.max.fill' as const, 
+      content: <ThemeChooser colors={colors} />
     },
     { 
       title: 'Notifications', 

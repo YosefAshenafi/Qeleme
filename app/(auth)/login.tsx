@@ -116,7 +116,7 @@ export default function LoginScreen() {
                 resizeMode="contain"
               />
               <ThemedText style={styles.welcomeText}>Welcome to Qelem</ThemedText>
-              <ThemedText style={styles.subtitleText}>Your personal Quran companion</ThemedText>
+              <ThemedText style={styles.subtitleText}>Empowering minds, one lesson at a time</ThemedText>
             </View>
 
             <View style={styles.formContainer}>

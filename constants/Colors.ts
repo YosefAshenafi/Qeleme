@@ -6,23 +6,17 @@
 const tintColorLight = '#6B54AE';
 const tintColorDark = '#6B54AE';
 
+export const getColors = (isDark: boolean) => ({
+  text: isDark ? '#ECEDEE' : '#11181C',
+  background: isDark ? '#151718' : '#fff',
+  tint: isDark ? tintColorDark : tintColorLight,
+  icon: isDark ? '#9BA1A6' : '#687076',
+  tabIconDefault: isDark ? '#9BA1A6' : '#687076',
+  tabIconSelected: isDark ? tintColorDark : tintColorLight,
+  card: isDark ? '#1C1C1E' : '#F5F5F5',
+});
+
 export const Colors = {
-  light: {
-    text: '#11181C',
-    background: '#fff',
-    tint: tintColorLight,
-    icon: '#687076',
-    tabIconDefault: '#687076',
-    tabIconSelected: tintColorLight,
-    card: '#F5F5F5',
-  },
-  dark: {
-    text: '#ECEDEE',
-    background: '#151718',
-    tint: tintColorDark,
-    icon: '#9BA1A6',
-    tabIconDefault: '#9BA1A6',
-    tabIconSelected: tintColorDark,
-    card: '#1C1C1E',
-  },
+  light: getColors(false),
+  dark: getColors(true),
 };
