@@ -638,7 +638,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   questionLabelContainer: {
-    backgroundColor: '#F3E5F5',
     paddingHorizontal: 12,
     paddingVertical: 4,
     borderRadius: 16,
