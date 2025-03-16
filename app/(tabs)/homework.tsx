@@ -1,4 +1,4 @@
-import { StyleSheet, TextInput, TouchableOpacity, ScrollView, Image, View, KeyboardAvoidingView, Platform, TouchableWithoutFeedback, Keyboard, ActivityIndicator } from 'react-native';
+import { StyleSheet, TextInput, TouchableOpacity, ScrollView, Image, View, KeyboardAvoidingView, Platform, TouchableWithoutFeedback, Keyboard, Animated } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useState, useRef, useEffect } from 'react';
 import * as ImagePicker from 'expo-image-picker';
@@ -23,6 +23,29 @@ export default function HomeworkScreen() {
   const [isLoading, setIsLoading] = useState(false);
   const scrollViewRef = useRef<ScrollView>(null);
   const inputRef = useRef<TextInput>(null);
+  const dotAnimation = useRef(new Animated.Value(0)).current;
+
+  // Add animation sequence for thinking dots
+  useEffect(() => {
+    if (isLoading) {
+      Animated.loop(
+        Animated.sequence([
+          Animated.timing(dotAnimation, {
+            toValue: 3,
+            duration: 1500,
+            useNativeDriver: true,
+          }),
+          Animated.timing(dotAnimation, {
+            toValue: 0,
+            duration: 0,
+            useNativeDriver: true,
+          }),
+        ])
+      ).start();
+    } else {
+      dotAnimation.setValue(0);
+    }
+  }, [isLoading]);
 
   // Add function to scroll to bottom
   const scrollToBottom = () => {
@@ -58,7 +81,7 @@ export default function HomeworkScreen() {
     setInputText('');
     setSelectedImage(null);
     Keyboard.dismiss();
-    scrollToBottom();
+    scrollToBottom(); // Scroll to bottom when user sends a message
 
     try {
       setIsLoading(true);
@@ -103,7 +126,7 @@ export default function HomeworkScreen() {
           isUser: false,
         };
         setMessages(prev => [...prev, responseMessage]);
-        scrollToBottom();
+        scrollToBottom(); // Scroll to bottom when receiving response
       }
     } catch (error) {
       console.error('Error getting chat completion:', error);
@@ -113,37 +136,32 @@ export default function HomeworkScreen() {
         isUser: false,
       };
       setMessages(prev => [...prev, errorMessage]);
-      scrollToBottom();
+      scrollToBottom(); // Scroll to bottom when showing error
     } finally {
       setIsLoading(false);
     }
   };
 
-  // Add effect to scroll to bottom when messages change
-  useEffect(() => {
-    scrollToBottom();
-  }, [messages]);
-
   return (
     <SafeAreaView style={styles.safeArea}>
       <Header title="Homework Help" />
-      <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-        <KeyboardAvoidingView 
-          behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-          style={styles.keyboardAvoidingView}
-          keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}
-        >
-          <ThemedView style={styles.container}>
-            <ScrollView 
-              ref={scrollViewRef}
-              style={styles.messagesContainer}
-              contentContainerStyle={styles.messagesContent}
-              showsVerticalScrollIndicator={true}
-              bounces={true}
-              overScrollMode="always"
-              onContentSizeChange={scrollToBottom}
-              keyboardShouldPersistTaps="handled"
-            >
+      <KeyboardAvoidingView 
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        style={styles.keyboardAvoidingView}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}
+      >
+        <ThemedView style={styles.container}>
+          <ScrollView 
+            ref={scrollViewRef}
+            style={styles.messagesContainer}
+            contentContainerStyle={styles.messagesContent}
+            showsVerticalScrollIndicator={true}
+            bounces={true}
+            alwaysBounceVertical={true}
+            overScrollMode="always"
+            keyboardShouldPersistTaps="handled"
+          >
+            <View style={styles.messagesWrapper}>
               {messages.length === 0 && (
                 <ThemedView style={styles.emptyStateContainer}>
                   <ThemedText style={styles.emptyStateText}>
@@ -176,67 +194,90 @@ export default function HomeworkScreen() {
               ))}
               {isLoading && (
                 <ThemedView style={[styles.messageContainer, styles.botMessage]}>
-                  <ActivityIndicator size="small" color="#6B54AE" />
+                  <View style={styles.thinkingContainer}>
+                    <ThemedText style={[styles.messageText, styles.botMessageText]}>
+                      Thinking
+                    </ThemedText>
+                    <Animated.View style={styles.dotsContainer}>
+                      {[0, 1, 2].map((i) => (
+                        <Animated.Text
+                          key={i}
+                          style={[
+                            styles.dot,
+                            {
+                              opacity: dotAnimation.interpolate({
+                                inputRange: [i, i + 1],
+                                outputRange: [0, 1],
+                                extrapolate: 'clamp',
+                              }),
+                            },
+                          ]}
+                        >
+                          .
+                        </Animated.Text>
+                      ))}
+                    </Animated.View>
+                  </View>
                 </ThemedView>
               )}
-            </ScrollView>
+            </View>
+          </ScrollView>
 
-            {selectedImage && (
-              <ThemedView style={styles.selectedImagePreviewContainer}>
-                <Image 
-                  source={{ uri: selectedImage }} 
-                  style={styles.selectedImagePreview} 
-                  resizeMode="cover"
-                />
-                <TouchableOpacity 
-                  style={styles.removeImageButton}
-                  onPress={() => setSelectedImage(null)}
-                >
-                  <IconSymbol name="questionmark.circle.fill" size={24} color="#fff" />
-                </TouchableOpacity>
-              </ThemedView>
-            )}
-
-            <ThemedView style={styles.inputContainer}>
-              <TextInput
-                ref={inputRef}
-                style={styles.input}
-                value={inputText}
-                onChangeText={setInputText}
-                placeholder="Ask your homework question..."
-                placeholderTextColor="#999"
-                multiline
-                editable={!isLoading}
+          {selectedImage && (
+            <ThemedView style={styles.selectedImagePreviewContainer}>
+              <Image 
+                source={{ uri: selectedImage }} 
+                style={styles.selectedImagePreview} 
+                resizeMode="cover"
               />
-              
-              <View style={styles.buttonContainer}>
-                <TouchableOpacity 
-                  style={[styles.imageButton, isLoading && styles.buttonDisabled]}
-                  onPress={pickImage}
-                  disabled={isLoading}
-                >
-                  <IconSymbol name="photo" size={24} color={isLoading ? "#999" : "#6B54AE"} />
-                </TouchableOpacity>
-                
-                <TouchableOpacity 
-                  style={[
-                    styles.sendButton,
-                    ((!inputText.trim() && !selectedImage) || isLoading) && styles.sendButtonDisabled
-                  ]}
-                  onPress={handleSend}
-                  disabled={!inputText.trim() && !selectedImage || isLoading}
-                >
-                  <IconSymbol 
-                    name="paperplane.fill" 
-                    size={24} 
-                    color={inputText.trim() || selectedImage ? "#fff" : "#999"} 
-                  />
-                </TouchableOpacity>
-              </View>
+              <TouchableOpacity 
+                style={styles.removeImageButton}
+                onPress={() => setSelectedImage(null)}
+              >
+                <IconSymbol name="questionmark.circle.fill" size={24} color="#fff" />
+              </TouchableOpacity>
             </ThemedView>
+          )}
+
+          <ThemedView style={styles.inputContainer}>
+            <TextInput
+              ref={inputRef}
+              style={styles.input}
+              value={inputText}
+              onChangeText={setInputText}
+              placeholder="Ask your homework question..."
+              placeholderTextColor="#999"
+              multiline
+              editable={!isLoading}
+            />
+            
+            <View style={styles.buttonContainer}>
+              <TouchableOpacity 
+                style={[styles.imageButton, isLoading && styles.buttonDisabled]}
+                onPress={pickImage}
+                disabled={isLoading}
+              >
+                <IconSymbol name="photo" size={24} color={isLoading ? "#999" : "#6B54AE"} />
+              </TouchableOpacity>
+              
+              <TouchableOpacity 
+                style={[
+                  styles.sendButton,
+                  ((!inputText.trim() && !selectedImage) || isLoading) && styles.sendButtonDisabled
+                ]}
+                onPress={handleSend}
+                disabled={!inputText.trim() && !selectedImage || isLoading}
+              >
+                <IconSymbol 
+                  name="paperplane.fill" 
+                  size={24} 
+                  color={inputText.trim() || selectedImage ? "#fff" : "#999"} 
+                />
+              </TouchableOpacity>
+            </View>
           </ThemedView>
-        </KeyboardAvoidingView>
-      </TouchableWithoutFeedback>
+        </ThemedView>
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 }
@@ -255,12 +296,14 @@ const styles = StyleSheet.create({
   },
   messagesContainer: {
     flex: 1,
-    width: '100%',
   },
   messagesContent: {
+    flexGrow: 1,
+  },
+  messagesWrapper: {
     padding: 16,
     gap: 16,
-    flexGrow: 1,
+    paddingBottom: 100, // Add padding to account for input container
   },
   messageContainer: {
     maxWidth: '80%',
@@ -365,5 +408,18 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
     borderRadius: 12,
     padding: 4,
+  },
+  thinkingContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  dotsContainer: {
+    flexDirection: 'row',
+    marginLeft: 2,
+  },
+  dot: {
+    fontSize: 16,
+    color: '#333',
+    marginHorizontal: 1,
   },
 }); 
