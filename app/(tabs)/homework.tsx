@@ -1,12 +1,13 @@
-import { StyleSheet, TextInput, TouchableOpacity, ScrollView, Image, View, KeyboardAvoidingView, Platform, TouchableWithoutFeedback, Keyboard } from 'react-native';
+import { StyleSheet, TextInput, TouchableOpacity, ScrollView, Image, View, KeyboardAvoidingView, Platform, TouchableWithoutFeedback, Keyboard, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import * as ImagePicker from 'expo-image-picker';
 
 import { Header } from '@/components/Header';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 import { IconSymbol } from '@/components/ui/IconSymbol';
+import { getChatCompletion, imageToBase64, type ChatMessage } from '@/utils/openai';
 
 type Message = {
   id: string;
@@ -19,8 +20,16 @@ export default function HomeworkScreen() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputText, setInputText] = useState('');
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
   const scrollViewRef = useRef<ScrollView>(null);
   const inputRef = useRef<TextInput>(null);
+
+  // Add function to scroll to bottom
+  const scrollToBottom = () => {
+    setTimeout(() => {
+      scrollViewRef.current?.scrollToEnd({ animated: true });
+    }, 100); // Small delay to ensure content is rendered
+  };
 
   const pickImage = async () => {
     const result = await ImagePicker.launchImageLibraryAsync({
@@ -35,8 +44,8 @@ export default function HomeworkScreen() {
     }
   };
 
-  const handleSend = () => {
-    if (!inputText.trim() && !selectedImage) return;
+  const handleSend = async () => {
+    if ((!inputText.trim() && !selectedImage) || isLoading) return;
 
     const newMessage: Message = {
       id: Date.now().toString(),
@@ -49,38 +58,99 @@ export default function HomeworkScreen() {
     setInputText('');
     setSelectedImage(null);
     Keyboard.dismiss();
+    scrollToBottom();
 
-    // Scroll to bottom
-    scrollViewRef.current?.scrollToEnd({ animated: true });
+    try {
+      setIsLoading(true);
 
-    // TODO: Send to backend and get response
-    // For now, just add a mock response
-    setTimeout(() => {
-      const responseMessage: Message = {
+      // Prepare the message content for the API
+      const messageContent: ChatMessage['content'] = [];
+      
+      if (inputText.trim()) {
+        messageContent.push({
+          type: 'text',
+          text: inputText.trim()
+        });
+      }
+
+      if (selectedImage) {
+        const base64Image = await imageToBase64(selectedImage);
+        messageContent.push({
+          type: 'image_url',
+          image_url: {
+            url: `data:image/jpeg;base64,${base64Image}`
+          }
+        });
+      }
+
+      const apiMessages: ChatMessage[] = [
+        {
+          role: 'system',
+          content: 'You are a helpful homework assistant. Provide clear, educational explanations and guide students to understand concepts rather than just giving answers.'
+        },
+        {
+          role: 'user',
+          content: messageContent
+        }
+      ];
+
+      const response = await getChatCompletion(apiMessages);
+
+      if (response) {
+        const responseMessage: Message = {
+          id: (Date.now() + 1).toString(),
+          text: response.content as string,
+          isUser: false,
+        };
+        setMessages(prev => [...prev, responseMessage]);
+        scrollToBottom();
+      }
+    } catch (error) {
+      console.error('Error getting chat completion:', error);
+      const errorMessage: Message = {
         id: (Date.now() + 1).toString(),
-        text: "I'm here to help you with your homework! What would you like to know?",
+        text: 'Sorry, I encountered an error. Please try again.',
         isUser: false,
       };
-      setMessages(prev => [...prev, responseMessage]);
-      scrollViewRef.current?.scrollToEnd({ animated: true });
-    }, 1000);
+      setMessages(prev => [...prev, errorMessage]);
+      scrollToBottom();
+    } finally {
+      setIsLoading(false);
+    }
   };
+
+  // Add effect to scroll to bottom when messages change
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages]);
 
   return (
     <SafeAreaView style={styles.safeArea}>
       <Header title="Homework Help" />
       <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
         <KeyboardAvoidingView 
-          behavior={undefined}
+          behavior={Platform.OS === 'ios' ? 'padding' : undefined}
           style={styles.keyboardAvoidingView}
-          keyboardVerticalOffset={0}
+          keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}
         >
           <ThemedView style={styles.container}>
             <ScrollView 
               ref={scrollViewRef}
               style={styles.messagesContainer}
               contentContainerStyle={styles.messagesContent}
+              showsVerticalScrollIndicator={true}
+              bounces={true}
+              overScrollMode="always"
+              onContentSizeChange={scrollToBottom}
+              keyboardShouldPersistTaps="handled"
             >
+              {messages.length === 0 && (
+                <ThemedView style={styles.emptyStateContainer}>
+                  <ThemedText style={styles.emptyStateText}>
+                    Ask me anything about your homework!
+                  </ThemedText>
+                </ThemedView>
+              )}
               {messages.map((message) => (
                 <ThemedView 
                   key={message.id} 
@@ -104,7 +174,28 @@ export default function HomeworkScreen() {
                   </ThemedText>
                 </ThemedView>
               ))}
+              {isLoading && (
+                <ThemedView style={[styles.messageContainer, styles.botMessage]}>
+                  <ActivityIndicator size="small" color="#6B54AE" />
+                </ThemedView>
+              )}
             </ScrollView>
+
+            {selectedImage && (
+              <ThemedView style={styles.selectedImagePreviewContainer}>
+                <Image 
+                  source={{ uri: selectedImage }} 
+                  style={styles.selectedImagePreview} 
+                  resizeMode="cover"
+                />
+                <TouchableOpacity 
+                  style={styles.removeImageButton}
+                  onPress={() => setSelectedImage(null)}
+                >
+                  <IconSymbol name="questionmark.circle.fill" size={24} color="#fff" />
+                </TouchableOpacity>
+              </ThemedView>
+            )}
 
             <ThemedView style={styles.inputContainer}>
               <TextInput
@@ -115,23 +206,25 @@ export default function HomeworkScreen() {
                 placeholder="Ask your homework question..."
                 placeholderTextColor="#999"
                 multiline
+                editable={!isLoading}
               />
               
               <View style={styles.buttonContainer}>
                 <TouchableOpacity 
-                  style={styles.imageButton}
+                  style={[styles.imageButton, isLoading && styles.buttonDisabled]}
                   onPress={pickImage}
+                  disabled={isLoading}
                 >
-                  <IconSymbol name="photo" size={24} color="#6B54AE" />
+                  <IconSymbol name="photo" size={24} color={isLoading ? "#999" : "#6B54AE"} />
                 </TouchableOpacity>
                 
                 <TouchableOpacity 
                   style={[
                     styles.sendButton,
-                    (!inputText.trim() && !selectedImage) && styles.sendButtonDisabled
+                    ((!inputText.trim() && !selectedImage) || isLoading) && styles.sendButtonDisabled
                   ]}
                   onPress={handleSend}
-                  disabled={!inputText.trim() && !selectedImage}
+                  disabled={!inputText.trim() && !selectedImage || isLoading}
                 >
                   <IconSymbol 
                     name="paperplane.fill" 
@@ -162,27 +255,33 @@ const styles = StyleSheet.create({
   },
   messagesContainer: {
     flex: 1,
+    width: '100%',
   },
   messagesContent: {
     padding: 16,
     gap: 16,
+    flexGrow: 1,
   },
   messageContainer: {
     maxWidth: '80%',
     padding: 12,
     borderRadius: 12,
     gap: 8,
+    width: 'auto',
   },
   userMessage: {
     alignSelf: 'flex-end',
     backgroundColor: '#6B54AE',
+    minWidth: 100,
   },
   botMessage: {
     alignSelf: 'flex-start',
     backgroundColor: '#F3E5F5',
+    minWidth: 100,
   },
   messageText: {
     fontSize: 16,
+    flexShrink: 1,
   },
   userMessageText: {
     color: '#fff',
@@ -191,9 +290,10 @@ const styles = StyleSheet.create({
     color: '#333',
   },
   messageImage: {
-    width: '100%',
+    width: 250,
     height: 200,
     borderRadius: 8,
+    alignSelf: 'center',
   },
   inputContainer: {
     flexDirection: 'row',
@@ -231,5 +331,39 @@ const styles = StyleSheet.create({
   },
   sendButtonDisabled: {
     backgroundColor: '#E0E0E0',
+  },
+  buttonDisabled: {
+    backgroundColor: '#E0E0E0',
+  },
+  emptyStateContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingVertical: 20,
+  },
+  emptyStateText: {
+    fontSize: 16,
+    color: '#666',
+    textAlign: 'center',
+  },
+  selectedImagePreviewContainer: {
+    margin: 16,
+    marginTop: 0,
+    borderRadius: 12,
+    overflow: 'hidden',
+    position: 'relative',
+  },
+  selectedImagePreview: {
+    width: '100%',
+    height: 200,
+    borderRadius: 12,
+  },
+  removeImageButton: {
+    position: 'absolute',
+    top: 8,
+    right: 8,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    borderRadius: 12,
+    padding: 4,
   },
 }); 
