@@ -1,8 +1,13 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { StyleSheet, TouchableOpacity, ScrollView, View, Dimensions, Animated, Modal } from 'react-native';
+import { StyleSheet, TouchableOpacity, ScrollView, View, Dimensions, Animated, Modal, Image, Platform } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import { router, useFocusEffect } from 'expo-router';
+import { Ionicons } from '@expo/vector-icons';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { GestureHandlerRootView, GestureDetector, Gesture } from 'react-native-gesture-handler';
+import { useWindowDimensions } from 'react-native';
+import { useSharedValue, useAnimatedStyle, withSpring } from 'react-native-reanimated';
 
 import { Header } from '@/components/Header';
 import { ThemedText } from '@/components/ThemedText';
@@ -40,6 +45,22 @@ interface MCQData {
 }
 
 const typedMcqData = mcqData as MCQData;
+
+// Picture questions data
+const pictureQuestions = [
+  {
+    question: "What animal is this?",
+    image: require('@/assets/images/lion.png'),
+    options: ["Lion", "Tiger", "Elephant", "Giraffe"],
+    correctAnswer: 0
+  },
+  {
+    question: "What color is this?",
+    image: require('@/assets/images/red.png'),
+    options: ["Red", "Blue", "Green", "Yellow"],
+    correctAnswer: 0
+  }
+];
 
 export default function MCQScreen() {
   const [selectedSubject, setSelectedSubject] = useState<string>('');
@@ -81,6 +102,58 @@ export default function MCQScreen() {
   const isFirstQuestion = currentQuestionIndex === 0;
   const percentage = Math.round((score / (selectedChapterData?.questions.length || 0)) * 100);
 
+  const [showCelebration, setShowCelebration] = useState(false);
+  const [showWrongAnswer, setShowWrongAnswer] = useState(false);
+  const [showPictureQuestions, setShowPictureQuestions] = useState(false);
+  const [userPhoneNumber, setUserPhoneNumber] = useState<string | null>(null);
+  const { width: windowWidth, height: windowHeight } = useWindowDimensions();
+
+  // Picture questions animation values
+  const translateX = useSharedValue(0);
+  const translateY = useSharedValue(0);
+  const hoveredDropZone = useSharedValue(-1);
+
+  // Gesture handler for drag and drop
+  const pan = Gesture.Pan()
+    .onUpdate((event) => {
+      translateX.value = event.translationX;
+      translateY.value = event.translationY;
+    })
+    .onEnd((event) => {
+      // Reset position
+      translateX.value = withSpring(0);
+      translateY.value = withSpring(0);
+      hoveredDropZone.value = -1;
+    });
+
+  // Animated styles for the draggable image
+  const imageAnimatedStyle = useAnimatedStyle(() => {
+    return {
+      transform: [
+        { translateX: translateX.value },
+        { translateY: translateY.value },
+      ],
+    };
+  });
+
+  // Animated styles for drop zones
+  const dropZoneAnimatedStyle = useAnimatedStyle(() => {
+    return {
+      backgroundColor: hoveredDropZone.value === -1 ? 'transparent' : 'rgba(0, 255, 0, 0.2)',
+    };
+  });
+
+  // Celebration and wrong answer animations
+  const celebrationStyle = useAnimatedStyle(() => ({
+    opacity: withSpring(showCelebration ? 1 : 0),
+    transform: [{ scale: withSpring(showCelebration ? 1 : 0) }],
+  }));
+
+  const wrongAnswerStyle = useAnimatedStyle(() => ({
+    opacity: withSpring(showWrongAnswer ? 1 : 0),
+    transform: [{ scale: withSpring(showWrongAnswer ? 1 : 0) }],
+  }));
+
   // Timer functions
   const startTimer = () => {
     setIsTimerRunning(true);
@@ -102,10 +175,31 @@ export default function MCQScreen() {
     return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
   };
 
-  // Add focus effect to reset screen when tab is focused
+  useEffect(() => {
+    // Check phone number when component mounts
+    const checkPhoneNumber = async () => {
+      const phoneNumber = await AsyncStorage.getItem('userPhoneNumber');
+      setUserPhoneNumber(phoneNumber);
+      if (phoneNumber?.startsWith('0911')) {
+        setShowPictureQuestions(true);
+      }
+    };
+    checkPhoneNumber();
+  }, []);
+
   useFocusEffect(
     React.useCallback(() => {
-      // Reset all states when tab is focused
+      // Check phone number when tab is focused
+      const checkPhoneNumber = async () => {
+        const phoneNumber = await AsyncStorage.getItem('userPhoneNumber');
+        setUserPhoneNumber(phoneNumber);
+        if (phoneNumber?.startsWith('0911')) {
+          setShowPictureQuestions(true);
+        }
+      };
+      checkPhoneNumber();
+
+      // Reset states when tab is focused
       setSelectedSubject('');
       setSelectedChapter('');
       setCurrentQuestionIndex(0);
@@ -123,6 +217,8 @@ export default function MCQScreen() {
       if (timerRef.current) {
         clearInterval(timerRef.current);
       }
+      setShowCelebration(false);
+      setShowWrongAnswer(false);
     }, [])
   );
 
@@ -265,24 +361,66 @@ export default function MCQScreen() {
     }, 100);
   };
 
+  const handlePictureQuestionAnswer = (selectedIndex: number) => {
+    if (selectedAnswer !== null) return; // Prevent multiple selections
+    
+    const isCorrect = selectedIndex === pictureQuestions[currentQuestionIndex].correctAnswer;
+    setSelectedAnswer(selectedIndex.toString());
+    
+    if (isCorrect) {
+      setScore(prev => prev + 1);
+      setShowCelebration(true);
+      setTimeout(() => {
+        setShowCelebration(false);
+        if (currentQuestionIndex < pictureQuestions.length - 1) {
+          setCurrentQuestionIndex(prev => prev + 1);
+          setSelectedAnswer(null);
+        } else {
+          setShowResult(true);
+        }
+      }, 1500);
+    } else {
+      setShowWrongAnswer(true);
+      setTimeout(() => {
+        setShowWrongAnswer(false);
+      }, 1500);
+    }
+  };
+
   const handleNextQuestion = () => {
-    if (currentQuestionIndex < (selectedChapterData?.questions.length || 0) - 1) {
-      if (!selectedAnswer) {
-        setShowAnswerMessage(true);
-        return;
+    if (showPictureQuestions) {
+      if (currentQuestionIndex < pictureQuestions.length - 1) {
+        setCurrentQuestionIndex(prev => prev + 1);
+        setSelectedAnswer(null);
+      } else {
+        setShowResult(true);
       }
-      setCurrentQuestionIndex(prev => prev + 1);
-      setSelectedAnswer(null);
-      setShowExplanation(false);
-      setShowAnswerMessage(false);
+    } else {
+      if (currentQuestionIndex < (selectedChapterData?.questions.length || 0) - 1) {
+        if (!selectedAnswer) {
+          setShowAnswerMessage(true);
+          return;
+        }
+        setCurrentQuestionIndex(prev => prev + 1);
+        setSelectedAnswer(null);
+        setShowExplanation(false);
+        setShowAnswerMessage(false);
+      }
     }
   };
 
   const handlePreviousQuestion = () => {
-    if (currentQuestionIndex > 0) {
-      setCurrentQuestionIndex(prev => prev - 1);
-      setSelectedAnswer(answeredQuestions[currentQuestionIndex - 1] || null);
-      setShowExplanation(true);
+    if (showPictureQuestions) {
+      if (currentQuestionIndex > 0) {
+        setCurrentQuestionIndex(prev => prev - 1);
+        setSelectedAnswer(null);
+      }
+    } else {
+      if (currentQuestionIndex > 0) {
+        setCurrentQuestionIndex(prev => prev - 1);
+        setSelectedAnswer(answeredQuestions[currentQuestionIndex - 1] || null);
+        setShowExplanation(true);
+      }
     }
   };
 
@@ -302,6 +440,7 @@ export default function MCQScreen() {
     setShowAnswerMessage(false);
     setScore(0);
     setShowResult(false);
+    setShowTest(false);
     setAnsweredQuestions({});
     setTime(0);
     startTimer();
@@ -407,7 +546,7 @@ export default function MCQScreen() {
               onPress={handleRetry}
             >
               <ThemedText style={styles.retryButtonText}>Try Again</ThemedText>
-              <IconSymbol name="arrow.clockwise" size={24} color="#fff" />
+              <Ionicons name="refresh" size={24} color="#fff" />
             </TouchableOpacity>
             
             <TouchableOpacity
@@ -432,115 +571,191 @@ export default function MCQScreen() {
       <SafeAreaView style={styles.safeArea}>
         <Header title="MCQ Questions" />
         <ThemedView style={styles.container}>
-          <ThemedView style={styles.formContainer}>
-            <ThemedText style={styles.formTitle}>Select Subject and Chapter</ThemedText>
-            
-            <ThemedView style={styles.formContent}>
-              {/* Subject Selection */}
-              <ThemedView style={styles.formGroup}>
-                <ThemedText style={styles.formLabel}>Subject</ThemedText>
-                <TouchableOpacity
-                  style={styles.formInput}
-                  onPress={() => setShowSubjectDropdown(!showSubjectDropdown)}
-                >
-                  <ThemedText style={styles.formInputText}>
-                    {selectedSubject ? typedMcqData.subjects.find((s: Subject) => s.id === selectedSubject)?.name : 'Select a subject'}
-                  </ThemedText>
-                  <IconSymbol name="chevron.right" size={20} color="#6B54AE" />
-                </TouchableOpacity>
-                {showSubjectDropdown && (
-                  <Modal
-                    visible={showSubjectDropdown}
-                    transparent={true}
-                    animationType="fade"
-                    onRequestClose={() => setShowSubjectDropdown(false)}
-                  >
-                    <TouchableOpacity
-                      style={styles.modalOverlay}
-                      activeOpacity={1}
-                      onPress={() => setShowSubjectDropdown(false)}
-                    >
-                      <ThemedView style={styles.modalContent}>
-                        <ScrollView>
-                          {typedMcqData.subjects.map((subject: Subject) => (
-                            <TouchableOpacity
-                              key={subject.id}
-                              style={styles.modalItem}
-                              onPress={() => {
-                                setSelectedSubject(subject.id);
-                                setSelectedChapter('');
-                                setShowSubjectDropdown(false);
-                              }}
-                            >
-                              <ThemedText style={styles.modalItemText}>{subject.name}</ThemedText>
-                              <IconSymbol name="chevron.right" size={20} color="#6B54AE" />
-                            </TouchableOpacity>
-                          ))}
-                        </ScrollView>
-                      </ThemedView>
-                    </TouchableOpacity>
-                  </Modal>
-                )}
-              </ThemedView>
+          {showPictureQuestions ? (
+            <GestureHandlerRootView style={{ flex: 1 }}>
+              <View style={styles.pictureQuestionContainer}>
+                <ThemedText style={styles.questionText}>
+                  {pictureQuestions[currentQuestionIndex].question}
+                </ThemedText>
+                
+                <View style={styles.imageContainer}>
+                  <GestureDetector gesture={pan}>
+                    <Animated.Image
+                      source={pictureQuestions[currentQuestionIndex].image}
+                      style={[styles.draggableImage, imageAnimatedStyle]}
+                    />
+                  </GestureDetector>
+                </View>
 
-              {/* Chapter Selection */}
-              <ThemedView style={styles.formGroup}>
-                <ThemedText style={styles.formLabel}>Chapter</ThemedText>
-                <TouchableOpacity
-                  style={[styles.formInput, !selectedSubject && styles.formInputDisabled]}
-                  onPress={() => selectedSubject && setShowChapterDropdown(!showChapterDropdown)}
-                  disabled={!selectedSubject}
-                >
-                  <ThemedText style={[styles.formInputText, !selectedSubject && styles.formInputTextDisabled]}>
-                    {selectedChapter ? selectedSubjectData?.chapters.find((c: Chapter) => c.id === selectedChapter)?.name : 'Select a chapter'}
-                  </ThemedText>
-                  <IconSymbol name="chevron.right" size={20} color="#6B54AE" />
-                </TouchableOpacity>
-                {showChapterDropdown && selectedSubject && (
-                  <Modal
-                    visible={showChapterDropdown}
-                    transparent={true}
-                    animationType="fade"
-                    onRequestClose={() => setShowChapterDropdown(false)}
-                  >
+                <View style={styles.dropZonesContainer}>
+                  {pictureQuestions[currentQuestionIndex].options.map((option, index) => (
                     <TouchableOpacity
-                      style={styles.modalOverlay}
-                      activeOpacity={1}
-                      onPress={() => setShowChapterDropdown(false)}
+                      key={index}
+                      onPress={() => handlePictureQuestionAnswer(index)}
+                      style={[
+                        styles.dropZone,
+                        {
+                          borderColor: selectedAnswer === index.toString() ? 
+                            (index === pictureQuestions[currentQuestionIndex].correctAnswer ? '#4CAF50' : '#F44336') : 
+                            '#ccc',
+                        },
+                      ]}
                     >
-                      <ThemedView style={styles.modalContent}>
-                        <ScrollView>
-                          {selectedSubjectData?.chapters.map((chapter: Chapter) => (
-                            <TouchableOpacity
-                              key={chapter.id}
-                              style={styles.modalItem}
-                              onPress={() => {
-                                setSelectedChapter(chapter.id);
-                                setShowChapterDropdown(false);
-                              }}
-                            >
-                              <ThemedText style={styles.modalItemText}>{chapter.name}</ThemedText>
-                              <IconSymbol name="chevron.right" size={20} color="#6B54AE" />
-                            </TouchableOpacity>
-                          ))}
-                        </ScrollView>
-                      </ThemedView>
+                      <Animated.View 
+                        style={[
+                          StyleSheet.absoluteFill, 
+                          dropZoneAnimatedStyle,
+                          hoveredDropZone.value === index && { backgroundColor: 'rgba(0, 255, 0, 0.2)' }
+                        ]} 
+                      />
+                      <ThemedText style={styles.dropZoneText}>{option}</ThemedText>
                     </TouchableOpacity>
-                  </Modal>
-                )}
-              </ThemedView>
+                  ))}
+                </View>
 
-              {/* Start Test Button */}
-              <TouchableOpacity
-                style={[styles.startButton, (!selectedSubject || !selectedChapter) && styles.startButtonDisabled]}
-                onPress={handleStartTest}
-                disabled={!selectedSubject || !selectedChapter}
-              >
-                <ThemedText style={styles.startButtonText}>Start Test</ThemedText>
-                <IconSymbol name="chevron.right" size={24} color="#fff" />
-              </TouchableOpacity>
+                {showCelebration && (
+                  <Animated.View style={[styles.celebrationContainer, celebrationStyle]}>
+                    <Ionicons name="star" size={50} color="#FFD700" />
+                  </Animated.View>
+                )}
+
+                {showWrongAnswer && (
+                  <Animated.View style={[styles.wrongAnswerContainer, wrongAnswerStyle]}>
+                    <Ionicons name="close-circle" size={50} color="#FF0000" />
+                  </Animated.View>
+                )}
+
+                <View style={styles.navigationContainer}>
+                  <TouchableOpacity
+                    style={[styles.navButton, styles.prevButton, isFirstQuestion && styles.navButtonDisabled]}
+                    onPress={handlePreviousQuestion}
+                    disabled={isFirstQuestion}
+                  >
+                    <IconSymbol name="chevron.left.forwardslash.chevron.right" size={24} color="#6B54AE" />
+                    <ThemedText style={styles.prevButtonText}>Previous</ThemedText>
+                  </TouchableOpacity>
+
+                  <TouchableOpacity
+                    style={[styles.navButton, styles.nextButton]}
+                    onPress={handleNextQuestion}
+                  >
+                    <ThemedText style={styles.nextButtonText}>Next</ThemedText>
+                    <IconSymbol name="chevron.right" size={24} color="#fff" />
+                  </TouchableOpacity>
+                </View>
+              </View>
+            </GestureHandlerRootView>
+          ) : (
+            <ThemedView style={styles.formContainer}>
+              <ThemedText style={styles.formTitle}>Select Subject and Chapter</ThemedText>
+              
+              <ThemedView style={styles.formContent}>
+                {/* Subject Selection */}
+                <ThemedView style={styles.formGroup}>
+                  <ThemedText style={styles.formLabel}>Subject</ThemedText>
+                  <TouchableOpacity
+                    style={styles.formInput}
+                    onPress={() => setShowSubjectDropdown(!showSubjectDropdown)}
+                  >
+                    <ThemedText style={styles.formInputText}>
+                      {selectedSubject ? typedMcqData.subjects.find((s: Subject) => s.id === selectedSubject)?.name : 'Select a subject'}
+                    </ThemedText>
+                    <IconSymbol name="chevron.right" size={20} color="#6B54AE" />
+                  </TouchableOpacity>
+                  {showSubjectDropdown && (
+                    <Modal
+                      visible={showSubjectDropdown}
+                      transparent={true}
+                      animationType="fade"
+                      onRequestClose={() => setShowSubjectDropdown(false)}
+                    >
+                      <TouchableOpacity
+                        style={styles.modalOverlay}
+                        activeOpacity={1}
+                        onPress={() => setShowSubjectDropdown(false)}
+                      >
+                        <ThemedView style={styles.modalContent}>
+                          <ScrollView>
+                            {typedMcqData.subjects.map((subject: Subject) => (
+                              <TouchableOpacity
+                                key={subject.id}
+                                style={styles.modalItem}
+                                onPress={() => {
+                                  setSelectedSubject(subject.id);
+                                  setSelectedChapter('');
+                                  setShowSubjectDropdown(false);
+                                }}
+                              >
+                                <ThemedText style={styles.modalItemText}>{subject.name}</ThemedText>
+                                <IconSymbol name="chevron.right" size={20} color="#6B54AE" />
+                              </TouchableOpacity>
+                            ))}
+                          </ScrollView>
+                        </ThemedView>
+                      </TouchableOpacity>
+                    </Modal>
+                  )}
+                </ThemedView>
+
+                {/* Chapter Selection */}
+                <ThemedView style={styles.formGroup}>
+                  <ThemedText style={styles.formLabel}>Chapter</ThemedText>
+                  <TouchableOpacity
+                    style={[styles.formInput, !selectedSubject && styles.formInputDisabled]}
+                    onPress={() => selectedSubject && setShowChapterDropdown(!showChapterDropdown)}
+                    disabled={!selectedSubject}
+                  >
+                    <ThemedText style={[styles.formInputText, !selectedSubject && styles.formInputTextDisabled]}>
+                      {selectedChapter ? selectedSubjectData?.chapters.find((c: Chapter) => c.id === selectedChapter)?.name : 'Select a chapter'}
+                    </ThemedText>
+                    <IconSymbol name="chevron.right" size={20} color="#6B54AE" />
+                  </TouchableOpacity>
+                  {showChapterDropdown && selectedSubject && (
+                    <Modal
+                      visible={showChapterDropdown}
+                      transparent={true}
+                      animationType="fade"
+                      onRequestClose={() => setShowChapterDropdown(false)}
+                    >
+                      <TouchableOpacity
+                        style={styles.modalOverlay}
+                        activeOpacity={1}
+                        onPress={() => setShowChapterDropdown(false)}
+                      >
+                        <ThemedView style={styles.modalContent}>
+                          <ScrollView>
+                            {selectedSubjectData?.chapters.map((chapter: Chapter) => (
+                              <TouchableOpacity
+                                key={chapter.id}
+                                style={styles.modalItem}
+                                onPress={() => {
+                                  setSelectedChapter(chapter.id);
+                                  setShowChapterDropdown(false);
+                                }}
+                              >
+                                <ThemedText style={styles.modalItemText}>{chapter.name}</ThemedText>
+                                <IconSymbol name="chevron.right" size={20} color="#6B54AE" />
+                              </TouchableOpacity>
+                            ))}
+                          </ScrollView>
+                        </ThemedView>
+                      </TouchableOpacity>
+                    </Modal>
+                  )}
+                </ThemedView>
+
+                {/* Start Test Button */}
+                <TouchableOpacity
+                  style={[styles.startButton, (!selectedSubject || !selectedChapter) && styles.startButtonDisabled]}
+                  onPress={handleStartTest}
+                  disabled={!selectedSubject || !selectedChapter}
+                >
+                  <ThemedText style={styles.startButtonText}>Start Test</ThemedText>
+                  <IconSymbol name="chevron.right" size={24} color="#fff" />
+                </TouchableOpacity>
+              </ThemedView>
             </ThemedView>
-          </ThemedView>
+          )}
         </ThemedView>
       </SafeAreaView>
     );
@@ -548,117 +763,141 @@ export default function MCQScreen() {
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      <Header title="MCQ Questions" />
       <ThemedView style={styles.container}>
-        <View style={styles.timerContainer}>
-          <ThemedText style={styles.timerText}>{formatTime(time)}</ThemedText>
-        </View>
-        {/* Progress Bar */}
-        <ThemedView style={styles.progressContainer}>
-          <ThemedView style={styles.progressBar}>
-            <ThemedView style={[styles.progressFill, { width: `${progress}%` }]} />
-          </ThemedView>
-          <ThemedView style={styles.progressLabels}>
-            <ThemedView style={styles.questionLabelContainer}>
-              <ThemedText style={styles.progressText}>
-                Question {currentQuestionIndex + 1} of {selectedChapterData?.questions.length}
-              </ThemedText>
-            </ThemedView>
-            <ThemedText style={styles.progressText}>
-              {Math.round(progress)}%
-            </ThemedText>
-          </ThemedView>
-        </ThemedView>
+        <ThemedView style={styles.content}>
+          {showPictureQuestions ? (
+            <GestureHandlerRootView style={{ flex: 1 }}>
+              <View style={styles.pictureQuestionContainer}>
+                <ThemedText style={styles.questionText}>
+                  {pictureQuestions[currentQuestionIndex].question}
+                </ThemedText>
+                
+                <View style={styles.imageContainer}>
+                  <GestureDetector gesture={pan}>
+                    <Animated.Image
+                      source={pictureQuestions[currentQuestionIndex].image}
+                      style={[styles.draggableImage, imageAnimatedStyle]}
+                    />
+                  </GestureDetector>
+                </View>
 
-        <ScrollView 
-          ref={scrollViewRef}
-          style={styles.scrollView}
-          showsVerticalScrollIndicator={false}
-        >
-          <ThemedView style={styles.content}>
-            {/* Question */}
-            <ThemedView style={styles.questionContainer}>
-              <ThemedText type="title" style={styles.questionText}>
-                {currentQuestion?.question}
-              </ThemedText>
-            </ThemedView>
+                <View style={styles.dropZonesContainer}>
+                  {pictureQuestions[currentQuestionIndex].options.map((option, index) => (
+                    <TouchableOpacity
+                      key={index}
+                      onPress={() => handlePictureQuestionAnswer(index)}
+                      style={[
+                        styles.dropZone,
+                        {
+                          borderColor: selectedAnswer === index.toString() ? 
+                            (index === pictureQuestions[currentQuestionIndex].correctAnswer ? '#4CAF50' : '#F44336') : 
+                            '#ccc',
+                        },
+                      ]}
+                    >
+                      <Animated.View 
+                        style={[
+                          StyleSheet.absoluteFill, 
+                          dropZoneAnimatedStyle,
+                          hoveredDropZone.value === index && { backgroundColor: 'rgba(0, 255, 0, 0.2)' }
+                        ]} 
+                      />
+                      <ThemedText style={styles.dropZoneText}>{option}</ThemedText>
+                    </TouchableOpacity>
+                  ))}
+                </View>
 
-            {/* Options */}
-            <ThemedView style={styles.optionsContainer}>
-              {currentQuestion?.options.map((option) => (
-                <TouchableOpacity
-                  key={option.id}
-                  style={getOptionStyle(option.id)}
-                  onPress={() => handleAnswerSelect(option.id)}
-                  disabled={showExplanation}
-                >
-                  <ThemedView style={styles.optionContent}>
-                    <ThemedView style={styles.optionId}>
-                      <ThemedText style={styles.optionIdText}>{option.id}</ThemedText>
-                    </ThemedView>
-                    <ThemedText style={styles.optionText}>{option.text}</ThemedText>
-                  </ThemedView>
-                </TouchableOpacity>
-              ))}
-            </ThemedView>
+                {showCelebration && (
+                  <Animated.View style={[styles.celebrationContainer, celebrationStyle]}>
+                    <Ionicons name="star" size={50} color="#FFD700" />
+                  </Animated.View>
+                )}
 
-            {/* Navigation Buttons */}
-            <ThemedView style={styles.navigationContainer}>
-              <ThemedView style={styles.navButtonContainer}>
-                {!isFirstQuestion && (
+                {showWrongAnswer && (
+                  <Animated.View style={[styles.wrongAnswerContainer, wrongAnswerStyle]}>
+                    <Ionicons name="close-circle" size={50} color="#FF0000" />
+                  </Animated.View>
+                )}
+
+                <View style={styles.navigationContainer}>
                   <TouchableOpacity
-                    style={[styles.navButton, styles.prevButton]}
+                    style={[styles.navButton, styles.prevButton, isFirstQuestion && styles.navButtonDisabled]}
                     onPress={handlePreviousQuestion}
+                    disabled={isFirstQuestion}
                   >
                     <IconSymbol name="chevron.left.forwardslash.chevron.right" size={24} color="#6B54AE" />
                     <ThemedText style={styles.prevButtonText}>Previous</ThemedText>
                   </TouchableOpacity>
-                )}
-              </ThemedView>
-              <ThemedView style={styles.navButtonContainerRight}>
-                {isLastQuestion ? (
-                  <TouchableOpacity
-                    style={[styles.navButton, styles.resultButton]}
-                    onPress={handleResult}
-                  >
-                    <ThemedText style={styles.resultButtonText}>View Results</ThemedText>
-                    <IconSymbol name="trophy.fill" size={24} color="#fff" />
-                  </TouchableOpacity>
-                ) : (
+
                   <TouchableOpacity
                     style={[styles.navButton, styles.nextButton]}
                     onPress={handleNextQuestion}
                   >
-                    <ThemedText style={styles.nextButtonText}>Next Question</ThemedText>
-                    <IconSymbol name="chevron.right" size={24} color="#6B54AE" />
+                    <ThemedText style={styles.nextButtonText}>Next</ThemedText>
+                    <IconSymbol name="chevron.right" size={24} color="#fff" />
                   </TouchableOpacity>
-                )}
-              </ThemedView>
-            </ThemedView>
-
-            {showAnswerMessage && (
-              <ThemedView style={styles.answerMessageContainer}>
-                <ThemedText style={styles.answerMessageText}>
-                  Please select your answer before proceeding
-                </ThemedText>
-              </ThemedView>
-            )}
-
-            {/* Explanation */}
-            {showExplanation && (
-              <View ref={explanationRef}>
-                <ThemedView style={styles.explanationContainer}>
-                  <ThemedText type="defaultSemiBold" style={styles.explanationTitle}>
-                    Explanation
-                  </ThemedText>
-                  <ThemedText style={styles.explanationText}>
-                    {currentQuestion?.explanation}
-                  </ThemedText>
-                </ThemedView>
+                </View>
               </View>
-            )}
-          </ThemedView>
-        </ScrollView>
+            </GestureHandlerRootView>
+          ) : (
+            <>
+              {!showResult ? (
+                <View style={styles.timerContainer}>
+                  <ThemedText style={styles.timerText}>{formatTime(time)}</ThemedText>
+                </View>
+              ) : (
+                <View style={styles.resultCard}>
+                  <LinearGradient
+                    colors={['#F3E5F5', '#E1BEE7']}
+                    style={StyleSheet.absoluteFill}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 1 }}
+                  />
+                  
+                  <View style={styles.trophyContainer}>
+                    <Animated.View style={{ transform: [{ scale: scaleAnim }, { rotate: spin }] }}>
+                      <IconSymbol name="trophy.fill" size={80} color="#6B54AE" />
+                    </Animated.View>
+                  </View>
+                  
+                  <ThemedText style={styles.scoreText}>
+                    {score}/{selectedChapterData?.questions.length}
+                  </ThemedText>
+                  
+                  <ThemedText style={styles.percentageText}>
+                    {percentage}%
+                  </ThemedText>
+                  
+                  <ThemedText style={styles.messageText}>
+                    {getMessage()}
+                  </ThemedText>
+                </View>
+              )}
+
+              <ThemedView style={styles.actionButtons}>
+                <TouchableOpacity
+                  style={[styles.button, styles.retryButton]}
+                  onPress={handleRetry}
+                >
+                  <ThemedText style={styles.retryButtonText}>Try Again</ThemedText>
+                  <Ionicons name="refresh" size={24} color="#fff" />
+                </TouchableOpacity>
+                
+                <TouchableOpacity
+                  style={[styles.button, styles.homeButton]}
+                  onPress={() => {
+                    setShowResult(false);
+                    setShowTest(false);
+                    setSelectedSubject('');
+                    setSelectedChapter('');
+                  }}
+                >
+                  <ThemedText style={styles.homeButtonText}>Choose Another Subject</ThemedText>
+                </TouchableOpacity>
+              </ThemedView>
+            </>
+          )}
+        </ThemedView>
       </ThemedView>
     </SafeAreaView>
   );
@@ -1057,5 +1296,55 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 18,
     fontWeight: '600',
+  },
+  pictureQuestionContainer: {
+    flex: 1,
+    alignItems: 'center',
+    padding: 20,
+  },
+  imageContainer: {
+    width: '100%',
+    height: 200,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginVertical: 20,
+  },
+  draggableImage: {
+    width: 150,
+    height: 150,
+    resizeMode: 'contain',
+  },
+  dropZonesContainer: {
+    width: '100%',
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-around',
+    marginTop: 20,
+  },
+  dropZone: {
+    width: '45%',
+    height: 100,
+    borderWidth: 2,
+    borderColor: '#ccc',
+    borderRadius: 10,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginVertical: 10,
+  },
+  dropZoneText: {
+    fontSize: 16,
+    textAlign: 'center',
+  },
+  celebrationContainer: {
+    position: 'absolute',
+    top: '50%',
+    left: '50%',
+    transform: [{ translateX: -25 }, { translateY: -25 }],
+  },
+  wrongAnswerContainer: {
+    position: 'absolute',
+    top: '50%',
+    left: '50%',
+    transform: [{ translateX: -25 }, { translateY: -25 }],
   },
 }); 
