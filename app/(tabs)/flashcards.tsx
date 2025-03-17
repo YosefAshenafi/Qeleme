@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { StyleSheet, TouchableOpacity, Dimensions, View } from 'react-native';
+import { StyleSheet, TouchableOpacity, Dimensions, View, Modal, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import Animated, {
@@ -16,42 +16,57 @@ import { Header } from '@/components/Header';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 import { IconSymbol } from '@/components/ui/IconSymbol';
+import flashcardData from '@/data/flashcardData.json';
 
-// Sample flashcard data - replace with your actual data
-const flashcards = [
-  {
-    id: 1,
-    question: "What is React Native?",
-    answer: "React Native is a framework for building native mobile applications using React and JavaScript."
-  },
-  {
-    id: 2,
-    question: "What is Expo?",
-    answer: "Expo is a framework and platform built around React Native that helps you develop, build, deploy, and quickly iterate on iOS, Android, and web apps."
-  },
-  {
-    id: 3,
-    question: "What is TypeScript?",
-    answer: "TypeScript is a typed superset of JavaScript that compiles to plain JavaScript, adding optional static types to the language."
-  }
-];
+interface Flashcard {
+  id: number;
+  question: string;
+  answer: string;
+}
+
+interface Chapter {
+  id: string;
+  name: string;
+  flashcards: Flashcard[];
+}
+
+interface Subject {
+  id: string;
+  name: string;
+  chapters: Chapter[];
+}
+
+interface FlashcardData {
+  subjects: Subject[];
+}
+
+const typedFlashcardData = flashcardData as FlashcardData;
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const CARD_WIDTH = SCREEN_WIDTH - 40;
 
 export default function FlashcardsScreen() {
+  const [selectedSubject, setSelectedSubject] = useState<string>('');
+  const [selectedChapter, setSelectedChapter] = useState<string>('');
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isRevealed, setIsRevealed] = useState(false);
+  const [showSubjectDropdown, setShowSubjectDropdown] = useState(false);
+  const [showChapterDropdown, setShowChapterDropdown] = useState(false);
+  const [showFlashcards, setShowFlashcards] = useState(false);
+  
   const revealAnimation = useSharedValue(0);
   const progressAnimation = useSharedValue(0);
 
-  const currentCard = flashcards[currentIndex];
-  const progress = ((currentIndex + 1) / flashcards.length) * 100;
+  const selectedSubjectData = typedFlashcardData.subjects.find((subject: Subject) => subject.id === selectedSubject);
+  const selectedChapterData = selectedSubjectData?.chapters.find((chapter: Chapter) => chapter.id === selectedChapter);
+  const currentCard = selectedChapterData?.flashcards[currentIndex];
+  const progress = ((currentIndex + 1) / (selectedChapterData?.flashcards.length || 0)) * 100;
 
   useEffect(() => {
-    // Initialize progress animation when component mounts
-    progressAnimation.value = withTiming((1 / flashcards.length) * 100);
-  }, []);
+    if (showFlashcards && selectedChapterData?.flashcards.length) {
+      progressAnimation.value = withTiming((1 / selectedChapterData.flashcards.length) * 100);
+    }
+  }, [showFlashcards]);
 
   const frontAnimatedStyle = useAnimatedStyle(() => {
     const rotateY = interpolate(revealAnimation.value, [0, 1], [0, 180]);
@@ -105,7 +120,7 @@ export default function FlashcardsScreen() {
   };
 
   const handleNext = () => {
-    if (currentIndex < flashcards.length - 1) {
+    if (currentIndex < (selectedChapterData?.flashcards.length || 0) - 1) {
       setCurrentIndex(prev => prev + 1);
       setIsRevealed(false);
       revealAnimation.value = withSpring(0, {
@@ -113,7 +128,7 @@ export default function FlashcardsScreen() {
         stiffness: 80,
         mass: 0.8,
       });
-      progressAnimation.value = withTiming(((currentIndex + 2) / flashcards.length) * 100);
+      progressAnimation.value = withTiming(((currentIndex + 2) / (selectedChapterData?.flashcards.length || 0)) * 100);
     }
   };
 
@@ -126,9 +141,140 @@ export default function FlashcardsScreen() {
         stiffness: 80,
         mass: 0.8,
       });
-      progressAnimation.value = withTiming((currentIndex / flashcards.length) * 100);
+      progressAnimation.value = withTiming((currentIndex / (selectedChapterData?.flashcards.length || 0)) * 100);
     }
   };
+
+  const handleStartFlashcards = () => {
+    if (!selectedSubject || !selectedChapter) return;
+    setShowFlashcards(true);
+    setCurrentIndex(0);
+    setIsRevealed(false);
+    revealAnimation.value = withSpring(0, {
+      damping: 12,
+      stiffness: 80,
+      mass: 0.8,
+    });
+  };
+
+  if (!showFlashcards) {
+    return (
+      <SafeAreaView style={styles.safeArea}>
+        <Header title="Flash Cards" />
+        <ThemedView style={styles.container}>
+          <ThemedView style={styles.formContainer}>
+            <ThemedText style={styles.formTitle}>Select Subject and Chapter</ThemedText>
+            
+            <ThemedView style={styles.formContent}>
+              {/* Subject Selection */}
+              <ThemedView style={styles.formGroup}>
+                <ThemedText style={styles.formLabel}>Subject</ThemedText>
+                <TouchableOpacity
+                  style={styles.formInput}
+                  onPress={() => setShowSubjectDropdown(!showSubjectDropdown)}
+                >
+                  <ThemedText style={styles.formInputText}>
+                    {selectedSubject ? typedFlashcardData.subjects.find((s: Subject) => s.id === selectedSubject)?.name : 'Select a subject'}
+                  </ThemedText>
+                  <IconSymbol name="chevron.right" size={20} color="#6B54AE" />
+                </TouchableOpacity>
+                {showSubjectDropdown && (
+                  <Modal
+                    visible={showSubjectDropdown}
+                    transparent={true}
+                    animationType="fade"
+                    onRequestClose={() => setShowSubjectDropdown(false)}
+                  >
+                    <TouchableOpacity
+                      style={styles.modalOverlay}
+                      activeOpacity={1}
+                      onPress={() => setShowSubjectDropdown(false)}
+                    >
+                      <ThemedView style={styles.modalContent}>
+                        <ScrollView>
+                          {typedFlashcardData.subjects.map((subject: Subject) => (
+                            <TouchableOpacity
+                              key={subject.id}
+                              style={styles.modalItem}
+                              onPress={() => {
+                                setSelectedSubject(subject.id);
+                                setSelectedChapter('');
+                                setShowSubjectDropdown(false);
+                              }}
+                            >
+                              <ThemedText style={styles.modalItemText}>{subject.name}</ThemedText>
+                              <IconSymbol name="chevron.right" size={20} color="#6B54AE" />
+                            </TouchableOpacity>
+                          ))}
+                        </ScrollView>
+                      </ThemedView>
+                    </TouchableOpacity>
+                  </Modal>
+                )}
+              </ThemedView>
+
+              {/* Chapter Selection */}
+              <ThemedView style={styles.formGroup}>
+                <ThemedText style={styles.formLabel}>Chapter</ThemedText>
+                <TouchableOpacity
+                  style={[styles.formInput, !selectedSubject && styles.formInputDisabled]}
+                  onPress={() => selectedSubject && setShowChapterDropdown(!showChapterDropdown)}
+                  disabled={!selectedSubject}
+                >
+                  <ThemedText style={[styles.formInputText, !selectedSubject && styles.formInputTextDisabled]}>
+                    {selectedChapter ? selectedSubjectData?.chapters.find((c: Chapter) => c.id === selectedChapter)?.name : 'Select a chapter'}
+                  </ThemedText>
+                  <IconSymbol name="chevron.right" size={20} color="#6B54AE" />
+                </TouchableOpacity>
+                {showChapterDropdown && selectedSubject && (
+                  <Modal
+                    visible={showChapterDropdown}
+                    transparent={true}
+                    animationType="fade"
+                    onRequestClose={() => setShowChapterDropdown(false)}
+                  >
+                    <TouchableOpacity
+                      style={styles.modalOverlay}
+                      activeOpacity={1}
+                      onPress={() => setShowChapterDropdown(false)}
+                    >
+                      <ThemedView style={styles.modalContent}>
+                        <ScrollView>
+                          {selectedSubjectData?.chapters.map((chapter: Chapter) => (
+                            <TouchableOpacity
+                              key={chapter.id}
+                              style={styles.modalItem}
+                              onPress={() => {
+                                setSelectedChapter(chapter.id);
+                                setShowChapterDropdown(false);
+                              }}
+                            >
+                              <ThemedText style={styles.modalItemText}>{chapter.name}</ThemedText>
+                              <IconSymbol name="chevron.right" size={20} color="#6B54AE" />
+                            </TouchableOpacity>
+                          ))}
+                        </ScrollView>
+                      </ThemedView>
+                    </TouchableOpacity>
+                  </Modal>
+                )}
+              </ThemedView>
+
+              {/* Start Flashcards Button */}
+              <TouchableOpacity
+                style={[styles.startButton, (!selectedSubject || !selectedChapter) && styles.startButtonDisabled]}
+                onPress={handleStartFlashcards}
+                disabled={!selectedSubject || !selectedChapter}
+              >
+                <ThemedText style={styles.startButtonText}>Start Flashcards</ThemedText>
+                <IconSymbol name="chevron.right" size={24} color="#fff" />
+              </TouchableOpacity>
+            </ThemedView>
+          </ThemedView>
+        </ThemedView>
+      </SafeAreaView>
+    );
+  }
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -141,7 +287,7 @@ export default function FlashcardsScreen() {
           </ThemedView>
           <ThemedView style={styles.progressLabels}>
             <ThemedText style={styles.progressText}>
-              Card {currentIndex + 1} of {flashcards.length}
+              Card {currentIndex + 1} of {selectedChapterData?.flashcards.length}
             </ThemedText>
             <ThemedText style={styles.progressText}>
               {Math.round(progress)}% completed
@@ -155,13 +301,13 @@ export default function FlashcardsScreen() {
             <View style={styles.card}>
               <Animated.View style={[styles.cardFace, styles.cardFront, frontAnimatedStyle]}>
                 <View style={styles.cardContent}>
-                  <ThemedText style={styles.questionText}>{currentCard.question}</ThemedText>
+                  <ThemedText style={styles.questionText}>{currentCard?.question}</ThemedText>
                   <ThemedText style={styles.revealHint}>Tap to reveal answer</ThemedText>
                 </View>
               </Animated.View>
               <Animated.View style={[styles.cardFace, styles.cardBack, backAnimatedStyle]}>
                 <View style={styles.cardContent}>
-                  <ThemedText style={styles.answerText}>{currentCard.answer}</ThemedText>
+                  <ThemedText style={styles.answerText}>{currentCard?.answer}</ThemedText>
                   <ThemedText style={styles.revealHint}>Tap to see question</ThemedText>
                 </View>
               </Animated.View>
@@ -177,13 +323,13 @@ export default function FlashcardsScreen() {
                 style={[styles.navButton, styles.prevButton]}
                 onPress={handlePrevious}
               >
-                <IconSymbol name="chevron.left" size={24} color="#6B54AE" />
+                <IconSymbol name="chevron.right" size={24} color="#6B54AE" style={{ transform: [{ rotate: '180deg' }] }} />
                 <ThemedText style={styles.prevButtonText}>Previous Card</ThemedText>
               </TouchableOpacity>
             )}
           </ThemedView>
           <ThemedView style={styles.navButtonContainer}>
-            {currentIndex < flashcards.length - 1 ? (
+            {currentIndex < (selectedChapterData?.flashcards.length || 0) - 1 ? (
               <TouchableOpacity
                 style={[styles.navButton, styles.nextButton]}
                 onPress={handleNext}
@@ -195,12 +341,13 @@ export default function FlashcardsScreen() {
               <TouchableOpacity
                 style={[styles.navButton, styles.finishButton]}
                 onPress={() => {
-                  setCurrentIndex(0);
-                  progressAnimation.value = withTiming((1 / flashcards.length) * 100);
+                  setShowFlashcards(false);
+                  setSelectedSubject('');
+                  setSelectedChapter('');
                 }}
               >
-                <IconSymbol name="arrow.clockwise" size={24} color="#fff" />
-                <ThemedText style={styles.finishButtonText}>Go to First</ThemedText>
+                <IconSymbol name="trophy.fill" size={24} color="#fff" />
+                <ThemedText style={styles.finishButtonText}>Finish</ThemedText>
               </TouchableOpacity>
             )}
           </ThemedView>
@@ -354,6 +501,104 @@ const styles = StyleSheet.create({
   },
   finishButtonText: {
     color: '#fff',
+    fontWeight: '600',
+  },
+  formContainer: {
+    flex: 1,
+    padding: 20,
+    backgroundColor: '#fff',
+    borderRadius: 20,
+    elevation: 4,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+  },
+  formTitle: {
+    fontSize: 24,
+    fontWeight: '700',
+    color: '#6B54AE',
+    marginBottom: 30,
+    textAlign: 'center',
+  },
+  formContent: {
+    gap: 20,
+  },
+  formGroup: {
+    gap: 8,
+  },
+  formLabel: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#6B54AE',
+  },
+  formInput: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    padding: 16,
+    backgroundColor: '#F5F5F5',
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#E0E0E0',
+  },
+  formInputDisabled: {
+    backgroundColor: '#F5F5F5',
+    opacity: 0.7,
+  },
+  formInputText: {
+    fontSize: 16,
+    color: '#333333',
+  },
+  formInputTextDisabled: {
+    color: '#999999',
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  modalContent: {
+    width: '80%',
+    maxHeight: '80%',
+    backgroundColor: '#fff',
+    borderRadius: 20,
+    padding: 20,
+    elevation: 5,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+  },
+  modalItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    padding: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#E0E0E0',
+  },
+  modalItemText: {
+    fontSize: 16,
+    color: '#333333',
+  },
+  startButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    backgroundColor: '#6B54AE',
+    padding: 16,
+    borderRadius: 12,
+    marginTop: 20,
+  },
+  startButtonDisabled: {
+    backgroundColor: '#CCCCCC',
+  },
+  startButtonText: {
+    color: '#fff',
+    fontSize: 18,
     fontWeight: '600',
   },
 }); 
