@@ -412,9 +412,14 @@ export default function MCQScreen() {
             
             <TouchableOpacity
               style={[styles.button, styles.homeButton]}
-              onPress={() => router.push('/(tabs)')}
+              onPress={() => {
+                setShowResult(false);
+                setShowTest(false);
+                setSelectedSubject('');
+                setSelectedChapter('');
+              }}
             >
-              <ThemedText style={styles.homeButtonText}>Back to Home</ThemedText>
+              <ThemedText style={styles.homeButtonText}>Choose Another Subject</ThemedText>
             </TouchableOpacity>
           </ThemedView>
         </ThemedView>
@@ -905,6 +910,11 @@ const styles = StyleSheet.create({
   },
   retryButton: {
     backgroundColor: '#6B54AE',
+    display: 'flex',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
   },
   homeButton: {
     backgroundColor: 'transparent',

@@ -200,6 +200,73 @@
           ]
         }
       ]
+    },
+    {
+      "id": "english",
+      "name": "English",
+      "chapters": [
+        {
+          "id": "grammar",
+          "name": "Grammar and Literature",
+          "questions": [
+            {
+              "id": 1,
+              "question": "Which of the following is a correct example of a complex sentence?",
+              "options": [
+                { "id": "A", "text": "I went to the store and bought milk.", "isCorrect": false },
+                { "id": "B", "text": "Although it was raining, we went for a walk.", "isCorrect": true },
+                { "id": "C", "text": "The cat sat on the mat.", "isCorrect": false },
+                { "id": "D", "text": "She ran fast and won the race.", "isCorrect": false }
+              ],
+              "explanation": "A complex sentence contains one independent clause and at least one dependent clause. 'Although it was raining' is the dependent clause, and 'we went for a walk' is the independent clause."
+            },
+            {
+              "id": 2,
+              "question": "What is the literary device used in the phrase 'The wind whispered through the trees'?",
+              "options": [
+                { "id": "A", "text": "Simile", "isCorrect": false },
+                { "id": "B", "text": "Personification", "isCorrect": true },
+                { "id": "C", "text": "Metaphor", "isCorrect": false },
+                { "id": "D", "text": "Hyperbole", "isCorrect": false }
+              ],
+              "explanation": "Personification is the attribution of human characteristics to non-human things. In this case, the wind is given the human ability to whisper."
+            },
+            {
+              "id": 3,
+              "question": "Which of these sentences uses the correct form of 'their', 'there', or 'they're'?",
+              "options": [
+                { "id": "A", "text": "Their going to the park.", "isCorrect": false },
+                { "id": "B", "text": "There going to the park.", "isCorrect": false },
+                { "id": "C", "text": "They're going to the park.", "isCorrect": true },
+                { "id": "D", "text": "Their going to the park.", "isCorrect": false }
+              ],
+              "explanation": "'They're' is the contraction of 'they are', which is the correct form to use in this sentence."
+            },
+            {
+              "id": 4,
+              "question": "What is the main theme of William Shakespeare's 'Romeo and Juliet'?",
+              "options": [
+                { "id": "A", "text": "The power of friendship", "isCorrect": false },
+                { "id": "B", "text": "The destructive nature of love", "isCorrect": true },
+                { "id": "C", "text": "The importance of family business", "isCorrect": false },
+                { "id": "D", "text": "The value of education", "isCorrect": false }
+              ],
+              "explanation": "The main theme of 'Romeo and Juliet' is the destructive nature of love, as the intense passion between the two lovers leads to their tragic deaths."
+            },
+            {
+              "id": 5,
+              "question": "Which of these is an example of a prepositional phrase?",
+              "options": [
+                { "id": "A", "text": "The cat sat", "isCorrect": false },
+                { "id": "B", "text": "Under the bridge", "isCorrect": true },
+                { "id": "C", "text": "Running quickly", "isCorrect": false },
+                { "id": "D", "text": "Beautiful sunset", "isCorrect": false }
+              ],
+              "explanation": "A prepositional phrase begins with a preposition and ends with a noun or pronoun. 'Under the bridge' starts with the preposition 'under' and ends with the noun 'bridge'."
+            }
+          ]
+        }
+      ]
     }
   ]
 } 
