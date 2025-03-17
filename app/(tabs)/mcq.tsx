@@ -183,7 +183,7 @@ export default function MCQScreen() {
     const checkPhoneNumber = async () => {
       const phoneNumber = await AsyncStorage.getItem('userPhoneNumber');
       setUserPhoneNumber(phoneNumber);
-      if (phoneNumber?.startsWith('0911')) {
+      if (phoneNumber?.startsWith('+251911')) {
         setShowPictureQuestions(true);
       }
     };
@@ -196,7 +196,7 @@ export default function MCQScreen() {
       const checkPhoneNumber = async () => {
         const phoneNumber = await AsyncStorage.getItem('userPhoneNumber');
         setUserPhoneNumber(phoneNumber);
-        if (phoneNumber?.startsWith('0911')) {
+        if (phoneNumber?.startsWith('+251911')) {
           setShowPictureQuestions(true);
         }
       };

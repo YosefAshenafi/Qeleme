@@ -46,7 +46,9 @@ export default function LoginScreen() {
     if (!phone.trim()) {
       return 'Phone number is required';
     }
-    if (!PHONE_REGEX.test(phone)) {
+    // Add +251 to the phone number before testing
+    const fullNumber = `+251${phone}`;
+    if (!PHONE_REGEX.test(fullNumber)) {
       return 'Please enter a valid Ethiopian phone number';
     }
     return '';
@@ -90,13 +92,14 @@ export default function LoginScreen() {
   const handleLogin = async () => {
     if (validateForm()) {
       try {
-        // Store the phone number in AsyncStorage
-        await AsyncStorage.setItem('userPhoneNumber', phoneNumber);
+        // Store the complete phone number in AsyncStorage
+        const fullPhoneNumber = `+251${phoneNumber}`;
+        await AsyncStorage.setItem('userPhoneNumber', fullPhoneNumber);
         
         // For now, we'll simulate a successful login with mock data
         const userData = {
           id: '1',
-          phoneNumber,
+          phoneNumber: fullPhoneNumber,
           name: 'Test User',
           // Add other user data as needed
         };
@@ -141,22 +144,26 @@ export default function LoginScreen() {
               <View style={styles.inputWrapper}>
                 <View style={[styles.inputContainer, errors.phoneNumber ? styles.inputError : null]}>
                   <Ionicons name="call-outline" size={20} color="#6B7280" style={styles.inputIcon} />
-                  <TextInput
-                    style={styles.input}
-                    placeholder="Phone number (e.g., +251912345678)"
-                    placeholderTextColor="#9CA3AF"
-                    value={phoneNumber}
-                    onChangeText={(text) => {
-                      const formatted = formatPhoneNumber(text);
-                      setPhoneNumber(formatted);
-                      if (errors.phoneNumber) {
-                        setErrors(prev => ({ ...prev, phoneNumber: '' }));
-                      }
-                    }}
-                    keyboardType="phone-pad"
-                    autoCapitalize="none"
-                    maxLength={13}
-                  />
+                  <View style={styles.phoneInputContainer}>
+                    <ThemedText style={styles.countryCode}>+251</ThemedText>
+                    <TextInput
+                      style={[styles.input, styles.phoneInput]}
+                      placeholder="912345678"
+                      placeholderTextColor="#9CA3AF"
+                      value={phoneNumber}
+                      onChangeText={(text) => {
+                        // Only allow up to 9 digits
+                        const cleaned = text.replace(/[^\d]/g, '').slice(0, 9);
+                        setPhoneNumber(cleaned);
+                        if (errors.phoneNumber) {
+                          setErrors(prev => ({ ...prev, phoneNumber: '' }));
+                        }
+                      }}
+                      keyboardType="phone-pad"
+                      autoCapitalize="none"
+                      maxLength={9}
+                    />
+                  </View>
                 </View>
                 {errors.phoneNumber ? (
                   <ThemedText style={styles.errorText}>{errors.phoneNumber}</ThemedText>
@@ -355,5 +362,18 @@ const styles = StyleSheet.create({
     color: '#4F46E5',
     fontSize: 14,
     fontWeight: '600',
+  },
+  phoneInputContainer: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  countryCode: {
+    fontSize: 16,
+    color: '#1F2937',
+    marginRight: 4,
+  },
+  phoneInput: {
+    flex: 1,
   },
 }); 
