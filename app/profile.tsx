@@ -133,8 +133,13 @@ export default function ProfileScreen() {
     },
     { 
       title: 'Terms of Service', 
-      icon: 'doc.text.fill' as const, 
+      icon: 'doc.text.fill' as const,
       content: <TermsOfService colors={colors} />
+    },
+    { 
+      title: 'Reset App', 
+      icon: 'house.fill' as const, 
+      action: () => router.replace('/(auth)/onboarding')
     },
     { 
       title: 'Logout', 
