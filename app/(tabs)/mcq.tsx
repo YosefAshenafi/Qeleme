@@ -478,7 +478,7 @@ export default function MCQScreen() {
       <SafeAreaView style={styles.safeArea}>
         <Header title="Quiz Results" />
         <ThemedView style={styles.container}>
-          <View style={styles.timerContainer}>
+          <View style={[styles.timerContainer, styles.resultTimerContainer]}>
             <ThemedText style={styles.timerText}>Time Taken: {formatTime(time)}</ThemedText>
           </View>
           {percentage >= 90 && (
@@ -765,58 +765,65 @@ export default function MCQScreen() {
     <SafeAreaView style={styles.safeArea}>
       <ThemedView style={styles.container}>
         <ThemedView style={styles.content}>
-          {showPictureQuestions ? (
-            <GestureHandlerRootView style={{ flex: 1 }}>
-              <View style={styles.pictureQuestionContainer}>
-                <ThemedText style={styles.questionText}>
-                  {pictureQuestions[currentQuestionIndex].question}
-                </ThemedText>
-                
-                <View style={styles.imageContainer}>
-                  <GestureDetector gesture={pan}>
-                    <Animated.Image
-                      source={pictureQuestions[currentQuestionIndex].image}
-                      style={[styles.draggableImage, imageAnimatedStyle]}
-                    />
-                  </GestureDetector>
+          {!showResult ? (
+            <>
+              <View style={styles.timerContainer}>
+                <ThemedText style={styles.timerText}>{formatTime(time)}</ThemedText>
+              </View>
+
+              <ScrollView ref={scrollViewRef} style={styles.scrollView}>
+                <View style={styles.progressContainer}>
+                  <View style={styles.progressBar}>
+                    <View style={[styles.progressFill, { width: `${progress}%` }]} />
+                  </View>
+                  <View style={styles.progressLabels}>
+                    <View style={[styles.questionLabelContainer]}>
+                      <ThemedText style={styles.progressText}>
+                        Question {currentQuestionIndex + 1} of {selectedChapterData?.questions.length}
+                      </ThemedText>
+                    </View>
+                  </View>
                 </View>
 
-                <View style={styles.dropZonesContainer}>
-                  {pictureQuestions[currentQuestionIndex].options.map((option, index) => (
+                <View style={styles.questionContainer}>
+                  <ThemedText style={styles.questionText}>
+                    {currentQuestion?.question}
+                  </ThemedText>
+                </View>
+
+                <View style={styles.optionsContainer}>
+                  {currentQuestion?.options.map((option: Option) => (
                     <TouchableOpacity
-                      key={index}
-                      onPress={() => handlePictureQuestionAnswer(index)}
-                      style={[
-                        styles.dropZone,
-                        {
-                          borderColor: selectedAnswer === index.toString() ? 
-                            (index === pictureQuestions[currentQuestionIndex].correctAnswer ? '#4CAF50' : '#F44336') : 
-                            '#ccc',
-                        },
-                      ]}
+                      key={option.id}
+                      style={getOptionStyle(option.id)}
+                      onPress={() => handleAnswerSelect(option.id)}
+                      disabled={!!selectedAnswer}
                     >
-                      <Animated.View 
-                        style={[
-                          StyleSheet.absoluteFill, 
-                          dropZoneAnimatedStyle,
-                          hoveredDropZone.value === index && { backgroundColor: 'rgba(0, 255, 0, 0.2)' }
-                        ]} 
-                      />
-                      <ThemedText style={styles.dropZoneText}>{option}</ThemedText>
+                      <View style={styles.optionContent}>
+                        <View style={styles.optionId}>
+                          <ThemedText style={styles.optionIdText}>{option.id}</ThemedText>
+                        </View>
+                        <ThemedText style={styles.optionText}>{option.text}</ThemedText>
+                      </View>
                     </TouchableOpacity>
                   ))}
                 </View>
 
-                {showCelebration && (
-                  <Animated.View style={[styles.celebrationContainer, celebrationStyle]}>
-                    <Ionicons name="star" size={50} color="#FFD700" />
-                  </Animated.View>
+                {showAnswerMessage && (
+                  <View style={styles.answerMessageContainer}>
+                    <ThemedText style={styles.answerMessageText}>
+                      Please select an answer before proceeding
+                    </ThemedText>
+                  </View>
                 )}
 
-                {showWrongAnswer && (
-                  <Animated.View style={[styles.wrongAnswerContainer, wrongAnswerStyle]}>
-                    <Ionicons name="close-circle" size={50} color="#FF0000" />
-                  </Animated.View>
+                {showExplanation && (
+                  <View ref={explanationRef} style={styles.explanationContainer}>
+                    <ThemedText style={styles.explanationTitle}>Explanation:</ThemedText>
+                    <ThemedText style={styles.explanationText}>
+                      {currentQuestion?.explanation}
+                    </ThemedText>
+                  </View>
                 )}
 
                 <View style={styles.navigationContainer}>
@@ -831,48 +838,44 @@ export default function MCQScreen() {
 
                   <TouchableOpacity
                     style={[styles.navButton, styles.nextButton]}
-                    onPress={handleNextQuestion}
+                    onPress={isLastQuestion ? handleResult : handleNextQuestion}
                   >
-                    <ThemedText style={styles.nextButtonText}>Next</ThemedText>
+                    <ThemedText style={styles.nextButtonText}>
+                      {isLastQuestion ? 'Finish' : 'Next'}
+                    </ThemedText>
                     <IconSymbol name="chevron.right" size={24} color="#fff" />
                   </TouchableOpacity>
                 </View>
-              </View>
-            </GestureHandlerRootView>
+              </ScrollView>
+            </>
           ) : (
-            <>
-              {!showResult ? (
-                <View style={styles.timerContainer}>
-                  <ThemedText style={styles.timerText}>{formatTime(time)}</ThemedText>
+            <ScrollView>
+              <View style={styles.resultCard}>
+                <LinearGradient
+                  colors={['#F3E5F5', '#E1BEE7']}
+                  style={StyleSheet.absoluteFill}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 1 }}
+                />
+                
+                <View style={styles.trophyContainer}>
+                  <Animated.View style={{ transform: [{ scale: scaleAnim }, { rotate: spin }] }}>
+                    <IconSymbol name="trophy.fill" size={80} color="#6B54AE" />
+                  </Animated.View>
                 </View>
-              ) : (
-                <View style={styles.resultCard}>
-                  <LinearGradient
-                    colors={['#F3E5F5', '#E1BEE7']}
-                    style={StyleSheet.absoluteFill}
-                    start={{ x: 0, y: 0 }}
-                    end={{ x: 1, y: 1 }}
-                  />
-                  
-                  <View style={styles.trophyContainer}>
-                    <Animated.View style={{ transform: [{ scale: scaleAnim }, { rotate: spin }] }}>
-                      <IconSymbol name="trophy.fill" size={80} color="#6B54AE" />
-                    </Animated.View>
-                  </View>
-                  
-                  <ThemedText style={styles.scoreText}>
-                    {score}/{selectedChapterData?.questions.length}
-                  </ThemedText>
-                  
-                  <ThemedText style={styles.percentageText}>
-                    {percentage}%
-                  </ThemedText>
-                  
-                  <ThemedText style={styles.messageText}>
-                    {getMessage()}
-                  </ThemedText>
-                </View>
-              )}
+                
+                <ThemedText style={styles.scoreText}>
+                  {score}/{selectedChapterData?.questions.length}
+                </ThemedText>
+                
+                <ThemedText style={styles.percentageText}>
+                  {percentage}%
+                </ThemedText>
+                
+                <ThemedText style={styles.messageText}>
+                  {getMessage()}
+                </ThemedText>
+              </View>
 
               <ThemedView style={styles.actionButtons}>
                 <TouchableOpacity
@@ -895,7 +898,7 @@ export default function MCQScreen() {
                   <ThemedText style={styles.homeButtonText}>Choose Another Subject</ThemedText>
                 </TouchableOpacity>
               </ThemedView>
-            </>
+            </ScrollView>
           )}
         </ThemedView>
       </ThemedView>
@@ -927,35 +930,32 @@ const styles = StyleSheet.create({
     lineHeight: 32,
   },
   optionsContainer: {
-    gap: 8,
+    gap: 12,
     marginBottom: 30,
+    paddingHorizontal: 16,
   },
   optionContainer: {
-    borderRadius: 16,
+    borderRadius: 12,
     overflow: 'hidden',
-    elevation: 3,
+    elevation: 2,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.15,
-    shadowRadius: 6,
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.2,
+    shadowRadius: 3,
     borderWidth: 1,
     borderColor: '#E0E0E0',
     backgroundColor: '#FFFFFF',
-    marginVertical: 2,
-  },
-  optionGradient: {
-    padding: 16,
   },
   optionContent: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 16,
-    padding: 8,
+    gap: 12,
+    padding: 16,
   },
   optionId: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
+    width: 32,
+    height: 32,
+    borderRadius: 16,
     backgroundColor: '#F5F5F5',
     justifyContent: 'center',
     alignItems: 'center',
@@ -964,8 +964,8 @@ const styles = StyleSheet.create({
   },
   optionIdText: {
     color: '#6B54AE',
-    fontWeight: '700',
-    fontSize: 16,
+    fontWeight: '600',
+    fontSize: 14,
   },
   optionText: {
     flex: 1,
@@ -1101,8 +1101,9 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.25,
     shadowRadius: 3.84,
     backgroundColor: '#F3E5F5',
-    paddingBottom: 60,
+    paddingBottom: 20,
     paddingTop: 30,
+    marginBottom: 20,
   },
   trophyContainer: {
     width: '100%',
@@ -1138,9 +1139,10 @@ const styles = StyleSheet.create({
     backgroundColor: 'transparent',
   },
   actionButtons: {
-    marginTop: 20,
     width: '100%',
     gap: 16,
+    paddingHorizontal: 20,
+    marginTop: 20,
   },
   button: {
     padding: 16,
@@ -1284,13 +1286,17 @@ const styles = StyleSheet.create({
   },
   timerContainer: {
     position: 'absolute',
-    top: -25,
-    right: 15,
+    top: -55,
+    right: 5,
     backgroundColor: '#6B54AE',
     paddingHorizontal: 16,
     paddingVertical: 8,
     borderRadius: 20,
     zIndex: 1,
+  },
+  resultTimerContainer: {
+    top: -25,
+    right: 15,
   },
   timerText: {
     color: '#fff',
@@ -1319,21 +1325,29 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     flexWrap: 'wrap',
     justifyContent: 'space-around',
-    marginTop: 20,
+    gap: 16,
+    marginTop: 24,
   },
   dropZone: {
     width: '45%',
-    height: 100,
+    aspectRatio: 1,
     borderWidth: 2,
-    borderColor: '#ccc',
-    borderRadius: 10,
+    borderColor: '#E0E0E0',
+    borderRadius: 12,
     justifyContent: 'center',
     alignItems: 'center',
-    marginVertical: 10,
+    backgroundColor: '#FFFFFF',
+    elevation: 2,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.2,
+    shadowRadius: 3,
   },
   dropZoneText: {
     fontSize: 16,
+    color: '#333333',
     textAlign: 'center',
+    padding: 8,
   },
   celebrationContainer: {
     position: 'absolute',
