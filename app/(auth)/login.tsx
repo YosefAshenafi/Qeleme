@@ -4,7 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useState, useEffect, useRef } from 'react';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useAuth } from '@/contexts/AuthContext';
 
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
@@ -16,6 +16,7 @@ const { width, height } = Dimensions.get('window');
 const PHONE_REGEX = /^(?:\+251|0|251)?([9][0-9]{8})$/;
 
 export default function LoginScreen() {
+  const { login } = useAuth();
   const [phoneNumber, setPhoneNumber] = useState('');
   const [password, setPassword] = useState('');
   const [errors, setErrors] = useState({
@@ -87,9 +88,16 @@ export default function LoginScreen() {
 
   const handleLogin = async () => {
     if (validateForm()) {
-      // Store the phone number
-      await AsyncStorage.setItem('userPhoneNumber', phoneNumber);
-      router.replace('/(tabs)');
+      // TODO: Replace with actual API call
+      // For now, we'll simulate a successful login with mock data
+      const userData = {
+        id: '1',
+        phoneNumber,
+        name: 'Test User',
+        // Add other user data as needed
+      };
+      
+      await login(userData);
     }
   };
 

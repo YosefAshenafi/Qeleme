@@ -16,6 +16,7 @@ import { TermsOfService } from '../components/profile/TermsOfService';
 import { ThemeChooser } from '@/components/profile/ThemeChooser';
 import { getColors } from '@/constants/Colors';
 import { useTheme } from '@/contexts/ThemeContext';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface AccordionItemProps {
   title: string;
@@ -74,8 +75,9 @@ const AccordionItem: React.FC<AccordionItemProps> = ({ title, icon, children, is
 
 export default function ProfileScreen() {
   const { isDarkMode } = useTheme();
-  const colors = getColors(isDarkMode);
+  const { logout } = useAuth();
   const [openAccordion, setOpenAccordion] = useState<string | null>(null);
+  const colors = getColors(isDarkMode);
 
   const profileData = {
     englishName: 'Yosef Ashenafi',
@@ -137,7 +139,7 @@ export default function ProfileScreen() {
     { 
       title: 'Logout', 
       icon: 'rectangle.portrait.and.arrow.right' as const, 
-      action: () => router.replace('/(auth)/login')
+      action: logout
     },
   ];
 
