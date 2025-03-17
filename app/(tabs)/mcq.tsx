@@ -1,8 +1,8 @@
-import { useState, useRef, useEffect } from 'react';
-import { StyleSheet, TouchableOpacity, ScrollView, View, Dimensions, Animated } from 'react-native';
+import React, { useState, useRef, useEffect } from 'react';
+import { StyleSheet, TouchableOpacity, ScrollView, View, Dimensions, Animated, Modal } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
-import { router } from 'expo-router';
+import { router, useFocusEffect } from 'expo-router';
 
 import { Header } from '@/components/Header';
 import { ThemedText } from '@/components/ThemedText';
@@ -10,7 +10,40 @@ import { ThemedView } from '@/components/ThemedView';
 import { IconSymbol } from '@/components/ui/IconSymbol';
 import mcqData from '@/data/mcqData.json';
 
+interface Option {
+  id: string;
+  text: string;
+  isCorrect: boolean;
+}
+
+interface Question {
+  id: number;
+  question: string;
+  options: Option[];
+  explanation: string;
+}
+
+interface Chapter {
+  id: string;
+  name: string;
+  questions: Question[];
+}
+
+interface Subject {
+  id: string;
+  name: string;
+  chapters: Chapter[];
+}
+
+interface MCQData {
+  subjects: Subject[];
+}
+
+const typedMcqData = mcqData as MCQData;
+
 export default function MCQScreen() {
+  const [selectedSubject, setSelectedSubject] = useState<string>('');
+  const [selectedChapter, setSelectedChapter] = useState<string>('');
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null);
   const [showExplanation, setShowExplanation] = useState(false);
@@ -20,6 +53,14 @@ export default function MCQScreen() {
   const explanationRef = useRef<View>(null);
   const [score, setScore] = useState(0);
   const [showResult, setShowResult] = useState(false);
+  const [showTest, setShowTest] = useState(false);
+  const [showSubjectDropdown, setShowSubjectDropdown] = useState(false);
+  const [showChapterDropdown, setShowChapterDropdown] = useState(false);
+  
+  // Timer states
+  const [time, setTime] = useState(0);
+  const [isTimerRunning, setIsTimerRunning] = useState(false);
+  const timerRef = useRef<NodeJS.Timeout | null>(null);
   
   // Animation refs for result screen
   const scaleAnim = useRef(new Animated.Value(0)).current;
@@ -33,10 +74,57 @@ export default function MCQScreen() {
     rotate: new Animated.Value(0),
   }))).current;
 
-  const currentQuestion = mcqData.questions[currentQuestionIndex];
-  const isLastQuestion = currentQuestionIndex === mcqData.questions.length - 1;
+  const selectedSubjectData = typedMcqData.subjects.find((subject: Subject) => subject.id === selectedSubject);
+  const selectedChapterData = selectedSubjectData?.chapters.find((chapter: Chapter) => chapter.id === selectedChapter);
+  const currentQuestion = selectedChapterData?.questions[currentQuestionIndex];
+  const isLastQuestion = currentQuestionIndex === (selectedChapterData?.questions.length || 0) - 1;
   const isFirstQuestion = currentQuestionIndex === 0;
-  const percentage = Math.round((score / mcqData.questions.length) * 100);
+  const percentage = Math.round((score / (selectedChapterData?.questions.length || 0)) * 100);
+
+  // Timer functions
+  const startTimer = () => {
+    setIsTimerRunning(true);
+    timerRef.current = setInterval(() => {
+      setTime(prevTime => prevTime + 1);
+    }, 1000);
+  };
+
+  const stopTimer = () => {
+    setIsTimerRunning(false);
+    if (timerRef.current) {
+      clearInterval(timerRef.current);
+    }
+  };
+
+  const formatTime = (seconds: number) => {
+    const minutes = Math.floor(seconds / 60);
+    const remainingSeconds = seconds % 60;
+    return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
+  };
+
+  // Add focus effect to reset screen when tab is focused
+  useFocusEffect(
+    React.useCallback(() => {
+      // Reset all states when tab is focused
+      setSelectedSubject('');
+      setSelectedChapter('');
+      setCurrentQuestionIndex(0);
+      setSelectedAnswer(null);
+      setShowExplanation(false);
+      setAnsweredQuestions({});
+      setShowAnswerMessage(false);
+      setScore(0);
+      setShowResult(false);
+      setShowTest(false);
+      setShowSubjectDropdown(false);
+      setShowChapterDropdown(false);
+      setTime(0);
+      setIsTimerRunning(false);
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+      }
+    }, [])
+  );
 
   useEffect(() => {
     if (showResult) {
@@ -161,7 +249,7 @@ export default function MCQScreen() {
     setShowAnswerMessage(false);
     
     // Update score if answer is correct
-    const isCorrect = currentQuestion.options.find(opt => opt.id === answerId)?.isCorrect;
+    const isCorrect = currentQuestion?.options.find((opt: Option) => opt.id === answerId)?.isCorrect;
     if (isCorrect) {
       setScore(prev => prev + 1);
     }
@@ -178,7 +266,7 @@ export default function MCQScreen() {
   };
 
   const handleNextQuestion = () => {
-    if (currentQuestionIndex < mcqData.questions.length - 1) {
+    if (currentQuestionIndex < (selectedChapterData?.questions.length || 0) - 1) {
       if (!selectedAnswer) {
         setShowAnswerMessage(true);
         return;
@@ -203,6 +291,7 @@ export default function MCQScreen() {
       setShowAnswerMessage(true);
       return;
     }
+    stopTimer();
     setShowResult(true);
   };
 
@@ -214,12 +303,28 @@ export default function MCQScreen() {
     setScore(0);
     setShowResult(false);
     setAnsweredQuestions({});
+    setTime(0);
+    startTimer();
+  };
+
+  const handleStartTest = () => {
+    if (!selectedSubject || !selectedChapter) return;
+    setShowTest(true);
+    setCurrentQuestionIndex(0);
+    setSelectedAnswer(null);
+    setShowExplanation(false);
+    setShowAnswerMessage(false);
+    setScore(0);
+    setShowResult(false);
+    setAnsweredQuestions({});
+    setTime(0);
+    startTimer();
   };
 
   const getOptionStyle = (optionId: string) => {
     if (!showExplanation) return styles.optionContainer;
     
-    const isCorrect = currentQuestion.options.find(opt => opt.id === optionId)?.isCorrect;
+    const isCorrect = currentQuestion?.options.find((opt: Option) => opt.id === optionId)?.isCorrect;
     const isSelected = selectedAnswer === optionId;
     
     if (isCorrect) return [styles.optionContainer, styles.correctOption];
@@ -227,13 +332,16 @@ export default function MCQScreen() {
     return styles.optionContainer;
   };
 
-  const progress = ((currentQuestionIndex + 1) / mcqData.questions.length) * 100;
+  const progress = ((currentQuestionIndex + 1) / (selectedChapterData?.questions.length || 0)) * 100;
 
   if (showResult) {
     return (
       <SafeAreaView style={styles.safeArea}>
         <Header title="Quiz Results" />
         <ThemedView style={styles.container}>
+          <View style={styles.timerContainer}>
+            <ThemedText style={styles.timerText}>Time Taken: {formatTime(time)}</ThemedText>
+          </View>
           {percentage >= 90 && (
             <View style={styles.fireworkContainer}>
               {particleAnims.map((anim, index) => (
@@ -281,7 +389,7 @@ export default function MCQScreen() {
             </View>
             
             <ThemedText style={styles.scoreText}>
-              {score}/{mcqData.questions.length}
+              {score}/{selectedChapterData?.questions.length}
             </ThemedText>
             
             <ThemedText style={styles.percentageText}>
@@ -299,6 +407,7 @@ export default function MCQScreen() {
               onPress={handleRetry}
             >
               <ThemedText style={styles.retryButtonText}>Try Again</ThemedText>
+              <IconSymbol name="arrow.clockwise" size={24} color="#fff" />
             </TouchableOpacity>
             
             <TouchableOpacity
@@ -313,10 +422,132 @@ export default function MCQScreen() {
     );
   }
 
+  if (!showTest) {
+    return (
+      <SafeAreaView style={styles.safeArea}>
+        <Header title="MCQ Questions" />
+        <ThemedView style={styles.container}>
+          <ThemedView style={styles.formContainer}>
+            <ThemedText style={styles.formTitle}>Select Subject and Chapter</ThemedText>
+            
+            <ThemedView style={styles.formContent}>
+              {/* Subject Selection */}
+              <ThemedView style={styles.formGroup}>
+                <ThemedText style={styles.formLabel}>Subject</ThemedText>
+                <TouchableOpacity
+                  style={styles.formInput}
+                  onPress={() => setShowSubjectDropdown(!showSubjectDropdown)}
+                >
+                  <ThemedText style={styles.formInputText}>
+                    {selectedSubject ? typedMcqData.subjects.find((s: Subject) => s.id === selectedSubject)?.name : 'Select a subject'}
+                  </ThemedText>
+                  <IconSymbol name="chevron.right" size={20} color="#6B54AE" />
+                </TouchableOpacity>
+                {showSubjectDropdown && (
+                  <Modal
+                    visible={showSubjectDropdown}
+                    transparent={true}
+                    animationType="fade"
+                    onRequestClose={() => setShowSubjectDropdown(false)}
+                  >
+                    <TouchableOpacity
+                      style={styles.modalOverlay}
+                      activeOpacity={1}
+                      onPress={() => setShowSubjectDropdown(false)}
+                    >
+                      <ThemedView style={styles.modalContent}>
+                        <ScrollView>
+                          {typedMcqData.subjects.map((subject: Subject) => (
+                            <TouchableOpacity
+                              key={subject.id}
+                              style={styles.modalItem}
+                              onPress={() => {
+                                setSelectedSubject(subject.id);
+                                setSelectedChapter('');
+                                setShowSubjectDropdown(false);
+                              }}
+                            >
+                              <ThemedText style={styles.modalItemText}>{subject.name}</ThemedText>
+                              <IconSymbol name="chevron.right" size={20} color="#6B54AE" />
+                            </TouchableOpacity>
+                          ))}
+                        </ScrollView>
+                      </ThemedView>
+                    </TouchableOpacity>
+                  </Modal>
+                )}
+              </ThemedView>
+
+              {/* Chapter Selection */}
+              <ThemedView style={styles.formGroup}>
+                <ThemedText style={styles.formLabel}>Chapter</ThemedText>
+                <TouchableOpacity
+                  style={[styles.formInput, !selectedSubject && styles.formInputDisabled]}
+                  onPress={() => selectedSubject && setShowChapterDropdown(!showChapterDropdown)}
+                  disabled={!selectedSubject}
+                >
+                  <ThemedText style={[styles.formInputText, !selectedSubject && styles.formInputTextDisabled]}>
+                    {selectedChapter ? selectedSubjectData?.chapters.find((c: Chapter) => c.id === selectedChapter)?.name : 'Select a chapter'}
+                  </ThemedText>
+                  <IconSymbol name="chevron.right" size={20} color="#6B54AE" />
+                </TouchableOpacity>
+                {showChapterDropdown && selectedSubject && (
+                  <Modal
+                    visible={showChapterDropdown}
+                    transparent={true}
+                    animationType="fade"
+                    onRequestClose={() => setShowChapterDropdown(false)}
+                  >
+                    <TouchableOpacity
+                      style={styles.modalOverlay}
+                      activeOpacity={1}
+                      onPress={() => setShowChapterDropdown(false)}
+                    >
+                      <ThemedView style={styles.modalContent}>
+                        <ScrollView>
+                          {selectedSubjectData?.chapters.map((chapter: Chapter) => (
+                            <TouchableOpacity
+                              key={chapter.id}
+                              style={styles.modalItem}
+                              onPress={() => {
+                                setSelectedChapter(chapter.id);
+                                setShowChapterDropdown(false);
+                              }}
+                            >
+                              <ThemedText style={styles.modalItemText}>{chapter.name}</ThemedText>
+                              <IconSymbol name="chevron.right" size={20} color="#6B54AE" />
+                            </TouchableOpacity>
+                          ))}
+                        </ScrollView>
+                      </ThemedView>
+                    </TouchableOpacity>
+                  </Modal>
+                )}
+              </ThemedView>
+
+              {/* Start Test Button */}
+              <TouchableOpacity
+                style={[styles.startButton, (!selectedSubject || !selectedChapter) && styles.startButtonDisabled]}
+                onPress={handleStartTest}
+                disabled={!selectedSubject || !selectedChapter}
+              >
+                <ThemedText style={styles.startButtonText}>Start Test</ThemedText>
+                <IconSymbol name="chevron.right" size={24} color="#fff" />
+              </TouchableOpacity>
+            </ThemedView>
+          </ThemedView>
+        </ThemedView>
+      </SafeAreaView>
+    );
+  }
+
   return (
     <SafeAreaView style={styles.safeArea}>
       <Header title="MCQ Questions" />
       <ThemedView style={styles.container}>
+        <View style={styles.timerContainer}>
+          <ThemedText style={styles.timerText}>{formatTime(time)}</ThemedText>
+        </View>
         {/* Progress Bar */}
         <ThemedView style={styles.progressContainer}>
           <ThemedView style={styles.progressBar}>
@@ -325,7 +556,7 @@ export default function MCQScreen() {
           <ThemedView style={styles.progressLabels}>
             <ThemedView style={styles.questionLabelContainer}>
               <ThemedText style={styles.progressText}>
-                Question {currentQuestionIndex + 1} of {mcqData.questions.length}
+                Question {currentQuestionIndex + 1} of {selectedChapterData?.questions.length}
               </ThemedText>
             </ThemedView>
             <ThemedText style={styles.progressText}>
@@ -343,13 +574,13 @@ export default function MCQScreen() {
             {/* Question */}
             <ThemedView style={styles.questionContainer}>
               <ThemedText type="title" style={styles.questionText}>
-                {currentQuestion.question}
+                {currentQuestion?.question}
               </ThemedText>
             </ThemedView>
 
             {/* Options */}
             <ThemedView style={styles.optionsContainer}>
-              {currentQuestion.options.map((option) => (
+              {currentQuestion?.options.map((option) => (
                 <TouchableOpacity
                   key={option.id}
                   style={getOptionStyle(option.id)}
@@ -416,7 +647,7 @@ export default function MCQScreen() {
                     Explanation
                   </ThemedText>
                   <ThemedText style={styles.explanationText}>
-                    {currentQuestion.explanation}
+                    {currentQuestion?.explanation}
                   </ThemedText>
                 </ThemedView>
               </View>
@@ -703,5 +934,118 @@ const styles = StyleSheet.create({
     top: 0,
     left: 0,
     transform: [{ translateX: -20 }, { translateY: -20 }],
+  },
+  formContainer: {
+    flex: 1,
+    padding: 20,
+    backgroundColor: '#fff',
+    borderRadius: 20,
+    elevation: 4,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+  },
+  formTitle: {
+    fontSize: 24,
+    fontWeight: '700',
+    color: '#6B54AE',
+    marginBottom: 30,
+    textAlign: 'center',
+  },
+  formContent: {
+    gap: 20,
+  },
+  formGroup: {
+    gap: 8,
+  },
+  formLabel: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#6B54AE',
+  },
+  formInput: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    padding: 16,
+    backgroundColor: '#F5F5F5',
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#E0E0E0',
+  },
+  formInputDisabled: {
+    backgroundColor: '#F5F5F5',
+    opacity: 0.7,
+  },
+  formInputText: {
+    fontSize: 16,
+    color: '#333333',
+  },
+  formInputTextDisabled: {
+    color: '#999999',
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  modalContent: {
+    width: '80%',
+    maxHeight: '80%',
+    backgroundColor: '#fff',
+    borderRadius: 20,
+    padding: 20,
+    elevation: 5,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+  },
+  modalItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    padding: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#E0E0E0',
+  },
+  modalItemText: {
+    fontSize: 16,
+    color: '#333333',
+  },
+  startButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    backgroundColor: '#6B54AE',
+    padding: 16,
+    borderRadius: 12,
+    marginTop: 20,
+  },
+  startButtonDisabled: {
+    backgroundColor: '#CCCCCC',
+  },
+  startButtonText: {
+    color: '#fff',
+    fontSize: 18,
+    fontWeight: '600',
+  },
+  timerContainer: {
+    position: 'absolute',
+    top: -25,
+    right: 15,
+    backgroundColor: '#6B54AE',
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 20,
+    zIndex: 1,
+  },
+  timerText: {
+    color: '#fff',
+    fontSize: 18,
+    fontWeight: '600',
   },
 }); 

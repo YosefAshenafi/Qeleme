@@ -1,59 +1,101 @@
 {
-  "questions": [
+  "subjects": [
     {
-      "id": 1,
-      "question": "What is the capital of France?",
-      "options": [
-        { "id": "A", "text": "London", "isCorrect": false },
-        { "id": "B", "text": "Berlin", "isCorrect": false },
-        { "id": "C", "text": "Paris", "isCorrect": true },
-        { "id": "D", "text": "Madrid", "isCorrect": false }
-      ],
-      "explanation": "Answer: C) Paris\n\nParis is the capital of France. London is the capital of England, Berlin is the capital of Germany, and Madrid is the capital of Spain."
+      "id": "physics",
+      "name": "Physics",
+      "chapters": [
+        {
+          "id": "mechanics",
+          "name": "Mechanics",
+          "questions": [
+            {
+              "id": 1,
+              "question": "What is Newton's First Law of Motion?",
+              "options": [
+                { "id": "A", "text": "Force equals mass times acceleration", "isCorrect": false },
+                { "id": "B", "text": "An object at rest stays at rest, and an object in motion stays in motion", "isCorrect": true },
+                { "id": "C", "text": "For every action, there is an equal and opposite reaction", "isCorrect": false },
+                { "id": "D", "text": "Energy cannot be created or destroyed", "isCorrect": false }
+              ],
+              "explanation": "Newton's First Law states that an object will remain at rest or in uniform motion in a straight line unless acted upon by an external force."
+            },
+            {
+              "id": 2,
+              "question": "What is the SI unit of force?",
+              "options": [
+                { "id": "A", "text": "Watt", "isCorrect": false },
+                { "id": "B", "text": "Newton", "isCorrect": true },
+                { "id": "C", "text": "Joule", "isCorrect": false },
+                { "id": "D", "text": "Pascal", "isCorrect": false }
+              ],
+              "explanation": "The SI unit of force is the Newton (N), named after Sir Isaac Newton."
+            }
+          ]
+        },
+        {
+          "id": "thermodynamics",
+          "name": "Thermodynamics",
+          "questions": [
+            {
+              "id": 1,
+              "question": "What is the First Law of Thermodynamics?",
+              "options": [
+                { "id": "A", "text": "Energy cannot be created or destroyed", "isCorrect": true },
+                { "id": "B", "text": "Heat flows from cold to hot", "isCorrect": false },
+                { "id": "C", "text": "Pressure and volume are inversely proportional", "isCorrect": false },
+                { "id": "D", "text": "Temperature is constant in an adiabatic process", "isCorrect": false }
+              ],
+              "explanation": "The First Law of Thermodynamics states that energy cannot be created or destroyed, only converted from one form to another."
+            }
+          ]
+        }
+      ]
     },
     {
-      "id": 2,
-      "question": "Which planet is known as the Red Planet?",
-      "options": [
-        { "id": "A", "text": "Venus", "isCorrect": false },
-        { "id": "B", "text": "Mars", "isCorrect": true },
-        { "id": "C", "text": "Jupiter", "isCorrect": false },
-        { "id": "D", "text": "Saturn", "isCorrect": false }
-      ],
-      "explanation": "Answer: B) Mars\n\nMars is known as the Red Planet due to its reddish appearance, caused by iron oxide (rust) on its surface. Venus is the hottest planet, Jupiter is the largest, and Saturn is known for its rings."
+      "id": "chemistry",
+      "name": "Chemistry",
+      "chapters": [
+        {
+          "id": "atomic",
+          "name": "Atomic Structure",
+          "questions": [
+            {
+              "id": 1,
+              "question": "What is the atomic number of an element?",
+              "options": [
+                { "id": "A", "text": "Number of neutrons", "isCorrect": false },
+                { "id": "B", "text": "Number of protons", "isCorrect": true },
+                { "id": "C", "text": "Number of electrons", "isCorrect": false },
+                { "id": "D", "text": "Number of isotopes", "isCorrect": false }
+              ],
+              "explanation": "The atomic number is the number of protons in the nucleus of an atom."
+            }
+          ]
+        }
+      ]
     },
     {
-      "id": 3,
-      "question": "What is the largest mammal in the world?",
-      "options": [
-        { "id": "A", "text": "African Elephant", "isCorrect": false },
-        { "id": "B", "text": "Blue Whale", "isCorrect": true },
-        { "id": "C", "text": "Giraffe", "isCorrect": false },
-        { "id": "D", "text": "Polar Bear", "isCorrect": false }
-      ],
-      "explanation": "Answer: B) Blue Whale\n\nThe Blue Whale is the largest mammal ever known to have lived on Earth, reaching lengths of up to 100 feet. African Elephants are the largest land mammals, Giraffes are the tallest, and Polar Bears are the largest land carnivores."
-    },
-    {
-      "id": 4,
-      "question": "Who painted the Mona Lisa?",
-      "options": [
-        { "id": "A", "text": "Vincent van Gogh", "isCorrect": false },
-        { "id": "B", "text": "Pablo Picasso", "isCorrect": false },
-        { "id": "C", "text": "Leonardo da Vinci", "isCorrect": true },
-        { "id": "D", "text": "Michelangelo", "isCorrect": false }
-      ],
-      "explanation": "Answer: C) Leonardo da Vinci\n\nLeonardo da Vinci painted the Mona Lisa between 1503 and 1519. Van Gogh is known for 'The Starry Night', Picasso for his cubist works, and Michelangelo for the Sistine Chapel ceiling."
-    },
-    {
-      "id": 5,
-      "question": "What is the chemical symbol for gold?",
-      "options": [
-        { "id": "A", "text": "Ag", "isCorrect": false },
-        { "id": "B", "text": "Fe", "isCorrect": false },
-        { "id": "C", "text": "Au", "isCorrect": true },
-        { "id": "D", "text": "Cu", "isCorrect": false }
-      ],
-      "explanation": "Answer: C) Au\n\nAu is the chemical symbol for gold, derived from the Latin word 'aurum'. Ag is for silver, Fe is for iron, and Cu is for copper."
+      "id": "biology",
+      "name": "Biology",
+      "chapters": [
+        {
+          "id": "cell",
+          "name": "Cell Biology",
+          "questions": [
+            {
+              "id": 1,
+              "question": "What is the powerhouse of the cell?",
+              "options": [
+                { "id": "A", "text": "Nucleus", "isCorrect": false },
+                { "id": "B", "text": "Mitochondria", "isCorrect": true },
+                { "id": "C", "text": "Golgi apparatus", "isCorrect": false },
+                { "id": "D", "text": "Endoplasmic reticulum", "isCorrect": false }
+              ],
+              "explanation": "Mitochondria are known as the powerhouse of the cell because they generate most of the cell's supply of adenosine triphosphate (ATP)."
+            }
+          ]
+        }
+      ]
     }
   ]
 } 
