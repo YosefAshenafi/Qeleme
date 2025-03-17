@@ -1327,10 +1327,11 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     marginVertical: 20,
+    borderRadius: 30,
   },
   draggableImage: {
-    width: 150,
-    height: 150,
+    width: 250,
+    height: 250,
     resizeMode: 'contain',
   },
   dropZonesContainer: {
