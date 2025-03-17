@@ -1,6 +1,140 @@
 {
   "subjects": [
     {
+      "id": "biology",
+      "name": "Biology",
+      "chapters": [
+        {
+          "id": "enzymes",
+          "name": "Enzymes",
+          "questions": [
+            {
+              "id": 1,
+              "question": "What is the primary function of enzymes in biological systems?",
+              "options": [
+                { "id": "A", "text": "To provide energy", "isCorrect": false },
+                { "id": "B", "text": "To speed up chemical reactions", "isCorrect": true },
+                { "id": "C", "text": "To store genetic information", "isCorrect": false },
+                { "id": "D", "text": "To transport molecules", "isCorrect": false }
+              ],
+              "explanation": "Enzymes are biological catalysts that speed up chemical reactions in living organisms."
+            },
+            {
+              "id": 2,
+              "question": "What is the active site of an enzyme?",
+              "options": [
+                { "id": "A", "text": "The region where the enzyme is produced", "isCorrect": false },
+                { "id": "B", "text": "The region where the substrate binds", "isCorrect": true },
+                { "id": "C", "text": "The region where ATP is stored", "isCorrect": false },
+                { "id": "D", "text": "The region where DNA is located", "isCorrect": false }
+              ],
+              "explanation": "The active site is the specific region of an enzyme where the substrate binds and the chemical reaction occurs."
+            },
+            {
+              "id": 3,
+              "question": "What happens to an enzyme when it is denatured?",
+              "options": [
+                { "id": "A", "text": "It becomes more active", "isCorrect": false },
+                { "id": "B", "text": "It loses its shape and function", "isCorrect": true },
+                { "id": "C", "text": "It produces more products", "isCorrect": false },
+                { "id": "D", "text": "It becomes more stable", "isCorrect": false }
+              ],
+              "explanation": "Denaturation causes the enzyme to lose its three-dimensional structure, which is essential for its function."
+            },
+            {
+              "id": 4,
+              "question": "What is the optimal pH for most enzymes in the human body?",
+              "options": [
+                { "id": "A", "text": "pH 2", "isCorrect": false },
+                { "id": "B", "text": "pH 7", "isCorrect": true },
+                { "id": "C", "text": "pH 12", "isCorrect": false },
+                { "id": "D", "text": "pH 14", "isCorrect": false }
+              ],
+              "explanation": "Most enzymes in the human body work best at neutral pH (around 7)."
+            },
+            {
+              "id": 5,
+              "question": "What is enzyme specificity?",
+              "options": [
+                { "id": "A", "text": "The ability to work at any temperature", "isCorrect": false },
+                { "id": "B", "text": "The ability to catalyze only one specific reaction", "isCorrect": true },
+                { "id": "C", "text": "The ability to work with any substrate", "isCorrect": false },
+                { "id": "D", "text": "The ability to work at any pH", "isCorrect": false }
+              ],
+              "explanation": "Enzyme specificity refers to the ability of an enzyme to catalyze only one specific reaction with a specific substrate."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "chemistry",
+      "name": "Chemistry",
+      "chapters": [
+        {
+          "id": "organic",
+          "name": "Organic Compounds",
+          "questions": [
+            {
+              "id": 1,
+              "question": "What is the general formula for alkanes?",
+              "options": [
+                { "id": "A", "text": "CnH2n", "isCorrect": false },
+                { "id": "B", "text": "CnH2n+2", "isCorrect": true },
+                { "id": "C", "text": "CnH2n-2", "isCorrect": false },
+                { "id": "D", "text": "CnH2n+1", "isCorrect": false }
+              ],
+              "explanation": "Alkanes follow the general formula CnH2n+2, where n is the number of carbon atoms."
+            },
+            {
+              "id": 2,
+              "question": "What is the functional group of alcohols?",
+              "options": [
+                { "id": "A", "text": "-COOH", "isCorrect": false },
+                { "id": "B", "text": "-OH", "isCorrect": true },
+                { "id": "C", "text": "-CHO", "isCorrect": false },
+                { "id": "D", "text": "-NH2", "isCorrect": false }
+              ],
+              "explanation": "Alcohols contain the hydroxyl functional group (-OH)."
+            },
+            {
+              "id": 3,
+              "question": "What type of bond is formed between carbon atoms in alkenes?",
+              "options": [
+                { "id": "A", "text": "Single bond", "isCorrect": false },
+                { "id": "B", "text": "Double bond", "isCorrect": true },
+                { "id": "C", "text": "Triple bond", "isCorrect": false },
+                { "id": "D", "text": "Ionic bond", "isCorrect": false }
+              ],
+              "explanation": "Alkenes contain at least one double bond between carbon atoms."
+            },
+            {
+              "id": 4,
+              "question": "What is the name of the process that converts alkenes to alkanes?",
+              "options": [
+                { "id": "A", "text": "Hydrolysis", "isCorrect": false },
+                { "id": "B", "text": "Hydrogenation", "isCorrect": true },
+                { "id": "C", "text": "Dehydration", "isCorrect": false },
+                { "id": "D", "text": "Oxidation", "isCorrect": false }
+              ],
+              "explanation": "Hydrogenation is the process of adding hydrogen to convert alkenes to alkanes."
+            },
+            {
+              "id": 5,
+              "question": "What is the functional group of carboxylic acids?",
+              "options": [
+                { "id": "A", "text": "-OH", "isCorrect": false },
+                { "id": "B", "text": "-COOH", "isCorrect": true },
+                { "id": "C", "text": "-CHO", "isCorrect": false },
+                { "id": "D", "text": "-NH2", "isCorrect": false }
+              ],
+              "explanation": "Carboxylic acids contain the carboxyl functional group (-COOH)."
+            }
+          ]
+        }
+      ]
+    },
+    {
       "id": "physics",
       "name": "Physics",
       "chapters": [
@@ -29,69 +163,39 @@
                 { "id": "D", "text": "Pascal", "isCorrect": false }
               ],
               "explanation": "The SI unit of force is the Newton (N), named after Sir Isaac Newton."
-            }
-          ]
-        },
-        {
-          "id": "thermodynamics",
-          "name": "Thermodynamics",
-          "questions": [
+            },
             {
-              "id": 1,
-              "question": "What is the First Law of Thermodynamics?",
+              "id": 3,
+              "question": "What is the formula for calculating kinetic energy?",
               "options": [
-                { "id": "A", "text": "Energy cannot be created or destroyed", "isCorrect": true },
-                { "id": "B", "text": "Heat flows from cold to hot", "isCorrect": false },
-                { "id": "C", "text": "Pressure and volume are inversely proportional", "isCorrect": false },
-                { "id": "D", "text": "Temperature is constant in an adiabatic process", "isCorrect": false }
+                { "id": "A", "text": "KE = mv", "isCorrect": false },
+                { "id": "B", "text": "KE = ½mv²", "isCorrect": true },
+                { "id": "C", "text": "KE = mgh", "isCorrect": false },
+                { "id": "D", "text": "KE = Fd", "isCorrect": false }
               ],
-              "explanation": "The First Law of Thermodynamics states that energy cannot be created or destroyed, only converted from one form to another."
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "id": "chemistry",
-      "name": "Chemistry",
-      "chapters": [
-        {
-          "id": "atomic",
-          "name": "Atomic Structure",
-          "questions": [
+              "explanation": "The formula for kinetic energy is KE = ½mv², where m is mass and v is velocity."
+            },
             {
-              "id": 1,
-              "question": "What is the atomic number of an element?",
+              "id": 4,
+              "question": "What is the acceleration due to gravity on Earth?",
               "options": [
-                { "id": "A", "text": "Number of neutrons", "isCorrect": false },
-                { "id": "B", "text": "Number of protons", "isCorrect": true },
-                { "id": "C", "text": "Number of electrons", "isCorrect": false },
-                { "id": "D", "text": "Number of isotopes", "isCorrect": false }
+                { "id": "A", "text": "7.8 m/s²", "isCorrect": false },
+                { "id": "B", "text": "9.8 m/s²", "isCorrect": true },
+                { "id": "C", "text": "10.2 m/s²", "isCorrect": false },
+                { "id": "D", "text": "8.9 m/s²", "isCorrect": false }
               ],
-              "explanation": "The atomic number is the number of protons in the nucleus of an atom."
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "id": "biology",
-      "name": "Biology",
-      "chapters": [
-        {
-          "id": "cell",
-          "name": "Cell Biology",
-          "questions": [
+              "explanation": "The standard acceleration due to gravity on Earth is approximately 9.8 m/s²."
+            },
             {
-              "id": 1,
-              "question": "What is the powerhouse of the cell?",
+              "id": 5,
+              "question": "What is the principle of conservation of energy?",
               "options": [
-                { "id": "A", "text": "Nucleus", "isCorrect": false },
-                { "id": "B", "text": "Mitochondria", "isCorrect": true },
-                { "id": "C", "text": "Golgi apparatus", "isCorrect": false },
-                { "id": "D", "text": "Endoplasmic reticulum", "isCorrect": false }
+                { "id": "A", "text": "Energy can be created but not destroyed", "isCorrect": false },
+                { "id": "B", "text": "Energy cannot be created or destroyed, only transformed", "isCorrect": true },
+                { "id": "C", "text": "Energy can be destroyed but not created", "isCorrect": false },
+                { "id": "D", "text": "Energy is always increasing", "isCorrect": false }
               ],
-              "explanation": "Mitochondria are known as the powerhouse of the cell because they generate most of the cell's supply of adenosine triphosphate (ATP)."
+              "explanation": "The principle of conservation of energy states that energy cannot be created or destroyed, only transformed from one form to another."
             }
           ]
         }
