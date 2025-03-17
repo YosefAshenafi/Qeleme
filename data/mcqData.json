@@ -1,0 +1,59 @@
+{
+  "questions": [
+    {
+      "id": 1,
+      "question": "What is the capital of France?",
+      "options": [
+        { "id": "A", "text": "London", "isCorrect": false },
+        { "id": "B", "text": "Berlin", "isCorrect": false },
+        { "id": "C", "text": "Paris", "isCorrect": true },
+        { "id": "D", "text": "Madrid", "isCorrect": false }
+      ],
+      "explanation": "Answer: C) Paris\n\nParis is the capital of France. London is the capital of England, Berlin is the capital of Germany, and Madrid is the capital of Spain."
+    },
+    {
+      "id": 2,
+      "question": "Which planet is known as the Red Planet?",
+      "options": [
+        { "id": "A", "text": "Venus", "isCorrect": false },
+        { "id": "B", "text": "Mars", "isCorrect": true },
+        { "id": "C", "text": "Jupiter", "isCorrect": false },
+        { "id": "D", "text": "Saturn", "isCorrect": false }
+      ],
+      "explanation": "Answer: B) Mars\n\nMars is known as the Red Planet due to its reddish appearance, caused by iron oxide (rust) on its surface. Venus is the hottest planet, Jupiter is the largest, and Saturn is known for its rings."
+    },
+    {
+      "id": 3,
+      "question": "What is the largest mammal in the world?",
+      "options": [
+        { "id": "A", "text": "African Elephant", "isCorrect": false },
+        { "id": "B", "text": "Blue Whale", "isCorrect": true },
+        { "id": "C", "text": "Giraffe", "isCorrect": false },
+        { "id": "D", "text": "Polar Bear", "isCorrect": false }
+      ],
+      "explanation": "Answer: B) Blue Whale\n\nThe Blue Whale is the largest mammal ever known to have lived on Earth, reaching lengths of up to 100 feet. African Elephants are the largest land mammals, Giraffes are the tallest, and Polar Bears are the largest land carnivores."
+    },
+    {
+      "id": 4,
+      "question": "Who painted the Mona Lisa?",
+      "options": [
+        { "id": "A", "text": "Vincent van Gogh", "isCorrect": false },
+        { "id": "B", "text": "Pablo Picasso", "isCorrect": false },
+        { "id": "C", "text": "Leonardo da Vinci", "isCorrect": true },
+        { "id": "D", "text": "Michelangelo", "isCorrect": false }
+      ],
+      "explanation": "Answer: C) Leonardo da Vinci\n\nLeonardo da Vinci painted the Mona Lisa between 1503 and 1519. Van Gogh is known for 'The Starry Night', Picasso for his cubist works, and Michelangelo for the Sistine Chapel ceiling."
+    },
+    {
+      "id": 5,
+      "question": "What is the chemical symbol for gold?",
+      "options": [
+        { "id": "A", "text": "Ag", "isCorrect": false },
+        { "id": "B", "text": "Fe", "isCorrect": false },
+        { "id": "C", "text": "Au", "isCorrect": true },
+        { "id": "D", "text": "Cu", "isCorrect": false }
+      ],
+      "explanation": "Answer: C) Au\n\nAu is the chemical symbol for gold, derived from the Latin word 'aurum'. Ag is for silver, Fe is for iron, and Cu is for copper."
+    }
+  ]
+} 

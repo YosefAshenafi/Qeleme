@@ -8,65 +8,7 @@ import { Header } from '@/components/Header';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 import { IconSymbol } from '@/components/ui/IconSymbol';
-
-// Sample MCQ data - replace with your actual data source
-const mcqData = [
-  {
-    id: 1,
-    question: "What is the capital of France?",
-    options: [
-      { id: 'A', text: 'London', isCorrect: false },
-      { id: 'B', text: 'Berlin', isCorrect: false },
-      { id: 'C', text: 'Paris', isCorrect: true },
-      { id: 'D', text: 'Madrid', isCorrect: false },
-    ],
-    explanation: "Answer: C) Paris\n\nParis is the capital of France. London is the capital of England, Berlin is the capital of Germany, and Madrid is the capital of Spain."
-  },
-  {
-    id: 2,
-    question: "Which planet is known as the Red Planet?",
-    options: [
-      { id: 'A', text: 'Venus', isCorrect: false },
-      { id: 'B', text: 'Mars', isCorrect: true },
-      { id: 'C', text: 'Jupiter', isCorrect: false },
-      { id: 'D', text: 'Saturn', isCorrect: false },
-    ],
-    explanation: "Answer: B) Mars\n\nMars is known as the Red Planet due to its reddish appearance, caused by iron oxide (rust) on its surface. Venus is the hottest planet, Jupiter is the largest, and Saturn is known for its rings."
-  },
-  {
-    id: 3,
-    question: "What is the largest mammal in the world?",
-    options: [
-      { id: 'A', text: 'African Elephant', isCorrect: false },
-      { id: 'B', text: 'Blue Whale', isCorrect: true },
-      { id: 'C', text: 'Giraffe', isCorrect: false },
-      { id: 'D', text: 'Polar Bear', isCorrect: false },
-    ],
-    explanation: "Answer: B) Blue Whale\n\nThe Blue Whale is the largest mammal ever known to have lived on Earth, reaching lengths of up to 100 feet. African Elephants are the largest land mammals, Giraffes are the tallest, and Polar Bears are the largest land carnivores."
-  },
-  {
-    id: 4,
-    question: "Who painted the Mona Lisa?",
-    options: [
-      { id: 'A', text: 'Vincent van Gogh', isCorrect: false },
-      { id: 'B', text: 'Pablo Picasso', isCorrect: false },
-      { id: 'C', text: 'Leonardo da Vinci', isCorrect: true },
-      { id: 'D', text: 'Michelangelo', isCorrect: false },
-    ],
-    explanation: "Answer: C) Leonardo da Vinci\n\nLeonardo da Vinci painted the Mona Lisa between 1503 and 1519. Van Gogh is known for 'The Starry Night', Picasso for his cubist works, and Michelangelo for the Sistine Chapel ceiling."
-  },
-  {
-    id: 5,
-    question: "What is the chemical symbol for gold?",
-    options: [
-      { id: 'A', text: 'Ag', isCorrect: false },
-      { id: 'B', text: 'Fe', isCorrect: false },
-      { id: 'C', text: 'Au', isCorrect: true },
-      { id: 'D', text: 'Cu', isCorrect: false },
-    ],
-    explanation: "Answer: C) Au\n\nAu is the chemical symbol for gold, derived from the Latin word 'aurum'. Ag is for silver, Fe is for iron, and Cu is for copper."
-  }
-];
+import mcqData from '@/data/mcqData.json';
 
 export default function MCQScreen() {
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
@@ -91,10 +33,10 @@ export default function MCQScreen() {
     rotate: new Animated.Value(0),
   }))).current;
 
-  const currentQuestion = mcqData[currentQuestionIndex];
-  const isLastQuestion = currentQuestionIndex === mcqData.length - 1;
+  const currentQuestion = mcqData.questions[currentQuestionIndex];
+  const isLastQuestion = currentQuestionIndex === mcqData.questions.length - 1;
   const isFirstQuestion = currentQuestionIndex === 0;
-  const percentage = Math.round((score / mcqData.length) * 100);
+  const percentage = Math.round((score / mcqData.questions.length) * 100);
 
   useEffect(() => {
     if (showResult) {
@@ -236,7 +178,7 @@ export default function MCQScreen() {
   };
 
   const handleNextQuestion = () => {
-    if (currentQuestionIndex < mcqData.length - 1) {
+    if (currentQuestionIndex < mcqData.questions.length - 1) {
       if (!selectedAnswer) {
         setShowAnswerMessage(true);
         return;
@@ -285,7 +227,7 @@ export default function MCQScreen() {
     return styles.optionContainer;
   };
 
-  const progress = ((currentQuestionIndex + 1) / mcqData.length) * 100;
+  const progress = ((currentQuestionIndex + 1) / mcqData.questions.length) * 100;
 
   if (showResult) {
     return (
@@ -314,7 +256,7 @@ export default function MCQScreen() {
                   ]}
                 >
                   <IconSymbol 
-                    name="sparkles" 
+                    name="trophy.fill" 
                     size={36} 
                     color={index % 4 === 0 ? '#FFD700' : 
                            index % 4 === 1 ? '#FFA500' : 
@@ -339,7 +281,7 @@ export default function MCQScreen() {
             </View>
             
             <ThemedText style={styles.scoreText}>
-              {score}/{mcqData.length}
+              {score}/{mcqData.questions.length}
             </ThemedText>
             
             <ThemedText style={styles.percentageText}>
@@ -383,7 +325,7 @@ export default function MCQScreen() {
           <ThemedView style={styles.progressLabels}>
             <ThemedView style={styles.questionLabelContainer}>
               <ThemedText style={styles.progressText}>
-                Question {currentQuestionIndex + 1} of {mcqData.length}
+                Question {currentQuestionIndex + 1} of {mcqData.questions.length}
               </ThemedText>
             </ThemedView>
             <ThemedText style={styles.progressText}>
@@ -432,7 +374,7 @@ export default function MCQScreen() {
                     style={[styles.navButton, styles.prevButton]}
                     onPress={handlePreviousQuestion}
                   >
-                    <IconSymbol name="chevron.left" size={24} color="#6B54AE" />
+                    <IconSymbol name="chevron.left.forwardslash.chevron.right" size={24} color="#6B54AE" />
                     <ThemedText style={styles.prevButtonText}>Previous</ThemedText>
                   </TouchableOpacity>
                 )}
@@ -444,7 +386,7 @@ export default function MCQScreen() {
                     onPress={handleResult}
                   >
                     <ThemedText style={styles.resultButtonText}>View Results</ThemedText>
-                    <IconSymbol name="trophy" size={24} color="#fff" />
+                    <IconSymbol name="trophy.fill" size={24} color="#fff" />
                   </TouchableOpacity>
                 ) : (
                   <TouchableOpacity
@@ -452,7 +394,7 @@ export default function MCQScreen() {
                     onPress={handleNextQuestion}
                   >
                     <ThemedText style={styles.nextButtonText}>Next Question</ThemedText>
-                    <IconSymbol name="chevron.right" size={24} color="#fff" />
+                    <IconSymbol name="chevron.right" size={24} color="#6B54AE" />
                   </TouchableOpacity>
                 )}
               </ThemedView>
