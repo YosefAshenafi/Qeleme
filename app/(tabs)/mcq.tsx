@@ -32,6 +32,7 @@ interface Chapter {
   id: string;
   name: string;
   questions: Question[];
+  pictureQuestions?: Question[];
 }
 
 interface Subject {
@@ -63,13 +64,15 @@ const pictureQuestions = [
 ];
 
 export default function MCQScreen() {
-  const [selectedSubject, setSelectedSubject] = useState<string>('');
-  const [selectedChapter, setSelectedChapter] = useState<string>('');
+  const [selectedSubject, setSelectedSubject] = useState('');
+  const [selectedChapter, setSelectedChapter] = useState('');
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null);
   const [showExplanation, setShowExplanation] = useState(false);
   const [answeredQuestions, setAnsweredQuestions] = useState<{ [key: number]: string }>({});
   const [showAnswerMessage, setShowAnswerMessage] = useState(false);
+  const [userPhoneNumber, setUserPhoneNumber] = useState<string | null>(null);
+  const [showPictureQuestions, setShowPictureQuestions] = useState(false);
   const scrollViewRef = useRef<ScrollView>(null);
   const explanationRef = useRef<View>(null);
   const [score, setScore] = useState(0);
@@ -97,15 +100,15 @@ export default function MCQScreen() {
 
   const selectedSubjectData = typedMcqData.subjects.find((subject: Subject) => subject.id === selectedSubject);
   const selectedChapterData = selectedSubjectData?.chapters.find((chapter: Chapter) => chapter.id === selectedChapter);
-  const currentQuestion = selectedChapterData?.questions[currentQuestionIndex];
+  const currentQuestion = showPictureQuestions 
+    ? selectedChapterData?.pictureQuestions?.[currentQuestionIndex]
+    : selectedChapterData?.questions[currentQuestionIndex];
   const isLastQuestion = currentQuestionIndex === (selectedChapterData?.questions.length || 0) - 1;
   const isFirstQuestion = currentQuestionIndex === 0;
   const percentage = Math.round((score / (selectedChapterData?.questions.length || 0)) * 100);
 
   const [showCelebration, setShowCelebration] = useState(false);
   const [showWrongAnswer, setShowWrongAnswer] = useState(false);
-  const [showPictureQuestions, setShowPictureQuestions] = useState(false);
-  const [userPhoneNumber, setUserPhoneNumber] = useState<string | null>(null);
   const { width: windowWidth, height: windowHeight } = useWindowDimensions();
 
   // Picture questions animation values
@@ -389,7 +392,11 @@ export default function MCQScreen() {
 
   const handleNextQuestion = () => {
     if (showPictureQuestions) {
-      if (currentQuestionIndex < pictureQuestions.length - 1) {
+      if (currentQuestionIndex < (selectedChapterData?.pictureQuestions?.length || 0) - 1) {
+        if (!selectedAnswer) {
+          setShowAnswerMessage(true);
+          return;
+        }
         setCurrentQuestionIndex(prev => prev + 1);
         setSelectedAnswer(null);
       } else {
@@ -405,6 +412,8 @@ export default function MCQScreen() {
         setSelectedAnswer(null);
         setShowExplanation(false);
         setShowAnswerMessage(false);
+      } else {
+        setShowResult(true);
       }
     }
   };
@@ -471,7 +480,11 @@ export default function MCQScreen() {
     return styles.optionContainer;
   };
 
-  const progress = ((currentQuestionIndex + 1) / (selectedChapterData?.questions.length || 0)) * 100;
+  const totalQuestions = showPictureQuestions
+    ? selectedChapterData?.pictureQuestions?.length || 0
+    : selectedChapterData?.questions.length || 0;
+
+  const progress = ((currentQuestionIndex + 1) / totalQuestions) * 100;
 
   if (showResult) {
     return (
@@ -528,7 +541,7 @@ export default function MCQScreen() {
             </View>
             
             <ThemedText style={styles.scoreText}>
-              {score}/{selectedChapterData?.questions.length}
+              {score}/{totalQuestions}
             </ThemedText>
             
             <ThemedText style={styles.percentageText}>
@@ -779,7 +792,7 @@ export default function MCQScreen() {
                   <View style={styles.progressLabels}>
                     <View style={[styles.questionLabelContainer]}>
                       <ThemedText style={styles.progressText}>
-                        Question {currentQuestionIndex + 1} of {selectedChapterData?.questions.length}
+                        Question {currentQuestionIndex + 1} of {totalQuestions}
                       </ThemedText>
                     </View>
                   </View>
@@ -865,7 +878,7 @@ export default function MCQScreen() {
                 </View>
                 
                 <ThemedText style={styles.scoreText}>
-                  {score}/{selectedChapterData?.questions.length}
+                  {score}/{totalQuestions}
                 </ThemedText>
                 
                 <ThemedText style={styles.percentageText}>

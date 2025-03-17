@@ -5,6 +5,7 @@ import { useState, useEffect, useRef } from 'react';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '@/contexts/AuthContext';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
@@ -88,16 +89,22 @@ export default function LoginScreen() {
 
   const handleLogin = async () => {
     if (validateForm()) {
-      // TODO: Replace with actual API call
-      // For now, we'll simulate a successful login with mock data
-      const userData = {
-        id: '1',
-        phoneNumber,
-        name: 'Test User',
-        // Add other user data as needed
-      };
-      
-      await login(userData);
+      try {
+        // Store the phone number in AsyncStorage
+        await AsyncStorage.setItem('userPhoneNumber', phoneNumber);
+        
+        // For now, we'll simulate a successful login with mock data
+        const userData = {
+          id: '1',
+          phoneNumber,
+          name: 'Test User',
+          // Add other user data as needed
+        };
+        
+        await login(userData);
+      } catch (error) {
+        console.error('Login error:', error);
+      }
     }
   };
 
