@@ -141,10 +141,13 @@ export default function PictureMCQResultScreen() {
           <ThemedView style={styles.actionButtons}>
             <TouchableOpacity
               style={[styles.button, styles.playAgainButton, { backgroundColor: colors.tint }]}
-              onPress={() => router.back()}
+              onPress={() => router.push({
+                pathname: '/(tabs)/mcq',
+                params: { reset: 'true' }
+              })}
             >
               <ThemedText style={styles.buttonText}>Try Again</ThemedText>
-              <IconSymbol name="chevron.right" size={24} color="#fff" />
+              <IconSymbol name="arrow.clockwise" size={24} color="#fff" />
             </TouchableOpacity>
             
             <TouchableOpacity

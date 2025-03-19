@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { StyleSheet, TouchableOpacity, ScrollView, View, Dimensions, Image } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
-import { router } from 'expo-router';
+import { router, useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { GestureHandlerRootView, GestureDetector, Gesture } from 'react-native-gesture-handler';
@@ -36,6 +36,7 @@ const imageMapping: { [key: string]: any } = {
 const pictureQuestions = pictureQuestionsData.questions;
 
 export default function PictureMCQScreen() {
+  const params = useLocalSearchParams();
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null);
   const [showExplanation, setShowExplanation] = useState(false);
@@ -194,13 +195,18 @@ export default function PictureMCQScreen() {
       // Only allow access if phone number starts with 911
       if (phoneNumber?.startsWith('+251911')) {
         setIsAuthorized(true);
+        
+        // Check if we need to reset the state
+        if (params?.reset === 'true') {
+          handleRetry();
+        }
       } else {
         // Redirect to regular MCQ if not authorized
         router.push('/mcq');
       }
     };
     checkPhoneNumber();
-  }, []);
+  }, [params]);
 
   const handleNextQuestion = () => {
     if (currentQuestionIndex < pictureQuestions.length - 1) {
@@ -380,7 +386,7 @@ export default function PictureMCQScreen() {
                 onPress={handlePreviousQuestion}
                 disabled={isFirstQuestion}
               >
-                <IconSymbol name="chevron.left" size={24} color="#6B54AE" />
+                <IconSymbol name="chevron.left.forwardslash.chevron.right" size={24} color="#6B54AE" />
                 <ThemedText style={styles.prevButtonText}>Previous</ThemedText>
               </TouchableOpacity>
 
