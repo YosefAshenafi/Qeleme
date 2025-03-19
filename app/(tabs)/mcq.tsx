@@ -138,8 +138,6 @@ export default function MCQScreen() {
       setUserPhoneNumber(phoneNumber);
       
       // If phone number starts with 911, show picture questions
-      console.log(phoneNumber);
-      console.log(phoneNumber?.startsWith('+251911'));
       if (phoneNumber?.startsWith('+251911')) {
         setIsPictureQuestions(true);
       }

@@ -39,7 +39,7 @@ export default function PictureMCQScreen() {
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null);
   const [showExplanation, setShowExplanation] = useState(false);
-  const [score, setScore] = useState(0);
+  const [score, setScore] = useState<number>(0);
   const [showCelebration, setShowCelebration] = useState(false);
   const [showWrongAnswer, setShowWrongAnswer] = useState(false);
   const [userPhoneNumber, setUserPhoneNumber] = useState<string | null>(null);
@@ -147,7 +147,6 @@ export default function PictureMCQScreen() {
       imagePosition.value = withSpring({ x: 0, y: 0 });
       runOnJS(setHoveredOption)(null);
 
-      // If we have a hovered option, set it as dropped and trigger animations
       if (hoveredOption) {
         const selectedOption = currentQuestion.options.find(opt => opt.id === hoveredOption);
         if (selectedOption) {
@@ -155,8 +154,9 @@ export default function PictureMCQScreen() {
           runOnJS(setSelectedAnswer)(hoveredOption);
           
           if (selectedOption.isCorrect) {
-            // Update score if answer is correct
-            runOnJS(setScore)((prevScore: number) => prevScore + 1);
+            // Simplified score update
+            runOnJS(setScore)(score + 1);
+            
             // Celebration animation
             celebrationScale.value = withSequence(
               withSpring(1, { damping: 8 }),
@@ -238,6 +238,21 @@ export default function PictureMCQScreen() {
     if (percentage >= 70) return "Great job! You're doing well!";
     if (percentage >= 50) return "Not bad! Keep practicing!";
     return "Keep learning! You can do better!";
+  };
+
+  const handleNavigation = () => {
+    const currentScore = Number(score) || 0; // Ensure score is a number
+    if (isLastQuestion) {
+      router.push({
+        pathname: '/picture-mcq-result',
+        params: { 
+          score: currentScore,
+          totalQuestions: pictureQuestions.length 
+        }
+      });
+    } else {
+      handleNextQuestion();
+    }
   };
 
   if (!isAuthorized) {
@@ -365,16 +380,13 @@ export default function PictureMCQScreen() {
                 onPress={handlePreviousQuestion}
                 disabled={isFirstQuestion}
               >
-                <IconSymbol name="chevron.left.forwardslash.chevron.right" size={24} color="#6B54AE" />
+                <IconSymbol name="chevron.left" size={24} color="#6B54AE" />
                 <ThemedText style={styles.prevButtonText}>Previous</ThemedText>
               </TouchableOpacity>
 
               <TouchableOpacity
                 style={[styles.navButton, styles.nextButton]}
-                onPress={isLastQuestion ? () => router.push({
-                  pathname: '/picture-mcq-result',
-                  params: { score, totalQuestions: pictureQuestions.length }
-                }) : handleNextQuestion}
+                onPress={handleNavigation}
               >
                 <ThemedText style={styles.nextButtonText}>
                   {isLastQuestion ? 'Show Result' : 'Next'}
