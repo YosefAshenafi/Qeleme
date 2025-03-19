@@ -42,13 +42,16 @@ export default function SignupScreen() {
   };
 
   const handleSignup = () => {
-    if (!acceptTerms) {
-      return;
-    }
-    if (password !== confirmPassword) {
-      return;
-    }
-    router.replace('/(tabs)');
+    // if (!acceptTerms) {
+    //   return;
+    // }
+    // if (password !== confirmPassword) {
+    //   return;
+    // }
+    // if (!fullName || !phoneNumber || !grade) {
+    //   return;
+    // }
+    router.push('/(auth)/otp');
   };
 
   return (
