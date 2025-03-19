@@ -40,7 +40,6 @@ export default function PictureMCQScreen() {
   const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null);
   const [showExplanation, setShowExplanation] = useState(false);
   const [score, setScore] = useState(0);
-  const [showResult, setShowResult] = useState(false);
   const [showCelebration, setShowCelebration] = useState(false);
   const [showWrongAnswer, setShowWrongAnswer] = useState(false);
   const [userPhoneNumber, setUserPhoneNumber] = useState<string | null>(null);
@@ -211,8 +210,6 @@ export default function PictureMCQScreen() {
       setShowCelebration(false);
       setShowWrongAnswer(false);
       setDroppedOption(null);
-    } else {
-      setShowResult(true);
     }
   };
 
@@ -234,7 +231,6 @@ export default function PictureMCQScreen() {
     setShowCelebration(false);
     setShowWrongAnswer(false);
     setScore(0);
-    setShowResult(false);
   };
 
   const getMessage = () => {
@@ -254,66 +250,12 @@ export default function PictureMCQScreen() {
               You are not authorized to access picture questions.
             </ThemedText>
             <TouchableOpacity
-              style={[styles.button, styles.homeButton]}
+              style={[styles.pictureButton, styles.pictureHomeButton]}
               onPress={() => router.push('/mcq')}
             >
-              <ThemedText style={styles.homeButtonText}>Go to Regular Questions</ThemedText>
+              <ThemedText style={styles.pictureHomeButtonText}>Go to Regular Questions</ThemedText>
+              <IconSymbol name="house.fill" size={24} color="#4CAF50" />
             </TouchableOpacity>
-          </ThemedView>
-        </SafeAreaView>
-      </GestureHandlerRootView>
-    );
-  }
-
-  if (showResult) {
-    return (
-      <GestureHandlerRootView style={{ flex: 1 }}>
-        <SafeAreaView style={styles.safeArea}>
-          <Header title="Quiz Results" />
-          <ThemedView style={styles.container}>
-            <View style={styles.resultCard}>
-              <LinearGradient
-                colors={['#F3E5F5', '#E1BEE7']}
-                style={StyleSheet.absoluteFill}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 1 }}
-              />
-              
-              <View style={styles.trophyContainer}>
-                <Animated.View style={{ transform: [{ scale: scaleAnim }] }}>
-                  <IconSymbol name="trophy.fill" size={80} color="#6B54AE" />
-                </Animated.View>
-              </View>
-              
-              <ThemedText style={styles.scoreText}>
-                {score}/{pictureQuestions.length}
-              </ThemedText>
-              
-              <ThemedText style={styles.percentageText}>
-                {percentage}%
-              </ThemedText>
-              
-              <ThemedText style={styles.messageText}>
-                {getMessage()}
-              </ThemedText>
-            </View>
-
-            <ThemedView style={styles.actionButtons}>
-              <TouchableOpacity
-                style={[styles.button, styles.retryButton]}
-                onPress={handleRetry}
-              >
-                <ThemedText style={styles.retryButtonText}>Try Again</ThemedText>
-                <Ionicons name="refresh" size={24} color="#fff" />
-              </TouchableOpacity>
-              
-              <TouchableOpacity
-                style={[styles.button, styles.homeButton]}
-                onPress={() => router.push('/mcq')}
-              >
-                <ThemedText style={styles.homeButtonText}>Back to Regular Questions</ThemedText>
-              </TouchableOpacity>
-            </ThemedView>
           </ThemedView>
         </SafeAreaView>
       </GestureHandlerRootView>
@@ -429,10 +371,13 @@ export default function PictureMCQScreen() {
 
               <TouchableOpacity
                 style={[styles.navButton, styles.nextButton]}
-                onPress={isLastQuestion ? () => setShowResult(true) : handleNextQuestion}
+                onPress={isLastQuestion ? () => router.push({
+                  pathname: '/picture-mcq-result',
+                  params: { score, totalQuestions: pictureQuestions.length }
+                }) : handleNextQuestion}
               >
                 <ThemedText style={styles.nextButtonText}>
-                  {isLastQuestion ? 'Finish' : 'Next'}
+                  {isLastQuestion ? 'Show Result' : 'Next'}
                 </ThemedText>
                 <IconSymbol name="chevron.right" size={24} color="#fff" />
               </TouchableOpacity>
@@ -569,9 +514,6 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontWeight: 'bold',
     color: '#F44336',
-  },
-  incorrectAnswerText: {
-    fontSize: 24,
     marginTop: 10,
   },
   explanationContainer: {
@@ -623,81 +565,103 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontWeight: '600',
   },
-  resultCard: {
-    width: '100%',
-    borderRadius: 20,
-    alignItems: 'center',
-    elevation: 4,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
-    backgroundColor: '#F3E5F5',
-    padding: 20,
-    marginBottom: 20,
+  resultScrollContent: {
+    flexGrow: 1,
+    paddingVertical: 20,
   },
-  trophyContainer: {
-    width: '100%',
+  pictureResultCard: {
+    width: '90%',
+    alignSelf: 'center',
+    borderRadius: 24,
+    padding: 24,
+    elevation: 8,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    backgroundColor: '#fff',
+    overflow: 'hidden',
+    borderWidth: 4,
+    borderColor: '#FFA000',
+  },
+  pictureTrophyContainer: {
     alignItems: 'center',
     paddingVertical: 20,
     backgroundColor: 'transparent',
   },
-  scoreText: {
-    fontSize: 48,
-    fontWeight: '700',
-    color: '#6B54AE',
-    marginBottom: 8,
-    textAlign: 'center',
-    backgroundColor: 'transparent',
+  pictureScoreContainer: {
+    alignItems: 'center',
+    marginTop: 20,
   },
-  percentageText: {
+  pictureScoreLabel: {
+    fontSize: 24,
+    color: '#FFA000',
+    marginBottom: 8,
+    fontWeight: 'bold',
+  },
+  pictureScoreText: {
+    fontSize: 72,
+    fontWeight: '700',
+    color: '#FFA000',
+    marginBottom: 16,
+  },
+  picturePercentageContainer: {
+    backgroundColor: '#FFF3E0',
+    paddingHorizontal: 24,
+    paddingVertical: 12,
+    borderRadius: 30,
+    borderWidth: 3,
+    borderColor: '#FFA000',
+  },
+  picturePercentageText: {
     fontSize: 32,
     fontWeight: '600',
-    color: '#6B54AE',
-    marginBottom: 16,
-    textAlign: 'center',
-    backgroundColor: 'transparent',
+    color: '#FFA000',
   },
-  messageText: {
-    fontSize: 20,
-    textAlign: 'center',
-    color: '#6B54AE',
-    lineHeight: 28,
-    paddingHorizontal: 20,
-    backgroundColor: 'transparent',
-    marginBottom: 20,
+  pictureMessageContainer: {
+    marginTop: 24,
+    padding: 20,
+    backgroundColor: 'rgba(255, 255, 255, 0.9)',
+    borderRadius: 20,
+    borderWidth: 3,
+    borderColor: '#FFA000',
   },
-  actionButtons: {
-    width: '100%',
+  pictureMessageText: {
+    fontSize: 24,
+    textAlign: 'center',
+    color: '#FFA000',
+    lineHeight: 32,
+    fontWeight: '600',
+  },
+  pictureActionButtons: {
+    marginTop: 32,
     gap: 16,
     paddingHorizontal: 20,
   },
-  button: {
-    padding: 16,
-    borderRadius: 12,
-    alignItems: 'center',
-  },
-  retryButton: {
-    backgroundColor: '#6B54AE',
-    display: 'flex',
+  pictureButton: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 8,
+    padding: 20,
+    borderRadius: 20,
+    gap: 12,
   },
-  homeButton: {
+  pictureRetryButton: {
+    backgroundColor: '#FFA000',
+  },
+  pictureHomeButton: {
     backgroundColor: 'transparent',
-    borderWidth: 1,
-    borderColor: '#6B54AE',
+    borderWidth: 3,
+    borderColor: '#FFA000',
   },
-  retryButtonText: {
+  pictureRetryButtonText: {
     color: '#fff',
-    fontSize: 16,
+    fontSize: 24,
     fontWeight: '600',
   },
-  homeButtonText: {
-    color: '#6B54AE',
-    fontSize: 16,
+  pictureHomeButtonText: {
+    color: '#FFA000',
+    fontSize: 24,
     fontWeight: '600',
   },
   unauthorizedText: {
@@ -755,11 +719,5 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.25,
     shadowRadius: 3.84,
     elevation: 5,
-  },
-  incorrectText: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#F44336',
-    marginTop: 10,
   },
 }); 
