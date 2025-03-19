@@ -81,7 +81,7 @@ export default function PictureMCQResultScreen() {
           }]}>
             <LinearGradient
               colors={getGradientColors()}
-              style={[StyleSheet.absoluteFill, { opacity: 0.15 }]}
+              style={[StyleSheet.absoluteFill, { opacity: 0 }]}
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 1 }}
             />
@@ -92,7 +92,7 @@ export default function PictureMCQResultScreen() {
                 <IconSymbol 
                   name="trophy.fill"
                   size={120} 
-                  color={colors.tint} 
+                  color="#FFA500" 
                 />
               </Animated.View>
             </View>
@@ -187,7 +187,7 @@ const styles = StyleSheet.create({
     shadowRadius: 12,
     overflow: 'hidden',
     borderWidth: 2,
-    backgroundColor: 'rgba(255, 255, 255, 0.9)',
+    backgroundColor: 'rgba(91, 91, 91, 0.9)',
   },
   trophyContainer: {
     alignItems: 'center',
