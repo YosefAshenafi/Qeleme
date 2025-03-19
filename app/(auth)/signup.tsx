@@ -96,15 +96,23 @@ export default function SignupScreen() {
 
                   <View style={styles.inputContainer}>
                     <Ionicons name="call-outline" size={20} color="#6B7280" style={styles.inputIcon} />
-                    <TextInput
-                      style={styles.input}
-                      placeholder="Phone Number"
-                      placeholderTextColor="#9CA3AF"
-                      value={phoneNumber}
-                      onChangeText={setPhoneNumber}
-                      keyboardType="phone-pad"
-                      autoCapitalize="none"
-                    />
+                    <View style={styles.phoneInputContainer}>
+                      <ThemedText style={styles.phonePrefix}>+251</ThemedText>
+                      <TextInput
+                        style={styles.phoneInput}
+                        placeholder="9-digit number"
+                        placeholderTextColor="#9CA3AF"
+                        value={phoneNumber}
+                        onChangeText={(text) => {
+                          // Only allow numbers and limit to 9 digits
+                          const numericValue = text.replace(/[^0-9]/g, '').slice(0, 9);
+                          setPhoneNumber(numericValue);
+                        }}
+                        keyboardType="phone-pad"
+                        maxLength={9}
+                        autoCapitalize="none"
+                      />
+                    </View>
                   </View>
 
                   <View style={styles.inputContainer}>
@@ -476,5 +484,21 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#1F2937',
     lineHeight: 24,
+  },
+  phoneInputContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
+  },
+  phonePrefix: {
+    fontSize: 16,
+    color: '#1F2937',
+    marginRight: 8,
+  },
+  phoneInput: {
+    flex: 1,
+    height: '100%',
+    fontSize: 16,
+    color: '#1F2937',
   },
 }); 
