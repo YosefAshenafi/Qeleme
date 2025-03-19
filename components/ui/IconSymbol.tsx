@@ -34,6 +34,7 @@ const MAPPING = {
   'rectangle.portrait.and.arrow.right': 'logout',
   'moon.fill': 'dark-mode',
   'sun.max.fill': 'light-mode',
+  'xmark.circle.fill': 'close',
 } as const;
 
 export type IconSymbolName = keyof typeof MAPPING;

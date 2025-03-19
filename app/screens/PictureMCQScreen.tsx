@@ -62,6 +62,13 @@ export default function PictureMCQScreen() {
   const imagePosition = useSharedValue({ x: 0, y: 0 });
   const imageScale = useSharedValue(1);
   const isDraggingShared = useSharedValue(false);
+  
+  // New animation values for celebration and incorrect
+  const celebrationScale = useSharedValue(0);
+  const celebrationOpacity = useSharedValue(0);
+  const incorrectScale = useSharedValue(0);
+  const incorrectOpacity = useSharedValue(0);
+  const incorrectRotation = useSharedValue(0);
 
   const imageAnimatedStyle = useAnimatedStyle(() => {
     return {
@@ -70,6 +77,25 @@ export default function PictureMCQScreen() {
         { translateY: imagePosition.value.y },
         { scale: imageScale.value },
       ],
+    };
+  });
+
+  const celebrationAnimatedStyle = useAnimatedStyle(() => {
+    return {
+      transform: [
+        { scale: celebrationScale.value },
+      ],
+      opacity: celebrationOpacity.value,
+    };
+  });
+
+  const incorrectAnimatedStyle = useAnimatedStyle(() => {
+    return {
+      transform: [
+        { scale: incorrectScale.value },
+        { rotate: `${incorrectRotation.value * 10}deg` },
+      ],
+      opacity: incorrectOpacity.value,
     };
   });
 
@@ -123,11 +149,37 @@ export default function PictureMCQScreen() {
       imagePosition.value = withSpring({ x: 0, y: 0 });
       runOnJS(setHoveredOption)(null);
 
-      // If we have a hovered option, set it as dropped
+      // If we have a hovered option, set it as dropped and trigger animations
       if (hoveredOption) {
         const selectedOption = currentQuestion.options.find(opt => opt.id === hoveredOption);
         if (selectedOption) {
           runOnJS(setDroppedOption)(hoveredOption);
+          
+          if (selectedOption.isCorrect) {
+            // Celebration animation
+            celebrationScale.value = withSequence(
+              withSpring(1, { damping: 8 }),
+              withTiming(0, { duration: 4000 })
+            );
+            celebrationOpacity.value = withSequence(
+              withTiming(1, { duration: 300 }),
+              withTiming(0, { duration: 3700 })
+            );
+          } else {
+            // Incorrect animation
+            incorrectScale.value = withSequence(
+              withSpring(1, { damping: 8 }),
+              withTiming(0, { duration: 4000 })
+            );
+            incorrectOpacity.value = withSequence(
+              withTiming(1, { duration: 300 }),
+              withTiming(0, { duration: 3700 })
+            );
+            incorrectRotation.value = withSequence(
+              withSpring(1, { damping: 8 }),
+              withTiming(0, { duration: 4000 })
+            );
+          }
         }
       }
     });
@@ -328,6 +380,22 @@ export default function PictureMCQScreen() {
               </Animated.View>
             </GestureDetector>
 
+            {/* Celebration Animation */}
+            <Animated.View style={[styles.celebrationContainer, celebrationAnimatedStyle]}>
+              <View style={styles.celebrationContent}>
+                <IconSymbol name="trophy.fill" size={80} color="#4CAF50" />
+                <ThemedText style={styles.celebrationText}>Correct!</ThemedText>
+              </View>
+            </Animated.View>
+
+            {/* Incorrect Animation */}
+            <Animated.View style={[styles.incorrectContainer, incorrectAnimatedStyle]}>
+              <View style={styles.incorrectContent}>
+                <IconSymbol name="xmark.circle.fill" size={80} color="#F44336" />
+                <ThemedText style={styles.incorrectText}>Incorrect!</ThemedText>
+              </View>
+            </Animated.View>
+
             <View style={styles.optionsContainer}>
               {currentQuestion.options.map((option) => (
                 <View
@@ -517,8 +585,10 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   incorrectText: {
-    color: '#D32F2F',
+    color: '#F44336',
     fontWeight: 'bold',
+    fontSize: 24,
+    marginTop: 10,
   },
   explanationContainer: {
     backgroundColor: '#F5F5F5',
@@ -655,5 +725,61 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     color: '#6B54AE',
     marginBottom: 20,
+  },
+  celebrationContainer: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    alignItems: 'center',
+    justifyContent: 'center',
+    zIndex: 1000,
+  },
+  celebrationContent: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'rgba(255, 255, 255, 0.9)',
+    borderRadius: 20,
+    padding: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
+  },
+  celebrationText: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#4CAF50',
+    marginTop: 10,
+  },
+  incorrectContainer: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    alignItems: 'center',
+    justifyContent: 'center',
+    zIndex: 1000,
+  },
+  incorrectContent: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'rgba(255, 255, 255, 0.9)',
+    borderRadius: 20,
+    padding: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
+  },
+  incorrectText: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#F44336',
+    marginTop: 10,
   },
 }); 
