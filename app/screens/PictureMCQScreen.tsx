@@ -1,11 +1,19 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { StyleSheet, TouchableOpacity, ScrollView, View, Dimensions, Animated, Image } from 'react-native';
+import { StyleSheet, TouchableOpacity, ScrollView, View, Dimensions, Image } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { GestureDetector, Gesture, GestureHandlerRootView } from 'react-native-gesture-handler';
+import Animated, { 
+  useAnimatedStyle, 
+  useSharedValue, 
+  withSpring,
+  withTiming,
+  runOnJS,
+  withSequence,
+} from 'react-native-reanimated';
 
 import { Header } from '@/components/Header';
 import { ThemedText } from '@/components/ThemedText';
@@ -21,8 +29,6 @@ const pictureQuestions = [
     options: [
       { id: 'A', text: 'Lion', isCorrect: true },
       { id: 'B', text: 'Tiger', isCorrect: false },
-      { id: 'C', text: 'Leopard', isCorrect: false },
-      { id: 'D', text: 'Cheetah', isCorrect: false },
     ],
     explanation: "This is a lion, known as the king of the jungle.",
   },
@@ -39,6 +45,9 @@ export default function PictureMCQScreen() {
   const [showWrongAnswer, setShowWrongAnswer] = useState(false);
   const [userPhoneNumber, setUserPhoneNumber] = useState<string | null>(null);
   const [isAuthorized, setIsAuthorized] = useState(false);
+  const [draggedOption, setDraggedOption] = useState<string | null>(null);
+  const [dropZonePosition, setDropZonePosition] = useState({ x: 0, y: 0 });
+  const [imagePosition, setImagePosition] = useState({ x: 0, y: 0 });
 
   const isFirstQuestion = currentQuestionIndex === 0;
   const isLastQuestion = currentQuestionIndex === pictureQuestions.length - 1;
@@ -46,24 +55,100 @@ export default function PictureMCQScreen() {
   const percentage = Math.round((score / pictureQuestions.length) * 100);
 
   // Animation refs
-  const scaleAnim = useRef(new Animated.Value(0)).current;
-  const rotateAnim = useRef(new Animated.Value(0)).current;
-  const confettiAnim = useRef(new Animated.Value(0)).current;
-  const particleAnims = useRef(Array(64).fill(0).map(() => ({
-    scale: new Animated.Value(0),
-    translateX: new Animated.Value(0),
-    translateY: new Animated.Value(0),
-    opacity: new Animated.Value(1),
-    rotate: new Animated.Value(0),
-  }))).current;
+  const scaleAnim = useSharedValue(0);
+  const rotateAnim = useSharedValue(0);
+  const dragAnim = useSharedValue({ x: 0, y: 0 });
+  const imageDragAnim = useSharedValue({ x: 0, y: 0 });
+
+  const imageAnimatedStyle = useAnimatedStyle(() => {
+    return {
+      transform: [
+        { translateX: imageDragAnim.value.x },
+        { translateY: imageDragAnim.value.y },
+      ],
+    };
+  });
+
+  const optionAnimatedStyle = useAnimatedStyle(() => {
+    return {
+      transform: [
+        { translateX: dragAnim.value.x },
+        { translateY: dragAnim.value.y },
+      ],
+    };
+  });
 
   // Gesture handling for drag and drop
   const pan = Gesture.Pan()
+    .onStart(() => {
+      runOnJS(setDraggedOption)(null);
+    })
     .onUpdate((event) => {
-      // Handle drag updates
+      dragAnim.value = { x: event.translationX, y: event.translationY };
     })
     .onEnd((event) => {
-      // Handle drag end
+      const dropZone = { x: dropZonePosition.x, y: dropZonePosition.y };
+      const dropDistance = Math.sqrt(
+        Math.pow(event.absoluteX - dropZone.x, 2) + 
+        Math.pow(event.absoluteY - dropZone.y, 2)
+      );
+
+      if (dropDistance < 100) {
+        const isCorrect = currentQuestion.options.find(opt => opt.id === draggedOption)?.isCorrect;
+        if (isCorrect) {
+          runOnJS(setSelectedAnswer)(draggedOption);
+          runOnJS(setShowExplanation)(true);
+          runOnJS(setScore)(prev => prev + 1);
+          runOnJS(setShowCelebration)(true);
+          scaleAnim.value = withSequence(
+            withSpring(1),
+            withTiming(0, { duration: 1000 })
+          );
+          rotateAnim.value = withSequence(
+            withSpring(1),
+            withTiming(0, { duration: 1000 })
+          );
+        } else {
+          runOnJS(setShowWrongAnswer)(true);
+        }
+      }
+      dragAnim.value = { x: 0, y: 0 };
+    });
+
+  const imagePan = Gesture.Pan()
+    .onStart(() => {
+      imageDragAnim.value = { x: 0, y: 0 };
+    })
+    .onUpdate((event) => {
+      imageDragAnim.value = { x: event.translationX, y: event.translationY };
+    })
+    .onEnd((event) => {
+      const dropZone = { x: dropZonePosition.x, y: dropZonePosition.y };
+      const dropDistance = Math.sqrt(
+        Math.pow(event.absoluteX - dropZone.x, 2) + 
+        Math.pow(event.absoluteY - dropZone.y, 2)
+      );
+
+      if (dropDistance < 100) {
+        const isCorrect = currentQuestion.options.find(opt => opt.id === 'A')?.isCorrect;
+        if (isCorrect) {
+          runOnJS(setSelectedAnswer)('A');
+          runOnJS(setShowExplanation)(true);
+          runOnJS(setScore)(prev => prev + 1);
+          runOnJS(setShowCelebration)(true);
+          scaleAnim.value = withSequence(
+            withSpring(1),
+            withTiming(0, { duration: 1000 })
+          );
+          rotateAnim.value = withSequence(
+            withSpring(1),
+            withTiming(0, { duration: 1000 })
+          );
+        } else {
+          runOnJS(setShowWrongAnswer)(true);
+        }
+      }
+      imageDragAnim.value = { x: 0, y: 0 };
     });
 
   useEffect(() => {
@@ -116,17 +201,14 @@ export default function PictureMCQScreen() {
       setScore(prev => prev + 1);
       setShowCelebration(true);
       // Celebration animation
-      Animated.sequence([
-        Animated.spring(scaleAnim, {
-          toValue: 1,
-          useNativeDriver: true,
-        }),
-        Animated.timing(rotateAnim, {
-          toValue: 1,
-          duration: 1000,
-          useNativeDriver: true,
-        }),
-      ]).start();
+      scaleAnim.value = withSequence(
+        withSpring(1),
+        withTiming(0, { duration: 1000 })
+      );
+      rotateAnim.value = withSequence(
+        withSpring(1),
+        withTiming(0, { duration: 1000 })
+      );
     } else {
       setShowWrongAnswer(true);
     }
@@ -254,35 +336,53 @@ export default function PictureMCQScreen() {
               </ThemedText>
             </View>
 
-            <GestureDetector gesture={pan}>
-              <View style={styles.imageContainer}>
+            <GestureDetector gesture={imagePan}>
+              <Animated.View 
+                style={[
+                  styles.imageContainer,
+                  imageAnimatedStyle
+                ]}
+              >
                 <Image
                   source={currentQuestion.image}
                   style={styles.questionImage}
                   resizeMode="contain"
                 />
-              </View>
+              </Animated.View>
             </GestureDetector>
 
             <View style={styles.optionsContainer}>
               {currentQuestion.options.map((option) => (
-                <TouchableOpacity
+                <View
                   key={option.id}
                   style={[
-                    styles.optionContainer,
-                    selectedAnswer === option.id && option.isCorrect && styles.correctOption,
-                    selectedAnswer === option.id && !option.isCorrect && styles.incorrectOption,
+                    styles.optionWrapper,
+                    option.id === 'B' && styles.dropZone,
                   ]}
-                  onPress={() => handleAnswerSelect(option.id)}
-                  disabled={!!selectedAnswer}
+                  onLayout={(event) => {
+                    if (option.id === 'B') {
+                      setDropZonePosition({
+                        x: event.nativeEvent.layout.x,
+                        y: event.nativeEvent.layout.y,
+                      });
+                    }
+                  }}
                 >
-                  <View style={styles.optionContent}>
-                    <View style={styles.optionId}>
-                      <ThemedText style={styles.optionIdText}>{option.id}</ThemedText>
-                    </View>
-                    <ThemedText style={styles.optionText}>{option.text}</ThemedText>
-                  </View>
-                </TouchableOpacity>
+                  <GestureDetector gesture={pan}>
+                    <Animated.View
+                      style={[
+                        styles.optionContainer,
+                        optionAnimatedStyle,
+                        selectedAnswer === option.id && option.isCorrect && styles.correctOption,
+                        selectedAnswer === option.id && !option.isCorrect && styles.incorrectOption,
+                      ]}
+                    >
+                      <View style={styles.optionContent}>
+                        <ThemedText style={styles.optionText}>{option.text}</ThemedText>
+                      </View>
+                    </Animated.View>
+                  </GestureDetector>
+                </View>
               ))}
             </View>
 
@@ -381,16 +481,33 @@ const styles = StyleSheet.create({
     backgroundColor: '#F5F5F5',
     alignItems: 'center',
     justifyContent: 'center',
+    zIndex: 2,
   },
   questionImage: {
     width: '100%',
     height: '100%',
   },
   optionsContainer: {
-    gap: 12,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
     marginBottom: 20,
+    paddingHorizontal: 10,
+  },
+  optionWrapper: {
+    width: '48%',
+    height: 80,
+    justifyContent: 'center',
+  },
+  dropZone: {
+    borderWidth: 2,
+    borderColor: '#E0E0E0',
+    borderStyle: 'dashed',
+    borderRadius: 12,
+    backgroundColor: '#F5F5F5',
   },
   optionContainer: {
+    width: '100%',
+    height: 80,
     borderRadius: 12,
     overflow: 'hidden',
     elevation: 2,
@@ -401,33 +518,18 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#E0E0E0',
     backgroundColor: '#FFFFFF',
+    zIndex: 1,
   },
   optionContent: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-    padding: 16,
-  },
-  optionId: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    backgroundColor: '#F5F5F5',
+    flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    borderWidth: 1,
-    borderColor: '#E0E0E0',
-  },
-  optionIdText: {
-    color: '#6B54AE',
-    fontWeight: '600',
-    fontSize: 14,
+    padding: 16,
   },
   optionText: {
-    flex: 1,
-    fontSize: 16,
+    fontSize: 18,
     color: '#333333',
-    lineHeight: 22,
+    textAlign: 'center',
   },
   correctOption: {
     borderColor: '#4CAF50',
