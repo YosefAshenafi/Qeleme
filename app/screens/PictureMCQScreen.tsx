@@ -48,6 +48,8 @@ export default function PictureMCQScreen() {
   const [draggedOption, setDraggedOption] = useState<string | null>(null);
   const [dropZonePosition, setDropZonePosition] = useState({ x: 0, y: 0 });
   const [imagePosition, setImagePosition] = useState({ x: 0, y: 0 });
+  const [hoveredOption, setHoveredOption] = useState<string | null>(null);
+  const [optionPositions, setOptionPositions] = useState<{ [key: string]: { x: number, y: number } }>({});
 
   const isFirstQuestion = currentQuestionIndex === 0;
   const isLastQuestion = currentQuestionIndex === pictureQuestions.length - 1;
@@ -65,6 +67,7 @@ export default function PictureMCQScreen() {
       transform: [
         { translateX: imageDragAnim.value.x },
         { translateY: imageDragAnim.value.y },
+        { scale: imageDragAnim.value.x !== 0 || imageDragAnim.value.y !== 0 ? 0.5 : 1 },
       ],
     };
   });
@@ -118,37 +121,79 @@ export default function PictureMCQScreen() {
   const imagePan = Gesture.Pan()
     .onStart(() => {
       imageDragAnim.value = { x: 0, y: 0 };
+      runOnJS(setHoveredOption)(null);
     })
     .onUpdate((event) => {
       imageDragAnim.value = { x: event.translationX, y: event.translationY };
+      
+      // Check which option is being hovered using the stored positions
+      const lionPosition = optionPositions['A'];
+      const tigerPosition = optionPositions['B'];
+      
+      if (lionPosition && tigerPosition) {
+        const lionDistance = Math.sqrt(
+          Math.pow(event.absoluteX - lionPosition.x, 2) + 
+          Math.pow(event.absoluteY - lionPosition.y, 2)
+        );
+        
+        const tigerDistance = Math.sqrt(
+          Math.pow(event.absoluteX - tigerPosition.x, 2) + 
+          Math.pow(event.absoluteY - tigerPosition.y, 2)
+        );
+
+        if (lionDistance < 100) {
+          runOnJS(setHoveredOption)('A');
+        } else if (tigerDistance < 100) {
+          runOnJS(setHoveredOption)('B');
+        } else {
+          runOnJS(setHoveredOption)(null);
+        }
+      }
     })
     .onEnd((event) => {
-      const dropZone = { x: dropZonePosition.x, y: dropZonePosition.y };
-      const dropDistance = Math.sqrt(
-        Math.pow(event.absoluteX - dropZone.x, 2) + 
-        Math.pow(event.absoluteY - dropZone.y, 2)
-      );
+      const lionPosition = optionPositions['A'];
+      const tigerPosition = optionPositions['B'];
+      
+      if (lionPosition && tigerPosition) {
+        const lionDistance = Math.sqrt(
+          Math.pow(event.absoluteX - lionPosition.x, 2) + 
+          Math.pow(event.absoluteY - lionPosition.y, 2)
+        );
+        
+        const tigerDistance = Math.sqrt(
+          Math.pow(event.absoluteX - tigerPosition.x, 2) + 
+          Math.pow(event.absoluteY - tigerPosition.y, 2)
+        );
 
-      if (dropDistance < 100) {
-        const isCorrect = currentQuestion.options.find(opt => opt.id === 'A')?.isCorrect;
-        if (isCorrect) {
-          runOnJS(setSelectedAnswer)('A');
-          runOnJS(setShowExplanation)(true);
-          runOnJS(setScore)(prev => prev + 1);
-          runOnJS(setShowCelebration)(true);
-          scaleAnim.value = withSequence(
-            withSpring(1),
-            withTiming(0, { duration: 1000 })
-          );
-          rotateAnim.value = withSequence(
-            withSpring(1),
-            withTiming(0, { duration: 1000 })
-          );
-        } else {
-          runOnJS(setShowWrongAnswer)(true);
+        let selectedOption = null;
+        if (lionDistance < 100) {
+          selectedOption = 'A';
+        } else if (tigerDistance < 100) {
+          selectedOption = 'B';
+        }
+
+        if (selectedOption) {
+          const isCorrect = currentQuestion.options.find(opt => opt.id === selectedOption)?.isCorrect;
+          if (isCorrect) {
+            runOnJS(setSelectedAnswer)(selectedOption);
+            runOnJS(setShowExplanation)(true);
+            runOnJS(setScore)(prev => prev + 1);
+            runOnJS(setShowCelebration)(true);
+            scaleAnim.value = withSequence(
+              withSpring(1),
+              withTiming(0, { duration: 1000 })
+            );
+            rotateAnim.value = withSequence(
+              withSpring(1),
+              withTiming(0, { duration: 1000 })
+            );
+          } else {
+            runOnJS(setShowWrongAnswer)(true);
+          }
         }
       }
       imageDragAnim.value = { x: 0, y: 0 };
+      runOnJS(setHoveredOption)(null);
     });
 
   useEffect(() => {
@@ -360,12 +405,11 @@ export default function PictureMCQScreen() {
                     option.id === 'B' && styles.dropZone,
                   ]}
                   onLayout={(event) => {
-                    if (option.id === 'B') {
-                      setDropZonePosition({
-                        x: event.nativeEvent.layout.x,
-                        y: event.nativeEvent.layout.y,
-                      });
-                    }
+                    const { x, y, width, height } = event.nativeEvent.layout;
+                    setOptionPositions(prev => ({
+                      ...prev,
+                      [option.id]: { x, y }
+                    }));
                   }}
                 >
                   <GestureDetector gesture={pan}>
@@ -375,10 +419,22 @@ export default function PictureMCQScreen() {
                         optionAnimatedStyle,
                         selectedAnswer === option.id && option.isCorrect && styles.correctOption,
                         selectedAnswer === option.id && !option.isCorrect && styles.incorrectOption,
+                        hoveredOption === option.id && styles.hoveredOption,
                       ]}
                     >
                       <View style={styles.optionContent}>
-                        <ThemedText style={styles.optionText}>{option.text}</ThemedText>
+                        {hoveredOption === option.id && (
+                          <Image
+                            source={currentQuestion.image}
+                            style={styles.hoveredImage}
+                          />
+                        )}
+                        <ThemedText style={[
+                          styles.optionText,
+                          hoveredOption === option.id && styles.hoveredOptionText
+                        ]}>
+                          {option.text}
+                        </ThemedText>
                       </View>
                     </Animated.View>
                   </GestureDetector>
@@ -676,5 +732,22 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     color: '#6B54AE',
     marginBottom: 20,
+  },
+  hoveredOption: {
+    backgroundColor: 'rgba(107, 84, 174, 0.1)',
+    borderColor: '#6B54AE',
+    borderWidth: 2,
+  },
+  hoveredImage: {
+    position: 'absolute',
+    width: '100%',
+    height: '100%',
+    opacity: 0.3,
+    resizeMode: 'cover',
+  },
+  hoveredOptionText: {
+    color: '#6B54AE',
+    fontWeight: 'bold',
+    zIndex: 1,
   },
 }); 
