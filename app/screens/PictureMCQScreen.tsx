@@ -49,6 +49,7 @@ export default function PictureMCQScreen() {
   const [isDragging, setIsDragging] = useState(false);
   const [dropZones, setDropZones] = useState<{ [key: string]: { x: number, y: number, width: number, height: number } }>({});
   const [hoveredOption, setHoveredOption] = useState<string | null>(null);
+  const [droppedOption, setDroppedOption] = useState<string | null>(null);
 
   const isFirstQuestion = currentQuestionIndex === 0;
   const isLastQuestion = currentQuestionIndex === pictureQuestions.length - 1;
@@ -115,22 +116,20 @@ export default function PictureMCQScreen() {
 
       runOnJS(setHoveredOption)(closestOption);
     })
-    .onEnd((event) => {
+    .onEnd(() => {
       'worklet';
       isDraggingShared.value = false;
       imageScale.value = withSpring(1);
       imagePosition.value = withSpring({ x: 0, y: 0 });
       runOnJS(setHoveredOption)(null);
 
-      const { x, y } = event;
-      
-      // Check if dropped on any option
-      Object.entries(dropZones).forEach(([optionId, zone]) => {
-        if (x >= zone.x && x <= zone.x + zone.width &&
-            y >= zone.y && y <= zone.y + zone.height) {
-          runOnJS(handleAnswerSelect)(optionId);
+      // If we have a hovered option, set it as dropped
+      if (hoveredOption) {
+        const selectedOption = currentQuestion.options.find(opt => opt.id === hoveredOption);
+        if (selectedOption) {
+          runOnJS(setDroppedOption)(hoveredOption);
         }
-      });
+      }
     });
 
   useEffect(() => {
@@ -337,7 +336,9 @@ export default function PictureMCQScreen() {
                     styles.optionWrapper,
                     selectedAnswer === option.id && option.isCorrect && styles.correctOption,
                     selectedAnswer === option.id && !option.isCorrect && styles.incorrectOption,
-                    hoveredOption === option.id && styles.dropZone,
+                    hoveredOption === option.id && !selectedAnswer && styles.dropZone,
+                    droppedOption === option.id && option.isCorrect && styles.correctOption,
+                    droppedOption === option.id && !option.isCorrect && styles.incorrectOption,
                   ]}
                   onLayout={(event) => {
                     const { x, y, width, height } = event.nativeEvent.layout;
@@ -348,7 +349,11 @@ export default function PictureMCQScreen() {
                   }}
                 >
                   <View style={styles.optionContent}>
-                    <ThemedText style={styles.optionText}>
+                    <ThemedText style={[
+                      styles.optionText,
+                      selectedAnswer === option.id && option.isCorrect && styles.correctText,
+                      selectedAnswer === option.id && !option.isCorrect && styles.incorrectText,
+                    ]}>
                       {option.text}
                     </ThemedText>
                   </View>
@@ -478,10 +483,11 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFFFFF',
   },
   dropZone: {
-    borderWidth: 2,
+    borderWidth: 3,
     borderColor: '#6B54AE',
     borderStyle: 'dashed',
     backgroundColor: 'rgba(107, 84, 174, 0.1)',
+    transform: [{ scale: 1.05 }],
   },
   optionContent: {
     flex: 1,
@@ -496,13 +502,23 @@ const styles = StyleSheet.create({
   },
   correctOption: {
     borderColor: '#4CAF50',
-    borderWidth: 2,
+    borderWidth: 3,
     backgroundColor: '#F1F8E9',
+    transform: [{ scale: 1.05 }],
   },
   incorrectOption: {
     borderColor: '#F44336',
-    borderWidth: 2,
+    borderWidth: 3,
     backgroundColor: '#FFEBEE',
+    transform: [{ scale: 1.05 }],
+  },
+  correctText: {
+    color: '#2E7D32',
+    fontWeight: 'bold',
+  },
+  incorrectText: {
+    color: '#D32F2F',
+    fontWeight: 'bold',
   },
   explanationContainer: {
     backgroundColor: '#F5F5F5',
