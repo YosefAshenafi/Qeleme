@@ -4,13 +4,18 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import { router, useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
+import LottieView from 'lottie-react-native';
 
 import { Header } from '@/components/Header';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 import { IconSymbol } from '@/components/ui/IconSymbol';
+import { useTheme } from '@/contexts/ThemeContext';
+import { getColors } from '@/constants/Colors';
 
 export default function PictureMCQResultScreen() {
+  const { isDarkMode } = useTheme();
+  const colors = getColors(isDarkMode);
   const params = useLocalSearchParams();
   const score = Number(params.score) || 0;
   const totalQuestions = Number(params.totalQuestions) || 0;
@@ -20,43 +25,42 @@ export default function PictureMCQResultScreen() {
   const scaleAnim = React.useRef(new Animated.Value(0)).current;
   const bounceAnim = React.useRef(new Animated.Value(0)).current;
   const confettiAnim = React.useRef(new Animated.Value(0)).current;
+  const celebrationRef = React.useRef<LottieView>(null);
 
   useEffect(() => {
     // Start animations when component mounts
     Animated.sequence([
       Animated.spring(scaleAnim, {
         toValue: 1,
+        tension: 50,
+        friction: 7,
         useNativeDriver: true,
       }),
       Animated.spring(bounceAnim, {
         toValue: 1,
+        tension: 100,
+        friction: 5,
         useNativeDriver: true,
       }),
     ]).start();
 
-    if (percentage >= 70) {
-      Animated.loop(
-        Animated.sequence([
-          Animated.timing(confettiAnim, {
-            toValue: 1,
-            duration: 2000,
-            useNativeDriver: true,
-          }),
-          Animated.timing(confettiAnim, {
-            toValue: 0,
-            duration: 2000,
-            useNativeDriver: true,
-          }),
-        ])
-      ).start();
+    if (percentage >= 70 && celebrationRef.current) {
+      celebrationRef.current.play();
     }
-  }, []);
+  }, [percentage]);
 
   const getMessage = () => {
-    if (percentage >= 90) return "Wow! You're a Super Star! 🌟";
-    if (percentage >= 70) return "Amazing Job! You're Fantastic! 🎉";
-    if (percentage >= 50) return "Good Try! Keep Going! 💪";
-    return "Don't Give Up! You Can Do It!";
+    if (percentage >= 90) return "Outstanding! You're a Master! 🌟";
+    if (percentage >= 70) return "Amazing Job! Keep Shining! 🎉";
+    if (percentage >= 50) return "Good Progress! Keep Going! 💪";
+    return "Keep Learning! You've Got This! 📚";
+  };
+
+  const getGradientColors = () => {
+    if (percentage >= 90) return ['#FFD700', '#FFA500'] as const;
+    if (percentage >= 70) return ['#4CAF50', '#45B649'] as const;
+    if (percentage >= 50) return ['#2196F3', '#03A9F4'] as const;
+    return ['#FF9800', '#F57C00'] as const;
   };
 
   const spin = bounceAnim.interpolate({
@@ -65,46 +69,69 @@ export default function PictureMCQResultScreen() {
   });
 
   return (
-    <SafeAreaView style={styles.safeArea}>
-      <Header title="Great Job! 🎉" />
+    <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]}>
+      <Header title="Results 🎯" />
       <ThemedView style={styles.container}>
         <ScrollView contentContainerStyle={styles.scrollContent}>
           {/* Main Result Card */}
-          <Animated.View style={[styles.resultCard, { transform: [{ scale: scaleAnim }] }]}>
+          <Animated.View style={[styles.resultCard, { 
+            transform: [{ scale: scaleAnim }],
+            borderColor: colors.tint,
+            backgroundColor: colors.card,
+          }]}>
             <LinearGradient
-              colors={['#FFE0B2', '#FFCC80']}
-              style={StyleSheet.absoluteFill}
+              colors={getGradientColors()}
+              style={[StyleSheet.absoluteFill, { opacity: 0.15 }]}
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 1 }}
             />
             
-            {/* Trophy/Star Animation */}
-            {/* <View style={styles.trophyContainer}>
+            {/* Trophy Animation */}
+            <View style={styles.trophyContainer}>
               <Animated.View style={{ transform: [{ rotate: spin }] }}>
                 <IconSymbol 
-                  name={percentage >= 70 ? "trophy.fill" : "questionmark.circle.fill"} 
+                  name="trophy.fill"
                   size={120} 
-                  color={percentage >= 70 ? "#FFA000" : "#FFC107"} 
+                  color={colors.tint} 
                 />
               </Animated.View>
-            </View> */}
+            </View>
+
+            {percentage >= 70 && (
+              <LottieView
+                ref={celebrationRef}
+                source={require('../../assets/lottie/confetti.json')}
+                autoPlay
+                loop
+                style={styles.celebration}
+                speed={0.7}
+              />
+            )}
             
             {/* Score Display */}
             <View style={styles.scoreContainer}>
-              <ThemedText style={styles.scoreLabel}>Your Score</ThemedText>
-              <ThemedText style={styles.scoreText}>
+              <ThemedText style={[styles.scoreLabel, { color: colors.tint }]}>
+                Your Score
+              </ThemedText>
+              <ThemedText style={[styles.scoreText, { color: colors.tint }]}>
                 {score}/{totalQuestions}
               </ThemedText>
-              <View style={styles.percentageContainer}>
-                <ThemedText style={styles.percentageText}>
+              <View style={[styles.percentageContainer, { 
+                backgroundColor: colors.card,
+                borderColor: colors.tint 
+              }]}>
+                <ThemedText style={[styles.percentageText, { color: colors.tint }]}>
                   {percentage}%
                 </ThemedText>
               </View>
             </View>
             
             {/* Performance Message */}
-            <View style={styles.messageContainer}>
-              <ThemedText style={styles.messageText}>
+            <View style={[styles.messageContainer, { 
+              backgroundColor: colors.card,
+              borderColor: colors.tint 
+            }]}>
+              <ThemedText style={[styles.messageText, { color: colors.tint }]}>
                 {getMessage()}
               </ThemedText>
             </View>
@@ -113,19 +140,21 @@ export default function PictureMCQResultScreen() {
           {/* Action Buttons */}
           <ThemedView style={styles.actionButtons}>
             <TouchableOpacity
-              style={[styles.button, styles.playAgainButton]}
+              style={[styles.button, styles.playAgainButton, { backgroundColor: colors.tint }]}
               onPress={() => router.back()}
             >
-              <ThemedText style={styles.playAgainButtonText}>Play Again</ThemedText>
+              <ThemedText style={styles.buttonText}>Try Again</ThemedText>
               <IconSymbol name="chevron.right" size={24} color="#fff" />
             </TouchableOpacity>
             
             <TouchableOpacity
-              style={[styles.button, styles.homeButton]}
+              style={[styles.button, styles.homeButton, { borderColor: colors.tint }]}
               onPress={() => router.push('/mcq')}
             >
-              <ThemedText style={styles.homeButtonText}>Back to Questions</ThemedText>
-              <IconSymbol name="house.fill" size={24} color="#FFA000" />
+              <ThemedText style={[styles.buttonText, { color: colors.tint }]}>
+                More Questions
+              </ThemedText>
+              <IconSymbol name="house.fill" size={24} color={colors.tint} />
             </TouchableOpacity>
           </ThemedView>
         </ScrollView>
@@ -136,17 +165,15 @@ export default function PictureMCQResultScreen() {
 
 const styles = StyleSheet.create({
   safeArea: {
-    paddingTop: 80,
+    marginTop: 100,
     flex: 1,
-    backgroundColor: '#fff',
   },
   container: {
     flex: 1,
-    backgroundColor: '#fff',
   },
   scrollContent: {
     flexGrow: 1,
-    paddingVertical: 20,
+    paddingVertical: 24,
   },
   resultCard: {
     width: '90%',
@@ -156,63 +183,60 @@ const styles = StyleSheet.create({
     elevation: 8,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    backgroundColor: '#fff',
+    shadowOpacity: 0.2,
+    shadowRadius: 12,
     overflow: 'hidden',
-    borderWidth: 4,
-    borderColor: '#FFA000',
+    borderWidth: 2,
+    backgroundColor: 'rgba(255, 255, 255, 0.9)',
   },
   trophyContainer: {
     alignItems: 'center',
-    paddingVertical: 20,
+    paddingVertical: 10,
     backgroundColor: 'transparent',
   },
+  celebration: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    height: 200,
+    pointerEvents: 'none',
+  },
   scoreContainer: {
-    paddingTop: 20,
     alignItems: 'center',
-    marginTop: 20,
   },
   scoreLabel: {
-    paddingTop: 30,
     fontSize: 24,
-    color: '#FFA000',
     marginBottom: 8,
-    fontWeight: 'bold',
+    fontWeight: '600',
   },
   scoreText: {
-    paddingTop: 50,
-    fontSize: 72,
+    paddingTop: 40,
+    fontSize: 52,
     fontWeight: '700',
-    color: '#FFA000',
     marginBottom: 16,
+    fontFamily: 'System',
   },
   percentageContainer: {
-    backgroundColor: '#FFF3E0',
     paddingHorizontal: 24,
     paddingVertical: 12,
     borderRadius: 30,
-    borderWidth: 3,
-    borderColor: '#FFA000',
+    borderWidth: 2,
   },
   percentageText: {
-    paddingTop: 10,
-    fontSize: 32,
+    paddingTop: 0,
+    fontSize: 22,
     fontWeight: '600',
-    color: '#FFA000',
   },
   messageContainer: {
-    marginTop: 24,
+    marginTop: 10,
     padding: 20,
-    backgroundColor: 'rgba(255, 255, 255, 0.9)',
     borderRadius: 20,
-    borderWidth: 3,
-    borderColor: '#FFA000',
+    borderWidth: 2,
   },
   messageText: {
-    fontSize: 24,
+    fontSize: 20,
     textAlign: 'center',
-    color: '#FFA000',
     lineHeight: 32,
     fontWeight: '600',
   },
@@ -225,26 +249,20 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    padding: 20,
-    borderRadius: 20,
+    padding: 16,
+    borderRadius: 16,
     gap: 12,
   },
   playAgainButton: {
-    backgroundColor: '#FFA000',
+    backgroundColor: '#4CAF50',
   },
   homeButton: {
     backgroundColor: 'transparent',
-    borderWidth: 3,
-    borderColor: '#FFA000',
+    borderWidth: 2,
   },
-  playAgainButtonText: {
+  buttonText: {
     color: '#fff',
-    fontSize: 24,
-    fontWeight: '600',
-  },
-  homeButtonText: {
-    color: '#FFA000',
-    fontSize: 24,
+    fontSize: 20,
     fontWeight: '600',
   },
 }); 
