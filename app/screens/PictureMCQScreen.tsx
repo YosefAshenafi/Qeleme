@@ -20,21 +20,20 @@ import { Header } from '@/components/Header';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 import { IconSymbol } from '@/components/ui/IconSymbol';
+import pictureQuestionsData from '@/data/pictureMCQData.json';
+
+// Image mapping object
+const imageMapping: { [key: string]: any } = {
+  'lion.png': require('../../assets/images/questions/lion.png'),
+  'dolphin.png': require('../../assets/images/questions/dolphin.png'),
+  'penguin.png': require('../../assets/images/questions/penguin.png'),
+  'panda.png': require('../../assets/images/questions/panda.png'),
+  'cheetah.png': require('../../assets/images/questions/cheetah.png'),
+  // Add more image mappings here as needed
+};
 
 // Picture questions data
-const pictureQuestions = [
-  {
-    id: 1,
-    question: "What is this animal?",
-    image: require('../../assets/images/lion.png'),
-    options: [
-      { id: 'A', text: 'Lion', isCorrect: true },
-      { id: 'B', text: 'Tiger', isCorrect: false },
-    ],
-    explanation: "This is a lion, known as the king of the jungle.",
-  },
-  // Add more picture questions here
-];
+const pictureQuestions = pictureQuestionsData.questions;
 
 export default function PictureMCQScreen() {
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
@@ -154,30 +153,33 @@ export default function PictureMCQScreen() {
         const selectedOption = currentQuestion.options.find(opt => opt.id === hoveredOption);
         if (selectedOption) {
           runOnJS(setDroppedOption)(hoveredOption);
+          runOnJS(setSelectedAnswer)(hoveredOption);
           
           if (selectedOption.isCorrect) {
+            // Update score if answer is correct
+            runOnJS(setScore)((prevScore: number) => prevScore + 1);
             // Celebration animation
             celebrationScale.value = withSequence(
               withSpring(1, { damping: 8 }),
-              withTiming(0, { duration: 4000 })
+              withTiming(0, { duration: 3000 })
             );
             celebrationOpacity.value = withSequence(
               withTiming(1, { duration: 300 }),
-              withTiming(0, { duration: 3700 })
+              withTiming(0, { duration: 2700 })
             );
           } else {
             // Incorrect animation
             incorrectScale.value = withSequence(
               withSpring(1, { damping: 8 }),
-              withTiming(0, { duration: 4000 })
+              withTiming(0, { duration: 3000 })
             );
             incorrectOpacity.value = withSequence(
               withTiming(1, { duration: 300 }),
-              withTiming(0, { duration: 3700 })
+              withTiming(0, { duration: 2700 })
             );
             incorrectRotation.value = withSequence(
               withSpring(1, { damping: 8 }),
-              withTiming(0, { duration: 4000 })
+              withTiming(0, { duration: 3000 })
             );
           }
         }
@@ -201,38 +203,14 @@ export default function PictureMCQScreen() {
     checkPhoneNumber();
   }, []);
 
-  const handleAnswerSelect = (answerId: string) => {
-    if (selectedAnswer) return; // Prevent multiple selections
-    setSelectedAnswer(answerId);
-    setShowExplanation(true);
-    
-    // Update score if answer is correct
-    const isCorrect = currentQuestion.options.find(opt => opt.id === answerId)?.isCorrect;
-    if (isCorrect) {
-      setScore(prev => prev + 1);
-      setShowCelebration(true);
-      // Celebration animation
-      scaleAnim.value = withSequence(
-        withSpring(1),
-        withTiming(0, { duration: 1000 })
-      );
-      rotateAnim.value = withSequence(
-        withSpring(1),
-        withTiming(0, { duration: 1000 })
-      );
-    } else {
-      setShowWrongAnswer(true);
-    }
-  };
-
   const handleNextQuestion = () => {
     if (currentQuestionIndex < pictureQuestions.length - 1) {
-      if (!selectedAnswer) return;
       setCurrentQuestionIndex(prev => prev + 1);
       setSelectedAnswer(null);
       setShowExplanation(false);
       setShowCelebration(false);
       setShowWrongAnswer(false);
+      setDroppedOption(null);
     } else {
       setShowResult(true);
     }
@@ -245,6 +223,7 @@ export default function PictureMCQScreen() {
       setShowExplanation(false);
       setShowCelebration(false);
       setShowWrongAnswer(false);
+      setDroppedOption(null);
     }
   };
 
@@ -373,7 +352,7 @@ export default function PictureMCQScreen() {
                 ]}
               >
                 <Image
-                  source={currentQuestion.image}
+                  source={imageMapping[currentQuestion.image]}
                   style={styles.questionImage}
                   resizeMode="contain"
                 />
@@ -535,10 +514,11 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     marginBottom: 20,
     paddingHorizontal: 10,
+    gap: 16,
   },
   optionWrapper: {
     width: '48%',
-    height: 80,
+    minHeight: 80,
     borderRadius: 12,
     overflow: 'hidden',
     elevation: 2,
@@ -561,12 +541,13 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    padding: 16,
+    padding: 12,
   },
   optionText: {
-    fontSize: 18,
+    fontSize: 16,
     color: '#333333',
     textAlign: 'center',
+    flexWrap: 'wrap',
   },
   correctOption: {
     borderColor: '#4CAF50',
@@ -585,8 +566,11 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   incorrectText: {
-    color: '#F44336',
+    fontSize: 24,
     fontWeight: 'bold',
+    color: '#F44336',
+  },
+  incorrectAnswerText: {
     fontSize: 24,
     marginTop: 10,
   },
@@ -640,7 +624,7 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   resultCard: {
-    width: Dimensions.get('window').width - 40,
+    width: '100%',
     borderRadius: 20,
     alignItems: 'center',
     elevation: 4,
@@ -649,20 +633,17 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.25,
     shadowRadius: 3.84,
     backgroundColor: '#F3E5F5',
-    paddingBottom: 20,
-    paddingTop: 30,
+    padding: 20,
     marginBottom: 20,
   },
   trophyContainer: {
     width: '100%',
     alignItems: 'center',
-    paddingTop: 30,
-    paddingBottom: 20,
+    paddingVertical: 20,
     backgroundColor: 'transparent',
   },
   scoreText: {
-    paddingTop: 30,
-    fontSize: 50,
+    fontSize: 48,
     fontWeight: '700',
     color: '#6B54AE',
     marginBottom: 8,
@@ -670,8 +651,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'transparent',
   },
   percentageText: {
-    paddingTop: 20,
-    fontSize: 30,
+    fontSize: 32,
     fontWeight: '600',
     color: '#6B54AE',
     marginBottom: 16,
@@ -679,18 +659,18 @@ const styles = StyleSheet.create({
     backgroundColor: 'transparent',
   },
   messageText: {
-    fontSize: 18,
+    fontSize: 20,
     textAlign: 'center',
     color: '#6B54AE',
-    lineHeight: 24,
+    lineHeight: 28,
     paddingHorizontal: 20,
     backgroundColor: 'transparent',
+    marginBottom: 20,
   },
   actionButtons: {
     width: '100%',
     gap: 16,
     paddingHorizontal: 20,
-    marginTop: 20,
   },
   button: {
     padding: 16,
