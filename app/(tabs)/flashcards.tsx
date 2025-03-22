@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { StyleSheet, TouchableOpacity, Dimensions, View, Modal, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
@@ -280,6 +280,27 @@ export default function FlashcardsScreen() {
     <SafeAreaView style={styles.safeArea}>
       <Header title="Flash Cards" />
       <ThemedView style={styles.container}>
+        {/* Breadcrumb Navigation */}
+        <View style={styles.headerContainer}>
+          <View style={styles.breadcrumbContainer}>
+            <View style={styles.breadcrumbItem}>
+              <ThemedText style={styles.breadcrumbText}>
+                {selectedSubjectData?.name || 'Select Subject'}
+              </ThemedText>
+            </View>
+            {selectedSubject && (
+              <>
+                <IconSymbol name="chevron.right" size={16} color="#6B54AE" />
+                <View style={styles.breadcrumbItem}>
+                  <ThemedText style={styles.breadcrumbText}>
+                    {selectedChapterData?.name || 'Select Chapter'}
+                  </ThemedText>
+                </View>
+              </>
+            )}
+          </View>
+        </View>
+
         {/* Progress Bar */}
         <ThemedView style={styles.progressContainer}>
           <ThemedView style={styles.progressBar}>
@@ -599,6 +620,39 @@ const styles = StyleSheet.create({
   startButtonText: {
     color: '#fff',
     fontSize: 18,
+    fontWeight: '600',
+  },
+  headerContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    backgroundColor: '#FFFFFF',
+    borderBottomWidth: 1,
+    borderBottomColor: '#E0E0E0',
+    width: '100%',
+    marginTop: -70,
+  },
+  breadcrumbContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#F5F5F5',
+    borderRadius: 12,
+    marginLeft: -20,
+    gap: 8,
+  },
+  breadcrumbItem: {
+    paddingHorizontal: 12,
+    paddingVertical: 4,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#E0E0E0',
+  },
+  breadcrumbText: {
+    color: '#6B54AE',
+    fontSize: 14,
     fontWeight: '600',
   },
 }); 
