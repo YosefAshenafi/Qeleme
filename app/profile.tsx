@@ -8,7 +8,6 @@ import { router } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { AccountSettings } from '../components/profile/AccountSettings';
 import { Notifications } from '../components/profile/Notifications';
-import { HelpAndSupport } from '../components/profile/HelpAndSupport';
 import { ThemeChooser } from '@/components/profile/ThemeChooser';
 import { getColors } from '@/constants/Colors';
 import { useTheme } from '@/contexts/ThemeContext';
@@ -106,11 +105,6 @@ export default function ProfileScreen() {
       title: 'Notifications', 
       icon: 'bell.fill' as const, 
       content: <Notifications colors={colors} />
-    },
-    { 
-      title: 'Help & Support', 
-      icon: 'questionmark.circle.fill' as const, 
-      content: <HelpAndSupport colors={colors} />
     },
     { 
       title: 'Reset App', 

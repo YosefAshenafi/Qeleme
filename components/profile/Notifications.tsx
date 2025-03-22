@@ -1,12 +1,15 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, Switch, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, Switch } from 'react-native';
 import { IconSymbol } from '@/components/ui/IconSymbol';
+import { getColors } from '@/constants/Colors';
+import { useTheme } from '@/contexts/ThemeContext';
 
-interface NotificationsProps {
-  colors: any;
-}
+type NotificationsProps = {
+  colors: ReturnType<typeof getColors>;
+};
 
 export function Notifications({ colors }: NotificationsProps) {
+  const { isDarkMode } = useTheme();
   const [settings, setSettings] = useState({
     studyReminders: true,
     achievementAlerts: true,
@@ -63,14 +66,18 @@ export function Notifications({ colors }: NotificationsProps) {
   ];
 
   return (
-    <View style={styles.notificationsContent}>
+    <View style={[styles.notificationsContent, isDarkMode ? { backgroundColor: colors.card } : { backgroundColor: '#ffffff' }]}>
       <Text style={[styles.sectionTitle, { color: colors.text }]}>Notification Settings</Text>
       <View style={[styles.settingsList, { backgroundColor: colors.card }]}>
         {notificationSettings.map((setting, index) => (
           <React.Fragment key={index}>
             <View style={styles.settingItem}>
               <View style={styles.settingLeft}>
-                <View style={styles.iconContainer}>
+                <View style={[styles.iconContainer, { 
+                  backgroundColor: isDarkMode 
+                    ? 'rgba(255, 255, 255, 0.1)' 
+                    : 'rgba(107, 84, 174, 0.1)' 
+                }]}>
                   <IconSymbol name={setting.icon as any} size={24} color={colors.tint} />
                 </View>
                 <View style={styles.settingDetails}>
@@ -83,10 +90,11 @@ export function Notifications({ colors }: NotificationsProps) {
                 onValueChange={() => toggleSetting(setting.key)}
                 trackColor={{ false: '#767577', true: colors.tint }}
                 thumbColor={settings[setting.key] ? '#fff' : '#f4f3f4'}
+                ios_backgroundColor="#767577"
               />
             </View>
             {index < notificationSettings.length - 1 && (
-              <View style={[styles.separator, { backgroundColor: colors.border }]} />
+              <View style={[styles.separator, { backgroundColor: isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)' }]} />
             )}
           </React.Fragment>
         ))}
@@ -97,53 +105,59 @@ export function Notifications({ colors }: NotificationsProps) {
 
 const styles = StyleSheet.create({
   notificationsContent: {
-    flex: 1,
+    padding: 16,
   },
   sectionTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    marginBottom: 10,
-    paddingHorizontal: 16,
+    fontSize: 20,
+    fontWeight: '700',
+    marginBottom: 20,
+    letterSpacing: 0.5,
   },
   settingsList: {
-    borderRadius: 12,
-    marginHorizontal: 16,
+    borderRadius: 16,
+    overflow: 'hidden',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 3,
+    elevation: 3,
   },
   settingItem: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    padding: 16,
+    padding: 20,
   },
   settingLeft: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 15,
     flex: 1,
-    marginRight: 10,
-  },
-  separator: {
-    height: 1,
-    marginLeft: 71, // This aligns the separator with the text (icon width + gap)
   },
   iconContainer: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: 'rgba(0,0,0,0.05)',
+    width: 48,
+    height: 48,
+    borderRadius: 24,
     alignItems: 'center',
     justifyContent: 'center',
+    marginRight: 16,
   },
   settingDetails: {
     flex: 1,
-    marginRight: 8,
   },
   settingTitle: {
-    fontSize: 16,
-    fontWeight: '500',
+    fontSize: 17,
+    fontWeight: '600',
+    marginBottom: 4,
   },
   settingDescription: {
     fontSize: 14,
     opacity: 0.7,
+  },
+  separator: {
+    height: 1,
+    marginHorizontal: 20,
   },
 }); 

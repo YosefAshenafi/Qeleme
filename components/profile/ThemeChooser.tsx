@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, StyleSheet, Switch } from 'react-native';
+import { View, StyleSheet, Switch, Animated } from 'react-native';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 import { IconSymbol } from '@/components/ui/IconSymbol';
@@ -12,14 +12,34 @@ type ThemeChooserProps = {
 
 export function ThemeChooser({ colors }: ThemeChooserProps) {
   const { isDarkMode, toggleTheme } = useTheme();
+  const [scaleAnim] = React.useState(new Animated.Value(1));
+
+  const handleToggle = () => {
+    Animated.sequence([
+      Animated.timing(scaleAnim, {
+        toValue: 0.95,
+        duration: 100,
+        useNativeDriver: true,
+      }),
+      Animated.timing(scaleAnim, {
+        toValue: 1,
+        duration: 100,
+        useNativeDriver: true,
+      }),
+    ]).start();
+    toggleTheme();
+  };
 
   return (
-    <View style={styles.themeChooserContent}>
-      <ThemedText style={[styles.sectionTitle, { color: colors.text }]}>Theme Settings</ThemedText>
+    <View style={[styles.themeChooserContent, isDarkMode ? { backgroundColor: colors.card } : { backgroundColor: '#ffffff' }]}>
       <ThemedView style={[styles.settingsList, { backgroundColor: colors.card }]}>
-        <View style={styles.settingItem}>
+        <Animated.View style={[styles.settingItem, { transform: [{ scale: scaleAnim }] }]}>
           <View style={styles.settingLeft}>
-            <View style={styles.iconContainer}>
+            <View style={[styles.iconContainer, { 
+              backgroundColor: isDarkMode 
+                ? 'rgba(255, 255, 255, 0.1)' 
+                : 'rgba(107, 84, 174, 0.1)' 
+            }]}>
               <IconSymbol 
                 name={isDarkMode ? 'moon.fill' : 'sun.max.fill'} 
                 size={24} 
@@ -28,21 +48,27 @@ export function ThemeChooser({ colors }: ThemeChooserProps) {
             </View>
             <View style={styles.settingDetails}>
               <ThemedText style={[styles.settingTitle, { color: colors.text }]}>
-                Dark Mode
+                {isDarkMode ? 'Dark Mode' : 'Light Mode'}
               </ThemedText>
               <ThemedText style={[styles.settingDescription, { color: colors.text }]}>
-                Switch between light and dark theme
+                {isDarkMode ? 'Switch to light theme' : 'Switch to dark theme'}
               </ThemedText>
             </View>
           </View>
           <Switch
             value={isDarkMode}
-            onValueChange={toggleTheme}
+            onValueChange={handleToggle}
             trackColor={{ false: '#767577', true: colors.tint }}
             thumbColor={isDarkMode ? '#fff' : '#f4f3f4'}
+            ios_backgroundColor="#767577"
           />
-        </View>
+        </Animated.View>
       </ThemedView>
+      <ThemedText style={[styles.themeInfo, { color: colors.text }]}>
+        {isDarkMode 
+          ? 'Dark mode reduces eye strain in low-light conditions' 
+          : 'Light mode provides better readability in bright environments'}
+      </ThemedText>
     </View>
   );
 }
@@ -52,19 +78,28 @@ const styles = StyleSheet.create({
     padding: 16,
   },
   sectionTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    marginBottom: 16,
+    fontSize: 20,
+    fontWeight: '700',
+    marginBottom: 20,
+    letterSpacing: 0.5,
   },
   settingsList: {
-    borderRadius: 12,
+    borderRadius: 16,
     overflow: 'hidden',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 3,
+    elevation: 3,
   },
   settingItem: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    padding: 16,
+    padding: 20,
   },
   settingLeft: {
     flexDirection: 'row',
@@ -72,24 +107,30 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   iconContainer: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: 'rgba(107, 84, 174, 0.1)',
+    width: 48,
+    height: 48,
+    borderRadius: 24,
     alignItems: 'center',
     justifyContent: 'center',
-    marginRight: 12,
+    marginRight: 16,
   },
   settingDetails: {
     flex: 1,
   },
   settingTitle: {
-    fontSize: 16,
+    fontSize: 17,
     fontWeight: '600',
     marginBottom: 4,
   },
   settingDescription: {
     fontSize: 14,
     opacity: 0.7,
+  },
+  themeInfo: {
+    fontSize: 13,
+    opacity: 0.7,
+    marginTop: 12,
+    textAlign: 'center',
+    fontStyle: 'italic',
   },
 }); 
