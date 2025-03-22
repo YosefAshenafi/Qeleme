@@ -2,6 +2,8 @@ import { StyleSheet, TextInput, TouchableOpacity, ScrollView, Image, View, Keybo
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useState, useRef, useEffect } from 'react';
 import * as ImagePicker from 'expo-image-picker';
+import { useTheme } from '@/contexts/ThemeContext';
+import { getColors } from '@/constants/Colors';
 
 import { Header } from '@/components/Header';
 import { ThemedText } from '@/components/ThemedText';
@@ -17,6 +19,8 @@ type Message = {
 };
 
 export default function HomeworkScreen() {
+  const { isDarkMode } = useTheme();
+  const colors = getColors(isDarkMode);
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputText, setInputText] = useState('');
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
@@ -143,14 +147,14 @@ export default function HomeworkScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.safeArea}>
+    <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]}>
       <Header title="Homework Help" />
       <KeyboardAvoidingView 
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
         style={styles.keyboardAvoidingView}
         keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}
       >
-        <ThemedView style={styles.container}>
+        <ThemedView style={[styles.container, { backgroundColor: colors.background }]}>
           <ScrollView 
             ref={scrollViewRef}
             style={styles.messagesContainer}
@@ -163,8 +167,8 @@ export default function HomeworkScreen() {
           >
             <View style={styles.messagesWrapper}>
               {messages.length === 0 && (
-                <ThemedView style={styles.emptyStateContainer}>
-                  <ThemedText style={styles.emptyStateText}>
+                <ThemedView style={[styles.emptyStateContainer, { backgroundColor: colors.background }]}>
+                  <ThemedText style={[styles.emptyStateText, { color: colors.text }]}>
                     Ask me anything about your homework!
                   </ThemedText>
                 </ThemedView>
@@ -174,7 +178,9 @@ export default function HomeworkScreen() {
                   key={message.id} 
                   style={[
                     styles.messageContainer,
-                    message.isUser ? styles.userMessage : styles.botMessage
+                    message.isUser 
+                      ? [styles.userMessage, { backgroundColor: colors.tint }]
+                      : [styles.botMessage, { backgroundColor: colors.cardAlt }]
                   ]}
                 >
                   {message.imageUri && (
@@ -186,16 +192,18 @@ export default function HomeworkScreen() {
                   )}
                   <ThemedText style={[
                     styles.messageText,
-                    message.isUser ? styles.userMessageText : styles.botMessageText
+                    message.isUser 
+                      ? [styles.userMessageText, { color: '#fff' }]
+                      : [styles.botMessageText, { color: colors.text }]
                   ]}>
                     {message.text}
                   </ThemedText>
                 </ThemedView>
               ))}
               {isLoading && (
-                <ThemedView style={[styles.messageContainer, styles.botMessage]}>
+                <ThemedView style={[styles.messageContainer, styles.botMessage, { backgroundColor: colors.cardAlt }]}>
                   <View style={styles.thinkingContainer}>
-                    <ThemedText style={[styles.messageText, styles.botMessageText]}>
+                    <ThemedText style={[styles.messageText, styles.botMessageText, { color: colors.text }]}>
                       Thinking
                     </ThemedText>
                     <Animated.View style={styles.dotsContainer}>
@@ -210,6 +218,7 @@ export default function HomeworkScreen() {
                                 outputRange: [0, 1],
                                 extrapolate: 'clamp',
                               }),
+                              color: colors.text
                             },
                           ]}
                         >
@@ -224,46 +233,68 @@ export default function HomeworkScreen() {
           </ScrollView>
 
           {selectedImage && (
-            <ThemedView style={styles.selectedImagePreviewContainer}>
+            <ThemedView style={[styles.selectedImagePreviewContainer, { backgroundColor: colors.cardAlt }]}>
               <Image 
                 source={{ uri: selectedImage }} 
                 style={styles.selectedImagePreview} 
                 resizeMode="cover"
               />
               <TouchableOpacity 
-                style={styles.removeImageButton}
+                style={[styles.removeImageButton, { backgroundColor: 'rgba(0, 0, 0, 0.5)' }]}
                 onPress={() => setSelectedImage(null)}
               >
-                <IconSymbol name="questionmark.circle.fill" size={24} color="#fff" />
+                <IconSymbol name="xmark.circle.fill" size={24} color="#fff" />
               </TouchableOpacity>
             </ThemedView>
           )}
 
-          <ThemedView style={styles.inputContainer}>
+          <ThemedView style={[styles.inputContainer, { 
+            backgroundColor: colors.background,
+            borderTopColor: colors.border,
+          }]}>
             <TextInput
               ref={inputRef}
-              style={styles.input}
+              style={[styles.input, { 
+                backgroundColor: colors.cardAlt,
+                color: colors.text,
+                borderColor: colors.border,
+                borderWidth: 1
+              }]}
               value={inputText}
               onChangeText={setInputText}
               placeholder="Ask your homework question..."
-              placeholderTextColor="#999"
+              placeholderTextColor={isDarkMode ? 'rgba(255, 255, 255, 0.5)' : 'rgba(0, 0, 0, 0.5)'}
               multiline
               editable={!isLoading}
             />
             
             <View style={styles.buttonContainer}>
               <TouchableOpacity 
-                style={[styles.imageButton, isLoading && styles.buttonDisabled]}
+                style={[
+                  styles.imageButton, 
+                  { backgroundColor: colors.cardAlt },
+                  isLoading && { backgroundColor: isDarkMode ? 'rgba(0, 0, 0, 0.3)' : 'rgba(0, 0, 0, 0.1)' }
+                ]}
                 onPress={pickImage}
                 disabled={isLoading}
               >
-                <IconSymbol name="photo" size={24} color={isLoading ? "#999" : "#6B54AE"} />
+                <IconSymbol 
+                  name="photo" 
+                  size={24} 
+                  color={isLoading 
+                    ? (isDarkMode ? 'rgba(255, 255, 255, 0.3)' : 'rgba(0, 0, 0, 0.3)') 
+                    : colors.tint
+                  } 
+                />
               </TouchableOpacity>
               
               <TouchableOpacity 
                 style={[
                   styles.sendButton,
-                  ((!inputText.trim() && !selectedImage) || isLoading) && styles.sendButtonDisabled
+                  { backgroundColor: colors.tint },
+                  ((!inputText.trim() && !selectedImage) || isLoading) && {
+                    backgroundColor: isDarkMode ? 'rgba(107, 84, 174, 0.3)' : 'rgba(107, 84, 174, 0.5)'
+                  }
                 ]}
                 onPress={handleSend}
                 disabled={!inputText.trim() && !selectedImage || isLoading}
@@ -271,7 +302,10 @@ export default function HomeworkScreen() {
                 <IconSymbol 
                   name="paperplane.fill" 
                   size={24} 
-                  color={inputText.trim() || selectedImage ? "#fff" : "#999"} 
+                  color={((!inputText.trim() && !selectedImage) || isLoading)
+                    ? (isDarkMode ? 'rgba(255, 255, 255, 0.5)' : 'rgba(255, 255, 255, 0.8)')
+                    : '#fff'
+                  } 
                 />
               </TouchableOpacity>
             </View>
@@ -285,14 +319,12 @@ export default function HomeworkScreen() {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: '#fff',
   },
   keyboardAvoidingView: {
     flex: 1,
   },
   container: {
     flex: 1,
-    backgroundColor: '#fff',
   },
   messagesContainer: {
     flex: 1,
@@ -303,7 +335,7 @@ const styles = StyleSheet.create({
   messagesWrapper: {
     padding: 16,
     gap: 16,
-    paddingBottom: 100, // Add padding to account for input container
+    paddingBottom: 100,
   },
   messageContainer: {
     maxWidth: '80%',
@@ -314,24 +346,18 @@ const styles = StyleSheet.create({
   },
   userMessage: {
     alignSelf: 'flex-end',
-    backgroundColor: '#6B54AE',
     minWidth: 100,
   },
   botMessage: {
     alignSelf: 'flex-start',
-    backgroundColor: '#F3E5F5',
     minWidth: 100,
   },
   messageText: {
     fontSize: 16,
     flexShrink: 1,
   },
-  userMessageText: {
-    color: '#fff',
-  },
-  botMessageText: {
-    color: '#333',
-  },
+  userMessageText: {},
+  botMessageText: {},
   messageImage: {
     width: 250,
     height: 200,
@@ -344,8 +370,6 @@ const styles = StyleSheet.create({
     padding: 16,
     gap: 12,
     borderTopWidth: 1,
-    borderTopColor: '#E0E0E0',
-    backgroundColor: '#fff',
     marginBottom: 70,
   },
   buttonContainer: {
@@ -355,7 +379,6 @@ const styles = StyleSheet.create({
   imageButton: {
     padding: 8,
     borderRadius: 8,
-    backgroundColor: '#F3E5F5',
   },
   input: {
     flex: 1,
@@ -364,19 +387,11 @@ const styles = StyleSheet.create({
     padding: 12,
     borderRadius: 20,
     fontSize: 16,
-    color: '#333',
     marginBottom: 8,
   },
   sendButton: {
     padding: 8,
     borderRadius: 8,
-    backgroundColor: '#6B54AE',
-  },
-  sendButtonDisabled: {
-    backgroundColor: '#E0E0E0',
-  },
-  buttonDisabled: {
-    backgroundColor: '#E0E0E0',
   },
   emptyStateContainer: {
     flex: 1,
@@ -386,7 +401,6 @@ const styles = StyleSheet.create({
   },
   emptyStateText: {
     fontSize: 16,
-    color: '#666',
     textAlign: 'center',
   },
   selectedImagePreviewContainer: {
@@ -405,7 +419,6 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: 8,
     right: 8,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
     borderRadius: 12,
     padding: 4,
   },
@@ -419,7 +432,6 @@ const styles = StyleSheet.create({
   },
   dot: {
     fontSize: 16,
-    color: '#333',
     marginHorizontal: 1,
   },
 }); 
