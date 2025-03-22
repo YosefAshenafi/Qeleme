@@ -384,7 +384,7 @@ export default function MCQScreen() {
 
   if (showResult) {
     return (
-      <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]}>
+      <ThemedView style={[styles.container, { backgroundColor: colors.background }]}>
         <ScrollView 
           contentContainerStyle={styles.scrollContent}
           showsVerticalScrollIndicator={false}
@@ -392,99 +392,97 @@ export default function MCQScreen() {
           <ThemedText type="title" style={[styles.title, { color: colors.text }]}>
             Quiz Results
           </ThemedText>
-          <ThemedView style={[styles.container, { backgroundColor: colors.background }]}>
-            <View style={[styles.timerContainer, { backgroundColor: colors.tint }]}>
-              <ThemedText style={[styles.timerText, { color: '#fff' }]}>Time Taken: {formatTime(time)}</ThemedText>
-            </View>
-            {percentage >= 90 && (
-              <View style={styles.fireworkContainer}>
-                {particleAnims.map((anim, index) => (
-                  <Animated.View
-                    key={index}
-                    style={[
-                      styles.particle,
-                      {
-                        transform: [
-                          { scale: anim.scale },
-                          { translateX: anim.translateX },
-                          { translateY: anim.translateY },
-                          { rotate: anim.rotate.interpolate({
-                            inputRange: [0, 1],
-                            outputRange: ['0deg', '360deg'],
-                          })},
-                        ],
-                        opacity: anim.opacity,
-                      },
-                    ]}
-                  >
-                    <IconSymbol 
-                      name="trophy.fill" 
-                      size={36} 
-                      color={index % 4 === 0 ? '#FFD700' : 
-                             index % 4 === 1 ? '#FFA500' : 
-                             index % 4 === 2 ? '#FF69B4' : '#FF1493'} 
-                    />
-                  </Animated.View>
-                ))}
-              </View>
-            )}
-            <ThemedView style={[styles.resultCard, { backgroundColor: colors.card }]}>
-              <LinearGradient
-                colors={[colors.cardGradientStart, colors.cardGradientEnd]}
-                style={StyleSheet.absoluteFill}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 1 }}
-              />
-              
-              <View style={styles.trophyContainer}>
-                <Animated.View style={{ transform: [{ scale: scaleAnim }, { rotate: spin }] }}>
-                  <IconSymbol name="trophy.fill" size={80} color={percentage >= 90 ? '#FFD700' : colors.tint} />
+          <View style={[styles.timerContainer, { backgroundColor: colors.tint }]}>
+            <ThemedText style={[styles.timerText, { color: '#fff' }]}>Time Taken: {formatTime(time)}</ThemedText>
+          </View>
+          {percentage >= 90 && (
+            <View style={styles.fireworkContainer}>
+              {particleAnims.map((anim, index) => (
+                <Animated.View
+                  key={index}
+                  style={[
+                    styles.particle,
+                    {
+                      transform: [
+                        { scale: anim.scale },
+                        { translateX: anim.translateX },
+                        { translateY: anim.translateY },
+                        { rotate: anim.rotate.interpolate({
+                          inputRange: [0, 1],
+                          outputRange: ['0deg', '360deg'],
+                        })},
+                      ],
+                      opacity: anim.opacity,
+                    },
+                  ]}
+                >
+                  <IconSymbol 
+                    name="trophy.fill" 
+                    size={36} 
+                    color={index % 4 === 0 ? '#FFD700' : 
+                           index % 4 === 1 ? '#FFA500' : 
+                           index % 4 === 2 ? '#FF69B4' : '#FF1493'} 
+                  />
                 </Animated.View>
-              </View>
+              ))}
+            </View>
+          )}
+          <ThemedView style={[styles.resultCard, { backgroundColor: colors.card }]}>
+            <LinearGradient
+              colors={[colors.cardGradientStart, colors.cardGradientEnd]}
+              style={StyleSheet.absoluteFill}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+            />
+            
+            <View style={styles.trophyContainer}>
+              <Animated.View style={{ transform: [{ scale: scaleAnim }, { rotate: spin }] }}>
+                <IconSymbol name="trophy.fill" size={80} color={percentage >= 90 ? '#FFD700' : colors.tint} />
+              </Animated.View>
+            </View>
+            
+            <View style={styles.resultContent}>
+              <ThemedText style={[styles.scoreText, { color: colors.text }]}>
+                {score}/{totalQuestions}
+              </ThemedText>
               
-              <View style={styles.resultContent}>
-                <ThemedText style={[styles.scoreText, { color: colors.text }]}>
-                  {score}/{totalQuestions}
+              <View style={[styles.percentageContainer, { backgroundColor: colors.cardAlt, borderColor: colors.border }]}>
+                <ThemedText style={[styles.percentageText, { color: colors.text }]}>
+                  {percentage}%
                 </ThemedText>
-                
-                <View style={[styles.percentageContainer, { backgroundColor: colors.cardAlt, borderColor: colors.border }]}>
-                  <ThemedText style={[styles.percentageText, { color: colors.text }]}>
-                    {percentage}%
-                  </ThemedText>
-                </View>
-                
-                <View style={[styles.messageContainer, { backgroundColor: colors.cardAlt, borderColor: colors.border }]}>
-                  <ThemedText style={[styles.messageText, { color: colors.text }]}>
-                    {getMessage()}
-                  </ThemedText>
-                </View>
               </View>
-            </ThemedView>
-
-            <ThemedView style={[styles.actionButtons, { backgroundColor: colors.background }]}>
-              <TouchableOpacity
-                style={[styles.button, styles.retryButton, { backgroundColor: colors.tint }]}
-                onPress={handleRetry}
-              >
-                <ThemedText style={[styles.retryButtonText, { color: '#fff' }]}>Try Again</ThemedText>
-                <Ionicons name="refresh" size={24} color="#fff" />
-              </TouchableOpacity>
               
-              <TouchableOpacity
-                style={[styles.button, styles.homeButton, { backgroundColor: colors.cardAlt, borderColor: colors.border }]}
-                onPress={() => {
-                  setShowResult(false);
-                  setShowTest(false);
-                  setSelectedSubject('');
-                  setSelectedChapter('');
-                }}
-              >
-                <ThemedText style={[styles.homeButtonText, { color: colors.text }]}>Choose Another Subject</ThemedText>
-              </TouchableOpacity>
-            </ThemedView>
+              <View style={[styles.messageContainer, { backgroundColor: colors.cardAlt, borderColor: colors.border }]}>
+                <ThemedText style={[styles.messageText, { color: colors.text }]}>
+                  {getMessage()}
+                </ThemedText>
+              </View>
+            </View>
+          </ThemedView>
+
+          <ThemedView style={[styles.actionButtons, { backgroundColor: colors.background }]}>
+            <TouchableOpacity
+              style={[styles.button, styles.retryButton, { backgroundColor: colors.tint }]}
+              onPress={handleRetry}
+            >
+              <ThemedText style={[styles.retryButtonText, { color: '#fff' }]}>Try Again</ThemedText>
+              <Ionicons name="refresh" size={24} color="#fff" />
+            </TouchableOpacity>
+            
+            <TouchableOpacity
+              style={[styles.button, styles.homeButton, { backgroundColor: colors.cardAlt, borderColor: colors.border }]}
+              onPress={() => {
+                setShowResult(false);
+                setShowTest(false);
+                setSelectedSubject('');
+                setSelectedChapter('');
+              }}
+            >
+              <ThemedText style={[styles.homeButtonText, { color: colors.text }]}>Choose Another Subject</ThemedText>
+            </TouchableOpacity>
           </ThemedView>
         </ScrollView>
-      </SafeAreaView>
+      </ThemedView>
     );
   }
 

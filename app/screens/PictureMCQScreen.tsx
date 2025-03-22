@@ -165,25 +165,25 @@ export default function PictureMCQScreen() {
             // Celebration animation
             celebrationScale.value = withSequence(
               withSpring(1, { damping: 8 }),
-              withTiming(0, { duration: 3000 })
+              withTiming(0, { duration: 1000 })
             );
             celebrationOpacity.value = withSequence(
               withTiming(1, { duration: 300 }),
-              withTiming(0, { duration: 2700 })
+              withTiming(0, { duration: 700 })
             );
           } else {
             // Incorrect animation
             incorrectScale.value = withSequence(
               withSpring(1, { damping: 8 }),
-              withTiming(0, { duration: 3000 })
+              withTiming(0, { duration: 1000 })
             );
             incorrectOpacity.value = withSequence(
               withTiming(1, { duration: 300 }),
-              withTiming(0, { duration: 2700 })
+              withTiming(0, { duration: 700 })
             );
             incorrectRotation.value = withSequence(
               withSpring(1, { damping: 8 }),
-              withTiming(0, { duration: 3000 })
+              withTiming(0, { duration: 1000 })
             );
           }
         }
