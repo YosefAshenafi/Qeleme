@@ -4,10 +4,15 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import PaymentButton from '@/components/PaymentButton';
+import { useTheme } from '@/contexts/ThemeContext';
+import { getColors } from '@/constants/Colors';
 
 import { ThemedText } from '@/components/ThemedText';
 
 export default function PaymentScreen() {
+  const { isDarkMode } = useTheme();
+  const colors = getColors(isDarkMode);
+
   const handlePaymentSuccess = () => {
     router.replace('/(tabs)');
   };
@@ -18,7 +23,7 @@ export default function PaymentScreen() {
 
   return (
     <LinearGradient
-      colors={['#F8F9FA', '#FFFFFF']}
+      colors={isDarkMode ? ['#000000', '#1C1C1E'] : ['#F8F9FA', '#FFFFFF']}
       style={styles.gradient}
     >
       <SafeAreaView style={styles.safeArea}>
@@ -32,23 +37,25 @@ export default function PaymentScreen() {
                 style={styles.backButton}
                 onPress={() => router.back()}
               >
-                <Ionicons name="arrow-back" size={24} color="#1F2937" />
+                <Ionicons name="arrow-back" size={24} color={isDarkMode ? '#A0A0A5' : '#1F2937'} />
               </TouchableOpacity>
-              <ThemedText style={styles.title}>Choose Your Plan</ThemedText>
-              <ThemedText style={styles.subtitle}>Select the plan that best suits you</ThemedText>
+              <ThemedText style={[styles.title, { color: colors.text }]}>Choose Your Plan</ThemedText>
+              <ThemedText style={[styles.subtitle, { color: colors.text + '80' }]}>Select the plan that best suits you</ThemedText>
             </View>
 
             <View style={styles.paymentOptionsContainer}>
               <TouchableOpacity 
                 onPress={() => router.replace('/(tabs)')} 
-                style={styles.paymentOption}
+                style={[styles.paymentOption, {
+                  borderColor: isDarkMode ? '#3C3C3E' : '#7C3AED'
+                }]}
               >
                 <LinearGradient
-                  colors={['#F3F4F6', '#E5E7EB']}
+                  colors={isDarkMode ? ['#2C2C2E', '#1C1C1E'] : ['#F3F4F6', '#E5E7EB']}
                   style={styles.paymentOptionGradient}
                 >
-                  <ThemedText style={styles.paymentOptionTitle}>Free Trial</ThemedText>
-                  <ThemedText style={styles.paymentOptionDescription}>
+                  <ThemedText style={[styles.paymentOptionTitle, { color: colors.text }]}>Free Trial</ThemedText>
+                  <ThemedText style={[styles.paymentOptionDescription, { color: colors.text + '80' }]}>
                     Try Qelem for 7 days with limited features
                   </ThemedText>
                 </LinearGradient>
@@ -89,13 +96,11 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 32,
     fontWeight: '700',
-    color: '#1F2937',
     marginBottom: 8,
     paddingTop: 10,
   },
   subtitle: {
     fontSize: 16,
-    color: '#6B7280',
   },
   paymentOptionsContainer: {
     gap: 16,
@@ -104,7 +109,6 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     overflow: 'hidden',
     borderWidth: 0.3,
-    borderColor: '#7C3AED',
   },
   paymentOptionGradient: {
     padding: 24,
@@ -113,16 +117,13 @@ const styles = StyleSheet.create({
   paymentOptionTitle: {
     fontSize: 24,
     fontWeight: '600',
-    color: '#1F2937',
   },
   paymentOptionDescription: {
     fontSize: 16,
-    color: '#6B7280',
   },
   paymentOptionPrice: {
     fontSize: 20,
     fontWeight: '600',
-    color: '#1F2937',
     marginTop: 8,
   },
 }); 
