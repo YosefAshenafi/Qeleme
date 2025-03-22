@@ -11,6 +11,8 @@ import Animated, {
   Easing,
 } from 'react-native-reanimated';
 import { LinearGradient } from 'expo-linear-gradient';
+import { useTheme } from '@/contexts/ThemeContext';
+import { getColors } from '@/constants/Colors';
 
 import { Header } from '@/components/Header';
 import { ThemedText } from '@/components/ThemedText';
@@ -46,6 +48,9 @@ const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const CARD_WIDTH = SCREEN_WIDTH - 40;
 
 export default function FlashcardsScreen() {
+  const { isDarkMode } = useTheme();
+  const colors = getColors(isDarkMode);
+  
   const [selectedSubject, setSelectedSubject] = useState<string>('');
   const [selectedChapter, setSelectedChapter] = useState<string>('');
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -159,24 +164,24 @@ export default function FlashcardsScreen() {
 
   if (!showFlashcards) {
     return (
-      <SafeAreaView style={styles.safeArea}>
+      <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]}>
         <Header title="Flash Cards" />
-        <ThemedView style={styles.container}>
-          <ThemedView style={styles.formContainer}>
-            <ThemedText style={styles.formTitle}>Select Subject and Chapter</ThemedText>
+        <ThemedView style={[styles.container, { backgroundColor: colors.background }]}>
+          <ThemedView style={[styles.formContainer, { backgroundColor: colors.background }]}>
+            <ThemedText style={[styles.formTitle, { color: colors.tint }]}>Select Subject and Chapter</ThemedText>
             
-            <ThemedView style={styles.formContent}>
+            <ThemedView style={[styles.formContent, { backgroundColor: colors.background }]}>
               {/* Subject Selection */}
-              <ThemedView style={styles.formGroup}>
-                <ThemedText style={styles.formLabel}>Subject</ThemedText>
+              <ThemedView style={[styles.formGroup, { backgroundColor: colors.background }]}>
+                <ThemedText style={[styles.formLabel, { color: colors.tint }]}>Subject</ThemedText>
                 <TouchableOpacity
-                  style={styles.formInput}
+                  style={[styles.formInput, { backgroundColor: colors.cardAlt, borderColor: colors.border }]}
                   onPress={() => setShowSubjectDropdown(!showSubjectDropdown)}
                 >
-                  <ThemedText style={styles.formInputText}>
+                  <ThemedText style={[styles.formInputText, { color: colors.text }]}>
                     {selectedSubject ? typedFlashcardData.subjects.find((s: Subject) => s.id === selectedSubject)?.name : 'Select a subject'}
                   </ThemedText>
-                  <IconSymbol name="chevron.right" size={20} color="#6B54AE" />
+                  <IconSymbol name="chevron.right" size={20} color={colors.tint} />
                 </TouchableOpacity>
                 {showSubjectDropdown && (
                   <Modal
@@ -186,24 +191,24 @@ export default function FlashcardsScreen() {
                     onRequestClose={() => setShowSubjectDropdown(false)}
                   >
                     <TouchableOpacity
-                      style={styles.modalOverlay}
+                      style={[styles.modalOverlay, { backgroundColor: 'rgba(0, 0, 0, 0.5)' }]}
                       activeOpacity={1}
                       onPress={() => setShowSubjectDropdown(false)}
                     >
-                      <ThemedView style={styles.modalContent}>
+                      <ThemedView style={[styles.modalContent, { backgroundColor: colors.background }]}>
                         <ScrollView>
                           {typedFlashcardData.subjects.map((subject: Subject) => (
                             <TouchableOpacity
                               key={subject.id}
-                              style={styles.modalItem}
+                              style={[styles.modalItem, { borderBottomColor: colors.border }]}
                               onPress={() => {
                                 setSelectedSubject(subject.id);
                                 setSelectedChapter('');
                                 setShowSubjectDropdown(false);
                               }}
                             >
-                              <ThemedText style={styles.modalItemText}>{subject.name}</ThemedText>
-                              <IconSymbol name="chevron.right" size={20} color="#6B54AE" />
+                              <ThemedText style={[styles.modalItemText, { color: colors.text }]}>{subject.name}</ThemedText>
+                              <IconSymbol name="chevron.right" size={20} color={colors.tint} />
                             </TouchableOpacity>
                           ))}
                         </ScrollView>
@@ -214,17 +219,36 @@ export default function FlashcardsScreen() {
               </ThemedView>
 
               {/* Chapter Selection */}
-              <ThemedView style={styles.formGroup}>
-                <ThemedText style={styles.formLabel}>Chapter</ThemedText>
+              <ThemedView style={[styles.formGroup, { backgroundColor: colors.background }]}>
+                <ThemedText style={[styles.formLabel, { color: colors.tint }]}>Chapter</ThemedText>
                 <TouchableOpacity
-                  style={[styles.formInput, !selectedSubject && styles.formInputDisabled]}
+                  style={[
+                    styles.formInput,
+                    { backgroundColor: colors.cardAlt, borderColor: colors.border },
+                    !selectedSubject && { 
+                      backgroundColor: isDarkMode ? 'rgba(0, 0, 0, 0.3)' : 'rgba(0, 0, 0, 0.05)',
+                      borderColor: isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'
+                    }
+                  ]}
                   onPress={() => selectedSubject && setShowChapterDropdown(!showChapterDropdown)}
                   disabled={!selectedSubject}
                 >
-                  <ThemedText style={[styles.formInputText, !selectedSubject && styles.formInputTextDisabled]}>
+                  <ThemedText 
+                    style={[
+                      styles.formInputText, 
+                      { color: colors.text }, 
+                      !selectedSubject && { 
+                        color: isDarkMode ? 'rgba(255, 255, 255, 0.3)' : 'rgba(0, 0, 0, 0.3)'
+                      }
+                    ]}
+                  >
                     {selectedChapter ? selectedSubjectData?.chapters.find((c: Chapter) => c.id === selectedChapter)?.name : 'Select a chapter'}
                   </ThemedText>
-                  <IconSymbol name="chevron.right" size={20} color="#6B54AE" />
+                  <IconSymbol 
+                    name="chevron.right" 
+                    size={20} 
+                    color={!selectedSubject ? (isDarkMode ? 'rgba(255, 255, 255, 0.3)' : 'rgba(0, 0, 0, 0.3)') : colors.tint} 
+                  />
                 </TouchableOpacity>
                 {showChapterDropdown && selectedSubject && (
                   <Modal
@@ -234,23 +258,23 @@ export default function FlashcardsScreen() {
                     onRequestClose={() => setShowChapterDropdown(false)}
                   >
                     <TouchableOpacity
-                      style={styles.modalOverlay}
+                      style={[styles.modalOverlay, { backgroundColor: 'rgba(0, 0, 0, 0.5)' }]}
                       activeOpacity={1}
                       onPress={() => setShowChapterDropdown(false)}
                     >
-                      <ThemedView style={styles.modalContent}>
+                      <ThemedView style={[styles.modalContent, { backgroundColor: colors.background }]}>
                         <ScrollView>
                           {selectedSubjectData?.chapters.map((chapter: Chapter) => (
                             <TouchableOpacity
                               key={chapter.id}
-                              style={styles.modalItem}
+                              style={[styles.modalItem, { borderBottomColor: colors.border }]}
                               onPress={() => {
                                 setSelectedChapter(chapter.id);
                                 setShowChapterDropdown(false);
                               }}
                             >
-                              <ThemedText style={styles.modalItemText}>{chapter.name}</ThemedText>
-                              <IconSymbol name="chevron.right" size={20} color="#6B54AE" />
+                              <ThemedText style={[styles.modalItemText, { color: colors.text }]}>{chapter.name}</ThemedText>
+                              <IconSymbol name="chevron.right" size={20} color={colors.tint} />
                             </TouchableOpacity>
                           ))}
                         </ScrollView>
@@ -262,12 +286,30 @@ export default function FlashcardsScreen() {
 
               {/* Start Flashcards Button */}
               <TouchableOpacity
-                style={[styles.startButton, (!selectedSubject || !selectedChapter) && styles.startButtonDisabled]}
+                style={[
+                  styles.startButton,
+                  { backgroundColor: colors.tint },
+                  (!selectedSubject || !selectedChapter) && {
+                    backgroundColor: isDarkMode ? 'rgba(107, 84, 174, 0.3)' : 'rgba(107, 84, 174, 0.5)'
+                  }
+                ]}
                 onPress={handleStartFlashcards}
                 disabled={!selectedSubject || !selectedChapter}
               >
-                <ThemedText style={styles.startButtonText}>Start Flashcards</ThemedText>
-                <IconSymbol name="chevron.right" size={24} color="#fff" />
+                <ThemedText style={[
+                  styles.startButtonText,
+                  (!selectedSubject || !selectedChapter) && {
+                    color: isDarkMode ? 'rgba(255, 255, 255, 0.5)' : 'rgba(255, 255, 255, 0.8)'
+                  }
+                ]}>Start Flashcards</ThemedText>
+                <IconSymbol 
+                  name="chevron.right" 
+                  size={24} 
+                  color={(!selectedSubject || !selectedChapter) 
+                    ? (isDarkMode ? 'rgba(255, 255, 255, 0.5)' : 'rgba(255, 255, 255, 0.8)') 
+                    : '#fff'
+                  } 
+                />
               </TouchableOpacity>
             </ThemedView>
           </ThemedView>
@@ -277,22 +319,22 @@ export default function FlashcardsScreen() {
   }
 
   return (
-    <SafeAreaView style={styles.safeArea}>
+    <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]}>
       <Header title="Flash Cards" />
-      <ThemedView style={styles.container}>
+      <ThemedView style={[styles.container, { backgroundColor: colors.background }]}>
         {/* Breadcrumb Navigation */}
-        <View style={styles.headerContainer}>
-          <View style={styles.breadcrumbContainer}>
-            <View style={styles.breadcrumbItem}>
-              <ThemedText style={styles.breadcrumbText}>
+        <View style={[styles.headerContainer, { backgroundColor: colors.background, borderBottomColor: colors.border }]}>
+          <View style={[styles.breadcrumbContainer, { backgroundColor: colors.cardAlt }]}>
+            <View style={[styles.breadcrumbItem, { backgroundColor: colors.background, borderColor: colors.border }]}>
+              <ThemedText style={[styles.breadcrumbText, { color: colors.tint }]}>
                 {selectedSubjectData?.name || 'Select Subject'}
               </ThemedText>
             </View>
             {selectedSubject && (
               <>
-                <IconSymbol name="chevron.right" size={16} color="#6B54AE" />
-                <View style={styles.breadcrumbItem}>
-                  <ThemedText style={styles.breadcrumbText}>
+                <IconSymbol name="chevron.right" size={16} color={colors.tint} />
+                <View style={[styles.breadcrumbItem, { backgroundColor: colors.background, borderColor: colors.border }]}>
+                  <ThemedText style={[styles.breadcrumbText, { color: colors.tint }]}>
                     {selectedChapterData?.name || 'Select Chapter'}
                   </ThemedText>
                 </View>
@@ -303,14 +345,14 @@ export default function FlashcardsScreen() {
 
         {/* Progress Bar */}
         <ThemedView style={styles.progressContainer}>
-          <ThemedView style={styles.progressBar}>
-            <Animated.View style={[styles.progressFill, progressBarStyle]} />
+          <ThemedView style={[styles.progressBar, { backgroundColor: colors.cardAlt }]}>
+            <Animated.View style={[styles.progressFill, progressBarStyle, { backgroundColor: colors.tint }]} />
           </ThemedView>
           <ThemedView style={styles.progressLabels}>
-            <ThemedText style={styles.progressText}>
+            <ThemedText style={[styles.progressText, { color: colors.tint }]}>
               Card {currentIndex + 1} of {selectedChapterData?.flashcards.length}
             </ThemedText>
-            <ThemedText style={styles.progressText}>
+            <ThemedText style={[styles.progressText, { color: colors.tint }]}>
               {Math.round(progress)}% completed
             </ThemedText>
           </ThemedView>
@@ -320,16 +362,16 @@ export default function FlashcardsScreen() {
         <ThemedView style={styles.cardContainer}>
           <TouchableOpacity onPress={handleReveal} activeOpacity={0.9}>
             <View style={styles.card}>
-              <Animated.View style={[styles.cardFace, styles.cardFront, frontAnimatedStyle]}>
+              <Animated.View style={[styles.cardFace, styles.cardFront, frontAnimatedStyle, { backgroundColor: colors.background, borderColor: colors.border }]}>
                 <View style={styles.cardContent}>
-                  <ThemedText style={styles.questionText}>{currentCard?.question}</ThemedText>
-                  <ThemedText style={styles.revealHint}>Tap to reveal answer</ThemedText>
+                  <ThemedText style={[styles.questionText, { color: colors.text }]}>{currentCard?.question}</ThemedText>
+                  <ThemedText style={[styles.revealHint, { color: colors.text }]}>Tap to reveal answer</ThemedText>
                 </View>
               </Animated.View>
-              <Animated.View style={[styles.cardFace, styles.cardBack, backAnimatedStyle]}>
+              <Animated.View style={[styles.cardFace, styles.cardBack, backAnimatedStyle, { backgroundColor: colors.background, borderColor: colors.border }]}>
                 <View style={styles.cardContent}>
-                  <ThemedText style={styles.answerText}>{currentCard?.answer}</ThemedText>
-                  <ThemedText style={styles.revealHint}>Tap to see question</ThemedText>
+                  <ThemedText style={[styles.answerText, { color: colors.text }]}>{currentCard?.answer}</ThemedText>
+                  <ThemedText style={[styles.revealHint, { color: colors.text }]}>Tap to see question</ThemedText>
                 </View>
               </Animated.View>
             </View>
@@ -341,18 +383,18 @@ export default function FlashcardsScreen() {
           <ThemedView style={styles.navButtonContainer}>
             {currentIndex > 0 && (
               <TouchableOpacity
-                style={[styles.navButton, styles.prevButton]}
+                style={[styles.navButton, styles.prevButton, { borderColor: colors.border }]}
                 onPress={handlePrevious}
               >
-                <IconSymbol name="chevron.right" size={24} color="#6B54AE" style={{ transform: [{ rotate: '180deg' }] }} />
-                <ThemedText style={styles.prevButtonText}>Previous Card</ThemedText>
+                <IconSymbol name="chevron.right" size={24} color={colors.tint} style={{ transform: [{ rotate: '180deg' }] }} />
+                <ThemedText style={[styles.prevButtonText, { color: colors.tint }]}>Previous Card</ThemedText>
               </TouchableOpacity>
             )}
           </ThemedView>
           <ThemedView style={styles.navButtonContainer}>
             {currentIndex < (selectedChapterData?.flashcards.length || 0) - 1 ? (
               <TouchableOpacity
-                style={[styles.navButton, styles.nextButton]}
+                style={[styles.navButton, styles.nextButton, { backgroundColor: colors.tint }]}
                 onPress={handleNext}
               >
                 <ThemedText style={styles.nextButtonText}>Next Card</ThemedText>
@@ -360,7 +402,7 @@ export default function FlashcardsScreen() {
               </TouchableOpacity>
             ) : (
               <TouchableOpacity
-                style={[styles.navButton, styles.finishButton]}
+                style={[styles.navButton, styles.finishButton, { backgroundColor: colors.tint }]}
                 onPress={() => {
                   setShowFlashcards(false);
                   setSelectedSubject('');
