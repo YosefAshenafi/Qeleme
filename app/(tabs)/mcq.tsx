@@ -367,7 +367,7 @@ export default function MCQScreen() {
       <SafeAreaView style={styles.safeArea}>
         <Header title="Quiz Results" />
         <ThemedView style={styles.container}>
-          <View style={[styles.timerContainer, styles.resultTimerContainer]}>
+          <View style={styles.timerContainer}>
             <ThemedText style={styles.timerText}>Time Taken: {formatTime(time)}</ThemedText>
           </View>
           {percentage >= 90 && (
@@ -580,22 +580,43 @@ export default function MCQScreen() {
         <ThemedView style={styles.content}>
           {!showResult ? (
             <>
-              <View style={styles.timerContainer}>
-                <ThemedText style={styles.timerText}>{formatTime(time)}</ThemedText>
+              <View style={styles.headerContainer}>
+                <View style={styles.breadcrumbContainer}>
+                  <View style={styles.breadcrumbItem}>
+                    <ThemedText style={styles.breadcrumbText}>
+                      {selectedSubjectData?.name || 'Select Subject'}
+                    </ThemedText>
+                  </View>
+                  {selectedSubject && (
+                    <>
+                      <IconSymbol name="chevron.right" size={16} color="#6B54AE" />
+                      <View style={styles.breadcrumbItem}>
+                        <ThemedText style={styles.breadcrumbText}>
+                          {selectedChapterData?.name || 'Select Chapter'}
+                        </ThemedText>
+                      </View>
+                    </>
+                  )}
+                </View>
               </View>
 
               <ScrollView ref={scrollViewRef} style={styles.scrollView}>
-                <View style={styles.progressContainer}>
-                  <View style={styles.progressBar}>
-                    <View style={[styles.progressFill, { width: `${progress}%` }]} />
-                  </View>
-                  <View style={styles.progressLabels}>
-                    <View style={[styles.questionLabelContainer]}>
-                      <ThemedText style={styles.progressText}>
-                        Question {currentQuestionIndex + 1} of {totalQuestions}
-                      </ThemedText>
+                <View style={styles.progressTimeContainer}>
+                  <View style={styles.progressContainer}>
+                    <View style={styles.progressBar}>
+                      <View style={[styles.progressFill, { width: `${progress}%` }]} />
+                    </View>
+                    <View style={styles.progressLabels}>
+                      <View style={[styles.questionLabelContainer]}>
+                        <ThemedText style={styles.progressText}>
+                          Question {currentQuestionIndex + 1} of {totalQuestions}
+                        </ThemedText>
+                      </View>
                     </View>
                   </View>
+                  <View style={styles.timerContainer}>
+                  <ThemedText style={styles.timerText}>{formatTime(time)}</ThemedText>
+                </View>
                 </View>
 
                 <View style={styles.questionContainer}>
@@ -854,9 +875,16 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontWeight: '600',
   },
+  progressTimeContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    width: '100%',
+    paddingVertical: 12,
+  },
   progressContainer: {
-    marginBottom: 20,
-    paddingHorizontal: 0,
+    marginTop: 10,
+    width: '75%',
   },
   progressBar: {
     height: 8,
@@ -1097,23 +1125,48 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: '600',
   },
+  headerContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    backgroundColor: '#FFFFFF',
+    borderBottomWidth: 1,
+    borderBottomColor: '#E0E0E0',
+    width: '100%',
+    marginTop: -70,
+  },
+  breadcrumbContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#F5F5F5',
+    borderRadius: 12,
+    marginLeft: -20,
+    gap: 8,
+  },
   timerContainer: {
-    position: 'absolute',
-    top: -55,
-    right: 5,
     backgroundColor: '#6B54AE',
     paddingHorizontal: 16,
-    paddingVertical: 8,
     borderRadius: 20,
-    zIndex: 1,
-  },
-  resultTimerContainer: {
-    top: -25,
-    right: 15,
+    marginTop: -35,
   },
   timerText: {
     color: '#fff',
     fontSize: 18,
+    fontWeight: '600',
+  },
+  breadcrumbItem: {
+    paddingHorizontal: 12,
+    paddingVertical: 4,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#E0E0E0',
+  },
+  breadcrumbText: {
+    color: '#6B54AE',
+    fontSize: 14,
     fontWeight: '600',
   },
 }); 
