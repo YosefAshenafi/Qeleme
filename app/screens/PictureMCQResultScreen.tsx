@@ -56,13 +56,6 @@ export default function PictureMCQResultScreen() {
     return "Keep Learning! You've Got This! 📚";
   };
 
-  const getGradientColors = () => {
-    if (percentage >= 90) return ['#FFD700', '#FFA500'] as const;
-    if (percentage >= 70) return ['#4CAF50', '#45B649'] as const;
-    if (percentage >= 50) return ['#2196F3', '#03A9F4'] as const;
-    return ['#FF9800', '#F57C00'] as const;
-  };
-
   const spin = bounceAnim.interpolate({
     inputRange: [0, 1],
     outputRange: ['0deg', '360deg'],
@@ -71,17 +64,19 @@ export default function PictureMCQResultScreen() {
   return (
     <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]}>
       <Header title="Results 🎯" />
-      <ThemedView style={styles.container}>
-        <ScrollView contentContainerStyle={styles.scrollContent}>
+      <ThemedView style={[styles.container, { backgroundColor: colors.background }]}>
+        <ScrollView 
+          contentContainerStyle={styles.scrollContent}
+          showsVerticalScrollIndicator={false}
+        >
           {/* Main Result Card */}
           <Animated.View style={[styles.resultCard, { 
             transform: [{ scale: scaleAnim }],
-            borderColor: colors.tint,
             backgroundColor: colors.card,
           }]}>
             <LinearGradient
-              colors={getGradientColors()}
-              style={[StyleSheet.absoluteFill, { opacity: 0 }]}
+              colors={[colors.cardGradientStart, colors.cardGradientEnd]}
+              style={StyleSheet.absoluteFill}
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 1 }}
             />
@@ -92,7 +87,7 @@ export default function PictureMCQResultScreen() {
                 <IconSymbol 
                   name="trophy.fill"
                   size={120} 
-                  color="#FFA500" 
+                  color={percentage >= 90 ? '#FFD700' : colors.tint}
                 />
               </Animated.View>
             </View>
@@ -109,36 +104,38 @@ export default function PictureMCQResultScreen() {
             )}
             
             {/* Score Display */}
-            <View style={styles.scoreContainer}>
-              <ThemedText style={[styles.scoreLabel, { color: colors.tint }]}>
-                Your Score
-              </ThemedText>
-              <ThemedText style={[styles.scoreText, { color: colors.tint }]}>
-                {score}/{totalQuestions}
-              </ThemedText>
+            <View style={styles.resultContent}>
+              <View style={styles.scoreContainer}>
+                <ThemedText style={[styles.scoreLabel, { color: colors.text }]}>
+                  Your Score
+                </ThemedText>
+                <ThemedText style={[styles.scoreText, { color: colors.text }]}>
+                  {score}/{totalQuestions}
+                </ThemedText>
+              </View>
+
               <View style={[styles.percentageContainer, { 
-                backgroundColor: colors.card,
-                borderColor: colors.tint 
+                backgroundColor: colors.cardAlt,
+                borderColor: colors.border 
               }]}>
-                <ThemedText style={[styles.percentageText, { color: colors.tint }]}>
+                <ThemedText style={[styles.percentageText, { color: colors.text }]}>
                   {percentage}%
                 </ThemedText>
               </View>
-            </View>
-            
-            {/* Performance Message */}
-            <View style={[styles.messageContainer, { 
-              backgroundColor: colors.card,
-              borderColor: colors.tint 
-            }]}>
-              <ThemedText style={[styles.messageText, { color: colors.tint }]}>
-                {getMessage()}
-              </ThemedText>
+              
+              <View style={[styles.messageContainer, { 
+                backgroundColor: colors.cardAlt,
+                borderColor: colors.border 
+              }]}>
+                <ThemedText style={[styles.messageText, { color: colors.text }]}>
+                  {getMessage()}
+                </ThemedText>
+              </View>
             </View>
           </Animated.View>
 
           {/* Action Buttons */}
-          <ThemedView style={styles.actionButtons}>
+          <ThemedView style={[styles.actionButtons, { backgroundColor: colors.background }]}>
             <TouchableOpacity
               style={[styles.button, styles.playAgainButton, { backgroundColor: colors.tint }]}
               onPress={() => router.push({
@@ -146,18 +143,18 @@ export default function PictureMCQResultScreen() {
                 params: { reset: 'true' }
               })}
             >
-              <ThemedText style={styles.buttonText}>Try Again</ThemedText>
-              <IconSymbol name="arrow.clockwise" size={24} color="#fff" />
+              <ThemedText style={[styles.buttonText, { color: '#fff' }]}>Try Again</ThemedText>
+              <Ionicons name="repeat" size={24} color="#fff" />
             </TouchableOpacity>
             
             <TouchableOpacity
-              style={[styles.button, styles.homeButton, { borderColor: colors.tint }]}
+              style={[styles.button, styles.homeButton, { backgroundColor: colors.cardAlt, borderColor: colors.border }]}
               onPress={() => router.push('/mcq')}
             >
-              <ThemedText style={[styles.buttonText, { color: colors.tint }]}>
+              <ThemedText style={[styles.buttonText, { color: colors.text }]}>
                 More Questions
               </ThemedText>
-              <IconSymbol name="house.fill" size={24} color={colors.tint} />
+              <IconSymbol name="house.fill" size={24} color={colors.text} />
             </TouchableOpacity>
           </ThemedView>
         </ScrollView>
@@ -168,7 +165,6 @@ export default function PictureMCQResultScreen() {
 
 const styles = StyleSheet.create({
   safeArea: {
-    marginTop: 100,
     flex: 1,
   },
   container: {
@@ -189,12 +185,14 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.2,
     shadowRadius: 12,
     overflow: 'hidden',
-    borderWidth: 2,
-    backgroundColor: 'rgba(91, 91, 91, 0.9)',
+    marginTop: 16,
+  },
+  resultContent: {
+    gap: 16,
   },
   trophyContainer: {
     alignItems: 'center',
-    paddingVertical: 10,
+    paddingVertical: 16,
     backgroundColor: 'transparent',
   },
   celebration: {
@@ -214,25 +212,26 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   scoreText: {
-    paddingTop: 40,
-    fontSize: 52,
+    paddingTop: 30,
+    fontSize: 48,
     fontWeight: '700',
+    textAlign: 'center',
     marginBottom: 16,
-    fontFamily: 'System',
   },
   percentageContainer: {
+    alignSelf: 'center',
     paddingHorizontal: 24,
     paddingVertical: 12,
     borderRadius: 30,
     borderWidth: 2,
+    marginBottom: 16,
   },
   percentageText: {
-    paddingTop: 0,
-    fontSize: 22,
+    fontSize: 24,
     fontWeight: '600',
+    textAlign: 'center',
   },
   messageContainer: {
-    marginTop: 10,
     padding: 20,
     borderRadius: 20,
     borderWidth: 2,
@@ -244,8 +243,9 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   actionButtons: {
-    marginTop: 32,
-    gap: 16,
+    width: '100%',
+    gap: 12,
+    marginTop: 24,
     paddingHorizontal: 20,
   },
   button: {
@@ -260,12 +260,10 @@ const styles = StyleSheet.create({
     backgroundColor: '#4CAF50',
   },
   homeButton: {
-    backgroundColor: 'transparent',
     borderWidth: 2,
   },
   buttonText: {
-    color: '#fff',
-    fontSize: 20,
+    fontSize: 18,
     fontWeight: '600',
   },
 }); 
