@@ -2,6 +2,8 @@ import { StyleSheet, ScrollView, View, Dimensions } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import { IconSymbol } from '@/components/ui/IconSymbol';
+import { useTheme } from '@/contexts/ThemeContext';
+import { getColors } from '@/constants/Colors';
 
 import { Header } from '@/components/Header';
 import { ThemedText } from '@/components/ThemedText';
@@ -41,21 +43,36 @@ const reportData = {
 };
 
 export default function ReportsScreen() {
+  const { isDarkMode } = useTheme();
+  const colors = getColors(isDarkMode);
+
+  const gradients = {
+    purple: isDarkMode 
+      ? ['#4B3A7A', '#6B54AE', '#8B6BCE'] as const
+      : ['#6B54AE', '#8B6BCE', '#A78BFA'] as const,
+    green: isDarkMode
+      ? ['#1B4D1F', '#2E7D32', '#4CAF50'] as const
+      : ['#2E7D32', '#4CAF50', '#81C784'] as const,
+    blue: isDarkMode
+      ? ['#0D47A1', '#1976D2', '#2196F3'] as const
+      : ['#1976D2', '#2196F3', '#64B5F6'] as const,
+  };
+
   return (
-    <SafeAreaView style={styles.safeArea}>
+    <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]}>
       <Header title="Learning Reports" />
       <ScrollView style={styles.scrollView}>
-        <ThemedView style={styles.container}>
+        <ThemedView style={[styles.container, { backgroundColor: colors.background }]}>
           {/* Overall Progress Card */}
-          <ThemedView style={styles.card}>
+          <ThemedView style={[styles.card, { backgroundColor: colors.background }]}>
             <LinearGradient
-              colors={['#6B54AE', '#8B6BCE', '#A78BFA']}
+              colors={gradients.purple}
               style={styles.cardGradient}
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 1 }}
             >
               <View style={styles.cardHeader}>
-                <View style={styles.iconContainer}>
+                <View style={[styles.iconContainer, { backgroundColor: 'rgba(255, 255, 255, 0.2)' }]}>
                   <IconSymbol name="message" size={24} color="#fff" />
                 </View>
                 <ThemedText style={styles.cardTitle}>Overall Progress</ThemedText>
@@ -83,15 +100,15 @@ export default function ReportsScreen() {
           </ThemedView>
 
           {/* Performance Metrics */}
-          <ThemedView style={styles.card}>
+          <ThemedView style={[styles.card, { backgroundColor: colors.background }]}>
             <LinearGradient
-              colors={['#2E7D32', '#4CAF50', '#81C784']}
+              colors={gradients.green}
               style={styles.cardGradient}
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 1 }}
             >
               <View style={styles.cardHeader}>
-                <View style={styles.iconContainer}>
+                <View style={[styles.iconContainer, { backgroundColor: 'rgba(255, 255, 255, 0.2)' }]}>
                   <IconSymbol name="message.fill" size={24} color="#fff" />
                 </View>
                 <ThemedText style={styles.cardTitle}>Performance</ThemedText>
@@ -125,15 +142,15 @@ export default function ReportsScreen() {
           </ThemedView>
 
           {/* Learning Streak */}
-          <ThemedView style={styles.card}>
+          <ThemedView style={[styles.card, { backgroundColor: colors.background }]}>
             <LinearGradient
-              colors={['#1976D2', '#2196F3', '#64B5F6']}
+              colors={gradients.blue}
               style={styles.cardGradient}
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 1 }}
             >
               <View style={styles.cardHeader}>
-                <View style={styles.iconContainer}>
+                <View style={[styles.iconContainer, { backgroundColor: 'rgba(255, 255, 255, 0.2)' }]}>
                   <IconSymbol name="house.fill" size={24} color="#fff" />
                 </View>
                 <ThemedText style={styles.cardTitle}>Learning Streak</ThemedText>
@@ -161,46 +178,75 @@ export default function ReportsScreen() {
           </ThemedView>
 
           {/* Subject Breakdown */}
-          <ThemedView style={styles.section}>
-            <ThemedText style={styles.sectionTitle}>Subject Breakdown</ThemedText>
+          <ThemedView style={[styles.section, { backgroundColor: colors.background }]}>
+            <ThemedText style={[styles.sectionTitle, { color: colors.text }]}>Subject Breakdown</ThemedText>
             {reportData.subjectBreakdown.map((subject, index) => (
-              <ThemedView key={index} style={styles.subjectCard}>
+              <ThemedView 
+                key={index} 
+                style={[styles.subjectCard, { 
+                  backgroundColor: colors.cardAlt,
+                  borderColor: colors.border,
+                  borderWidth: isDarkMode ? 1 : 0
+                }]}
+              >
                 <View style={styles.subjectHeader}>
-                  <ThemedText style={styles.subjectName}>{subject.subject}</ThemedText>
-                  <ThemedText style={styles.subjectScore}>{subject.score}%</ThemedText>
+                  <ThemedText style={[styles.subjectName, { color: colors.text }]}>
+                    {subject.subject}
+                  </ThemedText>
+                  <ThemedText style={[styles.subjectScore, { color: colors.tint }]}>
+                    {subject.score}%
+                  </ThemedText>
                 </View>
-                <View style={styles.progressBar}>
-                  <View style={[styles.progressFill, { width: `${subject.progress}%` }]} />
+                <View style={[styles.progressBar, { backgroundColor: isDarkMode ? 'rgba(255, 255, 255, 0.1)' : '#E0E0E0' }]}>
+                  <View style={[styles.progressFill, { 
+                    width: `${subject.progress}%`,
+                    backgroundColor: colors.tint
+                  }]} />
                 </View>
-                <ThemedText style={styles.progressText}>{subject.progress}% Complete</ThemedText>
+                <ThemedText style={[styles.progressText, { color: colors.text }]}>
+                  {subject.progress}% Complete
+                </ThemedText>
               </ThemedView>
             ))}
           </ThemedView>
 
           {/* Recent Activity */}
-          <ThemedView style={styles.section}>
-            <ThemedText style={styles.sectionTitle}>Recent Activity</ThemedText>
+          <ThemedView style={[styles.section, { backgroundColor: colors.background }]}>
+            <ThemedText style={[styles.sectionTitle, { color: colors.text }]}>Recent Activity</ThemedText>
             {reportData.recentActivity.map((activity, index) => (
-              <ThemedView key={index} style={styles.activityCard}>
-                <View style={styles.activityIcon}>
+              <ThemedView 
+                key={index} 
+                style={[styles.activityCard, { 
+                  backgroundColor: colors.cardAlt,
+                  borderColor: colors.border,
+                  borderWidth: isDarkMode ? 1 : 0
+                }]}
+              >
+                <View style={[styles.activityIcon, { 
+                  backgroundColor: isDarkMode ? 'rgba(107, 84, 174, 0.2)' : '#F3E5F5'
+                }]}>
                   <IconSymbol 
                     name={activity.type === 'quiz' ? 'message.fill' : 
                           activity.type === 'study' ? 'house.fill' : 'message'} 
                     size={24} 
-                    color="#6B54AE" 
+                    color={colors.tint}
                   />
                 </View>
                 <View style={styles.activityContent}>
-                  <ThemedText style={styles.activityTitle}>
+                  <ThemedText style={[styles.activityTitle, { color: colors.text }]}>
                     {activity.subject} - {activity.type.charAt(0).toUpperCase() + activity.type.slice(1)}
                   </ThemedText>
-                  <ThemedText style={styles.activitySubtitle}>
+                  <ThemedText style={[styles.activitySubtitle, { color: colors.text }]}>
                     {activity.type === 'quiz' ? `Score: ${activity.score}%` :
                      activity.type === 'study' ? `Duration: ${activity.duration}` :
                      `Status: ${activity.status}`}
                   </ThemedText>
                 </View>
-                <ThemedText style={styles.activityDate}>{activity.date}</ThemedText>
+                <ThemedText style={[styles.activityDate, { 
+                  color: isDarkMode ? 'rgba(255, 255, 255, 0.5)' : 'rgba(0, 0, 0, 0.5)'
+                }]}>
+                  {activity.date}
+                </ThemedText>
               </ThemedView>
             ))}
           </ThemedView>
@@ -213,7 +259,6 @@ export default function ReportsScreen() {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: '#fff',
   },
   scrollView: {
     flex: 1,
@@ -246,7 +291,6 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: 'rgba(255, 255, 255, 0.2)',
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -289,11 +333,9 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 20,
     fontWeight: '600',
-    color: '#333',
     marginBottom: 8,
   },
   subjectCard: {
-    backgroundColor: '#F8F9FA',
     borderRadius: 12,
     padding: 16,
     gap: 8,
@@ -306,32 +348,26 @@ const styles = StyleSheet.create({
   subjectName: {
     fontSize: 16,
     fontWeight: '500',
-    color: '#333',
   },
   subjectScore: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#6B54AE',
   },
   progressBar: {
     height: 8,
-    backgroundColor: '#E0E0E0',
     borderRadius: 4,
     overflow: 'hidden',
   },
   progressFill: {
     height: '100%',
-    backgroundColor: '#6B54AE',
     borderRadius: 4,
   },
   progressText: {
     fontSize: 14,
-    color: '#666',
   },
   activityCard: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#F8F9FA',
     borderRadius: 12,
     padding: 16,
     gap: 12,
@@ -340,7 +376,6 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: '#F3E5F5',
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -350,15 +385,12 @@ const styles = StyleSheet.create({
   activityTitle: {
     fontSize: 16,
     fontWeight: '500',
-    color: '#333',
     marginBottom: 4,
   },
   activitySubtitle: {
     fontSize: 14,
-    color: '#666',
   },
   activityDate: {
     fontSize: 14,
-    color: '#999',
   },
 }); 
