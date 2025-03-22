@@ -385,92 +385,105 @@ export default function MCQScreen() {
   if (showResult) {
     return (
       <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]}>
-        <Header title="Quiz Results" />
-        <ThemedView style={[styles.container, { backgroundColor: colors.background }]}>
-          <View style={styles.timerContainer}>
-            <ThemedText style={[styles.timerText, { color: '#fff' }]}>Time Taken: {formatTime(time)}</ThemedText>
-          </View>
-          {percentage >= 90 && (
-            <View style={styles.fireworkContainer}>
-              {particleAnims.map((anim, index) => (
-                <Animated.View
-                  key={index}
-                  style={[
-                    styles.particle,
-                    {
-                      transform: [
-                        { scale: anim.scale },
-                        { translateX: anim.translateX },
-                        { translateY: anim.translateY },
-                        { rotate: anim.rotate.interpolate({
-                          inputRange: [0, 1],
-                          outputRange: ['0deg', '360deg'],
-                        })},
-                      ],
-                      opacity: anim.opacity,
-                    },
-                  ]}
-                >
-                  <IconSymbol 
-                    name="trophy.fill" 
-                    size={36} 
-                    color={index % 4 === 0 ? '#FFD700' : 
-                           index % 4 === 1 ? '#FFA500' : 
-                           index % 4 === 2 ? '#FF69B4' : '#FF1493'} 
-                  />
+        <ScrollView 
+          contentContainerStyle={styles.scrollContent}
+          showsVerticalScrollIndicator={false}
+        >
+          <ThemedText type="title" style={[styles.title, { color: colors.text }]}>
+            Quiz Results
+          </ThemedText>
+          <ThemedView style={[styles.container, { backgroundColor: colors.background }]}>
+            <View style={[styles.timerContainer, { backgroundColor: colors.tint }]}>
+              <ThemedText style={[styles.timerText, { color: '#fff' }]}>Time Taken: {formatTime(time)}</ThemedText>
+            </View>
+            {percentage >= 90 && (
+              <View style={styles.fireworkContainer}>
+                {particleAnims.map((anim, index) => (
+                  <Animated.View
+                    key={index}
+                    style={[
+                      styles.particle,
+                      {
+                        transform: [
+                          { scale: anim.scale },
+                          { translateX: anim.translateX },
+                          { translateY: anim.translateY },
+                          { rotate: anim.rotate.interpolate({
+                            inputRange: [0, 1],
+                            outputRange: ['0deg', '360deg'],
+                          })},
+                        ],
+                        opacity: anim.opacity,
+                      },
+                    ]}
+                  >
+                    <IconSymbol 
+                      name="trophy.fill" 
+                      size={36} 
+                      color={index % 4 === 0 ? '#FFD700' : 
+                             index % 4 === 1 ? '#FFA500' : 
+                             index % 4 === 2 ? '#FF69B4' : '#FF1493'} 
+                    />
+                  </Animated.View>
+                ))}
+              </View>
+            )}
+            <ThemedView style={[styles.resultCard, { backgroundColor: colors.card }]}>
+              <LinearGradient
+                colors={[colors.cardGradientStart, colors.cardGradientEnd]}
+                style={StyleSheet.absoluteFill}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+              />
+              
+              <View style={styles.trophyContainer}>
+                <Animated.View style={{ transform: [{ scale: scaleAnim }, { rotate: spin }] }}>
+                  <IconSymbol name="trophy.fill" size={80} color={percentage >= 90 ? '#FFD700' : colors.tint} />
                 </Animated.View>
-              ))}
-            </View>
-          )}
-          <View style={[styles.resultCard, { backgroundColor: colors.card }]}>
-            <LinearGradient
-              colors={[colors.cardGradientStart, colors.cardGradientEnd]}
-              style={StyleSheet.absoluteFill}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 1 }}
-            />
-            
-            <View style={styles.trophyContainer}>
-              <Animated.View style={{ transform: [{ scale: scaleAnim }, { rotate: spin }] }}>
-                <IconSymbol name="trophy.fill" size={80} color={colors.tint} />
-              </Animated.View>
-            </View>
-            
-            <ThemedText style={[styles.scoreText, { color: colors.tint }]}>
-              {score}/{totalQuestions}
-            </ThemedText>
-            
-            <ThemedText style={[styles.percentageText, { color: colors.tint }]}>
-              {percentage}%
-            </ThemedText>
-            
-            <ThemedText style={[styles.messageText, { color: colors.tint }]}>
-              {getMessage()}
-            </ThemedText>
-          </View>
+              </View>
+              
+              <View style={styles.resultContent}>
+                <ThemedText style={[styles.scoreText, { color: colors.text }]}>
+                  {score}/{totalQuestions}
+                </ThemedText>
+                
+                <View style={[styles.percentageContainer, { backgroundColor: colors.cardAlt, borderColor: colors.border }]}>
+                  <ThemedText style={[styles.percentageText, { color: colors.text }]}>
+                    {percentage}%
+                  </ThemedText>
+                </View>
+                
+                <View style={[styles.messageContainer, { backgroundColor: colors.cardAlt, borderColor: colors.border }]}>
+                  <ThemedText style={[styles.messageText, { color: colors.text }]}>
+                    {getMessage()}
+                  </ThemedText>
+                </View>
+              </View>
+            </ThemedView>
 
-          <ThemedView style={styles.actionButtons}>
-            <TouchableOpacity
-              style={[styles.button, styles.retryButton, { backgroundColor: colors.tint }]}
-              onPress={handleRetry}
-            >
-              <ThemedText style={[styles.retryButtonText, { color: '#fff' }]}>Try Again</ThemedText>
-              <Ionicons name="refresh" size={24} color="#fff" />
-            </TouchableOpacity>
-            
-            <TouchableOpacity
-              style={[styles.button, styles.homeButton, { borderColor: colors.tint }]}
-              onPress={() => {
-                setShowResult(false);
-                setShowTest(false);
-                setSelectedSubject('');
-                setSelectedChapter('');
-              }}
-            >
-              <ThemedText style={[styles.homeButtonText, { color: colors.tint }]}>Choose Another Subject</ThemedText>
-            </TouchableOpacity>
+            <ThemedView style={[styles.actionButtons, { backgroundColor: colors.background }]}>
+              <TouchableOpacity
+                style={[styles.button, styles.retryButton, { backgroundColor: colors.tint }]}
+                onPress={handleRetry}
+              >
+                <ThemedText style={[styles.retryButtonText, { color: '#fff' }]}>Try Again</ThemedText>
+                <Ionicons name="refresh" size={24} color="#fff" />
+              </TouchableOpacity>
+              
+              <TouchableOpacity
+                style={[styles.button, styles.homeButton, { backgroundColor: colors.cardAlt, borderColor: colors.border }]}
+                onPress={() => {
+                  setShowResult(false);
+                  setShowTest(false);
+                  setSelectedSubject('');
+                  setSelectedChapter('');
+                }}
+              >
+                <ThemedText style={[styles.homeButtonText, { color: colors.text }]}>Choose Another Subject</ThemedText>
+              </TouchableOpacity>
+            </ThemedView>
           </ThemedView>
-        </ThemedView>
+        </ScrollView>
       </SafeAreaView>
     );
   }
@@ -718,21 +731,25 @@ export default function MCQScreen() {
                 
                 <View style={styles.trophyContainer}>
                   <Animated.View style={{ transform: [{ scale: scaleAnim }, { rotate: spin }] }}>
-                    <IconSymbol name="trophy.fill" size={80} color={colors.tint} />
+                    <IconSymbol name="trophy.fill" size={80} color={percentage >= 90 ? '#FFD700' : colors.tint} />
                   </Animated.View>
                 </View>
                 
-                <ThemedText style={[styles.scoreText, { color: colors.tint }]}>
+                <ThemedText style={[styles.scoreText, { color: colors.text }]}>
                   {score}/{totalQuestions}
                 </ThemedText>
                 
-                <ThemedText style={[styles.percentageText, { color: colors.tint }]}>
-                  {percentage}%
-                </ThemedText>
+                <View style={[styles.percentageContainer, { backgroundColor: colors.cardAlt, borderColor: colors.border }]}>
+                  <ThemedText style={[styles.percentageText, { color: colors.text }]}>
+                    {percentage}%
+                  </ThemedText>
+                </View>
                 
-                <ThemedText style={[styles.messageText, { color: colors.tint }]}>
-                  {getMessage()}
-                </ThemedText>
+                <View style={[styles.messageContainer, { backgroundColor: colors.cardAlt, borderColor: colors.border }]}>
+                  <ThemedText style={[styles.messageText, { color: colors.text }]}>
+                    {getMessage()}
+                  </ThemedText>
+                </View>
               </View>
 
               <ThemedView style={styles.actionButtons}>
@@ -745,7 +762,7 @@ export default function MCQScreen() {
                 </TouchableOpacity>
                 
                 <TouchableOpacity
-                  style={[styles.button, styles.homeButton, { borderColor: colors.tint }]}
+                  style={[styles.button, styles.homeButton, { backgroundColor: colors.cardAlt, borderColor: colors.border }]}
                   onPress={() => {
                     setShowResult(false);
                     setShowTest(false);
@@ -753,7 +770,7 @@ export default function MCQScreen() {
                     setSelectedChapter('');
                   }}
                 >
-                  <ThemedText style={[styles.homeButtonText, { color: colors.tint }]}>Choose Another Subject</ThemedText>
+                  <ThemedText style={[styles.homeButtonText, { color: colors.text }]}>Choose Another Subject</ThemedText>
                 </TouchableOpacity>
               </ThemedView>
             </ScrollView>
@@ -768,9 +785,108 @@ const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
   },
+  scrollContent: {
+    flexGrow: 1,
+    paddingBottom: 20,
+  },
   container: {
     flex: 1,
+    padding: 16,
+  },
+  title: {
+    fontSize: 28,
+    fontWeight: 'bold',
+    textAlign: 'center',
+    marginVertical: 16,
+  },
+  resultCard: {
+    width: '100%',
+    alignSelf: 'center',
+    borderRadius: 24,
     padding: 20,
+    elevation: 8,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 12,
+    overflow: 'hidden',
+    marginTop: 16,
+  },
+  resultContent: {
+    gap: 16,
+  },
+  trophyContainer: {
+    alignItems: 'center',
+    paddingVertical: 16,
+    backgroundColor: 'transparent',
+  },
+  scoreText: {
+    fontSize: 48,
+    fontWeight: '700',
+    textAlign: 'center',
+    backgroundColor: 'transparent',
+  },
+  percentageContainer: {
+    alignSelf: 'center',
+    paddingHorizontal: 20,
+    paddingVertical: 8,
+    borderRadius: 24,
+    borderWidth: 2,
+  },
+  percentageText: {
+    fontSize: 22,
+    fontWeight: '600',
+    textAlign: 'center',
+  },
+  messageContainer: {
+    padding: 16,
+    borderRadius: 16,
+    borderWidth: 2,
+  },
+  messageText: {
+    fontSize: 18,
+    textAlign: 'center',
+    lineHeight: 28,
+    fontWeight: '600',
+  },
+  actionButtons: {
+    width: '100%',
+    gap: 12,
+    marginTop: 24,
+  },
+  button: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 16,
+    borderRadius: 16,
+    gap: 12,
+  },
+  retryButton: {
+    backgroundColor: '#4CAF50',
+  },
+  homeButton: {
+    borderWidth: 2,
+  },
+  retryButtonText: {
+    color: '#fff',
+    fontSize: 18,
+    fontWeight: '600',
+  },
+  homeButtonText: {
+    fontSize: 18,
+    fontWeight: '600',
+  },
+  timerContainer: {
+    alignSelf: 'center',
+    paddingHorizontal: 20,
+    paddingVertical: 8,
+    borderRadius: 20,
+    marginTop: -8,
+  },
+  timerText: {
+    fontSize: 16,
+    fontWeight: '600',
   },
   scrollView: {
     flex: 1,
@@ -919,99 +1035,32 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '500',
   },
-  resultButton: {
-    backgroundColor: '#FF9800',
-  },
-  resultButtonText: {
-    color: '#fff',
-    fontWeight: '600',
-  },
-  resultCard: {
-    width: Dimensions.get('window').width - 40,
-    borderRadius: 20,
+  headerContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
     alignItems: 'center',
-    elevation: 4,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
-    paddingBottom: 20,
-    paddingTop: 30,
-    marginBottom: 20,
-  },
-  trophyContainer: {
+    paddingHorizontal: 16,
+    paddingVertical: 12,
     width: '100%',
-    alignItems: 'center',
-    paddingTop: 30,
-    paddingBottom: 20,
-    backgroundColor: 'transparent',
+    marginTop: -70,
+    borderBottomWidth: 1,
   },
-  scoreText: {
-    paddingTop: 30,
-    fontSize: 50,
-    fontWeight: '700',
-    marginBottom: 8,
-    textAlign: 'center',
-    backgroundColor: 'transparent',
-  },
-  percentageText: {
-    paddingTop: 20,
-    fontSize: 30,
-    fontWeight: '600',
-    marginBottom: 16,
-    textAlign: 'center',
-    backgroundColor: 'transparent',
-  },
-  messageText: {
-    fontSize: 18,
-    textAlign: 'center',
-    lineHeight: 24,
-    paddingHorizontal: 20,
-    backgroundColor: 'transparent',
-  },
-  actionButtons: {
-    width: '100%',
-    gap: 16,
-    paddingHorizontal: 20,
-    marginTop: 20,
-  },
-  button: {
-    padding: 16,
-    borderRadius: 12,
-    alignItems: 'center',
-  },
-  retryButton: {
-    display: 'flex',
+  breadcrumbContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
+    borderRadius: 12,
+    marginLeft: -20,
     gap: 8,
   },
-  homeButton: {
-    backgroundColor: 'transparent',
+  breadcrumbItem: {
+    paddingHorizontal: 12,
+    paddingVertical: 4,
+    borderRadius: 8,
     borderWidth: 1,
   },
-  retryButtonText: {
-    fontSize: 16,
-    fontWeight: '700',
-  },
-  homeButtonText: {
-    fontSize: 16,
-    fontWeight: '700',
-  },
-  fireworkContainer: {
-    position: 'absolute',
-    top: '50%',
-    left: '50%',
-    width: 0,
-    height: 0,
-    zIndex: 1000,
-  },
-  particle: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    transform: [{ translateX: -20 }, { translateY: -20 }],
+  breadcrumbText: {
+    fontSize: 14,
+    fontWeight: '600',
   },
   formContainer: {
     flex: 1,
@@ -1099,40 +1148,18 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: '700',
   },
-  headerContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    width: '100%',
-    marginTop: -70,
-    borderBottomWidth: 1,
+  fireworkContainer: {
+    position: 'absolute',
+    top: '50%',
+    left: '50%',
+    width: 0,
+    height: 0,
+    zIndex: 1000,
   },
-  breadcrumbContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    borderRadius: 12,
-    marginLeft: -20,
-    gap: 8,
-  },
-  timerContainer: {
-    paddingHorizontal: 16,
-    borderRadius: 20,
-    marginTop: -35,
-  },
-  timerText: {
-    fontSize: 18,
-    fontWeight: '600',
-  },
-  breadcrumbItem: {
-    paddingHorizontal: 12,
-    paddingVertical: 4,
-    borderRadius: 8,
-    borderWidth: 1,
-  },
-  breadcrumbText: {
-    fontSize: 14,
-    fontWeight: '600',
+  particle: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    transform: [{ translateX: -20 }, { translateY: -20 }],
   },
 }); 
