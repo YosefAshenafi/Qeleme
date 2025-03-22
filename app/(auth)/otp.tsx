@@ -4,10 +4,14 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { useState, useRef } from 'react';
+import { useTheme } from '@/contexts/ThemeContext';
+import { getColors } from '@/constants/Colors';
 
 import { ThemedText } from '@/components/ThemedText';
 
 export default function OTPScreen() {
+  const { isDarkMode } = useTheme();
+  const colors = getColors(isDarkMode);
   const [otp, setOtp] = useState(['', '', '', '', '', '']);
   const inputRefs = useRef<Array<TextInput | null>>([]);
 
@@ -40,7 +44,7 @@ export default function OTPScreen() {
 
   return (
     <LinearGradient
-      colors={['#F8F9FA', '#FFFFFF']}
+      colors={isDarkMode ? ['#000000', '#1C1C1E'] : ['#F8F9FA', '#FFFFFF']}
       style={styles.gradient}
     >
       <SafeAreaView style={styles.safeArea}>
@@ -54,10 +58,10 @@ export default function OTPScreen() {
                 style={styles.backButton}
                 onPress={() => router.back()}
               >
-                <Ionicons name="arrow-back" size={24} color="#1F2937" />
+                <Ionicons name="arrow-back" size={24} color={isDarkMode ? '#A0A0A5' : '#1F2937'} />
               </TouchableOpacity>
-              <ThemedText style={styles.title}>Verify Your Phone</ThemedText>
-              <ThemedText style={styles.subtitle}>
+              <ThemedText style={[styles.title, { color: colors.text }]}>Verify Your Phone</ThemedText>
+              <ThemedText style={[styles.subtitle, { color: colors.text + '80' }]}>
                 Enter the 6-digit code sent to your phone
               </ThemedText>
             </View>
@@ -67,7 +71,14 @@ export default function OTPScreen() {
                 <TextInput
                   key={index}
                   ref={(ref) => (inputRefs.current[index] = ref)}
-                  style={styles.otpInput}
+                  style={[
+                    styles.otpInput,
+                    {
+                      backgroundColor: isDarkMode ? '#2C2C2E' : '#F9FAFB',
+                      borderColor: isDarkMode ? '#3C3C3E' : '#E5E7EB',
+                      color: colors.text
+                    }
+                  ]}
                   value={digit}
                   onChangeText={(text) => handleOtpChange(text, index)}
                   onKeyPress={(e) => handleKeyPress(e, index)}
@@ -75,6 +86,7 @@ export default function OTPScreen() {
                   maxLength={1}
                   selectTextOnFocus
                   autoFocus={index === 0}
+                  placeholderTextColor={isDarkMode ? '#A0A0A5' : '#9CA3AF'}
                 />
               ))}
             </View>
@@ -96,7 +108,9 @@ export default function OTPScreen() {
             </TouchableOpacity>
 
             <View style={styles.resendContainer}>
-              <ThemedText style={styles.resendText}>Didn't receive the code?</ThemedText>
+              <ThemedText style={[styles.resendText, { color: isDarkMode ? '#A0A0A5' : '#6B7280' }]}>
+                Didn't receive the code?
+              </ThemedText>
               <TouchableOpacity>
                 <ThemedText style={styles.resendButton}>Resend</ThemedText>
               </TouchableOpacity>
@@ -131,13 +145,11 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 32,
     fontWeight: '700',
-    color: '#1F2937',
     marginBottom: 8,
     paddingTop: 10,
   },
   subtitle: {
     fontSize: 16,
-    color: '#6B7280',
   },
   otpContainer: {
     flexDirection: 'row',
@@ -148,12 +160,9 @@ const styles = StyleSheet.create({
     width: 50,
     height: 60,
     borderRadius: 12,
-    backgroundColor: '#F9FAFB',
     borderWidth: 1,
-    borderColor: '#E5E7EB',
     textAlign: 'center',
     fontSize: 24,
-    color: '#1F2937',
   },
   verifyButton: {
     width: '100%',
@@ -183,7 +192,6 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   resendText: {
-    color: '#6B7280',
     fontSize: 14,
   },
   resendButton: {
