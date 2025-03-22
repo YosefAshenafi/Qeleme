@@ -335,40 +335,55 @@ export default function HomeScreen() {
               </TouchableOpacity>
             </View>
             <ThemedView style={[styles.activityList, { 
-              backgroundColor: isDarkMode ? colors.card : '#F5F5F5'
+              backgroundColor: colors.background,
+              gap: 12,
+              padding: 12
             }]}>
               <ThemedView style={[styles.activityItem, { 
-                borderBottomColor: isDarkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)',
-                backgroundColor: isDarkMode ? colors.card : '#F5F5F5',
-                marginBottom: 1,
+                backgroundColor: isDarkMode ? '#1C1C1E' : '#F5F5F5',
+                borderRadius: 16,
+                borderBottomWidth: 0,
+                shadowColor: "#000",
+                shadowOffset: {
+                  width: 0,
+                  height: 1,
+                },
+                shadowOpacity: isDarkMode ? 0.5 : 0.1,
+                shadowRadius: 2.22,
+                elevation: 3,
               }]}>
                 <ThemedView style={[styles.activityIcon, { 
-                  backgroundColor: isDarkMode ? '#4A2B8E30' : '#F3E5F5'
+                  backgroundColor: isDarkMode ? 'rgba(107, 84, 174, 0.2)' : '#F3E5F5'
                 }]}>
                   <IconSymbol name="questionmark.circle" size={24} color={colors.tint} />
                 </ThemedView>
-                <ThemedView style={[styles.activityContent, { backgroundColor: colors.card }]}>
+                <ThemedView style={[styles.activityContent, { backgroundColor: isDarkMode ? '#1C1C1E' : '#F5F5F5' }]}>
                   <ThemedText style={[styles.activityTitle, { color: colors.text }]}>Math Quiz</ThemedText>
                   <ThemedText style={[styles.activitySubtitle, { color: colors.text + '80' }]}>Completed 10 questions</ThemedText>
-                  <View style={[styles.activityProgress, { backgroundColor: isDarkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)' }]}>
-                    <View style={[styles.activityProgressBar, { backgroundColor: colors.tint }]} />
-                  </View>
                 </ThemedView>
                 <View style={[styles.activityBadge, { backgroundColor: colors.tint }]}>
                   <ThemedText style={[styles.activityBadgeText, { color: isDarkMode ? '#000' : '#fff' }]}>New</ThemedText>
                 </View>
               </ThemedView>
               <ThemedView style={[styles.activityItem, { 
-                borderBottomColor: isDarkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)',
-                backgroundColor: isDarkMode ? colors.card : '#F5F5F5',
-                marginBottom: 1,
+                backgroundColor: isDarkMode ? '#1C1C1E' : '#F5F5F5',
+                borderRadius: 16,
+                borderBottomWidth: 0,
+                shadowColor: "#000",
+                shadowOffset: {
+                  width: 0,
+                  height: 1,
+                },
+                shadowOpacity: isDarkMode ? 0.5 : 0.1,
+                shadowRadius: 2.22,
+                elevation: 3,
               }]}>
                 <ThemedView style={[styles.activityIcon, { 
-                  backgroundColor: isDarkMode ? '#2E7D3230' : '#E8F5E9'
+                  backgroundColor: isDarkMode ? 'rgba(46, 125, 50, 0.2)' : '#E8F5E9'
                 }]}>
                   <IconSymbol name="rectangle.stack" size={24} color="#2E7D32" />
                 </ThemedView>
-                <ThemedView style={[styles.activityContent, { backgroundColor: colors.card }]}>
+                <ThemedView style={[styles.activityContent, { backgroundColor: isDarkMode ? '#1C1C1E' : '#F5F5F5' }]}>
                   <ThemedText style={[styles.activityTitle, { color: colors.text }]}>Science Flashcards</ThemedText>
                   <ThemedText style={[styles.activitySubtitle, { color: colors.text + '80' }]}>Reviewed 5 cards</ThemedText>
                 </ThemedView>
@@ -377,14 +392,24 @@ export default function HomeScreen() {
                 </View>
               </ThemedView>
               <ThemedView style={[styles.activityItem, { 
-                backgroundColor: isDarkMode ? colors.card : '#F5F5F5',
+                backgroundColor: isDarkMode ? '#1C1C1E' : '#F5F5F5',
+                borderRadius: 16,
+                borderBottomWidth: 0,
+                shadowColor: "#000",
+                shadowOffset: {
+                  width: 0,
+                  height: 1,
+                },
+                shadowOpacity: isDarkMode ? 0.5 : 0.1,
+                shadowRadius: 2.22,
+                elevation: 3,
               }]}>
                 <ThemedView style={[styles.activityIcon, { 
-                  backgroundColor: isDarkMode ? '#1976D230' : '#E3F2FD'
+                  backgroundColor: isDarkMode ? 'rgba(25, 118, 210, 0.2)' : '#E3F2FD'
                 }]}>
                   <IconSymbol name="message" size={24} color="#1976D2" />
                 </ThemedView>
-                <ThemedView style={[styles.activityContent, { backgroundColor: colors.card }]}>
+                <ThemedView style={[styles.activityContent, { backgroundColor: isDarkMode ? '#1C1C1E' : '#F5F5F5' }]}>
                   <ThemedText style={[styles.activityTitle, { color: colors.text }]}>English Homework</ThemedText>
                   <ThemedText style={[styles.activitySubtitle, { color: colors.text + '80' }]}>Asked 2 questions</ThemedText>
                 </ThemedView>
