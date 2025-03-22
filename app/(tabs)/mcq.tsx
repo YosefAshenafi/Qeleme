@@ -5,6 +5,8 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { router, useFocusEffect } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useTheme } from '@/contexts/ThemeContext';
+import { getColors } from '@/constants/Colors';
 
 import { Header } from '@/components/Header';
 import { ThemedText } from '@/components/ThemedText';
@@ -45,6 +47,8 @@ interface MCQData {
 const typedMcqData = mcqData as MCQData;
 
 export default function MCQScreen() {
+  const { isDarkMode } = useTheme();
+  const colors = getColors(isDarkMode);
   const [selectedSubject, setSelectedSubject] = useState('');
   const [selectedChapter, setSelectedChapter] = useState('');
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
@@ -364,11 +368,11 @@ export default function MCQScreen() {
 
   if (showResult) {
     return (
-      <SafeAreaView style={styles.safeArea}>
+      <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]}>
         <Header title="Quiz Results" />
-        <ThemedView style={styles.container}>
+        <ThemedView style={[styles.container, { backgroundColor: colors.background }]}>
           <View style={styles.timerContainer}>
-            <ThemedText style={styles.timerText}>Time Taken: {formatTime(time)}</ThemedText>
+            <ThemedText style={[styles.timerText, { color: '#fff' }]}>Time Taken: {formatTime(time)}</ThemedText>
           </View>
           {percentage >= 90 && (
             <View style={styles.fireworkContainer}>
@@ -402,9 +406,9 @@ export default function MCQScreen() {
               ))}
             </View>
           )}
-          <View style={styles.resultCard}>
+          <View style={[styles.resultCard, { backgroundColor: colors.card }]}>
             <LinearGradient
-              colors={['#F3E5F5', '#E1BEE7']}
+              colors={[colors.cardGradientStart, colors.cardGradientEnd]}
               style={StyleSheet.absoluteFill}
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 1 }}
@@ -412,34 +416,34 @@ export default function MCQScreen() {
             
             <View style={styles.trophyContainer}>
               <Animated.View style={{ transform: [{ scale: scaleAnim }, { rotate: spin }] }}>
-                <IconSymbol name="trophy.fill" size={80} color="#6B54AE" />
+                <IconSymbol name="trophy.fill" size={80} color={colors.tint} />
               </Animated.View>
             </View>
             
-            <ThemedText style={styles.scoreText}>
+            <ThemedText style={[styles.scoreText, { color: colors.tint }]}>
               {score}/{totalQuestions}
             </ThemedText>
             
-            <ThemedText style={styles.percentageText}>
+            <ThemedText style={[styles.percentageText, { color: colors.tint }]}>
               {percentage}%
             </ThemedText>
             
-            <ThemedText style={styles.messageText}>
+            <ThemedText style={[styles.messageText, { color: colors.tint }]}>
               {getMessage()}
             </ThemedText>
           </View>
 
           <ThemedView style={styles.actionButtons}>
             <TouchableOpacity
-              style={[styles.button, styles.retryButton]}
+              style={[styles.button, styles.retryButton, { backgroundColor: colors.tint }]}
               onPress={handleRetry}
             >
-              <ThemedText style={styles.retryButtonText}>Try Again</ThemedText>
+              <ThemedText style={[styles.retryButtonText, { color: '#fff' }]}>Try Again</ThemedText>
               <Ionicons name="refresh" size={24} color="#fff" />
             </TouchableOpacity>
             
             <TouchableOpacity
-              style={[styles.button, styles.homeButton]}
+              style={[styles.button, styles.homeButton, { borderColor: colors.tint }]}
               onPress={() => {
                 setShowResult(false);
                 setShowTest(false);
@@ -447,7 +451,7 @@ export default function MCQScreen() {
                 setSelectedChapter('');
               }}
             >
-              <ThemedText style={styles.homeButtonText}>Choose Another Subject</ThemedText>
+              <ThemedText style={[styles.homeButtonText, { color: colors.tint }]}>Choose Another Subject</ThemedText>
             </TouchableOpacity>
           </ThemedView>
         </ThemedView>
@@ -457,24 +461,24 @@ export default function MCQScreen() {
 
   if (!showTest) {
     return (
-      <SafeAreaView style={styles.safeArea}>
+      <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]}>
         <Header title="MCQ Questions" />
-        <ThemedView style={styles.container}>
-          <ThemedView style={styles.formContainer}>
-            <ThemedText style={styles.formTitle}>Select Subject and Chapter</ThemedText>
+        <ThemedView style={[styles.container, { backgroundColor: colors.background }]}>
+          <ThemedView style={[styles.formContainer, { backgroundColor: colors.background }]}>
+            <ThemedText style={[styles.formTitle, { color: colors.tint }]}>Select Subject and Chapter</ThemedText>
             
-            <ThemedView style={styles.formContent}>
+            <ThemedView style={[styles.formContent, { backgroundColor: colors.background }]}>
               {/* Subject Selection */}
-              <ThemedView style={styles.formGroup}>
-                <ThemedText style={styles.formLabel}>Subject</ThemedText>
+              <ThemedView style={[styles.formGroup, { backgroundColor: colors.background }]}>
+                <ThemedText style={[styles.formLabel, { color: colors.tint }]}>Subject</ThemedText>
                 <TouchableOpacity
-                  style={styles.formInput}
+                  style={[styles.formInput, { backgroundColor: colors.cardAlt, borderColor: colors.border }]}
                   onPress={() => setShowSubjectDropdown(!showSubjectDropdown)}
                 >
-                  <ThemedText style={styles.formInputText}>
+                  <ThemedText style={[styles.formInputText, { color: colors.tint }]}>
                     {selectedSubject ? typedMcqData.subjects.find((s: Subject) => s.id === selectedSubject)?.name : 'Select a subject'}
                   </ThemedText>
-                  <IconSymbol name="chevron.right" size={20} color="#6B54AE" />
+                  <IconSymbol name="chevron.right" size={20} color={colors.tint} />
                 </TouchableOpacity>
                 {showSubjectDropdown && (
                   <Modal
@@ -484,24 +488,24 @@ export default function MCQScreen() {
                     onRequestClose={() => setShowSubjectDropdown(false)}
                   >
                     <TouchableOpacity
-                      style={styles.modalOverlay}
+                      style={[styles.modalOverlay, { backgroundColor: colors.background }]}
                       activeOpacity={1}
                       onPress={() => setShowSubjectDropdown(false)}
                     >
-                      <ThemedView style={styles.modalContent}>
+                      <ThemedView style={[styles.modalContent, { backgroundColor: colors.background }]}>
                         <ScrollView>
                           {typedMcqData.subjects.map((subject: Subject) => (
                             <TouchableOpacity
                               key={subject.id}
-                              style={styles.modalItem}
+                              style={[styles.modalItem, { backgroundColor: colors.background, borderBottomColor: colors.border }]}
                               onPress={() => {
                                 setSelectedSubject(subject.id);
                                 setSelectedChapter('');
                                 setShowSubjectDropdown(false);
                               }}
                             >
-                              <ThemedText style={styles.modalItemText}>{subject.name}</ThemedText>
-                              <IconSymbol name="chevron.right" size={20} color="#6B54AE" />
+                              <ThemedText style={[styles.modalItemText, { color: colors.tint }]}>{subject.name}</ThemedText>
+                              <IconSymbol name="chevron.right" size={20} color={colors.tint} />
                             </TouchableOpacity>
                           ))}
                         </ScrollView>
@@ -512,17 +516,17 @@ export default function MCQScreen() {
               </ThemedView>
 
               {/* Chapter Selection */}
-              <ThemedView style={styles.formGroup}>
-                <ThemedText style={styles.formLabel}>Chapter</ThemedText>
+              <ThemedView style={[styles.formGroup, { backgroundColor: colors.background }]}>
+                <ThemedText style={[styles.formLabel, { color: colors.tint }]}>Chapter</ThemedText>
                 <TouchableOpacity
-                  style={[styles.formInput, !selectedSubject && styles.formInputDisabled]}
+                  style={[styles.formInput, { backgroundColor: colors.cardAlt, borderColor: colors.border }, !selectedSubject && styles.formInputDisabled]}
                   onPress={() => selectedSubject && setShowChapterDropdown(!showChapterDropdown)}
                   disabled={!selectedSubject}
                 >
-                  <ThemedText style={[styles.formInputText, !selectedSubject && styles.formInputTextDisabled]}>
+                  <ThemedText style={[styles.formInputText, { color: colors.tint }, !selectedSubject && styles.formInputTextDisabled]}>
                     {selectedChapter ? selectedSubjectData?.chapters.find((c: Chapter) => c.id === selectedChapter)?.name : 'Select a chapter'}
                   </ThemedText>
-                  <IconSymbol name="chevron.right" size={20} color="#6B54AE" />
+                  <IconSymbol name="chevron.right" size={20} color={colors.tint} />
                 </TouchableOpacity>
                 {showChapterDropdown && selectedSubject && (
                   <Modal
@@ -532,23 +536,23 @@ export default function MCQScreen() {
                     onRequestClose={() => setShowChapterDropdown(false)}
                   >
                     <TouchableOpacity
-                      style={styles.modalOverlay}
+                      style={[styles.modalOverlay, { backgroundColor: colors.background }]}
                       activeOpacity={1}
                       onPress={() => setShowChapterDropdown(false)}
                     >
-                      <ThemedView style={styles.modalContent}>
+                      <ThemedView style={[styles.modalContent, { backgroundColor: colors.background }]}>
                         <ScrollView>
                           {selectedSubjectData?.chapters.map((chapter: Chapter) => (
                             <TouchableOpacity
                               key={chapter.id}
-                              style={styles.modalItem}
+                              style={[styles.modalItem, { backgroundColor: colors.background, borderBottomColor: colors.border }]}
                               onPress={() => {
                                 setSelectedChapter(chapter.id);
                                 setShowChapterDropdown(false);
                               }}
                             >
-                              <ThemedText style={styles.modalItemText}>{chapter.name}</ThemedText>
-                              <IconSymbol name="chevron.right" size={20} color="#6B54AE" />
+                              <ThemedText style={[styles.modalItemText, { color: colors.tint }]}>{chapter.name}</ThemedText>
+                              <IconSymbol name="chevron.right" size={20} color={colors.tint} />
                             </TouchableOpacity>
                           ))}
                         </ScrollView>
@@ -560,11 +564,11 @@ export default function MCQScreen() {
 
               {/* Start Test Button */}
               <TouchableOpacity
-                style={[styles.startButton, (!selectedSubject || !selectedChapter) && styles.startButtonDisabled]}
+                style={[styles.startButton, { backgroundColor: colors.tint }, (!selectedSubject || !selectedChapter) && styles.startButtonDisabled]}
                 onPress={handleStartTest}
                 disabled={!selectedSubject || !selectedChapter}
               >
-                <ThemedText style={styles.startButtonText}>Start Test</ThemedText>
+                <ThemedText style={[styles.startButtonText, { color: '#fff' }]}>Start Test</ThemedText>
                 <IconSymbol name="chevron.right" size={24} color="#fff" />
               </TouchableOpacity>
             </ThemedView>
@@ -575,23 +579,23 @@ export default function MCQScreen() {
   }
 
   return (
-    <SafeAreaView style={styles.safeArea}>
-      <ThemedView style={styles.container}>
-        <ThemedView style={styles.content}>
+    <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]}>
+      <ThemedView style={[styles.container, { backgroundColor: colors.background }]}>
+        <ThemedView style={[styles.content, { backgroundColor: colors.background }]}>
           {!showResult ? (
             <>
-              <View style={styles.headerContainer}>
-                <View style={styles.breadcrumbContainer}>
-                  <View style={styles.breadcrumbItem}>
-                    <ThemedText style={styles.breadcrumbText}>
+              <View style={[styles.headerContainer, { backgroundColor: colors.background, borderBottomColor: colors.border }]}>
+                <View style={[styles.breadcrumbContainer, { backgroundColor: colors.cardAlt }]}>
+                  <View style={[styles.breadcrumbItem, { backgroundColor: colors.background, borderColor: colors.border }]}>
+                    <ThemedText style={[styles.breadcrumbText, { color: colors.tint }]}>
                       {selectedSubjectData?.name || 'Select Subject'}
                     </ThemedText>
                   </View>
                   {selectedSubject && (
                     <>
-                      <IconSymbol name="chevron.right" size={16} color="#6B54AE" />
-                      <View style={styles.breadcrumbItem}>
-                        <ThemedText style={styles.breadcrumbText}>
+                      <IconSymbol name="chevron.right" size={16} color={colors.tint} />
+                      <View style={[styles.breadcrumbItem, { backgroundColor: colors.background, borderColor: colors.border }]}>
+                        <ThemedText style={[styles.breadcrumbText, { color: colors.tint }]}>
                           {selectedChapterData?.name || 'Select Chapter'}
                         </ThemedText>
                       </View>
@@ -603,24 +607,24 @@ export default function MCQScreen() {
               <ScrollView ref={scrollViewRef} style={styles.scrollView}>
                 <View style={styles.progressTimeContainer}>
                   <View style={styles.progressContainer}>
-                    <View style={styles.progressBar}>
-                      <View style={[styles.progressFill, { width: `${progress}%` }]} />
+                    <View style={[styles.progressBar, { backgroundColor: colors.cardAlt }]}>
+                      <View style={[styles.progressFill, { backgroundColor: colors.tint }]} />
                     </View>
                     <View style={styles.progressLabels}>
                       <View style={[styles.questionLabelContainer]}>
-                        <ThemedText style={styles.progressText}>
+                        <ThemedText style={[styles.progressText, { color: colors.tint }]}>
                           Question {currentQuestionIndex + 1} of {totalQuestions}
                         </ThemedText>
                       </View>
                     </View>
                   </View>
-                  <View style={styles.timerContainer}>
-                  <ThemedText style={styles.timerText}>{formatTime(time)}</ThemedText>
-                </View>
+                  <View style={[styles.timerContainer, { backgroundColor: colors.tint }]}>
+                    <ThemedText style={[styles.timerText, { color: '#fff' }]}>{formatTime(time)}</ThemedText>
+                  </View>
                 </View>
 
                 <View style={styles.questionContainer}>
-                  <ThemedText style={styles.questionText}>
+                  <ThemedText style={[styles.questionText, { color: colors.text }]}>
                     {currentQuestion?.question}
                   </ThemedText>
                 </View>
@@ -629,52 +633,56 @@ export default function MCQScreen() {
                   {currentQuestion?.options.map((option: Option) => (
                     <TouchableOpacity
                       key={option.id}
-                      style={getOptionStyle(option.id)}
+                      style={[
+                        styles.optionContainer,
+                        { backgroundColor: colors.background, borderColor: colors.border },
+                        getOptionStyle(option.id)
+                      ]}
                       onPress={() => handleAnswerSelect(option.id)}
                       disabled={!!selectedAnswer}
                     >
                       <View style={styles.optionContent}>
-                        <View style={styles.optionId}>
-                          <ThemedText style={styles.optionIdText}>{option.id}</ThemedText>
+                        <View style={[styles.optionId, { backgroundColor: colors.cardAlt, borderColor: colors.border }]}>
+                          <ThemedText style={[styles.optionIdText, { color: colors.tint }]}>{option.id}</ThemedText>
                         </View>
-                        <ThemedText style={styles.optionText}>{option.text}</ThemedText>
+                        <ThemedText style={[styles.optionText, { color: colors.text }]}>{option.text}</ThemedText>
                       </View>
                     </TouchableOpacity>
                   ))}
                 </View>
 
                 {showAnswerMessage && (
-                  <View style={styles.answerMessageContainer}>
-                    <ThemedText style={styles.answerMessageText}>
+                  <View style={[styles.answerMessageContainer, { backgroundColor: colors.cardAlt }]}>
+                    <ThemedText style={[styles.answerMessageText, { color: colors.warning }]}>
                       Please select an answer before proceeding
                     </ThemedText>
                   </View>
                 )}
 
                 {showExplanation && (
-                  <View ref={explanationRef} style={styles.explanationContainer}>
-                    <ThemedText style={styles.explanationTitle}>Explanation:</ThemedText>
-                    <ThemedText style={styles.explanationText}>
+                  <View ref={explanationRef} style={[styles.explanationContainer, { backgroundColor: colors.cardAlt }]}>
+                    <ThemedText style={[styles.explanationTitle, { color: colors.tint }]}>Explanation:</ThemedText>
+                    <ThemedText style={[styles.explanationText, { color: colors.text }]}>
                       {currentQuestion?.explanation}
                     </ThemedText>
                   </View>
                 )}
 
-                <View style={styles.navigationContainer}>
+                <View style={[styles.navigationContainer, { borderTopColor: colors.border, borderBottomColor: colors.border }]}>
                   <TouchableOpacity
-                    style={[styles.navButton, styles.prevButton, isFirstQuestion && styles.navButtonDisabled]}
+                    style={[styles.navButton, styles.prevButton, { borderColor: colors.border }, isFirstQuestion && styles.navButtonDisabled]}
                     onPress={handlePreviousQuestion}
                     disabled={isFirstQuestion}
                   >
-                    <IconSymbol name="chevron.left.forwardslash.chevron.right" size={24} color="#6B54AE" />
-                    <ThemedText style={styles.prevButtonText}>Previous</ThemedText>
+                    <IconSymbol name="chevron.left.forwardslash.chevron.right" size={24} color={colors.tint} />
+                    <ThemedText style={[styles.prevButtonText, { color: colors.tint }]}>Previous</ThemedText>
                   </TouchableOpacity>
 
                   <TouchableOpacity
-                    style={[styles.navButton, styles.nextButton]}
+                    style={[styles.navButton, styles.nextButton, { backgroundColor: colors.tint }]}
                     onPress={isLastQuestion ? handleResult : handleNextQuestion}
                   >
-                    <ThemedText style={styles.nextButtonText}>
+                    <ThemedText style={[styles.nextButtonText, { color: '#fff' }]}>
                       {isLastQuestion ? 'Finish' : 'Next'}
                     </ThemedText>
                     <IconSymbol name="chevron.right" size={24} color="#fff" />
@@ -684,9 +692,9 @@ export default function MCQScreen() {
             </>
           ) : (
             <ScrollView>
-              <View style={styles.resultCard}>
+              <View style={[styles.resultCard, { backgroundColor: colors.card }]}>
                 <LinearGradient
-                  colors={['#F3E5F5', '#E1BEE7']}
+                  colors={[colors.cardGradientStart, colors.cardGradientEnd]}
                   style={StyleSheet.absoluteFill}
                   start={{ x: 0, y: 0 }}
                   end={{ x: 1, y: 1 }}
@@ -694,34 +702,34 @@ export default function MCQScreen() {
                 
                 <View style={styles.trophyContainer}>
                   <Animated.View style={{ transform: [{ scale: scaleAnim }, { rotate: spin }] }}>
-                    <IconSymbol name="trophy.fill" size={80} color="#6B54AE" />
+                    <IconSymbol name="trophy.fill" size={80} color={colors.tint} />
                   </Animated.View>
                 </View>
                 
-                <ThemedText style={styles.scoreText}>
+                <ThemedText style={[styles.scoreText, { color: colors.tint }]}>
                   {score}/{totalQuestions}
                 </ThemedText>
                 
-                <ThemedText style={styles.percentageText}>
+                <ThemedText style={[styles.percentageText, { color: colors.tint }]}>
                   {percentage}%
                 </ThemedText>
                 
-                <ThemedText style={styles.messageText}>
+                <ThemedText style={[styles.messageText, { color: colors.tint }]}>
                   {getMessage()}
                 </ThemedText>
               </View>
 
               <ThemedView style={styles.actionButtons}>
                 <TouchableOpacity
-                  style={[styles.button, styles.retryButton]}
+                  style={[styles.button, styles.retryButton, { backgroundColor: colors.tint }]}
                   onPress={handleRetry}
                 >
-                  <ThemedText style={styles.retryButtonText}>Try Again</ThemedText>
+                  <ThemedText style={[styles.retryButtonText, { color: '#fff' }]}>Try Again</ThemedText>
                   <Ionicons name="refresh" size={24} color="#fff" />
                 </TouchableOpacity>
                 
                 <TouchableOpacity
-                  style={[styles.button, styles.homeButton]}
+                  style={[styles.button, styles.homeButton, { borderColor: colors.tint }]}
                   onPress={() => {
                     setShowResult(false);
                     setShowTest(false);
@@ -729,7 +737,7 @@ export default function MCQScreen() {
                     setSelectedChapter('');
                   }}
                 >
-                  <ThemedText style={styles.homeButtonText}>Choose Another Subject</ThemedText>
+                  <ThemedText style={[styles.homeButtonText, { color: colors.tint }]}>Choose Another Subject</ThemedText>
                 </TouchableOpacity>
               </ThemedView>
             </ScrollView>
@@ -743,12 +751,10 @@ export default function MCQScreen() {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: '#fff',
   },
   container: {
     flex: 1,
     padding: 20,
-    backgroundColor: '#fff',
   },
   scrollView: {
     flex: 1,
@@ -777,8 +783,6 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.2,
     shadowRadius: 3,
     borderWidth: 1,
-    borderColor: '#E0E0E0',
-    backgroundColor: '#FFFFFF',
   },
   optionContent: {
     flexDirection: 'row',
@@ -790,21 +794,17 @@ const styles = StyleSheet.create({
     width: 32,
     height: 32,
     borderRadius: 16,
-    backgroundColor: '#F5F5F5',
     justifyContent: 'center',
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: '#E0E0E0',
   },
   optionIdText: {
-    color: '#6B54AE',
     fontWeight: '600',
     fontSize: 14,
   },
   optionText: {
     flex: 1,
     fontSize: 16,
-    color: '#333333',
     lineHeight: 22,
   },
   correctOption: {
@@ -818,13 +818,11 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFEBEE',
   },
   explanationContainer: {
-    backgroundColor: '#F5F5F5',
     padding: 20,
     borderRadius: 12,
     marginTop: 20,
   },
   explanationTitle: {
-    color: '#6B54AE',
     marginBottom: 10,
   },
   explanationText: {
@@ -837,8 +835,6 @@ const styles = StyleSheet.create({
     paddingVertical: 20,
     borderTopWidth: 1,
     borderBottomWidth: 1,
-    borderTopColor: '#E0E0E0',
-    borderBottomColor: '#E0E0E0',
     paddingHorizontal: 0,
   },
   navButtonContainer: {
@@ -859,7 +855,6 @@ const styles = StyleSheet.create({
   prevButton: {
     backgroundColor: 'transparent',
     borderWidth: 1,
-    borderColor: '#E0E0E0',
   },
   nextButton: {
     backgroundColor: '#6B54AE',
@@ -868,12 +863,10 @@ const styles = StyleSheet.create({
     opacity: 0.5,
   },
   prevButtonText: {
-    color: '#6B54AE',
-    fontWeight: '600',
+    fontWeight: '700',
   },
   nextButtonText: {
-    color: '#fff',
-    fontWeight: '600',
+    fontWeight: '700',
   },
   progressTimeContainer: {
     flexDirection: 'row',
@@ -888,14 +881,12 @@ const styles = StyleSheet.create({
   },
   progressBar: {
     height: 8,
-    backgroundColor: '#E0E0E0',
     borderRadius: 4,
     overflow: 'hidden',
     marginBottom: 8,
   },
   progressFill: {
     height: '100%',
-    backgroundColor: '#6B54AE',
     borderRadius: 4,
   },
   progressLabels: {
@@ -909,19 +900,16 @@ const styles = StyleSheet.create({
     borderRadius: 16,
   },
   progressText: {
-    color: '#6B54AE',
     fontSize: 14,
     fontWeight: '600',
   },
   answerMessageContainer: {
-    backgroundColor: '#FFF3E0',
     padding: 12,
     borderRadius: 8,
     marginTop: 10,
     alignItems: 'center',
   },
   answerMessageText: {
-    color: '#F57C00',
     fontSize: 14,
     fontWeight: '500',
   },
@@ -941,7 +929,6 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.25,
     shadowRadius: 3.84,
-    backgroundColor: '#F3E5F5',
     paddingBottom: 20,
     paddingTop: 30,
     marginBottom: 20,
@@ -957,7 +944,6 @@ const styles = StyleSheet.create({
     paddingTop: 30,
     fontSize: 50,
     fontWeight: '700',
-    color: '#6B54AE',
     marginBottom: 8,
     textAlign: 'center',
     backgroundColor: 'transparent',
@@ -966,7 +952,6 @@ const styles = StyleSheet.create({
     paddingTop: 20,
     fontSize: 30,
     fontWeight: '600',
-    color: '#6B54AE',
     marginBottom: 16,
     textAlign: 'center',
     backgroundColor: 'transparent',
@@ -974,7 +959,6 @@ const styles = StyleSheet.create({
   messageText: {
     fontSize: 18,
     textAlign: 'center',
-    color: '#6B54AE',
     lineHeight: 24,
     paddingHorizontal: 20,
     backgroundColor: 'transparent',
@@ -991,7 +975,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   retryButton: {
-    backgroundColor: '#6B54AE',
     display: 'flex',
     flexDirection: 'row',
     alignItems: 'center',
@@ -1001,17 +984,14 @@ const styles = StyleSheet.create({
   homeButton: {
     backgroundColor: 'transparent',
     borderWidth: 1,
-    borderColor: '#6B54AE',
   },
   retryButtonText: {
-    color: '#fff',
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: '700',
   },
   homeButtonText: {
-    color: '#6B54AE',
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: '700',
   },
   fireworkContainer: {
     position: 'absolute',
@@ -1030,7 +1010,6 @@ const styles = StyleSheet.create({
   formContainer: {
     flex: 1,
     padding: 20,
-    backgroundColor: '#fff',
     borderRadius: 20,
     elevation: 4,
     shadowColor: '#000',
@@ -1041,7 +1020,6 @@ const styles = StyleSheet.create({
   formTitle: {
     fontSize: 24,
     fontWeight: '700',
-    color: '#6B54AE',
     marginBottom: 30,
     textAlign: 'center',
   },
@@ -1054,28 +1032,23 @@ const styles = StyleSheet.create({
   formLabel: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#6B54AE',
   },
   formInput: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     padding: 16,
-    backgroundColor: '#F5F5F5',
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: '#E0E0E0',
   },
   formInputDisabled: {
-    backgroundColor: '#F5F5F5',
     opacity: 0.7,
   },
   formInputText: {
     fontSize: 16,
-    color: '#333333',
   },
   formInputTextDisabled: {
-    color: '#999999',
+    opacity: 0.7,
   },
   modalOverlay: {
     flex: 1,
@@ -1086,7 +1059,6 @@ const styles = StyleSheet.create({
   modalContent: {
     width: '80%',
     maxHeight: '80%',
-    backgroundColor: '#fff',
     borderRadius: 20,
     padding: 20,
     elevation: 5,
@@ -1101,29 +1073,25 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     padding: 16,
     borderBottomWidth: 1,
-    borderBottomColor: '#E0E0E0',
   },
   modalItemText: {
     fontSize: 16,
-    color: '#333333',
   },
   startButton: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     gap: 8,
-    backgroundColor: '#6B54AE',
     padding: 16,
     borderRadius: 12,
     marginTop: 20,
   },
   startButtonDisabled: {
-    backgroundColor: '#CCCCCC',
+    opacity: 0.7,
   },
   startButtonText: {
-    color: '#fff',
     fontSize: 18,
-    fontWeight: '600',
+    fontWeight: '700',
   },
   headerContainer: {
     flexDirection: 'row',
@@ -1131,41 +1099,33 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: 16,
     paddingVertical: 12,
-    backgroundColor: '#FFFFFF',
-    borderBottomWidth: 1,
-    borderBottomColor: '#E0E0E0',
     width: '100%',
     marginTop: -70,
+    borderBottomWidth: 1,
   },
   breadcrumbContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#F5F5F5',
     borderRadius: 12,
     marginLeft: -20,
     gap: 8,
   },
   timerContainer: {
-    backgroundColor: '#6B54AE',
     paddingHorizontal: 16,
     borderRadius: 20,
     marginTop: -35,
   },
   timerText: {
-    color: '#fff',
     fontSize: 18,
     fontWeight: '600',
   },
   breadcrumbItem: {
     paddingHorizontal: 12,
     paddingVertical: 4,
-    backgroundColor: '#FFFFFF',
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: '#E0E0E0',
   },
   breadcrumbText: {
-    color: '#6B54AE',
     fontSize: 14,
     fontWeight: '600',
   },
