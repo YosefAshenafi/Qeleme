@@ -6,10 +6,14 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { Picker } from '@react-native-picker/picker';
 import Checkbox from 'expo-checkbox';
 import { Ionicons } from '@expo/vector-icons';
+import { useTheme } from '@/contexts/ThemeContext';
+import { getColors } from '@/constants/Colors';
 
 import { ThemedText } from '@/components/ThemedText';
 
 export default function SignupScreen() {
+  const { isDarkMode } = useTheme();
+  const colors = getColors(isDarkMode);
   const [fullName, setFullName] = useState('');
   const [phoneNumber, setPhoneNumber] = useState('');
   const [password, setPassword] = useState('');
@@ -56,7 +60,7 @@ export default function SignupScreen() {
 
   return (
     <LinearGradient
-      colors={['#F8F9FA', '#FFFFFF']}
+      colors={isDarkMode ? ['#000000', '#1C1C1E'] : ['#F8F9FA', '#FFFFFF']}
       style={styles.gradient}
     >
       <SafeAreaView style={styles.safeArea}>
@@ -76,35 +80,42 @@ export default function SignupScreen() {
                   style={styles.logoImage}
                   resizeMode="contain"
                 />
-                <ThemedText style={styles.welcomeText}>Create Account</ThemedText>
-                <ThemedText style={styles.subtitleText}>Join our community</ThemedText>
+                <ThemedText style={[styles.welcomeText, { color: colors.text }]}>Create Account</ThemedText>
+                <ThemedText style={[styles.subtitleText, { color: colors.text + '80' }]}>Join our community</ThemedText>
               </View>
 
-              <View style={styles.formContainer}>
+              <View style={[styles.formContainer, {
+                backgroundColor: isDarkMode ? '#1C1C1E' : '#FFFFFF',
+              }]}>
                 <View style={styles.inputWrapper}>
-                  <View style={styles.inputContainer}>
-                    <Ionicons name="person-outline" size={20} color="#6B7280" style={styles.inputIcon} />
+                  <View style={[styles.inputContainer, {
+                    backgroundColor: isDarkMode ? '#2C2C2E' : '#F9FAFB',
+                    borderColor: isDarkMode ? '#3C3C3E' : '#E5E7EB',
+                  }]}>
+                    <Ionicons name="person-outline" size={20} color={isDarkMode ? '#A0A0A5' : '#6B7280'} style={styles.inputIcon} />
                     <TextInput
-                      style={styles.input}
+                      style={[styles.input, { color: colors.text }]}
                       placeholder="Full Name"
-                      placeholderTextColor="#9CA3AF"
+                      placeholderTextColor={isDarkMode ? '#A0A0A5' : '#9CA3AF'}
                       value={fullName}
                       onChangeText={setFullName}
                       autoCapitalize="words"
                     />
                   </View>
 
-                  <View style={styles.inputContainer}>
-                    <Ionicons name="call-outline" size={20} color="#6B7280" style={styles.inputIcon} />
+                  <View style={[styles.inputContainer, {
+                    backgroundColor: isDarkMode ? '#2C2C2E' : '#F9FAFB',
+                    borderColor: isDarkMode ? '#3C3C3E' : '#E5E7EB',
+                  }]}>
+                    <Ionicons name="call-outline" size={20} color={isDarkMode ? '#A0A0A5' : '#6B7280'} style={styles.inputIcon} />
                     <View style={styles.phoneInputContainer}>
-                      <ThemedText style={styles.phonePrefix}>+251</ThemedText>
+                      <ThemedText style={[styles.phonePrefix, { color: colors.text }]}>+251</ThemedText>
                       <TextInput
-                        style={styles.phoneInput}
+                        style={[styles.phoneInput, { color: colors.text }]}
                         placeholder="9-digit number"
-                        placeholderTextColor="#9CA3AF"
+                        placeholderTextColor={isDarkMode ? '#A0A0A5' : '#9CA3AF'}
                         value={phoneNumber}
                         onChangeText={(text) => {
-                          // Only allow numbers and limit to 9 digits
                           const numericValue = text.replace(/[^0-9]/g, '').slice(0, 9);
                           setPhoneNumber(numericValue);
                         }}
@@ -115,82 +126,51 @@ export default function SignupScreen() {
                     </View>
                   </View>
 
-                  <View style={styles.inputContainer}>
-                    <Ionicons name="lock-closed-outline" size={20} color="#6B7280" style={styles.inputIcon} />
+                  <View style={[styles.inputContainer, {
+                    backgroundColor: isDarkMode ? '#2C2C2E' : '#F9FAFB',
+                    borderColor: isDarkMode ? '#3C3C3E' : '#E5E7EB',
+                  }]}>
+                    <Ionicons name="lock-closed-outline" size={20} color={isDarkMode ? '#A0A0A5' : '#6B7280'} style={styles.inputIcon} />
                     <TextInput
-                      style={styles.input}
+                      style={[styles.input, { color: colors.text }]}
                       placeholder="Password"
-                      placeholderTextColor="#9CA3AF"
+                      placeholderTextColor={isDarkMode ? '#A0A0A5' : '#9CA3AF'}
                       value={password}
                       onChangeText={setPassword}
                       secureTextEntry
                     />
                   </View>
 
-                  <View style={styles.inputContainer}>
-                    <Ionicons name="lock-closed-outline" size={20} color="#6B7280" style={styles.inputIcon} />
+                  <View style={[styles.inputContainer, {
+                    backgroundColor: isDarkMode ? '#2C2C2E' : '#F9FAFB',
+                    borderColor: isDarkMode ? '#3C3C3E' : '#E5E7EB',
+                  }]}>
+                    <Ionicons name="lock-closed-outline" size={20} color={isDarkMode ? '#A0A0A5' : '#6B7280'} style={styles.inputIcon} />
                     <TextInput
-                      style={styles.input}
+                      style={[styles.input, { color: colors.text }]}
                       placeholder="Confirm Password"
-                      placeholderTextColor="#9CA3AF"
+                      placeholderTextColor={isDarkMode ? '#A0A0A5' : '#9CA3AF'}
                       value={confirmPassword}
                       onChangeText={setConfirmPassword}
                       secureTextEntry
                     />
                   </View>
 
-                  <View style={styles.inputContainer}>
-                    <Ionicons name="school-outline" size={20} color="#6B7280" style={styles.inputIcon} />
+                  <View style={[styles.inputContainer, {
+                    backgroundColor: isDarkMode ? '#2C2C2E' : '#F9FAFB',
+                    borderColor: isDarkMode ? '#3C3C3E' : '#E5E7EB',
+                  }]}>
+                    <Ionicons name="school-outline" size={20} color={isDarkMode ? '#A0A0A5' : '#6B7280'} style={styles.inputIcon} />
                     <TouchableOpacity 
                       style={styles.dropdownButton}
                       onPress={() => setShowGradeModal(true)}
                     >
-                      <ThemedText style={[styles.input, grade ? { color: '#1F2937' } : { color: '#9CA3AF' }]}>
+                      <ThemedText style={[styles.input, { color: grade ? colors.text : (isDarkMode ? '#A0A0A5' : '#9CA3AF') }]}>
                         {grade ? grades.find(g => g.value === grade)?.label || 'Select your grade' : 'Select your grade'}
                       </ThemedText>
-                      <Ionicons name="chevron-down" size={20} color="#6B7280" />
+                      <Ionicons name="chevron-down" size={20} color={isDarkMode ? '#A0A0A5' : '#6B7280'} />
                     </TouchableOpacity>
                   </View>
-
-                  <Modal
-                    visible={showGradeModal}
-                    transparent={true}
-                    animationType="fade"
-                    onRequestClose={() => setShowGradeModal(false)}
-                  >
-                    <Pressable 
-                      style={styles.modalOverlay}
-                      onPress={() => setShowGradeModal(false)}
-                    >
-                      <View style={styles.modalContent}>
-                        <View style={styles.modalHeader}>
-                          <ThemedText style={styles.modalTitle}>Select Grade</ThemedText>
-                          <TouchableOpacity onPress={() => setShowGradeModal(false)}>
-                            <Ionicons name="close" size={24} color="#6B7280" />
-                          </TouchableOpacity>
-                        </View>
-                        <ScrollView style={styles.gradeScrollView}>
-                          {grades.map((item) => (
-                            <TouchableOpacity
-                              key={item.value}
-                              style={[
-                                styles.gradeOption,
-                                grade === item.value && styles.gradeOptionSelected
-                              ]}
-                              onPress={() => handleGradeSelect(item.value)}
-                            >
-                              <ThemedText style={[
-                                styles.gradeOptionText,
-                                grade === item.value && styles.gradeOptionTextSelected
-                              ]}>
-                                {item.label}
-                              </ThemedText>
-                            </TouchableOpacity>
-                          ))}
-                        </ScrollView>
-                      </View>
-                    </Pressable>
-                  </Modal>
                 </View>
 
                 <View style={styles.termsContainer}>
@@ -201,14 +181,60 @@ export default function SignupScreen() {
                     style={styles.checkbox}
                   />
                   <View style={styles.termsTextContainer}>
-                    <ThemedText style={styles.termsText}>I accept the </ThemedText>
+                    <ThemedText style={[styles.termsText, { color: isDarkMode ? '#A0A0A5' : '#6B7280' }]}>I accept the </ThemedText>
                     <TouchableOpacity onPress={() => setShowTermsModal(true)}>
                       <ThemedText style={styles.termsLink}>Terms and Conditions</ThemedText>
                     </TouchableOpacity>
                   </View>
                 </View>
 
-                {/* Terms Modal */}
+                <Modal
+                  visible={showGradeModal}
+                  transparent={true}
+                  animationType="fade"
+                  onRequestClose={() => setShowGradeModal(false)}
+                >
+                  <Pressable 
+                    style={styles.modalOverlay}
+                    onPress={() => setShowGradeModal(false)}
+                  >
+                    <View style={[styles.modalContent, {
+                      backgroundColor: isDarkMode ? '#1C1C1E' : '#FFFFFF',
+                    }]}>
+                      <View style={[styles.modalHeader, {
+                        borderBottomColor: isDarkMode ? '#3C3C3E' : '#E5E7EB',
+                      }]}>
+                        <ThemedText style={[styles.modalTitle, { color: colors.text }]}>Select Grade</ThemedText>
+                        <TouchableOpacity onPress={() => setShowGradeModal(false)}>
+                          <Ionicons name="close" size={24} color={isDarkMode ? '#A0A0A5' : '#6B7280'} />
+                        </TouchableOpacity>
+                      </View>
+                      <ScrollView style={styles.gradeScrollView}>
+                        {grades.map((item) => (
+                          <TouchableOpacity
+                            key={item.value}
+                            style={[
+                              styles.gradeOption,
+                              grade === item.value && [styles.gradeOptionSelected, {
+                                backgroundColor: isDarkMode ? '#2C2C2E' : '#EEF2FF'
+                              }]
+                            ]}
+                            onPress={() => handleGradeSelect(item.value)}
+                          >
+                            <ThemedText style={[
+                              styles.gradeOptionText,
+                              { color: isDarkMode ? colors.text : '#1F2937' },
+                              grade === item.value && styles.gradeOptionTextSelected
+                            ]}>
+                              {item.label}
+                            </ThemedText>
+                          </TouchableOpacity>
+                        ))}
+                      </ScrollView>
+                    </View>
+                  </Pressable>
+                </Modal>
+
                 <Modal
                   visible={showTermsModal}
                   transparent={true}
@@ -219,15 +245,19 @@ export default function SignupScreen() {
                     style={styles.modalOverlay}
                     onPress={() => setShowTermsModal(false)}
                   >
-                    <View style={styles.modalContent}>
-                      <View style={styles.modalHeader}>
-                        <ThemedText style={styles.modalTitle}>Terms and Conditions</ThemedText>
+                    <View style={[styles.modalContent, {
+                      backgroundColor: isDarkMode ? '#1C1C1E' : '#FFFFFF',
+                    }]}>
+                      <View style={[styles.modalHeader, {
+                        borderBottomColor: isDarkMode ? '#3C3C3E' : '#E5E7EB',
+                      }]}>
+                        <ThemedText style={[styles.modalTitle, { color: colors.text }]}>Terms and Conditions</ThemedText>
                         <TouchableOpacity onPress={() => setShowTermsModal(false)}>
-                          <Ionicons name="close" size={24} color="#6B7280" />
+                          <Ionicons name="close" size={24} color={isDarkMode ? '#A0A0A5' : '#6B7280'} />
                         </TouchableOpacity>
                       </View>
                       <ScrollView style={styles.termsModalContent}>
-                        <ThemedText style={styles.termsModalText}>
+                        <ThemedText style={[styles.termsModalText, { color: colors.text }]}>
                           {`1. Acceptance of Terms\n\nBy accessing and using the Qelem app, you agree to be bound by these Terms and Conditions.\n\n2. User Registration\n\nUsers must provide accurate and complete information during registration. Users are responsible for maintaining the confidentiality of their account credentials.\n\n3. Privacy Policy\n\nYour use of the app is also governed by our Privacy Policy, which outlines how we collect, use, and protect your personal information.\n\n4. User Conduct\n\nUsers agree to:\n- Use the app for lawful purposes only\n- Respect other users' privacy and rights\n- Not share inappropriate or harmful content\n- Not attempt to disrupt the app's functionality\n\n5. Content\n\nUsers retain ownership of their content but grant us license to use it for app functionality.\n\n6. Termination\n\nWe reserve the right to terminate or suspend accounts that violate these terms.\n\n7. Changes to Terms\n\nWe may update these terms periodically. Continued use of the app constitutes acceptance of new terms.`}
                         </ThemedText>
                       </ScrollView>
@@ -250,7 +280,7 @@ export default function SignupScreen() {
               </View>
 
               <View style={styles.footer}>
-                <ThemedText style={styles.footerText}>Already have an account?</ThemedText>
+                <ThemedText style={[styles.footerText, { color: isDarkMode ? '#A0A0A5' : '#6B7280' }]}>Already have an account?</ThemedText>
                 <TouchableOpacity 
                   style={styles.loginButton} 
                   onPress={() => router.push('/(auth)/login')}

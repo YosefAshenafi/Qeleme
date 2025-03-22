@@ -6,6 +6,8 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '@/contexts/AuthContext';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useTheme } from '@/contexts/ThemeContext';
+import { getColors } from '@/constants/Colors';
 
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
@@ -18,6 +20,8 @@ const PHONE_REGEX = /^(?:\+251|0|251)?([9][0-9]{8})$/;
 
 export default function LoginScreen() {
   const { login } = useAuth();
+  const { isDarkMode } = useTheme();
+  const colors = getColors(isDarkMode);
   const [phoneNumber, setPhoneNumber] = useState('');
   const [password, setPassword] = useState('');
   const [errors, setErrors] = useState({
@@ -113,7 +117,7 @@ export default function LoginScreen() {
 
   return (
     <LinearGradient
-      colors={['#F8F9FA', '#FFFFFF']}
+      colors={isDarkMode ? ['#000000', '#1C1C1E'] : ['#F8F9FA', '#FFFFFF']}
       style={styles.gradient}
     >
       <SafeAreaView style={styles.safeArea}>
@@ -136,23 +140,28 @@ export default function LoginScreen() {
                 style={styles.logoImage}
                 resizeMode="contain"
               />
-              <ThemedText style={styles.welcomeText}>Welcome to Qelem</ThemedText>
-              <ThemedText style={styles.subtitleText}>Empowering minds, one lesson at a time</ThemedText>
+              <ThemedText style={[styles.welcomeText, { color: colors.text }]}>Welcome to Qelem</ThemedText>
+              <ThemedText style={[styles.subtitleText, { color: colors.text + '80' }]}>Empowering minds, one lesson at a time</ThemedText>
             </View>
 
-            <View style={styles.formContainer}>
+            <View style={[styles.formContainer, {
+              backgroundColor: isDarkMode ? '#1C1C1E' : '#FFFFFF',
+            }]}>
               <View style={styles.inputWrapper}>
-                <View style={[styles.inputContainer, errors.phoneNumber ? styles.inputError : null]}>
-                  <Ionicons name="call-outline" size={20} color="#6B7280" style={styles.inputIcon} />
+                <View style={[
+                  styles.inputContainer, 
+                  errors.phoneNumber ? styles.inputError : null,
+                  { backgroundColor: isDarkMode ? '#2C2C2E' : '#F9FAFB' }
+                ]}>
+                  <Ionicons name="call-outline" size={20} color={isDarkMode ? '#A0A0A5' : '#6B7280'} style={styles.inputIcon} />
                   <View style={styles.phoneInputContainer}>
-                    <ThemedText style={styles.countryCode}>+251</ThemedText>
+                    <ThemedText style={[styles.countryCode, { color: colors.text }]}>+251</ThemedText>
                     <TextInput
-                      style={[styles.input, styles.phoneInput]}
+                      style={[styles.input, styles.phoneInput, { color: colors.text }]}
                       placeholder="912345678"
-                      placeholderTextColor="#9CA3AF"
+                      placeholderTextColor={isDarkMode ? '#A0A0A5' : '#9CA3AF'}
                       value={phoneNumber}
                       onChangeText={(text) => {
-                        // Only allow up to 9 digits
                         const cleaned = text.replace(/[^\d]/g, '').slice(0, 9);
                         setPhoneNumber(cleaned);
                         if (errors.phoneNumber) {
@@ -169,12 +178,16 @@ export default function LoginScreen() {
                   <ThemedText style={styles.errorText}>{errors.phoneNumber}</ThemedText>
                 ) : null}
 
-                <View style={[styles.inputContainer, errors.password ? styles.inputError : null]}>
-                  <Ionicons name="lock-closed-outline" size={20} color="#6B7280" style={styles.inputIcon} />
+                <View style={[
+                  styles.inputContainer, 
+                  errors.password ? styles.inputError : null,
+                  { backgroundColor: isDarkMode ? '#2C2C2E' : '#F9FAFB' }
+                ]}>
+                  <Ionicons name="lock-closed-outline" size={20} color={isDarkMode ? '#A0A0A5' : '#6B7280'} style={styles.inputIcon} />
                   <TextInput
-                    style={styles.input}
+                    style={[styles.input, { color: colors.text }]}
                     placeholder="Password"
-                    placeholderTextColor="#9CA3AF"
+                    placeholderTextColor={isDarkMode ? '#A0A0A5' : '#9CA3AF'}
                     value={password}
                     onChangeText={(text) => {
                       setPassword(text);
@@ -207,18 +220,18 @@ export default function LoginScreen() {
                 style={styles.forgotButton} 
                 onPress={() => router.push('/(auth)/forgot-password')}
               >
-                <ThemedText style={styles.forgotPassword}>Forgot password?</ThemedText>
+                <ThemedText style={[styles.forgotPassword, { color: isDarkMode ? '#A0A0A5' : '#6B7280' }]}>Forgot password?</ThemedText>
               </TouchableOpacity>
             </View>
 
             <View style={styles.footer}>
-              <ThemedText style={styles.footerText}>Don't have an account?</ThemedText>
+              <ThemedText style={[styles.footerText, { color: isDarkMode ? '#A0A0A5' : '#6B7280' }]}>Don't have an account?</ThemedText>
               <TouchableOpacity 
                 style={styles.signupButton} 
                 onPress={() => router.push('/(auth)/signup')}
                 activeOpacity={0.8}
               >
-                <ThemedText style={styles.signupText}>Sign Up</ThemedText>
+                <ThemedText style={[styles.signupText, { color: '#4F46E5' }]}>Sign Up</ThemedText>
               </TouchableOpacity>
             </View>
           </Animated.View>
