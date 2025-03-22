@@ -27,6 +27,7 @@ type MenuItem = {
   icon: IconSymbolName;
   content?: React.ReactNode;
   action?: () => void;
+  customContent?: React.ReactNode;
 };
 
 const AccordionItem: React.FC<AccordionItemProps> = ({ title, icon, children, isOpen, onToggle, colors }) => {
@@ -69,7 +70,7 @@ const AccordionItem: React.FC<AccordionItemProps> = ({ title, icon, children, is
 };
 
 export default function ProfileScreen() {
-  const { isDarkMode } = useTheme();
+  const { isDarkMode, toggleTheme } = useTheme();
   const { logout } = useAuth();
   const [openAccordion, setOpenAccordion] = useState<string | null>(null);
   const colors = getColors(isDarkMode);
@@ -97,14 +98,29 @@ export default function ProfileScreen() {
       content: <AccountSettings colors={colors} profileData={profileData} />
     },
     { 
-      title: 'Theme Settings', 
-      icon: 'sun.max.fill' as const, 
-      content: <ThemeChooser colors={colors} />
-    },
-    { 
       title: 'Notifications', 
       icon: 'bell.fill' as const, 
       content: <Notifications colors={colors} />
+    },
+    { 
+      title: 'Theme',
+      icon: isDarkMode ? 'moon.fill' : 'sun.max.fill' as const,
+      action: () => {
+        toggleTheme();
+      },
+      customContent: (
+        <View style={styles.themeMenuItem}>
+          <View style={styles.themeMenuLeft}>
+            <IconSymbol name={isDarkMode ? 'moon.fill' : 'sun.max.fill'} size={24} color={colors.tint} />
+            <Text style={[styles.menuItemText, { color: colors.text }]}>Theme</Text>
+          </View>
+          <View style={[styles.themeToggleWrapper, { backgroundColor: isDarkMode ? colors.tint : 'rgba(0,0,0,0.1)' }]}>
+            <Text style={[styles.themeToggleText, { color: isDarkMode ? colors.background : colors.text }]}>
+              {isDarkMode ? 'Dark' : 'Light'}
+            </Text>
+          </View>
+        </View>
+      )
     },
     { 
       title: 'Reset App', 
@@ -164,29 +180,42 @@ export default function ProfileScreen() {
         {/* Menu Items */}
         <View style={styles.menuContainer}>
           {menuItems.map((item, index) => (
-            item.action ? (
+            item.customContent ? (
               <TouchableOpacity
                 key={index}
                 style={[styles.menuItem, { backgroundColor: colors.card }]}
                 onPress={item.action}
+                accessibilityLabel={`Switch to ${isDarkMode ? 'light' : 'dark'} theme`}
+                accessibilityRole="switch"
+                accessibilityState={{ selected: isDarkMode }}
               >
-                <View style={styles.menuItemLeft}>
-                  <IconSymbol name={item.icon} size={24} color={colors.tint} />
-                  <Text style={[styles.menuItemText, { color: colors.text }]}>{item.title}</Text>
-                </View>
-                <IconSymbol name="chevron.right" size={20} color={colors.text} />
+                {item.customContent}
               </TouchableOpacity>
             ) : (
-              <AccordionItem
-                key={index}
-                title={item.title}
-                icon={item.icon}
-                isOpen={openAccordion === item.title}
-                onToggle={() => handleAccordionToggle(item.title)}
-                colors={colors}
-              >
-                {item.content}
-              </AccordionItem>
+              item.action ? (
+                <TouchableOpacity
+                  key={index}
+                  style={[styles.menuItem, { backgroundColor: colors.card }]}
+                  onPress={item.action}
+                >
+                  <View style={styles.menuItemLeft}>
+                    <IconSymbol name={item.icon} size={24} color={colors.tint} />
+                    <Text style={[styles.menuItemText, { color: colors.text }]}>{item.title}</Text>
+                  </View>
+                  <IconSymbol name="chevron.right" size={20} color={colors.text} />
+                </TouchableOpacity>
+              ) : (
+                <AccordionItem
+                  key={index}
+                  title={item.title}
+                  icon={item.icon}
+                  isOpen={openAccordion === item.title}
+                  onToggle={() => handleAccordionToggle(item.title)}
+                  colors={colors}
+                >
+                  {item.content}
+                </AccordionItem>
+              )
             )
           ))}
         </View>
@@ -375,5 +404,25 @@ const styles = StyleSheet.create({
     padding: 15,
     borderTopWidth: 1,
     borderTopColor: 'rgba(0,0,0,0.1)',
+  },
+  themeMenuItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    width: '100%',
+  },
+  themeMenuLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 15,
+  },
+  themeToggleWrapper: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 20,
+  },
+  themeToggleText: {
+    fontSize: 14,
+    fontWeight: '500',
   },
 }); 
