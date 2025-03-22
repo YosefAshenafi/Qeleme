@@ -821,6 +821,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'transparent',
   },
   scoreText: {
+    paddingTop: 30,
     fontSize: 48,
     fontWeight: '700',
     textAlign: 'center',
