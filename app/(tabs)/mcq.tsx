@@ -348,14 +348,30 @@ export default function MCQScreen() {
   };
 
   const getOptionStyle = (optionId: string) => {
-    if (!showExplanation) return styles.optionContainer;
+    if (!showExplanation) return [styles.optionContainer];
     
     const isCorrect = currentQuestion?.options.find((opt: Option) => opt.id === optionId)?.isCorrect;
     const isSelected = selectedAnswer === optionId;
     
-    if (isCorrect) return [styles.optionContainer, styles.correctOption];
-    if (isSelected && !isCorrect) return [styles.optionContainer, styles.incorrectOption];
-    return styles.optionContainer;
+    if (isCorrect) {
+      return [
+        styles.optionContainer,
+        {
+          borderColor: '#4CAF50',
+          borderWidth: 2,
+        }
+      ];
+    }
+    if (isSelected && !isCorrect) {
+      return [
+        styles.optionContainer,
+        {
+          borderColor: '#F44336',
+          borderWidth: 2,
+        }
+      ];
+    }
+    return [styles.optionContainer];
   };
 
   const totalQuestions = selectedChapterData?.questions.length || 0;
@@ -806,16 +822,6 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: 16,
     lineHeight: 22,
-  },
-  correctOption: {
-    borderColor: '#4CAF50',
-    borderWidth: 2,
-    backgroundColor: '#F1F8E9',
-  },
-  incorrectOption: {
-    borderColor: '#F44336',
-    borderWidth: 2,
-    backgroundColor: '#FFEBEE',
   },
   explanationContainer: {
     padding: 20,
