@@ -4,16 +4,16 @@
  */
 
 const tintColorLight = '#6B54AE';
-const tintColorDark = '#6B54AE';
+const tintColorDark = '#8B6BCE';
 
 export const getColors = (isDark: boolean) => ({
-  text: isDark ? '#ECEDEE' : '#11181C',
-  background: isDark ? '#151718' : '#fff',
+  text: isDark ? '#FFFFFF' : '#000000',
+  background: isDark ? '#121212' : '#FFFFFF',
   tint: isDark ? tintColorDark : tintColorLight,
-  icon: isDark ? '#9BA1A6' : '#687076',
-  tabIconDefault: isDark ? '#9BA1A6' : '#687076',
+  icon: isDark ? '#FFFFFF' : '#000000',
+  tabIconDefault: isDark ? '#999999' : '#666666',
   tabIconSelected: isDark ? tintColorDark : tintColorLight,
-  card: isDark ? '#1C1C1E' : '#F5F5F5',
+  card: isDark ? '#1E1E1E' : '#FFFFFF',
 });
 
 export const Colors = {

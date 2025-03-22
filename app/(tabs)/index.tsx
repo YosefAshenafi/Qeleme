@@ -8,6 +8,8 @@ import { useState, useRef, useEffect } from 'react';
 import { Header } from '@/components/Header';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
+import { useTheme } from '@/contexts/ThemeContext';
+import { getColors } from '@/constants/Colors';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const CARD_WIDTH = SCREEN_WIDTH - 40; // Full width minus padding
@@ -38,6 +40,8 @@ type ReportCard = {
 };
 
 export default function HomeScreen() {
+  const { isDarkMode } = useTheme();
+  const colors = getColors(isDarkMode);
   const [activeIndex, setActiveIndex] = useState(0);
   const [quoteIndex, setQuoteIndex] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
@@ -142,34 +146,40 @@ export default function HomeScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.safeArea}>
+    <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]}>
       <Header 
         title="Welcome back, Yosef!"
         subtitle="Ready to learn something new today?"
       />
-      <ScrollView style={styles.scrollView}>
-        <ThemedView style={styles.container}>
+      <ScrollView 
+        style={[styles.scrollView, { backgroundColor: colors.background }]}
+        contentContainerStyle={{ backgroundColor: colors.background }}
+      >
+        <ThemedView style={[styles.container, { backgroundColor: colors.background }]}>
           {/* Motivational Quote Section */}
-          <ThemedView style={styles.quoteSection}>
+          <ThemedView style={[styles.quoteSection, { 
+            backgroundColor: isDarkMode ? colors.card : '#F5F5F5'
+          }]}>
             {isLoading ? (
               <View style={styles.quoteSkeleton}>
-                <View style={styles.quoteSkeletonLine} />
-                <View style={styles.quoteSkeletonLine} />
-                <View style={styles.quoteSkeletonLineShort} />
-                <View style={styles.quoteSkeletonAuthor} />
+                <View style={[styles.quoteSkeletonLine, { backgroundColor: colors.text + '20' }]} />
+                <View style={[styles.quoteSkeletonLine, { backgroundColor: colors.text + '20' }]} />
+                <View style={[styles.quoteSkeletonLineShort, { backgroundColor: colors.text + '20' }]} />
+                <View style={[styles.quoteSkeletonAuthor, { backgroundColor: colors.text + '20' }]} />
                 <Animated.View 
                   style={[
                     styles.shimmer,
                     getShimmerStyle(),
+                    { backgroundColor: colors.text + '10' }
                   ]} 
                 />
               </View>
             ) : (
               <Animated.View style={{ opacity: fadeAnim }}>
-                <ThemedText style={styles.quoteText}>
+                <ThemedText style={[styles.quoteText, { color: colors.text }]}>
                   "{motivationalQuotes[quoteIndex].quote}"
                 </ThemedText>
-                <ThemedText style={styles.quoteAuthor}>
+                <ThemedText style={[styles.quoteAuthor, { color: colors.text + '80' }]}>
                   - {motivationalQuotes[quoteIndex].author}
                 </ThemedText>
               </Animated.View>
@@ -232,149 +242,151 @@ export default function HomeScreen() {
           </View>
 
           {/* Quick Actions Grid */}
-          <ThemedView style={styles.gridContainer}>
+          <ThemedView style={[styles.gridContainer, { backgroundColor: colors.background }]}>
             <TouchableOpacity 
-              style={styles.gridItem} 
+              style={[styles.gridItem, { backgroundColor: colors.background }]} 
               onPress={() => router.push('/(tabs)/mcq')}
             >
               <LinearGradient
-                colors={['#F3E5F5', '#E1BEE7']}
-                style={styles.gridItemContent}
+                colors={isDarkMode ? ['#2D1B4D', '#3D2B6D'] : ['#F3E5F5', '#E1BEE7']}
+                style={[styles.gridItemContent, { backgroundColor: colors.card }]}
                 start={{ x: 0, y: 0 }}
                 end={{ x: 1, y: 1 }}
               >
-                <View style={styles.gridIconContainer}>
-                  <IconSymbol name="questionmark.circle" size={32} color="#6B54AE" />
+                <View style={[styles.gridIconContainer, { backgroundColor: isDarkMode ? '#4A2B8E30' : '#6B54AE20' }]}>
+                  <IconSymbol name="questionmark.circle" size={32} color={colors.tint} />
                 </View>
                 <View style={styles.gridTextContainer}>
-                  <ThemedText style={styles.gridItemTitle}>Practice MCQ</ThemedText>
-                  <ThemedText style={styles.gridItemSubtitle}>Test your knowledge</ThemedText>
-                </View>
-                <View style={styles.gridDecoration}>
-                  <View style={[styles.decorationDot, { backgroundColor: '#6B54AE' }]} />
-                  <View style={[styles.decorationDot, { backgroundColor: '#6B54AE' }]} />
+                  <ThemedText numberOfLines={1} style={[styles.gridItemTitle, { color: colors.text }]}>Practice MCQ</ThemedText>
+                  <ThemedText numberOfLines={1} style={[styles.gridItemSubtitle, { color: colors.text + '80' }]}>Test your knowledge</ThemedText>
                 </View>
               </LinearGradient>
             </TouchableOpacity>
 
             <TouchableOpacity 
-              style={styles.gridItem} 
+              style={[styles.gridItem, { backgroundColor: colors.background }]} 
               onPress={() => router.push('/(tabs)/flashcards')}
             >
               <LinearGradient
-                colors={['#E8F5E9', '#C8E6C9']}
-                style={styles.gridItemContent}
+                colors={isDarkMode ? ['#0A2F0A', '#1A4A1F'] : ['#E8F5E9', '#C8E6C9']}
+                style={[styles.gridItemContent, { backgroundColor: colors.card }]}
                 start={{ x: 0, y: 0 }}
                 end={{ x: 1, y: 1 }}
               >
-                <View style={styles.gridIconContainer}>
+                <View style={[styles.gridIconContainer, { backgroundColor: isDarkMode ? '#2E7D3230' : '#2E7D3220' }]}>
                   <IconSymbol name="rectangle.stack" size={32} color="#2E7D32" />
                 </View>
                 <View style={styles.gridTextContainer}>
-                  <ThemedText style={styles.gridItemTitle}>Flashcards</ThemedText>
-                  <ThemedText style={styles.gridItemSubtitle}>Review key concepts</ThemedText>
-                </View>
-                <View style={styles.gridDecoration}>
-                  <View style={[styles.decorationDot, { backgroundColor: '#2E7D32' }]} />
-                  <View style={[styles.decorationDot, { backgroundColor: '#2E7D32' }]} />
+                  <ThemedText numberOfLines={1} style={[styles.gridItemTitle, { color: colors.text }]}>Flashcards</ThemedText>
+                  <ThemedText numberOfLines={1} style={[styles.gridItemSubtitle, { color: colors.text + '80' }]}>Review key concepts</ThemedText>
                 </View>
               </LinearGradient>
             </TouchableOpacity>
 
             <TouchableOpacity 
-              style={styles.gridItem} 
+              style={[styles.gridItem, { backgroundColor: colors.background }]} 
               onPress={() => router.push('/(tabs)/homework')}
             >
               <LinearGradient
-                colors={['#E3F2FD', '#BBDEFB']}
-                style={styles.gridItemContent}
+                colors={isDarkMode ? ['#0A1F2F', '#0D3B71'] : ['#E3F2FD', '#BBDEFB']}
+                style={[styles.gridItemContent, { backgroundColor: colors.card }]}
                 start={{ x: 0, y: 0 }}
                 end={{ x: 1, y: 1 }}
               >
-                <View style={styles.gridIconContainer}>
+                <View style={[styles.gridIconContainer, { backgroundColor: isDarkMode ? '#1976D230' : '#1976D220' }]}>
                   <IconSymbol name="message" size={32} color="#1976D2" />
                 </View>
                 <View style={styles.gridTextContainer}>
-                  <ThemedText style={styles.gridItemTitle}>Homework Help</ThemedText>
-                  <ThemedText style={styles.gridItemSubtitle}>Get expert assistance</ThemedText>
-                </View>
-                <View style={styles.gridDecoration}>
-                  <View style={[styles.decorationDot, { backgroundColor: '#1976D2' }]} />
-                  <View style={[styles.decorationDot, { backgroundColor: '#1976D2' }]} />
+                  <ThemedText numberOfLines={1} style={[styles.gridItemTitle, { color: colors.text }]}>Homework Help</ThemedText>
+                  <ThemedText numberOfLines={1} style={[styles.gridItemSubtitle, { color: colors.text + '80' }]}>Get expert assistance</ThemedText>
                 </View>
               </LinearGradient>
             </TouchableOpacity>
 
             <TouchableOpacity 
-              style={styles.gridItem} 
+              style={[styles.gridItem, { backgroundColor: colors.background }]} 
               onPress={() => router.push('/(tabs)/reports')}
             >
               <LinearGradient
-                colors={['#FFF3E0', '#FFE0B2']}
-                style={styles.gridItemContent}
+                colors={isDarkMode ? ['#2F1F0A', '#8B4D0A'] : ['#FFF3E0', '#FFE0B2']}
+                style={[styles.gridItemContent, { backgroundColor: colors.card }]}
                 start={{ x: 0, y: 0 }}
                 end={{ x: 1, y: 1 }}
               >
-                <View style={styles.gridIconContainer}>
+                <View style={[styles.gridIconContainer, { backgroundColor: isDarkMode ? '#ED6C0230' : '#ED6C0220' }]}>
                   <IconSymbol name="chart.bar" size={32} color="#ED6C02" />
                 </View>
                 <View style={styles.gridTextContainer}>
-                  <ThemedText style={styles.gridItemTitle}>Progress Report</ThemedText>
-                  <ThemedText style={styles.gridItemSubtitle}>Track your learning</ThemedText>
-                </View>
-                <View style={styles.gridDecoration}>
-                  <View style={[styles.decorationDot, { backgroundColor: '#ED6C02' }]} />
-                  <View style={[styles.decorationDot, { backgroundColor: '#ED6C02' }]} />
+                  <ThemedText numberOfLines={1} style={[styles.gridItemTitle, { color: colors.text }]}>Progress Report</ThemedText>
+                  <ThemedText numberOfLines={1} style={[styles.gridItemSubtitle, { color: colors.text + '80' }]}>Track your learning</ThemedText>
                 </View>
               </LinearGradient>
             </TouchableOpacity>
           </ThemedView>
 
           {/* Recent Activity Section */}
-          <ThemedView style={styles.section}>
-            <View style={styles.sectionHeader}>
-              <ThemedText type="title" style={styles.sectionTitle}>
+          <ThemedView style={[styles.section, { backgroundColor: colors.background }]}>
+            <View style={[styles.sectionHeader, { backgroundColor: colors.background }]}>
+              <ThemedText type="title" style={[styles.sectionTitle, { color: colors.text }]}>
                 Recent Activity
               </ThemedText>
               <TouchableOpacity>
-                <ThemedText style={styles.seeAllButton}>See All</ThemedText>
+                <ThemedText style={[styles.seeAllButton, { color: colors.tint }]}>See All</ThemedText>
               </TouchableOpacity>
             </View>
-            <ThemedView style={styles.activityList}>
-              <ThemedView style={styles.activityItem}>
-                <ThemedView style={[styles.activityIcon, { backgroundColor: '#F3E5F5' }]}>
-                  <IconSymbol name="questionmark.circle" size={24} color="#6B54AE" />
+            <ThemedView style={[styles.activityList, { 
+              backgroundColor: isDarkMode ? colors.card : '#F5F5F5'
+            }]}>
+              <ThemedView style={[styles.activityItem, { 
+                borderBottomColor: isDarkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)',
+                backgroundColor: isDarkMode ? colors.card : '#F5F5F5',
+                marginBottom: 1,
+              }]}>
+                <ThemedView style={[styles.activityIcon, { 
+                  backgroundColor: isDarkMode ? '#4A2B8E30' : '#F3E5F5'
+                }]}>
+                  <IconSymbol name="questionmark.circle" size={24} color={colors.tint} />
                 </ThemedView>
-                <ThemedView style={styles.activityContent}>
-                  <ThemedText style={styles.activityTitle}>Math Quiz</ThemedText>
-                  <ThemedText style={styles.activitySubtitle}>Completed 10 questions</ThemedText>
-                  <View style={styles.activityProgress}>
-                    <View style={[styles.activityProgressBar, { width: '80%' }]} />
+                <ThemedView style={[styles.activityContent, { backgroundColor: colors.card }]}>
+                  <ThemedText style={[styles.activityTitle, { color: colors.text }]}>Math Quiz</ThemedText>
+                  <ThemedText style={[styles.activitySubtitle, { color: colors.text + '80' }]}>Completed 10 questions</ThemedText>
+                  <View style={[styles.activityProgress, { backgroundColor: isDarkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)' }]}>
+                    <View style={[styles.activityProgressBar, { backgroundColor: colors.tint }]} />
                   </View>
                 </ThemedView>
-                <View style={[styles.activityBadge, { backgroundColor: '#6B54AE' }]}>
-                  <ThemedText style={styles.activityBadgeText}>New</ThemedText>
+                <View style={[styles.activityBadge, { backgroundColor: colors.tint }]}>
+                  <ThemedText style={[styles.activityBadgeText, { color: isDarkMode ? '#000' : '#fff' }]}>New</ThemedText>
                 </View>
               </ThemedView>
-              <ThemedView style={styles.activityItem}>
-                <ThemedView style={[styles.activityIcon, { backgroundColor: '#E8F5E9' }]}>
+              <ThemedView style={[styles.activityItem, { 
+                borderBottomColor: isDarkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)',
+                backgroundColor: isDarkMode ? colors.card : '#F5F5F5',
+                marginBottom: 1,
+              }]}>
+                <ThemedView style={[styles.activityIcon, { 
+                  backgroundColor: isDarkMode ? '#2E7D3230' : '#E8F5E9'
+                }]}>
                   <IconSymbol name="rectangle.stack" size={24} color="#2E7D32" />
                 </ThemedView>
-                <ThemedView style={styles.activityContent}>
-                  <ThemedText style={styles.activityTitle}>Science Flashcards</ThemedText>
-                  <ThemedText style={styles.activitySubtitle}>Reviewed 5 cards</ThemedText>
+                <ThemedView style={[styles.activityContent, { backgroundColor: colors.card }]}>
+                  <ThemedText style={[styles.activityTitle, { color: colors.text }]}>Science Flashcards</ThemedText>
+                  <ThemedText style={[styles.activitySubtitle, { color: colors.text + '80' }]}>Reviewed 5 cards</ThemedText>
                 </ThemedView>
                 <View style={[styles.activityBadge, { backgroundColor: '#2E7D32' }]}>
                   <ThemedText style={styles.activityBadgeText}>2h ago</ThemedText>
                 </View>
               </ThemedView>
-              <ThemedView style={styles.activityItem}>
-                <ThemedView style={[styles.activityIcon, { backgroundColor: '#E3F2FD' }]}>
+              <ThemedView style={[styles.activityItem, { 
+                backgroundColor: isDarkMode ? colors.card : '#F5F5F5',
+              }]}>
+                <ThemedView style={[styles.activityIcon, { 
+                  backgroundColor: isDarkMode ? '#1976D230' : '#E3F2FD'
+                }]}>
                   <IconSymbol name="message" size={24} color="#1976D2" />
                 </ThemedView>
-                <ThemedView style={styles.activityContent}>
-                  <ThemedText style={styles.activityTitle}>English Homework</ThemedText>
-                  <ThemedText style={styles.activitySubtitle}>Asked 2 questions</ThemedText>
+                <ThemedView style={[styles.activityContent, { backgroundColor: colors.card }]}>
+                  <ThemedText style={[styles.activityTitle, { color: colors.text }]}>English Homework</ThemedText>
+                  <ThemedText style={[styles.activitySubtitle, { color: colors.text + '80' }]}>Asked 2 questions</ThemedText>
                 </ThemedView>
                 <View style={[styles.activityBadge, { backgroundColor: '#1976D2' }]}>
                   <ThemedText style={styles.activityBadgeText}>5h ago</ThemedText>
@@ -391,7 +403,6 @@ export default function HomeScreen() {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: '#fff',
   },
   scrollView: {
     flex: 1,
@@ -399,139 +410,171 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 20,
-    gap: 24,
+  },
+  quoteSection: {
+    borderRadius: 16,
+    padding: 20,
+    marginBottom: 20,
+  },
+  quoteText: {
+    fontSize: 16,
+    lineHeight: 24,
+    fontStyle: 'italic',
+    marginBottom: 8,
+  },
+  quoteAuthor: {
+    fontSize: 14,
+    textAlign: 'right',
+  },
+  quoteSkeleton: {
+    position: 'relative',
+    overflow: 'hidden',
+  },
+  quoteSkeletonLine: {
+    height: 16,
+    borderRadius: 8,
+    marginBottom: 8,
+  },
+  quoteSkeletonLineShort: {
+    height: 16,
+    width: '60%',
+    borderRadius: 8,
+    marginBottom: 16,
+  },
+  quoteSkeletonAuthor: {
+    height: 14,
+    width: '40%',
+    borderRadius: 7,
+    alignSelf: 'flex-end',
+  },
+  shimmer: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    height: '100%',
   },
   gridContainer: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     gap: 16,
+    marginBottom: 24,
+    padding: 2,
+    marginTop: 8,
   },
   gridItem: {
     width: '47%',
-    aspectRatio: 1,
     borderRadius: 16,
     overflow: 'hidden',
-    elevation: 2,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.2,
-    shadowRadius: 2,
   },
   gridItemContent: {
-    flex: 1,
     padding: 16,
-    justifyContent: 'space-between',
+    height: 140,
+    borderRadius: 16,
+    justifyContent: 'flex-start',
   },
   gridIconContainer: {
     width: 48,
     height: 48,
     borderRadius: 24,
-    backgroundColor: '#fff',
-    justifyContent: 'center',
     alignItems: 'center',
+    justifyContent: 'center',
     marginBottom: 12,
-    elevation: 2,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
   },
   gridTextContainer: {
-    gap: 4,
+    flex: 1,
   },
   gridItemTitle: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#333',
+    marginBottom: 4,
   },
   gridItemSubtitle: {
-    fontSize: 14,
-    color: '#666',
+    fontSize: 13,
   },
   gridDecoration: {
     position: 'absolute',
-    bottom: 8,
-    right: 8,
+    bottom: 12,
+    right: 12,
     flexDirection: 'row',
-    gap: 4,
   },
   decorationDot: {
-    width: 6,
-    height: 6,
-    borderRadius: 3,
+    width: 4,
+    height: 4,
+    borderRadius: 2,
+    marginLeft: 4,
     opacity: 0.5,
   },
   section: {
-    gap: 16,
+    marginBottom: 20,
   },
   sectionHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
+    marginBottom: 12,
   },
   sectionTitle: {
     fontSize: 20,
-    fontWeight: '600',
-    color: '#333',
+    fontWeight: '700',
   },
   seeAllButton: {
     fontSize: 14,
-    color: '#6B54AE',
-    fontWeight: '500',
+    fontWeight: '600',
   },
   activityList: {
-    gap: 12,
+    borderRadius: 16,
+    overflow: 'hidden',
   },
   activityItem: {
     flexDirection: 'row',
     alignItems: 'center',
     padding: 16,
-    backgroundColor: '#F8F9FA',
-    borderRadius: 12,
-    elevation: 1,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
+    borderBottomWidth: 1,
   },
   activityIcon: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    justifyContent: 'center',
+    width: 48,
+    height: 48,
+    borderRadius: 24,
     alignItems: 'center',
+    justifyContent: 'center',
     marginRight: 12,
-    elevation: 1,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
   },
   activityContent: {
     flex: 1,
   },
   activityTitle: {
     fontSize: 16,
-    fontWeight: '500',
-    color: '#333',
+    fontWeight: '600',
     marginBottom: 4,
   },
   activitySubtitle: {
     fontSize: 14,
-    color: '#666',
+  },
+  activityProgress: {
+    height: 2,
+    borderRadius: 1,
+    marginTop: 8,
+    width: '100%',
+  },
+  activityProgressBar: {
+    height: '100%',
+    width: '80%',
+    borderRadius: 1,
   },
   activityBadge: {
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 12,
+    marginLeft: 12,
   },
   activityBadgeText: {
     fontSize: 12,
-    color: '#fff',
     fontWeight: '500',
   },
   carouselSection: {
     marginTop: 8,
+    marginBottom: 16,
   },
   carouselContainer: {
     paddingHorizontal: 20,
@@ -619,68 +662,5 @@ const styles = StyleSheet.create({
   paginationDotActive: {
     backgroundColor: '#fff',
     width: 18,
-  },
-  quoteSection: {
-    padding: 20,
-    borderRadius: 16,
-    backgroundColor: '#f0f2f4',
-  },
-  quoteText: {
-    fontSize: 18,
-    fontStyle: 'italic',
-    color: '#6B54AE',
-    marginBottom: 8,
-    lineHeight: 24,
-  },
-  quoteAuthor: {
-    fontSize: 14,
-    color: '#6B54AE',
-    opacity: 0.8,
-  },
-  activityProgress: {
-    height: 4,
-    backgroundColor: '#E9ECEF',
-    borderRadius: 2,
-    marginTop: 8,
-    overflow: 'hidden',
-  },
-  activityProgressBar: {
-    height: '100%',
-    backgroundColor: '#6B54AE',
-    borderRadius: 2,
-  },
-  quoteSkeleton: {
-    padding: 20,
-    position: 'relative',
-    overflow: 'hidden',
-    backgroundColor: '#F8F9FA',
-  },
-  quoteSkeletonLine: {
-    height: 20,
-    backgroundColor: '#E9ECEF',
-    borderRadius: 4,
-    marginBottom: 12,
-  },
-  quoteSkeletonLineShort: {
-    height: 20,
-    backgroundColor: '#E9ECEF',
-    borderRadius: 4,
-    marginBottom: 12,
-    width: '80%',
-  },
-  quoteSkeletonAuthor: {
-    height: 16,
-    backgroundColor: '#E9ECEF',
-    borderRadius: 4,
-    width: '40%',
-  },
-  shimmer: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    backgroundColor: 'transparent',
-    transform: [{ translateX: -SCREEN_WIDTH }],
   },
 }); 

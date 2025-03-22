@@ -1,8 +1,8 @@
 import { StyleSheet } from 'react-native';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
-import { Colors } from '@/constants/Colors';
-import { useColorScheme } from '@/hooks/useColorScheme';
+import { useTheme } from '@/contexts/ThemeContext';
+import { getColors } from '@/constants/Colors';
 
 type HeaderProps = {
   title: string;
@@ -10,17 +10,18 @@ type HeaderProps = {
 };
 
 export function Header({ title, subtitle }: HeaderProps) {
-  const colorScheme = useColorScheme();
+  const { isDarkMode } = useTheme();
+  const colors = getColors(isDarkMode);
 
   return (
-    <ThemedView style={styles.header}>
-      <ThemedView style={styles.headerContent}>
-        <ThemedText type="title" style={styles.title}>
+    <ThemedView style={[styles.header, { backgroundColor: colors.background }]}>
+      <ThemedView style={[styles.headerContent, { backgroundColor: colors.background }]}>
+        <ThemedText type="title" style={[styles.title, { color: colors.text }]}>
           {title}
         </ThemedText>
       </ThemedView>
       {subtitle && (
-        <ThemedText style={styles.subtitle}>
+        <ThemedText style={[styles.subtitle, { color: colors.text + '80' }]}>
           {subtitle}
         </ThemedText>
       )}
@@ -30,8 +31,8 @@ export function Header({ title, subtitle }: HeaderProps) {
 
 const styles = StyleSheet.create({
   header: {
-    padding: 20,
-    marginTop: -80,
+    paddingHorizontal: 20,
+    paddingBottom: 20,
     gap: 8,
   },
   headerContent: {
@@ -46,6 +47,5 @@ const styles = StyleSheet.create({
   },
   subtitle: {
     fontSize: 16,
-    color: '#666',
   },
 }); 
