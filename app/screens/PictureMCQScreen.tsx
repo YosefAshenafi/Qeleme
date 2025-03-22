@@ -6,6 +6,8 @@ import { router, useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { GestureHandlerRootView, GestureDetector, Gesture } from 'react-native-gesture-handler';
+import { useTheme } from '@/contexts/ThemeContext';
+import { getColors } from '@/constants/Colors';
 import Animated, { 
   useAnimatedStyle, 
   useSharedValue, 
@@ -36,6 +38,8 @@ const imageMapping: { [key: string]: any } = {
 const pictureQuestions = pictureQuestionsData.questions;
 
 export default function PictureMCQScreen() {
+  const { isDarkMode } = useTheme();
+  const colors = getColors(isDarkMode);
   const params = useLocalSearchParams();
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null);
@@ -264,10 +268,10 @@ export default function PictureMCQScreen() {
   if (!isAuthorized) {
     return (
       <GestureHandlerRootView style={{ flex: 1 }}>
-        <SafeAreaView style={styles.safeArea}>
+        <SafeAreaView style={[styles.safeArea, { backgroundColor: isDarkMode ? '#000000' : '#FFFFFF' }]}>
           <Header title="Picture Questions" />
-          <ThemedView style={styles.container}>
-            <ThemedText style={styles.unauthorizedText}>
+          <ThemedView style={[styles.container, { backgroundColor: isDarkMode ? '#000000' : '#FFFFFF' }]}>
+            <ThemedText style={[styles.unauthorizedText, { color: isDarkMode ? '#A0A0A5' : '#6B54AE' }]}>
               You are not authorized to access picture questions.
             </ThemedText>
             <TouchableOpacity
@@ -285,16 +289,16 @@ export default function PictureMCQScreen() {
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
-      <SafeAreaView style={styles.safeArea}>
-        <ThemedView style={styles.container}>
+      <SafeAreaView style={[styles.safeArea, { backgroundColor: isDarkMode ? '#000000' : '#FFFFFF' }]}>
+        <ThemedView style={[styles.container, { backgroundColor: isDarkMode ? '#000000' : '#FFFFFF' }]}>
           <ScrollView style={styles.scrollView}>
             <View style={styles.progressContainer}>
-              <View style={styles.progressBar}>
-                <View style={[styles.progressFill, { width: `${((currentQuestionIndex + 1) / pictureQuestions.length) * 100}%` }]} />
+              <View style={[styles.progressBar, { backgroundColor: isDarkMode ? '#2C2C2E' : '#E0E0E0' }]}>
+                <View style={[styles.progressFill, { backgroundColor: '#6B54AE' }]} />
               </View>
               <View style={styles.progressLabels}>
-                <View style={[styles.questionLabelContainer]}>
-                  <ThemedText style={styles.progressText}>
+                <View style={styles.questionLabelContainer}>
+                  <ThemedText style={[styles.progressText, { color: '#6B54AE' }]}>
                     Question {currentQuestionIndex + 1} of {pictureQuestions.length}
                   </ThemedText>
                 </View>
@@ -302,7 +306,7 @@ export default function PictureMCQScreen() {
             </View>
 
             <View style={styles.questionContainer}>
-              <ThemedText style={styles.questionText}>
+              <ThemedText style={[styles.questionText, { color: colors.text }]}>
                 {currentQuestion.question}
               </ThemedText>
             </View>
@@ -311,7 +315,8 @@ export default function PictureMCQScreen() {
               <Animated.View 
                 style={[
                   styles.imageContainer,
-                  imageAnimatedStyle
+                  imageAnimatedStyle,
+                  { backgroundColor: isDarkMode ? '#1C1C1E' : '#F5F5F5' }
                 ]}
               >
                 <Image
@@ -324,7 +329,7 @@ export default function PictureMCQScreen() {
 
             {/* Celebration Animation */}
             <Animated.View style={[styles.celebrationContainer, celebrationAnimatedStyle]}>
-              <View style={styles.celebrationContent}>
+              <View style={[styles.celebrationContent, { backgroundColor: isDarkMode ? 'rgba(28, 28, 30, 0.9)' : 'rgba(255, 255, 255, 0.9)' }]}>
                 <IconSymbol name="trophy.fill" size={80} color="#4CAF50" />
                 <ThemedText style={styles.celebrationText}>Correct!</ThemedText>
               </View>
@@ -332,7 +337,7 @@ export default function PictureMCQScreen() {
 
             {/* Incorrect Animation */}
             <Animated.View style={[styles.incorrectContainer, incorrectAnimatedStyle]}>
-              <View style={styles.incorrectContent}>
+              <View style={[styles.incorrectContent, { backgroundColor: isDarkMode ? 'rgba(28, 28, 30, 0.9)' : 'rgba(255, 255, 255, 0.9)' }]}>
                 <IconSymbol name="xmark.circle.fill" size={80} color="#F44336" />
                 <ThemedText style={styles.incorrectText}>Incorrect!</ThemedText>
               </View>
@@ -344,9 +349,16 @@ export default function PictureMCQScreen() {
                   key={option.id}
                   style={[
                     styles.optionWrapper,
+                    {
+                      backgroundColor: isDarkMode ? '#1C1C1E' : '#FFFFFF',
+                      borderColor: isDarkMode ? '#3C3C3E' : '#E0E0E0',
+                    },
                     selectedAnswer === option.id && option.isCorrect && styles.correctOption,
                     selectedAnswer === option.id && !option.isCorrect && styles.incorrectOption,
-                    hoveredOption === option.id && !selectedAnswer && styles.dropZone,
+                    hoveredOption === option.id && !selectedAnswer && [
+                      styles.dropZone,
+                      { borderColor: '#6B54AE', backgroundColor: isDarkMode ? 'rgba(107, 84, 174, 0.2)' : 'rgba(107, 84, 174, 0.1)' }
+                    ],
                     droppedOption === option.id && option.isCorrect && styles.correctOption,
                     droppedOption === option.id && !option.isCorrect && styles.incorrectOption,
                   ]}
@@ -361,6 +373,7 @@ export default function PictureMCQScreen() {
                   <View style={styles.optionContent}>
                     <ThemedText style={[
                       styles.optionText,
+                      { color: isDarkMode ? colors.text : '#333333' },
                       selectedAnswer === option.id && option.isCorrect && styles.correctText,
                       selectedAnswer === option.id && !option.isCorrect && styles.incorrectText,
                     ]}>
@@ -372,17 +385,25 @@ export default function PictureMCQScreen() {
             </View>
 
             {showExplanation && (
-              <View style={styles.explanationContainer}>
-                <ThemedText style={styles.explanationTitle}>Explanation:</ThemedText>
-                <ThemedText style={styles.explanationText}>
+              <View style={[styles.explanationContainer, { backgroundColor: isDarkMode ? '#1C1C1E' : '#F5F5F5' }]}>
+                <ThemedText style={[styles.explanationTitle, { color: '#6B54AE' }]}>Explanation:</ThemedText>
+                <ThemedText style={[styles.explanationText, { color: colors.text }]}>
                   {currentQuestion.explanation}
                 </ThemedText>
               </View>
             )}
 
-            <View style={styles.navigationContainer}>
+            <View style={[styles.navigationContainer, {
+              borderTopColor: isDarkMode ? '#3C3C3E' : '#E0E0E0',
+              borderBottomColor: isDarkMode ? '#3C3C3E' : '#E0E0E0',
+            }]}>
               <TouchableOpacity
-                style={[styles.navButton, styles.prevButton, isFirstQuestion && styles.navButtonDisabled]}
+                style={[
+                  styles.navButton,
+                  styles.prevButton,
+                  { borderColor: isDarkMode ? '#3C3C3E' : '#E0E0E0' },
+                  isFirstQuestion && styles.navButtonDisabled
+                ]}
                 onPress={handlePreviousQuestion}
                 disabled={isFirstQuestion}
               >
