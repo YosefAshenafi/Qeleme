@@ -5,7 +5,6 @@ import { Ionicons } from '@expo/vector-icons';
 import LottieView from 'lottie-react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 
-import { Header } from '@/components/Header';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 import { IconSymbol } from '@/components/ui/IconSymbol';
@@ -66,6 +65,10 @@ export default function PictureMCQResultScreen() {
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
+        <ThemedText type="title" style={[styles.title, { color: colors.text }]}>
+          Quiz Results
+        </ThemedText>
+
         {/* Main Result Card */}
         <Animated.View style={[styles.resultCard, { 
           transform: [{ scale: scaleAnim }],
@@ -135,10 +138,7 @@ export default function PictureMCQResultScreen() {
         <ThemedView style={[styles.actionButtons, { backgroundColor: colors.background }]}>
           <TouchableOpacity
             style={[styles.button, styles.playAgainButton, { backgroundColor: colors.tint }]}
-            onPress={() => router.push({
-              pathname: '/(tabs)/mcq',
-              params: { reset: 'true' }
-            })}
+            onPress={() => router.push('/(tabs)/mcq')}
           >
             <ThemedText style={[styles.buttonText, { color: '#fff' }]}>Try Again</ThemedText>
             <Ionicons name="repeat" size={24} color="#fff" />
@@ -146,7 +146,7 @@ export default function PictureMCQResultScreen() {
           
           <TouchableOpacity
             style={[styles.button, styles.homeButton, { backgroundColor: colors.cardAlt, borderColor: colors.border }]}
-            onPress={() => router.push('/mcq')}
+            onPress={() => router.push('/(tabs)/mcq')}
           >
             <ThemedText style={[styles.buttonText, { color: colors.text }]}>
               More Questions
@@ -164,9 +164,10 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   scrollContent: {
-    marginTop: 80,
     flexGrow: 1,
-    paddingVertical: 24,
+    paddingVertical: 20,
+    paddingHorizontal: 16,
+    paddingBottom: 100,
   },
   resultCard: {
     width: '90%',
@@ -259,5 +260,11 @@ const styles = StyleSheet.create({
   buttonText: {
     fontSize: 18,
     fontWeight: '600',
+  },
+  title: {
+    fontSize: 28,
+    fontWeight: 'bold',
+    textAlign: 'center',
+    marginVertical: 16,
   },
 }); 
