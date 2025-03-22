@@ -200,7 +200,7 @@ export default function FlashcardsScreen() {
                           {typedFlashcardData.subjects.map((subject: Subject) => (
                             <TouchableOpacity
                               key={subject.id}
-                              style={[styles.modalItem, { borderBottomColor: colors.border }]}
+                              style={[styles.modalItem, { backgroundColor: colors.background, borderBottomColor: colors.border }]}
                               onPress={() => {
                                 setSelectedSubject(subject.id);
                                 setSelectedChapter('');
@@ -267,7 +267,7 @@ export default function FlashcardsScreen() {
                           {selectedSubjectData?.chapters.map((chapter: Chapter) => (
                             <TouchableOpacity
                               key={chapter.id}
-                              style={[styles.modalItem, { borderBottomColor: colors.border }]}
+                              style={[styles.modalItem, { backgroundColor: colors.background, borderBottomColor: colors.border }]}
                               onPress={() => {
                                 setSelectedChapter(chapter.id);
                                 setShowChapterDropdown(false);
@@ -284,32 +284,18 @@ export default function FlashcardsScreen() {
                 )}
               </ThemedView>
 
-              {/* Start Flashcards Button */}
+              {/* Start Button */}
               <TouchableOpacity
                 style={[
                   styles.startButton,
                   { backgroundColor: colors.tint },
-                  (!selectedSubject || !selectedChapter) && {
-                    backgroundColor: isDarkMode ? 'rgba(107, 84, 174, 0.3)' : 'rgba(107, 84, 174, 0.5)'
-                  }
+                  (!selectedSubject || !selectedChapter) && styles.startButtonDisabled
                 ]}
                 onPress={handleStartFlashcards}
                 disabled={!selectedSubject || !selectedChapter}
               >
-                <ThemedText style={[
-                  styles.startButtonText,
-                  (!selectedSubject || !selectedChapter) && {
-                    color: isDarkMode ? 'rgba(255, 255, 255, 0.5)' : 'rgba(255, 255, 255, 0.8)'
-                  }
-                ]}>Start Flashcards</ThemedText>
-                <IconSymbol 
-                  name="chevron.right" 
-                  size={24} 
-                  color={(!selectedSubject || !selectedChapter) 
-                    ? (isDarkMode ? 'rgba(255, 255, 255, 0.5)' : 'rgba(255, 255, 255, 0.8)') 
-                    : '#fff'
-                  } 
-                />
+                <ThemedText style={[styles.startButtonText, { color: '#fff' }]}>Start Flashcards</ThemedText>
+                <IconSymbol name="chevron.right" size={24} color="#fff" />
               </TouchableOpacity>
             </ThemedView>
           </ThemedView>
@@ -322,99 +308,86 @@ export default function FlashcardsScreen() {
     <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]}>
       <Header title="Flash Cards" />
       <ThemedView style={[styles.container, { backgroundColor: colors.background }]}>
-        {/* Breadcrumb Navigation */}
-        <View style={[styles.headerContainer, { backgroundColor: colors.background, borderBottomColor: colors.border }]}>
-          <View style={[styles.breadcrumbContainer, { backgroundColor: colors.cardAlt }]}>
-            <View style={[styles.breadcrumbItem, { backgroundColor: colors.background, borderColor: colors.border }]}>
-              <ThemedText style={[styles.breadcrumbText, { color: colors.tint }]}>
-                {selectedSubjectData?.name || 'Select Subject'}
-              </ThemedText>
+        <View style={styles.progressTimeContainer}>
+          <View style={styles.progressContainer}>
+            <View style={[styles.progressBar, { backgroundColor: colors.cardAlt }]}>
+              <Animated.View style={[styles.progressFill, progressBarStyle, { backgroundColor: colors.tint }]} />
             </View>
-            {selectedSubject && (
-              <>
-                <IconSymbol name="chevron.right" size={16} color={colors.tint} />
-                <View style={[styles.breadcrumbItem, { backgroundColor: colors.background, borderColor: colors.border }]}>
-                  <ThemedText style={[styles.breadcrumbText, { color: colors.tint }]}>
-                    {selectedChapterData?.name || 'Select Chapter'}
-                  </ThemedText>
-                </View>
-              </>
-            )}
+            <View style={styles.progressLabels}>
+              <View style={[styles.questionLabelContainer]}>
+                <ThemedText style={[styles.progressText, { color: colors.tint }]}>
+                  Card {currentIndex + 1} of {selectedChapterData?.flashcards.length || 0}
+                </ThemedText>
+              </View>
+            </View>
           </View>
         </View>
 
-        {/* Progress Bar */}
-        <ThemedView style={styles.progressContainer}>
-          <ThemedView style={[styles.progressBar, { backgroundColor: colors.cardAlt }]}>
-            <Animated.View style={[styles.progressFill, progressBarStyle, { backgroundColor: colors.tint }]} />
-          </ThemedView>
-          <ThemedView style={styles.progressLabels}>
-            <ThemedText style={[styles.progressText, { color: colors.tint }]}>
-              Card {currentIndex + 1} of {selectedChapterData?.flashcards.length}
-            </ThemedText>
-            <ThemedText style={[styles.progressText, { color: colors.tint }]}>
-              {Math.round(progress)}% completed
-            </ThemedText>
-          </ThemedView>
-        </ThemedView>
-
-        {/* Flashcard */}
-        <ThemedView style={styles.cardContainer}>
-          <TouchableOpacity onPress={handleReveal} activeOpacity={0.9}>
-            <View style={styles.card}>
-              <Animated.View style={[styles.cardFace, styles.cardFront, frontAnimatedStyle, { backgroundColor: colors.background, borderColor: colors.border }]}>
-                <View style={styles.cardContent}>
-                  <ThemedText style={[styles.questionText, { color: colors.text }]}>{currentCard?.question}</ThemedText>
-                  <ThemedText style={[styles.revealHint, { color: colors.text }]}>Tap to reveal answer</ThemedText>
-                </View>
-              </Animated.View>
-              <Animated.View style={[styles.cardFace, styles.cardBack, backAnimatedStyle, { backgroundColor: colors.background, borderColor: colors.border }]}>
-                <View style={styles.cardContent}>
-                  <ThemedText style={[styles.answerText, { color: colors.text }]}>{currentCard?.answer}</ThemedText>
-                  <ThemedText style={[styles.revealHint, { color: colors.text }]}>Tap to see question</ThemedText>
-                </View>
-              </Animated.View>
-            </View>
+        <View style={styles.cardContainer}>
+          <TouchableOpacity onPress={handleReveal} activeOpacity={0.9} style={styles.cardWrapper}>
+            <Animated.View style={[styles.card, frontAnimatedStyle, { backgroundColor: colors.cardAlt }]}>
+              <LinearGradient
+                colors={[colors.cardGradientStart, colors.cardGradientEnd]}
+                style={StyleSheet.absoluteFill}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+              />
+              <ThemedText style={[styles.cardText, { color: colors.text }]}>{currentCard?.question}</ThemedText>
+            </Animated.View>
+            <Animated.View style={[styles.card, styles.cardBack, backAnimatedStyle, { backgroundColor: colors.cardAlt }]}>
+              <LinearGradient
+                colors={[colors.cardGradientStart, colors.cardGradientEnd]}
+                style={StyleSheet.absoluteFill}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+              />
+              <ThemedText style={[styles.cardText, { color: colors.text }]}>{currentCard?.answer}</ThemedText>
+            </Animated.View>
           </TouchableOpacity>
-        </ThemedView>
+        </View>
 
-        {/* Navigation Buttons */}
-        <ThemedView style={styles.navigationContainer}>
-          <ThemedView style={styles.navButtonContainer}>
-            {currentIndex > 0 && (
-              <TouchableOpacity
-                style={[styles.navButton, styles.prevButton, { borderColor: colors.border }]}
-                onPress={handlePrevious}
-              >
-                <IconSymbol name="chevron.right" size={24} color={colors.tint} style={{ transform: [{ rotate: '180deg' }] }} />
-                <ThemedText style={[styles.prevButtonText, { color: colors.tint }]}>Previous Card</ThemedText>
-              </TouchableOpacity>
-            )}
-          </ThemedView>
-          <ThemedView style={styles.navButtonContainer}>
-            {currentIndex < (selectedChapterData?.flashcards.length || 0) - 1 ? (
-              <TouchableOpacity
-                style={[styles.navButton, styles.nextButton, { backgroundColor: colors.tint }]}
-                onPress={handleNext}
-              >
-                <ThemedText style={styles.nextButtonText}>Next Card</ThemedText>
-                <IconSymbol name="chevron.right" size={24} color="#fff" />
-              </TouchableOpacity>
-            ) : (
-              <TouchableOpacity
-                style={[styles.navButton, styles.finishButton, { backgroundColor: colors.tint }]}
-                onPress={() => {
-                  setShowFlashcards(false);
-                  setSelectedSubject('');
-                  setSelectedChapter('');
-                }}
-              >
-                <IconSymbol name="trophy.fill" size={24} color="#fff" />
-                <ThemedText style={styles.finishButtonText}>Finish</ThemedText>
-              </TouchableOpacity>
-            )}
-          </ThemedView>
-        </ThemedView>
+        <View style={[styles.navigationContainer, { borderTopColor: colors.border, borderBottomColor: colors.border }]}>
+          <TouchableOpacity
+            style={[
+              styles.navButton,
+              styles.prevButton,
+              { borderColor: colors.border },
+              currentIndex === 0 && styles.navButtonDisabled
+            ]}
+            onPress={handlePrevious}
+            disabled={currentIndex === 0}
+          >
+            <IconSymbol name="chevron.left.forwardslash.chevron.right" size={24} color={colors.tint} />
+            <ThemedText style={[styles.prevButtonText, { color: colors.tint }]}>Previous</ThemedText>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={[styles.navButton, styles.nextButton, { backgroundColor: colors.tint }]}
+            onPress={() => {
+              if (currentIndex === (selectedChapterData?.flashcards.length || 0) - 1) {
+                // Reset everything when Finish is clicked
+                setShowFlashcards(false);
+                setSelectedSubject('');
+                setSelectedChapter('');
+                setCurrentIndex(0);
+                setIsRevealed(false);
+                revealAnimation.value = withSpring(0, {
+                  damping: 12,
+                  stiffness: 80,
+                  mass: 0.8,
+                });
+              } else {
+                handleNext();
+              }
+            }}
+            disabled={false}
+          >
+            <ThemedText style={[styles.nextButtonText, { color: '#fff' }]}>
+              {currentIndex === (selectedChapterData?.flashcards.length || 0) - 1 ? 'Finish' : 'Next'}
+            </ThemedText>
+            <IconSymbol name="chevron.right" size={24} color="#fff" />
+          </TouchableOpacity>
+        </View>
       </ThemedView>
     </SafeAreaView>
   );
@@ -430,146 +403,113 @@ const styles = StyleSheet.create({
     padding: 20,
     backgroundColor: '#fff',
   },
+  progressTimeContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    width: '100%',
+    paddingVertical: 12,
+    marginTop: 20,
+  },
   progressContainer: {
-    marginBottom: 16,
+    width: '100%',
   },
   progressBar: {
-    height: 6,
-    backgroundColor: '#E0E0E0',
-    borderRadius: 3,
+    height: 8,
+    borderRadius: 4,
     overflow: 'hidden',
     marginBottom: 8,
   },
   progressFill: {
     height: '100%',
-    backgroundColor: '#6B54AE',
-    borderRadius: 3,
+    borderRadius: 4,
   },
   progressLabels: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
   },
+  questionLabelContainer: {
+    paddingHorizontal: 12,
+    paddingVertical: 4,
+    borderRadius: 16,
+  },
   progressText: {
-    color: '#6B54AE',
     fontSize: 14,
     fontWeight: '600',
   },
   cardContainer: {
+    flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    marginVertical: 16,
-  },
-  card: {
-    width: CARD_WIDTH,
-    minHeight: 280,
-    position: 'relative',
     marginVertical: 20,
   },
-  cardFace: {
-    position: 'absolute',
+  cardWrapper: {
+    width: CARD_WIDTH,
+    height: CARD_WIDTH * 0.7,
+    position: 'relative',
+  },
+  card: {
     width: '100%',
     height: '100%',
-    backfaceVisibility: 'hidden',
     borderRadius: 20,
-    overflow: 'hidden',
-    elevation: 8,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.15,
-    shadowRadius: 12,
-    backgroundColor: '#fff',
-    borderWidth: 1,
-    borderColor: 'rgba(107, 84, 174, 0.1)',
-    boxShadow: '10px 10px 5px 0px rgba(170, 170, 170, 0.75)',
-  },
-  cardFront: {
-    borderWidth: 0.5,
-    borderColor: '#6B54AE',
-    backgroundColor: '#fff',
-  },
-  cardBack: {
-    borderWidth: 0.5,
-    borderColor: '#6B54AE',
-    backgroundColor: '#fff',
-    transform: [{ rotateY: '180deg' }],
-  },
-  cardContent: {
-    flex: 1,
-    padding: 24,
+    padding: 20,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#fff',
+    backfaceVisibility: 'hidden',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 4,
+    position: 'absolute',
+    top: 0,
+    left: 0,
   },
-  questionText: {
-    fontSize: 22,
-    fontWeight: '700',
-    color: '#333',
+  cardBack: {
+    transform: [{ rotateY: '180deg' }],
+  },
+  cardText: {
+    fontSize: 24,
     textAlign: 'center',
-    marginBottom: 16,
     lineHeight: 32,
-  },
-  answerText: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#333',
-    textAlign: 'center',
-    lineHeight: 26,
-  },
-  revealHint: {
-    fontSize: 14,
-    color: '#666',
-    marginTop: 16,
-    textTransform: 'uppercase',
-    letterSpacing: 1,
   },
   navigationContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingVertical: 16,
-    width: CARD_WIDTH,
-  },
-  navButtonContainer: {
-    flex: 1,
-    alignItems: 'center',
+    marginVertical: 20,
+    paddingVertical: 20,
+    borderTopWidth: 1,
+    borderBottomWidth: 1,
+    paddingHorizontal: 0,
   },
   navButton: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
     padding: 12,
-    borderRadius: 12,
-    minWidth: 120,
-    justifyContent: 'center',
+    borderRadius: 8,
   },
   prevButton: {
     backgroundColor: 'transparent',
-    borderWidth: 1.5,
-    borderColor: '#E0E0E0',
+    borderWidth: 1,
   },
   nextButton: {
     backgroundColor: '#6B54AE',
   },
+  navButtonDisabled: {
+    opacity: 0.5,
+  },
   prevButtonText: {
-    color: '#6B54AE',
-    fontWeight: '600',
+    fontWeight: '700',
   },
   nextButtonText: {
+    fontWeight: '700',
     color: '#fff',
-    fontWeight: '600',
-  },
-  finishButton: {
-    backgroundColor: '#6B54AE',
-  },
-  finishButtonText: {
-    color: '#fff',
-    fontWeight: '600',
   },
   formContainer: {
     flex: 1,
     padding: 20,
-    backgroundColor: '#fff',
     borderRadius: 20,
     elevation: 4,
     shadowColor: '#000',
@@ -580,7 +520,6 @@ const styles = StyleSheet.create({
   formTitle: {
     fontSize: 24,
     fontWeight: '700',
-    color: '#6B54AE',
     marginBottom: 30,
     textAlign: 'center',
   },
@@ -593,39 +532,26 @@ const styles = StyleSheet.create({
   formLabel: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#6B54AE',
   },
   formInput: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     padding: 16,
-    backgroundColor: '#F5F5F5',
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: '#E0E0E0',
-  },
-  formInputDisabled: {
-    backgroundColor: '#F5F5F5',
-    opacity: 0.7,
   },
   formInputText: {
     fontSize: 16,
-    color: '#333333',
-  },
-  formInputTextDisabled: {
-    color: '#999999',
   },
   modalOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
     justifyContent: 'center',
     alignItems: 'center',
   },
   modalContent: {
     width: '80%',
     maxHeight: '80%',
-    backgroundColor: '#fff',
     borderRadius: 20,
     padding: 20,
     elevation: 5,
@@ -640,29 +566,25 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     padding: 16,
     borderBottomWidth: 1,
-    borderBottomColor: '#E0E0E0',
   },
   modalItemText: {
     fontSize: 16,
-    color: '#333333',
   },
   startButton: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     gap: 8,
-    backgroundColor: '#6B54AE',
     padding: 16,
     borderRadius: 12,
     marginTop: 20,
   },
   startButtonDisabled: {
-    backgroundColor: '#CCCCCC',
+    opacity: 0.7,
   },
   startButtonText: {
-    color: '#fff',
     fontSize: 18,
-    fontWeight: '600',
+    fontWeight: '700',
   },
   headerContainer: {
     flexDirection: 'row',
