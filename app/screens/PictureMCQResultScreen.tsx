@@ -137,37 +137,35 @@ export default function PictureMCQResultScreen() {
         {/* Action Buttons */}
         <ThemedView style={[styles.actionButtons, { backgroundColor: colors.background }]}>
           <TouchableOpacity
-            style={[styles.button, styles.playAgainButton, { backgroundColor: colors.tint }]}
+            style={[styles.button, { backgroundColor: colors.tint }]}
             onPress={() => {
-              router.push({
-                pathname: '/(tabs)/mcq',
+              router.replace({
+                pathname: '/mcq',
                 params: { 
-                  reset: 'true',
-                  startOver: 'true'
+                  mode: 'retry',
+                  timestamp: Date.now()
                 }
               });
             }}
           >
-            <ThemedText style={[styles.buttonText, { color: '#fff' }]}>Try Again</ThemedText>
-            <Ionicons name="repeat" size={24} color="#fff" />
+            <ThemedText style={[styles.buttonText, { color: colors.background }]}>Try Again</ThemedText>
+            <Ionicons name="repeat" size={24} color={colors.background} />
           </TouchableOpacity>
           
           <TouchableOpacity
-            style={[styles.button, styles.homeButton, { backgroundColor: colors.cardAlt, borderColor: colors.border }]}
+            style={[styles.button, { backgroundColor: colors.cardAlt, borderColor: colors.border }]}
             onPress={() => {
-              router.push({
-                pathname: '/(tabs)/mcq',
+              router.replace({
+                pathname: '/mcq',
                 params: { 
-                  reset: 'true',
-                  newQuestions: 'true'
+                  mode: 'new',
+                  timestamp: Date.now()
                 }
               });
             }}
           >
-            <ThemedText style={[styles.buttonText, { color: colors.text }]}>
-              More Questions
-            </ThemedText>
-            <IconSymbol name="house.fill" size={24} color={colors.text} />
+            <ThemedText style={[styles.buttonText, { color: colors.text }]}>New Questions</ThemedText>
+            <Ionicons name="documents-outline" size={24} color={colors.text} />
           </TouchableOpacity>
         </ThemedView>
       </ScrollView>
@@ -266,6 +264,14 @@ const styles = StyleSheet.create({
     padding: 16,
     borderRadius: 16,
     gap: 12,
+    width: '100%',
+    borderWidth: 1,
+    borderColor: 'transparent',
+    elevation: 2,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
   },
   playAgainButton: {
     backgroundColor: '#4CAF50',
