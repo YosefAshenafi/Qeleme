@@ -112,11 +112,17 @@ export default function PictureMCQScreen() {
   const imagePan = Gesture.Pan()
     .onStart(() => {
       'worklet';
+      // Prevent dragging if an option has already been dropped
+      if (droppedOption) return;
+      
       isDraggingShared.value = true;
       imageScale.value = withSpring(0.5);
     })
     .onUpdate((event) => {
       'worklet';
+      // Don't update position if an option has been dropped
+      if (droppedOption) return;
+      
       imagePosition.value = {
         x: event.translationX,
         y: event.translationY,
@@ -147,6 +153,9 @@ export default function PictureMCQScreen() {
     })
     .onEnd(() => {
       'worklet';
+      // Don't process drop if an option has already been dropped
+      if (droppedOption) return;
+      
       isDraggingShared.value = false;
       imageScale.value = withSpring(1);
       imagePosition.value = withSpring({ x: 0, y: 0 });
