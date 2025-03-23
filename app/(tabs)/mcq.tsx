@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { StyleSheet, TouchableOpacity, ScrollView, View, Dimensions, Animated, Modal, Platform } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
-import { router, useFocusEffect } from 'expo-router';
+import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useTheme } from '@/contexts/ThemeContext';
@@ -49,6 +49,7 @@ const typedMcqData = mcqData as MCQData;
 export default function MCQScreen() {
   const { isDarkMode } = useTheme();
   const colors = getColors(isDarkMode);
+  const params = useLocalSearchParams();
   const [selectedSubject, setSelectedSubject] = useState('');
   const [selectedChapter, setSelectedChapter] = useState('');
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
@@ -148,6 +149,27 @@ export default function MCQScreen() {
     };
     checkPhoneNumber();
   }, []);
+
+  useEffect(() => {
+    // Handle reset parameters
+    if (params.reset === 'true') {
+      setSelectedSubject('');
+      setSelectedChapter('');
+      setCurrentQuestionIndex(0);
+      setSelectedAnswer(null);
+      setShowExplanation(false);
+      setAnsweredQuestions({});
+      setShowAnswerMessage(false);
+      setScore(0);
+      setShowResult(false);
+      setShowTest(false);
+      setTime(0);
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+      }
+      setIsTimerRunning(false);
+    }
+  }, [params.reset]);
 
   useEffect(() => {
     if (showResult) {

@@ -138,7 +138,15 @@ export default function PictureMCQResultScreen() {
         <ThemedView style={[styles.actionButtons, { backgroundColor: colors.background }]}>
           <TouchableOpacity
             style={[styles.button, styles.playAgainButton, { backgroundColor: colors.tint }]}
-            onPress={() => router.push('/(tabs)/mcq')}
+            onPress={() => {
+              router.push({
+                pathname: '/(tabs)/mcq',
+                params: { 
+                  reset: 'true',
+                  startOver: 'true'
+                }
+              });
+            }}
           >
             <ThemedText style={[styles.buttonText, { color: '#fff' }]}>Try Again</ThemedText>
             <Ionicons name="repeat" size={24} color="#fff" />
@@ -146,7 +154,15 @@ export default function PictureMCQResultScreen() {
           
           <TouchableOpacity
             style={[styles.button, styles.homeButton, { backgroundColor: colors.cardAlt, borderColor: colors.border }]}
-            onPress={() => router.push('/(tabs)/mcq')}
+            onPress={() => {
+              router.push({
+                pathname: '/(tabs)/mcq',
+                params: { 
+                  reset: 'true',
+                  newQuestions: 'true'
+                }
+              });
+            }}
           >
             <ThemedText style={[styles.buttonText, { color: colors.text }]}>
               More Questions
