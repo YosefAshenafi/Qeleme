@@ -1,7 +1,7 @@
 // src/services/santimPayService.ts
 import { PaymentResponse, PaymentStatusResponse } from '../types/santimPay';
 
-const BASE_URL = 'http://localhost:3001'; // Change this to your actual server URL when deploying
+const BASE_URL = 'http://localhost:3000'; // Updated to use localhost:3000
 
 export const initiatePayment = async (
   amount: number,
@@ -15,9 +15,14 @@ export const initiatePayment = async (
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
+        id: orderId,
         amount,
-        orderId,
-        customerPhone,
+        paymentReason: "Test payment",
+        successRedirectUrl: "https://santimpay.com",
+        failureRedirectUrl: "https://santimpay.com",
+        notifyUrl: "https://webhook.site/783a4514-3e30-4315-9c68-c8b41a743c9d",
+        phoneNumber: customerPhone,
+        cancelRedirectUrl: "https://santimpay.com"
       }),
     });
 

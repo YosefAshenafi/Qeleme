@@ -1,9 +1,7 @@
 // src/types/santimPay.ts
 export interface PaymentResponse {
     success: boolean;
-    data?: {
-      paymentUrl: string;
-    };
+    paymentUrl: string;
     error?: string;
   }
   
