@@ -67,11 +67,14 @@ export default function SignupScreen() {
         <KeyboardAvoidingView 
           behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
           style={styles.keyboardView}
+          keyboardVerticalOffset={Platform.OS === 'ios' ? -64 : 0}
         >
           <ScrollView 
             style={styles.scrollView}
             contentContainerStyle={styles.scrollContent}
             showsVerticalScrollIndicator={false}
+            keyboardShouldPersistTaps="handled"
+            keyboardDismissMode="on-drag"
           >
             <View style={styles.container}>
               <View style={styles.header}>
@@ -138,6 +141,10 @@ export default function SignupScreen() {
                       value={password}
                       onChangeText={setPassword}
                       secureTextEntry
+                      autoCapitalize="none"
+                      textContentType="oneTimeCode"
+                      keyboardType="default"
+                      keyboardAppearance={isDarkMode ? 'dark' : 'light'}
                     />
                   </View>
 
@@ -313,6 +320,7 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     flexGrow: 1,
+    paddingBottom: Platform.OS === 'ios' ? 120 : 80,
   },
   container: {
     flex: 1,
