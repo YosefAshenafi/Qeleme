@@ -1,5 +1,5 @@
 // src/components/PaymentButton.tsx
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Button, Alert, ActivityIndicator, StyleSheet, TouchableOpacity, Dimensions, Modal, Platform } from 'react-native';
 import { initiatePayment, checkPaymentStatus } from '../services/santimPayService';
 import { PaymentButtonProps } from '../types/santimPay';
@@ -7,6 +7,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { ThemedText } from './ThemedText';
 import { WebView } from 'react-native-webview';
 import { BlurView } from 'expo-blur';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 const WEBVIEW_WIDTH = SCREEN_WIDTH * 0.9;
@@ -21,17 +22,30 @@ const PaymentButton: React.FC<PaymentButtonProps> = ({
   const [showWebView, setShowWebView] = useState<boolean>(false);
   const [paymentUrl, setPaymentUrl] = useState<string>('');
   const [orderId, setOrderId] = useState<string>('');
+  const [customerPhone, setCustomerPhone] = useState<string>('');
+
+  useEffect(() => {
+    const getPhoneNumber = async () => {
+      const phoneNumber = await AsyncStorage.getItem('userPhoneNumber');
+      if (phoneNumber) {
+        setCustomerPhone(phoneNumber);
+      }
+    };
+    getPhoneNumber();
+  }, []);
 
   const handlePayment = async (): Promise<void> => {
     try {
+      if (!customerPhone) {
+        Alert.alert('Error', 'Phone number not found. Please log in again.');
+        return;
+      }
+
       setLoading(true);
       
       // Generate a unique order ID
       const newOrderId = `ORDER_${Date.now()}`;
       setOrderId(newOrderId);
-      
-      // Replace with actual customer phone number
-      const customerPhone = '+251913841405';
 
       const response = await initiatePayment(amount, newOrderId, customerPhone);
       if (response.success && response.paymentUrl) {
