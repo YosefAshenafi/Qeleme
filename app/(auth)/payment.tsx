@@ -1,4 +1,4 @@
-import { StyleSheet, TouchableOpacity, View, KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
+import { StyleSheet, TouchableOpacity, View, KeyboardAvoidingView, Platform, ScrollView, Image } from 'react-native';
 import { router } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -22,7 +22,7 @@ export default function PaymentScreen() {
 
   return (
     <LinearGradient
-      colors={isDarkMode ? ['#000000', '#1C1C1E'] : ['#F8F9FA', '#FFFFFF']}
+      colors={isDarkMode ? ['#1A1B2E', '#2D1B4E'] : ['#F5F3FF', '#FFFFFF']}
       style={styles.gradient}
     >
       <SafeAreaView style={styles.safeArea}>
@@ -37,10 +37,10 @@ export default function PaymentScreen() {
                   style={styles.backButton}
                   onPress={() => router.back()}
                 >
-                  <Ionicons name="arrow-back" size={24} color={isDarkMode ? '#A0A0A5' : '#1F2937'} />
+                  <Ionicons name="arrow-back" size={24} color={isDarkMode ? '#A78BFA' : '#7C3AED'} />
                 </TouchableOpacity>
                 <ThemedText style={[styles.title, { color: colors.text }]}>Choose Your Plan</ThemedText>
-                <ThemedText style={[styles.subtitle, { color: colors.text + '80' }]}>Select the plan that best suits you</ThemedText>
+                <ThemedText style={[styles.subtitle, { color: colors.text + '80' }]}>Select the plan that best suits your learning needs</ThemedText>
               </View>
 
               <View style={styles.paymentOptionsContainer}>
@@ -48,26 +48,38 @@ export default function PaymentScreen() {
                 <TouchableOpacity 
                   onPress={() => router.replace('/(tabs)')} 
                   style={[styles.paymentOption, {
-                    borderColor: isDarkMode ? '#3C3C3E' : '#7C3AED'
+                    borderColor: isDarkMode ? '#6D28D9' : '#7C3AED',
+                    borderWidth: 2,
                   }]}
                 >
                   <LinearGradient
-                    colors={isDarkMode ? ['#2C2C2E', '#1C1C1E'] : ['#F3F4F6', '#E5E7EB']}
+                    colors={isDarkMode ? ['#2D1B4E', '#1A1B2E'] : ['#FFFFFF', '#F5F3FF']}
                     style={styles.paymentOptionGradient}
                   >
-                    <ThemedText style={[styles.paymentOptionTitle, { color: colors.text }]}>Free Trial</ThemedText>
-                    <ThemedText style={[styles.paymentOptionDescription, { color: colors.text + '80' }]}>
-                      20 Questions
-                    </ThemedText>
-                    <ThemedText style={[styles.paymentOptionDescription, { color: colors.text + '80' }]}>
-                      20 Flashcards
-                    </ThemedText>
-                    <ThemedText style={[styles.paymentOptionDescription, { color: colors.text + '80' }]}>
-                      20 Homework/Assignment Helps
-                    </ThemedText>
-                    <ThemedText style={[styles.paymentOptionPrice, { color: colors.text }]}>
-                      ETB 0
-                    </ThemedText>
+                    <View style={styles.paymentOptionHeader}>
+                      <ThemedText style={[styles.paymentOptionTitle, { color: isDarkMode ? '#A78BFA' : '#7C3AED' }]}>Free Trial</ThemedText>
+                      <View style={[styles.badge, { backgroundColor: isDarkMode ? '#6D28D9' : '#EDE9FE' }]}>
+                        <ThemedText style={[styles.badgeText, { color: isDarkMode ? '#A78BFA' : '#7C3AED' }]}>Basic trial</ThemedText>
+                      </View>
+                    </View>
+                    <View style={styles.featuresContainer}>
+                      <View style={styles.featureItem}>
+                        <Ionicons name="checkmark-circle" size={20} color={isDarkMode ? '#A78BFA' : '#7C3AED'} />
+                        <ThemedText style={[styles.featureText, { color: isDarkMode ? '#E9D8FD' : '#4C1D95' }]}>20 Questions</ThemedText>
+                      </View>
+                      <View style={styles.featureItem}>
+                        <Ionicons name="checkmark-circle" size={20} color={isDarkMode ? '#A78BFA' : '#7C3AED'} />
+                        <ThemedText style={[styles.featureText, { color: isDarkMode ? '#E9D8FD' : '#4C1D95' }]}>20 Flashcards</ThemedText>
+                      </View>
+                      <View style={styles.featureItem}>
+                        <Ionicons name="checkmark-circle" size={20} color={isDarkMode ? '#A78BFA' : '#7C3AED'} />
+                        <ThemedText style={[styles.featureText, { color: isDarkMode ? '#E9D8FD' : '#4C1D95' }]}>20 Homework Helps</ThemedText>
+                      </View>
+                    </View>
+                    <View style={styles.priceContainer}>
+                      <ThemedText style={[styles.paymentOptionPrice, { color: isDarkMode ? '#A78BFA' : '#7C3AED' }]}>ETB 0</ThemedText>
+                      <ThemedText style={[styles.paymentOptionPeriod, { color: isDarkMode ? '#E9D8FD' : '#4C1D95' }]}></ThemedText>
+                    </View>
                   </LinearGradient>
                 </TouchableOpacity>
 
@@ -78,24 +90,33 @@ export default function PaymentScreen() {
                   onFailure={handlePaymentFailure}
                 >
                   <LinearGradient
-                    colors={['#4F46E5', '#7C3AED']}
+                    colors={['#7C3AED', '#5B21B6']}
                     style={styles.paymentOptionGradient}
                   >
-                    <ThemedText style={[styles.paymentOptionTitle, { color: '#FFFFFF' }]}>
-                      6 Month Plan
-                    </ThemedText>
-                    <ThemedText style={[styles.paymentOptionDescription, { color: '#FFFFFF' }]}>
-                      Unlimited Questions
-                    </ThemedText>
-                    <ThemedText style={[styles.paymentOptionDescription, { color: '#FFFFFF' }]}>
-                      Unlimited Flashcards
-                    </ThemedText>
-                    <ThemedText style={[styles.paymentOptionDescription, { color: '#FFFFFF' }]}>
-                      Unlimited Homework/Assignment Helps
-                    </ThemedText>
-                    <ThemedText style={[styles.paymentOptionPrice, { color: '#FFFFFF' }]}>
-                      ETB 499
-                    </ThemedText>
+                    <View style={styles.paymentOptionHeader}>
+                      <ThemedText style={[styles.paymentOptionTitle, { color: '#FFFFFF' }]}>6 Month Plan</ThemedText>
+                      <View style={[styles.badge, { backgroundColor: 'rgba(255, 255, 255, 0.15)' }]}>
+                        <ThemedText style={[styles.badgeText, { color: '#FFFFFF' }]}>Most Popular</ThemedText>
+                      </View>
+                    </View>
+                    <View style={styles.featuresContainer}>
+                      <View style={styles.featureItem}>
+                        <Ionicons name="infinite" size={20} color="#FFFFFF" />
+                        <ThemedText style={[styles.featureText, { color: '#FFFFFF' }]}>Unlimited Questions</ThemedText>
+                      </View>
+                      <View style={styles.featureItem}>
+                        <Ionicons name="infinite" size={20} color="#FFFFFF" />
+                        <ThemedText style={[styles.featureText, { color: '#FFFFFF' }]}>Unlimited Flashcards</ThemedText>
+                      </View>
+                      <View style={styles.featureItem}>
+                        <Ionicons name="infinite" size={20} color="#FFFFFF" />
+                        <ThemedText style={[styles.featureText, { color: '#FFFFFF' }]}>Unlimited Homework Helps</ThemedText>
+                      </View>
+                    </View>
+                    <View style={styles.priceContainer}>
+                      <ThemedText style={[styles.paymentOptionPrice, { color: '#FFFFFF' }]}>ETB 499</ThemedText>
+                      <ThemedText style={[styles.paymentOptionPeriod, { color: '#FFFFFF' }]}>/6 months</ThemedText>
+                    </View>
                   </LinearGradient>
                 </PaymentButton>
 
@@ -106,24 +127,33 @@ export default function PaymentScreen() {
                   onFailure={handlePaymentFailure}
                 >
                   <LinearGradient
-                    colors={['#4F46E5', '#7C3AED']}
+                    colors={['#4F46E5', '#3730A3']}
                     style={styles.paymentOptionGradient}
                   >
-                    <ThemedText style={[styles.paymentOptionTitle, { color: '#FFFFFF' }]}>
-                      12 Month Plan
-                    </ThemedText>
-                    <ThemedText style={[styles.paymentOptionDescription, { color: '#FFFFFF' }]}>
-                      Unlimited Questions
-                    </ThemedText>
-                    <ThemedText style={[styles.paymentOptionDescription, { color: '#FFFFFF' }]}>
-                      Unlimited Flashcards
-                    </ThemedText>
-                    <ThemedText style={[styles.paymentOptionDescription, { color: '#FFFFFF' }]}>
-                      Unlimited Homework/Assignment Helps
-                    </ThemedText>
-                    <ThemedText style={[styles.paymentOptionPrice, { color: '#FFFFFF' }]}>
-                      ETB 799
-                    </ThemedText>
+                    <View style={styles.paymentOptionHeader}>
+                      <ThemedText style={[styles.paymentOptionTitle, { color: '#FFFFFF' }]}>12 Month Plan</ThemedText>
+                      <View style={[styles.badge, { backgroundColor: 'rgba(255, 255, 255, 0.15)' }]}>
+                        <ThemedText style={[styles.badgeText, { color: '#FFFFFF' }]}>Best Value</ThemedText>
+                      </View>
+                    </View>
+                    <View style={styles.featuresContainer}>
+                      <View style={styles.featureItem}>
+                        <Ionicons name="infinite" size={20} color="#FFFFFF" />
+                        <ThemedText style={[styles.featureText, { color: '#FFFFFF' }]}>Unlimited Questions</ThemedText>
+                      </View>
+                      <View style={styles.featureItem}>
+                        <Ionicons name="infinite" size={20} color="#FFFFFF" />
+                        <ThemedText style={[styles.featureText, { color: '#FFFFFF' }]}>Unlimited Flashcards</ThemedText>
+                      </View>
+                      <View style={styles.featureItem}>
+                        <Ionicons name="infinite" size={20} color="#FFFFFF" />
+                        <ThemedText style={[styles.featureText, { color: '#FFFFFF' }]}>Unlimited Homework Helps</ThemedText>
+                      </View>
+                    </View>
+                    <View style={styles.priceContainer}>
+                      <ThemedText style={[styles.paymentOptionPrice, { color: '#FFFFFF' }]}>ETB 799</ThemedText>
+                      <ThemedText style={[styles.paymentOptionPeriod, { color: '#FFFFFF' }]}>/12 months</ThemedText>
+                    </View>
                   </LinearGradient>
                 </PaymentButton>
               </View>
@@ -166,29 +196,70 @@ const styles = StyleSheet.create({
   },
   subtitle: {
     fontSize: 16,
+    lineHeight: 24,
   },
   paymentOptionsContainer: {
-    gap: 16,
+    gap: 20,
   },
   paymentOption: {
-    borderRadius: 16,
+    borderRadius: 20,
     overflow: 'hidden',
-    borderWidth: 0.3,
+    borderWidth: 1,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 4,
+    },
+    shadowOpacity: 0.15,
+    shadowRadius: 12,
+    elevation: 5,
   },
   paymentOptionGradient: {
     padding: 24,
-    gap: 8,
+  },
+  paymentOptionHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 24,
   },
   paymentOptionTitle: {
     fontSize: 24,
+    fontWeight: '700',
+  },
+  badge: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 12,
+  },
+  badgeText: {
+    fontSize: 14,
     fontWeight: '600',
   },
-  paymentOptionDescription: {
+  featuresContainer: {
+    gap: 16,
+    marginBottom: 24,
+  },
+  featureItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  featureText: {
     fontSize: 16,
+    lineHeight: 24,
+  },
+  priceContainer: {
+    flexDirection: 'row',
+    alignItems: 'baseline',
+    gap: 4,
   },
   paymentOptionPrice: {
-    fontSize: 20,
-    fontWeight: '600',
-    marginTop: 8,
+    paddingTop: 5,
+    fontSize: 28,
+    fontWeight: '700',
+  },
+  paymentOptionPeriod: {
+    fontSize: 16,
   },
 }); 
