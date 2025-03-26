@@ -266,9 +266,10 @@ export default function SignupScreen() {
                 </Modal>
 
                 <TouchableOpacity 
-                  style={styles.signupButton} 
+                  style={[styles.signupButton, !acceptTerms && styles.signupButtonDisabled]} 
                   onPress={handleSignup}
                   activeOpacity={0.8}
+                  disabled={!acceptTerms}
                 >
                   <LinearGradient
                     colors={['#4F46E5', '#7C3AED']}
@@ -422,6 +423,10 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.2,
     shadowRadius: 8,
     elevation: 8,
+  },
+  signupButtonDisabled: {
+    opacity: 0.5,
+    shadowOpacity: 0.1,
   },
   buttonGradient: {
     flex: 1,
