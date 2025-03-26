@@ -19,4 +19,5 @@ export interface PaymentResponse {
     amount: number;
     onSuccess?: () => void;
     onFailure?: () => void;
+    children?: React.ReactNode;
   }

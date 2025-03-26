@@ -1,13 +1,12 @@
 // src/components/PaymentButton.tsx
 import React, { useState, useEffect } from 'react';
-import { View, Button, Alert, ActivityIndicator, StyleSheet, TouchableOpacity, Dimensions, Modal, Platform } from 'react-native';
+import { View, Alert, ActivityIndicator, StyleSheet, TouchableOpacity, Dimensions, Modal, Platform } from 'react-native';
 import { initiatePayment, checkPaymentStatus } from '../services/santimPayService';
 import { PaymentButtonProps } from '../types/santimPay';
-import { LinearGradient } from 'expo-linear-gradient';
-import { ThemedText } from './ThemedText';
 import { WebView } from 'react-native-webview';
 import { BlurView } from 'expo-blur';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { ThemedText } from './ThemedText';
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 const WEBVIEW_WIDTH = SCREEN_WIDTH * 0.9;
@@ -16,7 +15,8 @@ const WEBVIEW_HEIGHT = SCREEN_HEIGHT * 0.7;
 const PaymentButton: React.FC<PaymentButtonProps> = ({ 
   amount, 
   onSuccess, 
-  onFailure 
+  onFailure,
+  children 
 }) => {
   const [loading, setLoading] = useState<boolean>(false);
   const [showWebView, setShowWebView] = useState<boolean>(false);
@@ -99,20 +99,7 @@ const PaymentButton: React.FC<PaymentButtonProps> = ({
   return (
     <>
       <TouchableOpacity style={styles.paymentOption} onPress={handlePayment}>
-        <LinearGradient
-          colors={['#4F46E5', '#7C3AED']}
-          style={styles.paymentOptionGradient}
-        >
-          <ThemedText style={[styles.paymentOptionTitle, { color: '#FFFFFF' }]}>
-            Full Version
-          </ThemedText>
-          <ThemedText style={[styles.paymentOptionDescription, { color: '#FFFFFF' }]}>
-            Get full access to all features
-          </ThemedText>
-          <ThemedText style={[styles.paymentOptionPrice, { color: '#FFFFFF' }]}>
-            299 ETB
-          </ThemedText>
-        </LinearGradient>
+        {children}
       </TouchableOpacity>
 
       <Modal
@@ -157,22 +144,6 @@ const styles = StyleSheet.create({
   paymentOption: {
     borderRadius: 16,
     overflow: 'hidden',
-  },
-  paymentOptionGradient: {
-    padding: 24,
-    gap: 8,
-  },
-  paymentOptionTitle: {
-    fontSize: 24,
-    fontWeight: '600',
-  },
-  paymentOptionDescription: {
-    fontSize: 16,
-  },
-  paymentOptionPrice: {
-    fontSize: 20,
-    fontWeight: '600',
-    marginTop: 8,
   },
   modalOverlay: {
     flex: 1,
