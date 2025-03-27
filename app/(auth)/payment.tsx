@@ -123,12 +123,9 @@ export default function PaymentScreen() {
                       <ThemedText style={[styles.paymentOptionPrice, { color: '#FFFFFF' }]}>ETB 499</ThemedText>
                       <ThemedText style={[styles.paymentOptionPeriod, { color: '#FFFFFF' }]}>/6 months</ThemedText>
                     </View>
-                    <TouchableOpacity 
-                      style={[styles.getStartedButton, { backgroundColor: 'rgba(255, 255, 255, 0.15)' }]}
-                      onPress={() => {}}
-                    >
+                    <View style={[styles.getStartedButton, { backgroundColor: 'rgba(255, 255, 255, 0.15)' }]}>
                       <ThemedText style={styles.getStartedButtonText}>Get Started</ThemedText>
-                    </TouchableOpacity>
+                    </View>
                   </LinearGradient>
                 </PaymentButton>
 
@@ -170,12 +167,9 @@ export default function PaymentScreen() {
                         <ThemedText style={[styles.paymentOptionPrice, { color: isDarkMode ? '#A78BFA' : '#7C3AED' }]}>ETB 799</ThemedText>
                         <ThemedText style={[styles.paymentOptionPeriod, { color: isDarkMode ? '#E9D8FD' : '#4C1D95' }]}>/12 months</ThemedText>
                       </View>
-                      <TouchableOpacity 
-                        style={[styles.getStartedButton, { backgroundColor: isDarkMode ? '#6D28D9' : '#6B54AE' }]}
-                        onPress={() => {}}
-                      >
+                      <View style={[styles.getStartedButton, { backgroundColor: isDarkMode ? '#6D28D9' : '#6B54AE' }]}>
                         <ThemedText style={styles.getStartedButtonText}>Get Started</ThemedText>
-                      </TouchableOpacity>
+                      </View>
                     </LinearGradient>
                   </View>
                 </PaymentButton>
