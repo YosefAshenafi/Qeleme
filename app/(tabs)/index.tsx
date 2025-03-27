@@ -213,7 +213,9 @@ export default function HomeScreen() {
           title: 'Performance',
           number: `${averageScore}%`,
           subtitle: 'Average Score',
-          gradient: ['#0A3D0A', '#1B5E20', '#2E7D32'] as const,
+          gradient: isDarkMode 
+            ? ['#2D1B4D', '#3D2B6D', '#4A2B8E'] as const
+            : ['#F3E5F5', '#E1BEE7', '#6B54AE'] as const,
           icon: 'trophy.fill',
           stats: [
             { label: 'Quizzes Taken', value: `${totalQuizzes}` },
