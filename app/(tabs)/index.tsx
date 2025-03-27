@@ -1,10 +1,11 @@
-import { StyleSheet, ScrollView, TouchableOpacity, Animated, View, Image, Dimensions } from 'react-native';
+import { StyleSheet, ScrollView, TouchableOpacity, Animated, View, Image, Dimensions, RefreshControl } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 import { IconSymbol } from '@/components/ui/IconSymbol';
 import { useState, useRef, useEffect } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import React from 'react';
 
 import { Header } from '@/components/Header';
 import { ThemedText } from '@/components/ThemedText';
@@ -56,28 +57,35 @@ export default function HomeScreen() {
   const [quoteIndex, setQuoteIndex] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [recentActivities, setRecentActivities] = useState<RecentActivity[]>([]);
+  const [refreshing, setRefreshing] = useState(false);
   const scrollViewRef = useRef<ScrollView>(null);
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const shimmerAnim = useRef(new Animated.Value(0)).current;
 
-  useEffect(() => {
-    // Load recent activities
-    const loadRecentActivities = async () => {
-      try {
-        const activities = await AsyncStorage.getItem('recentActivities');
-        if (activities) {
-          const parsedActivities = JSON.parse(activities);
-          // Sort by timestamp and take top 5
-          const sortedActivities = parsedActivities
-            .sort((a: RecentActivity, b: RecentActivity) => b.timestamp - a.timestamp)
-            .slice(0, 5);
-          setRecentActivities(sortedActivities);
-        }
-      } catch (error) {
-        console.error('Error loading recent activities:', error);
+  const loadRecentActivities = async () => {
+    try {
+      const activities = await AsyncStorage.getItem('recentActivities');
+      if (activities) {
+        const parsedActivities = JSON.parse(activities);
+        // Sort by timestamp and take top 5
+        const sortedActivities = parsedActivities
+          .sort((a: RecentActivity, b: RecentActivity) => b.timestamp - a.timestamp)
+          .slice(0, 5);
+        setRecentActivities(sortedActivities);
       }
-    };
+    } catch (error) {
+      console.error('Error loading recent activities:', error);
+    }
+  };
+
+  useEffect(() => {
     loadRecentActivities();
+  }, []);
+
+  const onRefresh = React.useCallback(async () => {
+    setRefreshing(true);
+    await loadRecentActivities();
+    setRefreshing(false);
   }, []);
 
   useEffect(() => {
@@ -185,6 +193,15 @@ export default function HomeScreen() {
       <ScrollView 
         style={[styles.scrollView, { backgroundColor: colors.background }]}
         contentContainerStyle={{ backgroundColor: colors.background }}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            tintColor={colors.tint}
+            colors={[colors.tint]}
+            progressBackgroundColor={colors.cardAlt}
+          />
+        }
       >
         <ThemedView style={[styles.container, { backgroundColor: colors.background }]}>
           {/* Motivational Quote Section */}
