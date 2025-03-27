@@ -682,9 +682,10 @@ const styles = StyleSheet.create({
     marginBottom: 50,
   },
   activityCard: {
-    padding: 16,
+    padding: 20,
     borderRadius: 12,
     marginBottom: 12,
+    marginHorizontal: -20,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
@@ -694,19 +695,19 @@ const styles = StyleSheet.create({
   activityHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 8,
+    marginBottom: 12,
   },
   activityType: {
     fontSize: 16,
     fontWeight: '600',
-    marginLeft: 8,
+    marginLeft: 12,
   },
   activityDetails: {
-    fontSize: 14,
-    marginBottom: 4,
+    fontSize: 15,
+    marginBottom: 6,
   },
   activityMeta: {
-    fontSize: 12,
+    fontSize: 13,
   },
   noActivity: {
     textAlign: 'center',
