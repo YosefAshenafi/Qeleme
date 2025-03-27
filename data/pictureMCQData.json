@@ -1,156 +1,156 @@
 {
   "grades": [
     {
-      "id": "grade-9",
-      "name": "Grade 9",
+      "id": "grade-kg",
+      "name": "Kindergarten",
       "subjects": [
         {
-          "id": "biology",
-          "name": "Biology",
+          "id": "general",
+          "name": "General Knowledge",
           "chapters": [
             {
-              "id": "cell-biology",
-              "name": "Cell Biology",
+              "id": "animals",
+              "name": "Animals",
               "questions": [
                 {
                   "id": 1,
-                  "question": "Identify the cell organelle shown in the image",
-                  "image": "https://example.com/cell-organelle.jpg",
+                  "question": "What animal is shown in the image?",
+                  "image": "lion.png",
                   "options": [
                     {
                       "id": "A",
-                      "text": "Nucleus",
+                      "text": "Lion",
                       "isCorrect": true
                     },
                     {
                       "id": "B",
-                      "text": "Mitochondria",
+                      "text": "Tiger",
                       "isCorrect": false
                     },
                     {
                       "id": "C",
-                      "text": "Golgi Apparatus",
+                      "text": "Leopard",
                       "isCorrect": false
                     },
                     {
                       "id": "D",
-                      "text": "Endoplasmic Reticulum",
+                      "text": "Cheetah",
                       "isCorrect": false
                     }
                   ],
-                  "explanation": "The image shows a nucleus, which is the control center of the cell containing DNA."
+                  "explanation": "This is a lion, known as the king of the jungle."
                 },
                 {
                   "id": 2,
-                  "question": "Which cell structure is shown in this image?",
-                  "image": "https://example.com/mitochondria.jpg",
+                  "question": "Which animal is shown in this image?",
+                  "image": "dolphin.png",
                   "options": [
                     {
                       "id": "A",
-                      "text": "Nucleus",
+                      "text": "Whale",
                       "isCorrect": false
                     },
                     {
                       "id": "B",
-                      "text": "Mitochondria",
+                      "text": "Dolphin",
                       "isCorrect": true
                     },
                     {
                       "id": "C",
-                      "text": "Ribosomes",
+                      "text": "Shark",
                       "isCorrect": false
                     },
                     {
                       "id": "D",
-                      "text": "Lysosomes",
+                      "text": "Seal",
                       "isCorrect": false
                     }
                   ],
-                  "explanation": "This is a mitochondria, the powerhouse of the cell responsible for energy production."
+                  "explanation": "This is a dolphin, a friendly marine mammal known for its intelligence."
                 },
                 {
                   "id": 3,
-                  "question": "What cell structure is depicted in this image?",
-                  "image": "https://example.com/endoplasmic-reticulum.jpg",
+                  "question": "What animal is shown in this image?",
+                  "image": "penguin.png",
                   "options": [
                     {
                       "id": "A",
-                      "text": "Golgi Apparatus",
+                      "text": "Duck",
                       "isCorrect": false
                     },
                     {
                       "id": "B",
-                      "text": "Endoplasmic Reticulum",
+                      "text": "Penguin",
                       "isCorrect": true
                     },
                     {
                       "id": "C",
-                      "text": "Nucleus",
+                      "text": "Seagull",
                       "isCorrect": false
                     },
                     {
                       "id": "D",
-                      "text": "Vacuole",
+                      "text": "Ostrich",
                       "isCorrect": false
                     }
                   ],
-                  "explanation": "This is the endoplasmic reticulum, involved in protein synthesis and transport."
+                  "explanation": "This is a penguin, a flightless bird that lives in cold regions."
                 },
                 {
                   "id": 4,
-                  "question": "Identify the cell structure shown in this image",
-                  "image": "https://example.com/golgi-apparatus.jpg",
+                  "question": "Which animal is shown in this image?",
+                  "image": "panda.png",
                   "options": [
                     {
                       "id": "A",
-                      "text": "Endoplasmic Reticulum",
-                      "isCorrect": false
-                    },
-                    {
-                      "id": "B",
-                      "text": "Golgi Apparatus",
+                      "text": "Panda",
                       "isCorrect": true
                     },
                     {
+                      "id": "B",
+                      "text": "Bear",
+                      "isCorrect": false
+                    },
+                    {
                       "id": "C",
-                      "text": "Lysosome",
+                      "text": "Raccoon",
                       "isCorrect": false
                     },
                     {
                       "id": "D",
-                      "text": "Vacuole",
+                      "text": "Koala",
                       "isCorrect": false
                     }
                   ],
-                  "explanation": "This is the Golgi apparatus, responsible for modifying and packaging proteins."
+                  "explanation": "This is a panda, a bear native to China known for eating bamboo."
                 },
                 {
                   "id": 5,
-                  "question": "What cell structure is shown in this image?",
-                  "image": "https://example.com/lysosome.jpg",
+                  "question": "What animal is shown in this image?",
+                  "image": "cheetah.png",
                   "options": [
                     {
                       "id": "A",
-                      "text": "Golgi Apparatus",
+                      "text": "Leopard",
                       "isCorrect": false
                     },
                     {
                       "id": "B",
-                      "text": "Lysosome",
+                      "text": "Cheetah",
                       "isCorrect": true
                     },
                     {
                       "id": "C",
-                      "text": "Vacuole",
+                      "text": "Jaguar",
                       "isCorrect": false
                     },
                     {
                       "id": "D",
-                      "text": "Ribosome",
+                      "text": "Lion",
                       "isCorrect": false
                     }
                   ],
-                  "explanation": "This is a lysosome, containing digestive enzymes for breaking down waste materials."
+                  "explanation": "This is a cheetah, the fastest land animal in the world."
                 }
               ]
             }
