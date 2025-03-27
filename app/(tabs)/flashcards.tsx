@@ -365,7 +365,7 @@ export default function FlashcardsScreen() {
                 onPress={handleStartFlashcards}
                 disabled={!selectedSubject || !selectedChapter}
               >
-                <ThemedText style={styles.startButtonText}>Start Flashcards</ThemedText>
+                <ThemedText style={[styles.startButtonText, { color: '#fff' }]}>Start Flashcards</ThemedText>
               </TouchableOpacity>
             </ThemedView>
           </ThemedView>

@@ -713,7 +713,7 @@ export default function MCQScreen() {
                 onPress={handleStartTest}
                 disabled={!selectedSubject || !selectedChapter}
               >
-                <ThemedText style={styles.startButtonText}>Start Quiz</ThemedText>
+                <ThemedText style={[styles.startButtonText, { color: '#fff' }]}>Start Quiz</ThemedText>
               </TouchableOpacity>
             </ThemedView>
           </ThemedView>
