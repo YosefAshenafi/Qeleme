@@ -4,6 +4,8 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { IconSymbol } from '@/components/ui/IconSymbol';
 import { useTheme } from '@/contexts/ThemeContext';
 import { getColors } from '@/constants/Colors';
+import { useState, useEffect } from 'react';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import { Header } from '@/components/Header';
 import { ThemedText } from '@/components/ThemedText';
@@ -11,40 +13,89 @@ import { ThemedView } from '@/components/ThemedView';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
-// Sample data - replace with actual data from your backend
-const reportData = {
-  overallProgress: {
-    percentage: 85,
-    totalTopics: 15,
-    completedTopics: 12,
-    studyHours: 28,
-  },
-  performance: {
-    averageScore: 92,
-    quizzesTaken: 24,
-    successRate: 92,
-    improvement: '+5%',
-  },
-  learningStreak: {
-    currentStreak: 7,
-    bestStreak: 12,
-    totalDaysActive: 45,
-  },
-  subjectBreakdown: [
-    { subject: 'Mathematics', progress: 90, score: 95 },
-    { subject: 'Physics', progress: 85, score: 88 },
-    { subject: 'Chemistry', progress: 80, score: 92 },
-  ],
-  recentActivity: [
-    { type: 'quiz', subject: 'Mathematics', score: 95, date: '2024-03-20' },
-    { type: 'study', subject: 'Physics', duration: '2h', date: '2024-03-19' },
-    { type: 'homework', subject: 'Chemistry', status: 'Completed', date: '2024-03-18' },
-  ],
-};
-
 export default function ReportsScreen() {
   const { isDarkMode } = useTheme();
   const colors = getColors(isDarkMode);
+  const [reportData, setReportData] = useState({
+    overallProgress: {
+      percentage: 0,
+      totalTopics: 0,
+      completedTopics: 0,
+      studyHours: 0,
+    },
+    performance: {
+      averageScore: 0,
+      quizzesTaken: 0,
+      successRate: 0,
+      improvement: '0%',
+    },
+    learningStreak: {
+      currentStreak: 0,
+      bestStreak: 0,
+      totalDaysActive: 0,
+    },
+    subjectBreakdown: [] as Array<{ subject: string; progress: number; score: number }>,
+    recentActivity: [] as Array<{ type: string; subject: string; score?: number; duration?: string; status?: string; date: string }>,
+  });
+
+  useEffect(() => {
+    const loadReportData = async () => {
+      try {
+        // Load recent activities
+        const activitiesJson = await AsyncStorage.getItem('recentActivities');
+        let activities: any[] = [];
+        if (activitiesJson) {
+          activities = JSON.parse(activitiesJson);
+          const recentActivity = activities.map((activity: any) => ({
+            type: activity.type,
+            subject: activity.subject,
+            score: activity.type === 'mcq' ? parseInt(activity.details.match(/\d+/)[0]) : undefined,
+            duration: activity.duration,
+            status: activity.status,
+            date: new Date(activity.timestamp).toLocaleDateString()
+          }));
+          setReportData(prev => ({ ...prev, recentActivity }));
+        }
+
+        // Calculate study hours from activities
+        const studyHours = activities
+          .filter((activity: any) => activity.type === 'study')
+          .reduce((total: number, activity: any) => {
+            const hours = parseInt(activity.duration?.replace('h', '') || '0');
+            return total + hours;
+          }, 0);
+
+        // Calculate performance metrics
+        const mcqActivities = activities.filter((activity: any) => activity.type === 'mcq');
+        const totalQuizzes = mcqActivities.length;
+        const totalScore = mcqActivities.reduce((sum: number, activity: any) => {
+          const score = parseInt(activity.details.match(/\d+/)[0]);
+          return sum + score;
+        }, 0);
+        const averageScore = totalQuizzes > 0 ? Math.round(totalScore / totalQuizzes) : 0;
+
+        // Update report data
+        setReportData(prev => ({
+          ...prev,
+          overallProgress: {
+            ...prev.overallProgress,
+            studyHours,
+          },
+          performance: {
+            ...prev.performance,
+            averageScore,
+            quizzesTaken: totalQuizzes,
+            successRate: averageScore,
+            improvement: '+5%', // This could be calculated based on historical data
+          },
+        }));
+      } catch (error) {
+        console.error('Error loading report data:', error);
+      }
+    };
+
+    loadReportData();
+  }, []);
 
   const gradients = {
     purple: isDarkMode 

@@ -42,12 +42,14 @@ type ReportCard = {
 };
 
 type RecentActivity = {
-  type: 'mcq' | 'flashcard';
+  type: 'mcq' | 'flashcard' | 'homework' | 'study';
   grade: string;
   subject: string;
   chapter: string;
   timestamp: number;
   details: string; // e.g. "Completed 5 questions" or "Reviewed 10 flashcards"
+  status?: string; // e.g. "Completed", "In Progress"
+  duration?: string; // e.g. "2h" for study hours
 };
 
 export default function HomeScreen() {
@@ -383,12 +385,20 @@ export default function HomeScreen() {
                 >
                   <View style={styles.activityHeader}>
                     <IconSymbol 
-                      name={activity.type === 'mcq' ? 'questionmark.circle' : 'rectangle.stack'} 
+                      name={
+                        activity.type === 'mcq' ? 'questionmark.circle' : 
+                        activity.type === 'flashcard' ? 'rectangle.stack' :
+                        activity.type === 'homework' ? 'message' :
+                        'clock.fill'
+                      } 
                       size={24} 
                       color={colors.tint} 
                     />
                     <ThemedText style={[styles.activityType, { color: colors.text }]}>
-                      {activity.type === 'mcq' ? 'MCQ Quiz' : 'Flashcards'}
+                      {activity.type === 'mcq' ? 'MCQ Quiz' : 
+                       activity.type === 'flashcard' ? 'Flashcards' :
+                       activity.type === 'homework' ? 'Homework' :
+                       'Study Session'}
                     </ThemedText>
                   </View>
                   <ThemedText style={[styles.activityDetails, { color: colors.text }]}>
@@ -396,6 +406,8 @@ export default function HomeScreen() {
                   </ThemedText>
                   <ThemedText style={[styles.activityMeta, { color: colors.text + '80' }]}>
                     {activity.grade} • {activity.subject} • {activity.chapter}
+                    {activity.status && ` • ${activity.status}`}
+                    {activity.duration && ` • ${activity.duration}`}
                   </ThemedText>
                 </ThemedView>
               ))

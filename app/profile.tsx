@@ -76,10 +76,17 @@ export default function ProfileScreen() {
   const { logout } = useAuth();
   const [openAccordion, setOpenAccordion] = useState<string | null>(null);
   const [profileImage, setProfileImage] = useState<string | null>(null);
+  const [stats, setStats] = useState([
+    { label: 'MCQs Completed', value: '0', icon: 'questionmark.circle.fill' as const },
+    { label: 'Flashcards Clicked', value: '0', icon: 'rectangle.stack.fill' as const },
+    { label: 'Homework Questions', value: '0', icon: 'message.fill' as const },
+    { label: 'Study Hours', value: '0', icon: 'clock.fill' as const },
+  ]);
   const colors = getColors(isDarkMode);
 
   useEffect(() => {
     loadProfileImage();
+    loadStats();
   }, []);
 
   const loadProfileImage = async () => {
@@ -90,6 +97,41 @@ export default function ProfileScreen() {
       }
     } catch (error) {
       console.error('Error loading profile image:', error);
+    }
+  };
+
+  const loadStats = async () => {
+    try {
+      const activitiesJson = await AsyncStorage.getItem('recentActivities');
+      if (activitiesJson) {
+        const activities = JSON.parse(activitiesJson);
+        
+        // Calculate MCQs completed
+        const mcqCount = activities.filter((activity: any) => activity.type === 'mcq').length;
+        
+        // Calculate flashcards clicked
+        const flashcardCount = activities.filter((activity: any) => activity.type === 'flashcard').length;
+        
+        // Calculate homework questions
+        const homeworkCount = activities.filter((activity: any) => activity.type === 'homework').length;
+        
+        // Calculate study hours
+        const studyHours = activities
+          .filter((activity: any) => activity.type === 'study')
+          .reduce((total: number, activity: any) => {
+            const hours = parseInt(activity.duration?.replace('h', '') || '0');
+            return total + hours;
+          }, 0);
+
+        setStats([
+          { label: 'MCQs Completed', value: mcqCount.toString(), icon: 'questionmark.circle.fill' as const },
+          { label: 'Flashcards Clicked', value: flashcardCount.toString(), icon: 'rectangle.stack.fill' as const },
+          { label: 'Homework Questions', value: homeworkCount.toString(), icon: 'message.fill' as const },
+          { label: 'Study Hours', value: studyHours.toString(), icon: 'clock.fill' as const },
+        ]);
+      }
+    } catch (error) {
+      console.error('Error loading stats:', error);
     }
   };
 
@@ -129,13 +171,6 @@ export default function ProfileScreen() {
     school: 'Example High School',
     joinDate: 'January 2024',
   };
-
-  const stats = [
-    { label: 'MCQs Completed', value: '156', icon: 'questionmark.circle.fill' as const },
-    { label: 'Flashcards Clicked', value: '89', icon: 'rectangle.stack.fill' as const },
-    { label: 'Homework Questions', value: '45', icon: 'message.fill' as const },
-    { label: 'Study Hours', value: '234', icon: 'clock.fill' as const },
-  ];
 
   const menuItems: MenuItem[] = [
     { 

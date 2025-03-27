@@ -4,6 +4,7 @@ import { useState, useRef, useEffect } from 'react';
 import * as ImagePicker from 'expo-image-picker';
 import { useTheme } from '@/contexts/ThemeContext';
 import { getColors } from '@/constants/Colors';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import { Header } from '@/components/Header';
 import { ThemedText } from '@/components/ThemedText';
@@ -16,6 +17,16 @@ type Message = {
   text: string;
   isUser: boolean;
   imageUri?: string;
+};
+
+type RecentActivity = {
+  type: string;
+  grade: string;
+  subject: string;
+  chapter: string;
+  timestamp: number;
+  details: string;
+  status: string;
 };
 
 export default function HomeworkScreen() {
@@ -131,6 +142,42 @@ export default function HomeworkScreen() {
         };
         setMessages(prev => [...prev, responseMessage]);
         scrollToBottom(); // Scroll to bottom when receiving response
+
+        // Track homework activity
+        const trackActivity = async () => {
+          try {
+            const activity: RecentActivity = {
+              type: 'homework',
+              grade: 'grade-12', // You might want to make this dynamic based on user's grade
+              subject: 'General', // You might want to make this dynamic based on the subject
+              chapter: 'Homework Help',
+              timestamp: Date.now(),
+              details: 'Asked a homework question',
+              status: 'Completed'
+            };
+            
+            // Get existing activities
+            const existingActivities = await AsyncStorage.getItem('recentActivities');
+            let activities: RecentActivity[] = [];
+            
+            if (existingActivities) {
+              activities = JSON.parse(existingActivities);
+            }
+            
+            // Add new activity and keep only last 20
+            activities.unshift(activity);
+            if (activities.length > 20) {
+              activities = activities.slice(0, 20);
+            }
+            
+            // Save updated activities
+            await AsyncStorage.setItem('recentActivities', JSON.stringify(activities));
+          } catch (error) {
+            console.error('Error tracking activity:', error);
+          }
+        };
+        
+        trackActivity();
       }
     } catch (error) {
       console.error('Error getting chat completion:', error);
