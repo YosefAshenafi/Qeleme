@@ -1,11 +1,12 @@
 import { StyleSheet, TextInput, TouchableOpacity, View, KeyboardAvoidingView, Platform } from 'react-native';
-import { router } from 'expo-router';
+import { router, useLocalSearchParams } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { useState, useRef } from 'react';
 import { useTheme } from '@/contexts/ThemeContext';
 import { getColors } from '@/constants/Colors';
+import { sendOTP } from '@/utils/otpService';
 
 import { ThemedText } from '@/components/ThemedText';
 
@@ -13,12 +14,18 @@ export default function OTPScreen() {
   const { isDarkMode } = useTheme();
   const colors = getColors(isDarkMode);
   const [otp, setOtp] = useState(['', '', '', '', '', '']);
+  const [error, setError] = useState('');
   const inputRefs = useRef<Array<TextInput | null>>([]);
+  const params = useLocalSearchParams();
+  
+  const expectedOtp = params.otp as string;
+  const userData = params.userData ? JSON.parse(params.userData as string) : null;
 
   const handleOtpChange = (text: string, index: number) => {
     const newOtp = [...otp];
     newOtp[index] = text;
     setOtp(newOtp);
+    setError(''); // Clear any previous error
 
     // Move to next input if value is entered
     if (text && index < 5) {
@@ -33,12 +40,36 @@ export default function OTPScreen() {
     }
   };
 
+  const handleResend = async () => {
+    if (userData?.phoneNumber) {
+      try {
+        const response = await sendOTP(userData.phoneNumber);
+        if (response.success && response.otp) {
+          // Update the expected OTP
+          router.setParams({ otp: response.otp });
+        }
+      } catch (error) {
+        console.error('Error resending OTP:', error);
+      }
+    }
+  };
+
   const handleVerify = () => {
-    const otpString = otp.join('');
-    if (otpString.length === 6) {
-      // Here you would typically verify the OTP with your backend
-      // For now, we'll just proceed to payment
+    const enteredOtp = otp.join('');
+    if (enteredOtp.length !== 6) {
+      setError('Please enter all digits');
+      return;
+    }
+
+    if (enteredOtp === expectedOtp) {
+      // OTP is correct, proceed to payment
       router.push('/(auth)/payment');
+    } else {
+      setError('Invalid verification code');
+      // Clear the inputs
+      setOtp(['', '', '', '', '', '']);
+      // Focus on first input
+      inputRefs.current[0]?.focus();
     }
   };
 
@@ -75,7 +106,7 @@ export default function OTPScreen() {
                     styles.otpInput,
                     {
                       backgroundColor: isDarkMode ? '#2C2C2E' : '#F9FAFB',
-                      borderColor: isDarkMode ? '#3C3C3E' : '#E5E7EB',
+                      borderColor: error ? '#EF4444' : (isDarkMode ? '#3C3C3E' : '#E5E7EB'),
                       color: colors.text
                     }
                   ]}
@@ -90,6 +121,10 @@ export default function OTPScreen() {
                 />
               ))}
             </View>
+
+            {error ? (
+              <ThemedText style={styles.errorText}>{error}</ThemedText>
+            ) : null}
 
             <TouchableOpacity 
               style={[
@@ -111,7 +146,7 @@ export default function OTPScreen() {
               <ThemedText style={[styles.resendText, { color: isDarkMode ? '#A0A0A5' : '#6B7280' }]}>
                 Didn't receive the code?
               </ThemedText>
-              <TouchableOpacity>
+              <TouchableOpacity onPress={handleResend}>
                 <ThemedText style={styles.resendButton}>Resend</ThemedText>
               </TouchableOpacity>
             </View>
@@ -163,6 +198,12 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     textAlign: 'center',
     fontSize: 24,
+  },
+  errorText: {
+    color: '#EF4444',
+    fontSize: 14,
+    textAlign: 'center',
+    marginBottom: 16,
   },
   verifyButton: {
     width: '100%',

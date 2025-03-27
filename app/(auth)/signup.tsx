@@ -8,6 +8,7 @@ import Checkbox from 'expo-checkbox';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '@/contexts/ThemeContext';
 import { getColors } from '@/constants/Colors';
+import { sendOTP } from '@/utils/otpService';
 
 import { ThemedText } from '@/components/ThemedText';
 
@@ -45,17 +46,42 @@ export default function SignupScreen() {
     setShowGradeModal(false);
   };
 
-  const handleSignup = () => {
-    // if (!acceptTerms) {
-    //   return;
-    // }
-    // if (password !== confirmPassword) {
-    //   return;
-    // }
-    // if (!fullName || !phoneNumber || !grade) {
-    //   return;
-    // }
-    router.push('/(auth)/otp');
+  const handleSignup = async () => {
+    if (!acceptTerms) {
+      return;
+    }
+    if (password !== confirmPassword) {
+      return;
+    }
+    if (!fullName || !phoneNumber || !grade) {
+      return;
+    }
+
+    try {
+      const formattedPhoneNumber = `+251${phoneNumber}`;
+      const response = await sendOTP(formattedPhoneNumber);
+      
+      if (response.success && response.otp) {
+        // Pass user data and OTP to the verification screen
+        router.push({
+          pathname: '/(auth)/otp',
+          params: {
+            otp: response.otp,
+            userData: JSON.stringify({
+              fullName,
+              phoneNumber: formattedPhoneNumber,
+              password,
+              grade
+            })
+          }
+        });
+      } else {
+        // Handle error - you might want to show an error message to the user
+        console.error('Failed to send OTP:', response.message);
+      }
+    } catch (error) {
+      console.error('Error sending OTP:', error);
+    }
   };
 
   return (
