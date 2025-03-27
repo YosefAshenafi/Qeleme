@@ -4,6 +4,7 @@ import { router } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 import { IconSymbol } from '@/components/ui/IconSymbol';
 import { useState, useRef, useEffect } from 'react';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import { Header } from '@/components/Header';
 import { ThemedText } from '@/components/ThemedText';
@@ -39,15 +40,45 @@ type ReportCard = {
   stats: Array<{ label: string; value: string }>;
 };
 
+type RecentActivity = {
+  type: 'mcq' | 'flashcard';
+  grade: string;
+  subject: string;
+  chapter: string;
+  timestamp: number;
+  details: string; // e.g. "Completed 5 questions" or "Reviewed 10 flashcards"
+};
+
 export default function HomeScreen() {
   const { isDarkMode } = useTheme();
   const colors = getColors(isDarkMode);
   const [activeIndex, setActiveIndex] = useState(0);
   const [quoteIndex, setQuoteIndex] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
+  const [recentActivities, setRecentActivities] = useState<RecentActivity[]>([]);
   const scrollViewRef = useRef<ScrollView>(null);
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const shimmerAnim = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    // Load recent activities
+    const loadRecentActivities = async () => {
+      try {
+        const activities = await AsyncStorage.getItem('recentActivities');
+        if (activities) {
+          const parsedActivities = JSON.parse(activities);
+          // Sort by timestamp and take top 5
+          const sortedActivities = parsedActivities
+            .sort((a: RecentActivity, b: RecentActivity) => b.timestamp - a.timestamp)
+            .slice(0, 5);
+          setRecentActivities(sortedActivities);
+        }
+      } catch (error) {
+        console.error('Error loading recent activities:', error);
+      }
+    };
+    loadRecentActivities();
+  }, []);
 
   useEffect(() => {
     // Simulate loading time
@@ -324,101 +355,40 @@ export default function HomeScreen() {
             </TouchableOpacity>
           </ThemedView>
 
-          {/* Recent Activity Section */}
-          <ThemedView style={[styles.section, { backgroundColor: colors.background }]}>
-            <View style={[styles.sectionHeader, { backgroundColor: colors.background }]}>
-              <ThemedText type="title" style={[styles.sectionTitle, { color: colors.text }]}>
-                Recent Activity
+                    {/* Recent Activity Section */}
+          <ThemedView style={[styles.recentActivitySection, { backgroundColor: colors.background }]}>
+            <ThemedText style={[styles.sectionTitle, { color: colors.text }]}>Recent Activity</ThemedText>
+            {recentActivities.length > 0 ? (
+              recentActivities.map((activity, index) => (
+                <ThemedView 
+                  key={index} 
+                  style={[styles.activityCard, { backgroundColor: colors.card }]}
+                >
+                  <View style={styles.activityHeader}>
+                    <IconSymbol 
+                      name={activity.type === 'mcq' ? 'questionmark.circle' : 'rectangle.stack'} 
+                      size={24} 
+                      color={colors.tint} 
+                    />
+                    <ThemedText style={[styles.activityType, { color: colors.text }]}>
+                      {activity.type === 'mcq' ? 'MCQ Quiz' : 'Flashcards'}
+                    </ThemedText>
+                  </View>
+                  <ThemedText style={[styles.activityDetails, { color: colors.text }]}>
+                    {activity.details}
+                  </ThemedText>
+                  <ThemedText style={[styles.activityMeta, { color: colors.text + '80' }]}>
+                    {activity.grade} • {activity.subject} • {activity.chapter}
+                  </ThemedText>
+                </ThemedView>
+              ))
+            ) : (
+              <ThemedText style={[styles.noActivity, { color: colors.text + '80' }]}>
+                No recent activity. Start learning!
               </ThemedText>
-              <TouchableOpacity>
-                <ThemedText style={[styles.seeAllButton, { color: colors.tint }]}>See All</ThemedText>
-              </TouchableOpacity>
-            </View>
-            <ThemedView style={[styles.activityList, { 
-              backgroundColor: colors.background,
-              gap: 12,
-              padding: 12
-            }]}>
-              <ThemedView style={[styles.activityItem, { 
-                backgroundColor: isDarkMode ? '#1C1C1E' : '#F5F5F5',
-                borderRadius: 16,
-                borderBottomWidth: 0,
-                shadowColor: "#000",
-                shadowOffset: {
-                  width: 0,
-                  height: 1,
-                },
-                shadowOpacity: isDarkMode ? 0.5 : 0.1,
-                shadowRadius: 2.22,
-                elevation: 3,
-              }]}>
-                <ThemedView style={[styles.activityIcon, { 
-                  backgroundColor: isDarkMode ? 'rgba(107, 84, 174, 0.2)' : '#F3E5F5'
-                }]}>
-                  <IconSymbol name="questionmark.circle" size={24} color={colors.tint} />
-                </ThemedView>
-                <ThemedView style={[styles.activityContent, { backgroundColor: isDarkMode ? '#1C1C1E' : '#F5F5F5' }]}>
-                  <ThemedText style={[styles.activityTitle, { color: colors.text }]}>Math Quiz</ThemedText>
-                  <ThemedText style={[styles.activitySubtitle, { color: colors.text + '80' }]}>Completed 10 questions</ThemedText>
-                </ThemedView>
-                <View style={[styles.activityBadge, { backgroundColor: colors.tint }]}>
-                  <ThemedText style={[styles.activityBadgeText, { color: isDarkMode ? '#000' : '#fff' }]}>New</ThemedText>
-                </View>
-              </ThemedView>
-              <ThemedView style={[styles.activityItem, { 
-                backgroundColor: isDarkMode ? '#1C1C1E' : '#F5F5F5',
-                borderRadius: 16,
-                borderBottomWidth: 0,
-                shadowColor: "#000",
-                shadowOffset: {
-                  width: 0,
-                  height: 1,
-                },
-                shadowOpacity: isDarkMode ? 0.5 : 0.1,
-                shadowRadius: 2.22,
-                elevation: 3,
-              }]}>
-                <ThemedView style={[styles.activityIcon, { 
-                  backgroundColor: isDarkMode ? 'rgba(46, 125, 50, 0.2)' : '#E8F5E9'
-                }]}>
-                  <IconSymbol name="rectangle.stack" size={24} color="#2E7D32" />
-                </ThemedView>
-                <ThemedView style={[styles.activityContent, { backgroundColor: isDarkMode ? '#1C1C1E' : '#F5F5F5' }]}>
-                  <ThemedText style={[styles.activityTitle, { color: colors.text }]}>Science Flashcards</ThemedText>
-                  <ThemedText style={[styles.activitySubtitle, { color: colors.text + '80' }]}>Reviewed 5 cards</ThemedText>
-                </ThemedView>
-                <View style={[styles.activityBadge, { backgroundColor: '#2E7D32' }]}>
-                  <ThemedText style={styles.activityBadgeText}>2h ago</ThemedText>
-                </View>
-              </ThemedView>
-              <ThemedView style={[styles.activityItem, { 
-                backgroundColor: isDarkMode ? '#1C1C1E' : '#F5F5F5',
-                borderRadius: 16,
-                borderBottomWidth: 0,
-                shadowColor: "#000",
-                shadowOffset: {
-                  width: 0,
-                  height: 1,
-                },
-                shadowOpacity: isDarkMode ? 0.5 : 0.1,
-                shadowRadius: 2.22,
-                elevation: 3,
-              }]}>
-                <ThemedView style={[styles.activityIcon, { 
-                  backgroundColor: isDarkMode ? 'rgba(25, 118, 210, 0.2)' : '#E3F2FD'
-                }]}>
-                  <IconSymbol name="message" size={24} color="#1976D2" />
-                </ThemedView>
-                <ThemedView style={[styles.activityContent, { backgroundColor: isDarkMode ? '#1C1C1E' : '#F5F5F5' }]}>
-                  <ThemedText style={[styles.activityTitle, { color: colors.text }]}>English Homework</ThemedText>
-                  <ThemedText style={[styles.activitySubtitle, { color: colors.text + '80' }]}>Asked 2 questions</ThemedText>
-                </ThemedView>
-                <View style={[styles.activityBadge, { backgroundColor: '#1976D2' }]}>
-                  <ThemedText style={styles.activityBadgeText}>5h ago</ThemedText>
-                </View>
-              </ThemedView>
-            </ThemedView>
+            )}
           </ThemedView>
+
         </ThemedView>
       </ScrollView>
     </SafeAreaView>
@@ -542,6 +512,7 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 20,
     fontWeight: '700',
+    marginBottom: 10,
   },
   seeAllButton: {
     fontSize: 14,
@@ -687,5 +658,42 @@ const styles = StyleSheet.create({
   paginationDotActive: {
     backgroundColor: '#fff',
     width: 18,
+  },
+  recentActivitySection: {
+    padding: 20,
+    marginTop: 20,
+    marginBottom: 50,
+  },
+  activityCard: {
+    padding: 16,
+    borderRadius: 12,
+    marginBottom: 12,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  activityHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  activityType: {
+    fontSize: 16,
+    fontWeight: '600',
+    marginLeft: 8,
+  },
+  activityDetails: {
+    fontSize: 14,
+    marginBottom: 4,
+  },
+  activityMeta: {
+    fontSize: 12,
+  },
+  noActivity: {
+    textAlign: 'center',
+    fontSize: 14,
+    marginTop: 20,
   },
 }); 

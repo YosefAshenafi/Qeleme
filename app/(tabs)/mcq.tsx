@@ -52,6 +52,15 @@ interface MCQData {
   grades: Grade[];
 }
 
+interface RecentActivity {
+  type: string;
+  grade: string;
+  subject: string;
+  chapter: string;
+  timestamp: number;
+  details: string;
+}
+
 const typedMcqData = mcqData as MCQData;
 
 export default function MCQScreen() {
@@ -352,12 +361,43 @@ export default function MCQScreen() {
   };
 
   const handleResult = () => {
-    if (!selectedAnswer) {
-      setShowAnswerMessage(true);
-      return;
-    }
     stopTimer();
     setShowResult(true);
+    
+    // Track activity
+    const trackActivity = async () => {
+      try {
+        const activity: RecentActivity = {
+          type: 'mcq',
+          grade: selectedGrade,
+          subject: selectedSubjectData?.name || '',
+          chapter: selectedChapterData?.name || '',
+          timestamp: Date.now(),
+          details: `Completed ${score} out of ${selectedChapterData?.questions.length || 0} questions`
+        };
+        
+        // Get existing activities
+        const existingActivities = await AsyncStorage.getItem('recentActivities');
+        let activities: RecentActivity[] = [];
+        
+        if (existingActivities) {
+          activities = JSON.parse(existingActivities);
+        }
+        
+        // Add new activity and keep only last 20
+        activities.unshift(activity);
+        if (activities.length > 20) {
+          activities = activities.slice(0, 20);
+        }
+        
+        // Save updated activities
+        await AsyncStorage.setItem('recentActivities', JSON.stringify(activities));
+      } catch (error) {
+        console.error('Error tracking activity:', error);
+      }
+    };
+    
+    trackActivity();
   };
 
   const handleRetry = () => {

@@ -50,6 +50,15 @@ interface FlashcardData {
   grades: Grade[];
 }
 
+interface RecentActivity {
+  type: string;
+  grade: string;
+  subject: string;
+  chapter: string;
+  timestamp: number;
+  details: string;
+}
+
 const typedFlashcardData = flashcardData as FlashcardData;
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
@@ -160,6 +169,43 @@ export default function FlashcardsScreen() {
         mass: 0.8,
       });
       progressAnimation.value = withTiming(((currentIndex + 2) / (selectedChapterData?.flashcards.length || 0)) * 100);
+      
+      // Track activity when reaching the end
+      if (currentIndex + 1 === (selectedChapterData?.flashcards.length || 0) - 1) {
+        const trackActivity = async () => {
+          try {
+            const activity: RecentActivity = {
+              type: 'flashcard',
+              grade: selectedGrade,
+              subject: selectedSubjectData?.name || '',
+              chapter: selectedChapterData?.name || '',
+              timestamp: Date.now(),
+              details: `Reviewed ${selectedChapterData?.flashcards.length || 0} flashcards`
+            };
+            
+            // Get existing activities
+            const existingActivities = await AsyncStorage.getItem('recentActivities');
+            let activities: RecentActivity[] = [];
+            
+            if (existingActivities) {
+              activities = JSON.parse(existingActivities);
+            }
+            
+            // Add new activity and keep only last 20
+            activities.unshift(activity);
+            if (activities.length > 20) {
+              activities = activities.slice(0, 20);
+            }
+            
+            // Save updated activities
+            await AsyncStorage.setItem('recentActivities', JSON.stringify(activities));
+          } catch (error) {
+            console.error('Error tracking activity:', error);
+          }
+        };
+        
+        trackActivity();
+      }
     }
   };
 
