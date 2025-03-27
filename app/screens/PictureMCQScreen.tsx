@@ -73,7 +73,11 @@ interface PictureMCQData {
 
 const typedPictureQuestionsData = pictureQuestionsData as PictureMCQData;
 
-export default function PictureMCQScreen() {
+interface PictureMCQScreenProps {
+  onBackToInstructions: () => void;
+}
+
+export default function PictureMCQScreen({ onBackToInstructions }: PictureMCQScreenProps) {
   const { isDarkMode } = useTheme();
   const { user } = useAuth();
   const colors = getColors(isDarkMode);
@@ -295,6 +299,17 @@ export default function PictureMCQScreen() {
     setShowResult(false);
   };
 
+  const handleGoToInstructions = () => {
+    // Reset states and go back to instruction screen
+    setCurrentQuestionIndex(0);
+    setSelectedAnswer(null);
+    setShowExplanation(false);
+    setShowResult(false);
+    setScore(0);
+    setDroppedOption(null);
+    onBackToInstructions();
+  };
+
   const getMessage = () => {
     if (percentage >= 90) return "Outstanding! You're a genius!";
     if (percentage >= 70) return "Great job! You're doing well!";
@@ -417,11 +432,19 @@ export default function PictureMCQScreen() {
               {/* Action Buttons */}
               <ThemedView style={[styles.actionButtons, { backgroundColor: colors.background }]}>
                 <TouchableOpacity
-                  style={[styles.button, { backgroundColor: colors.tint }]}
+                  style={[styles.button, styles.retryButton, { backgroundColor: colors.tint }]}
                   onPress={handleRetry}
                 >
-                  <ThemedText style={[styles.buttonText, { color: colors.background }]}>Try Again</ThemedText>
-                  <Ionicons name="repeat" size={24} color={colors.background} />
+                  <ThemedText style={[styles.retryButtonText, { color: '#fff' }]}>Try Again</ThemedText>
+                  <Ionicons name="refresh" size={24} color="#fff" />
+                </TouchableOpacity>
+                
+                <TouchableOpacity
+                  style={[styles.button, { backgroundColor: colors.cardAlt, borderColor: colors.tint, borderWidth: 2 }]}
+                  onPress={handleGoToInstructions}
+                >
+                  <ThemedText style={[styles.buttonText, { color: colors.tint }]}>Go to Instructions</ThemedText>
+                  <IconSymbol name="questionmark.circle" size={24} color={colors.tint} />
                 </TouchableOpacity>
               </ThemedView>
             </ScrollView>
@@ -835,6 +858,15 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     gap: 12,
     width: '100%',
+  },
+  retryButton: {
+    backgroundColor: 'transparent',
+    borderWidth: 2,
+    borderColor: '#6B54AE',
+  },
+  retryButtonText: {
+    fontSize: 18,
+    fontWeight: '600',
   },
   buttonText: {
     fontSize: 18,

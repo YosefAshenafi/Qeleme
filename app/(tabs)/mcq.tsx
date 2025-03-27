@@ -422,6 +422,11 @@ export default function MCQScreen() {
     setShowPictureMCQ(true);
   };
 
+  // Handle going back to instructions
+  const handleBackToInstructions = () => {
+    setShowPictureMCQ(false);
+  };
+
   // If showing picture questions, always show instruction screen first
   if (isPictureQuestions && !showPictureMCQ) {
     return <PictureMCQInstructionScreen onStart={handleStartPictureMCQ} />;
@@ -429,7 +434,7 @@ export default function MCQScreen() {
 
   // If user has clicked start, show picture MCQ screen
   if (showPictureMCQ) {
-    return <PictureMCQScreen />;
+    return <PictureMCQScreen onBackToInstructions={handleBackToInstructions} />;
   }
 
   if (showResult) {
