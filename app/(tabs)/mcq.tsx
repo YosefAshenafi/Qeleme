@@ -15,6 +15,7 @@ import { ThemedView } from '@/components/ThemedView';
 import { IconSymbol } from '@/components/ui/IconSymbol';
 import mcqData from '@/data/mcqData.json';
 import PictureMCQScreen from '../screens/PictureMCQScreen';
+import PictureMCQInstructionScreen from '../screens/PictureMCQInstructionScreen';
 
 interface Option {
   id: string;
@@ -75,6 +76,8 @@ export default function MCQScreen() {
   const [showChapterDropdown, setShowChapterDropdown] = useState(false);
   const [userPhoneNumber, setUserPhoneNumber] = useState<string | null>(null);
   const [isPictureQuestions, setIsPictureQuestions] = useState(false);
+  const [hasSeenInstructions, setHasSeenInstructions] = useState(false);
+  const [showPictureMCQ, setShowPictureMCQ] = useState(false);
   
   // Timer states
   const [time, setTime] = useState(0);
@@ -415,9 +418,38 @@ export default function MCQScreen() {
   const totalQuestions = selectedChapterData?.questions.length || 0;
   const progress = ((currentQuestionIndex + 1) / totalQuestions) * 100;
 
+  // Check if user has seen the instructions
+  useEffect(() => {
+    const checkInstructions = async () => {
+      try {
+        const seen = await AsyncStorage.getItem('hasSeenPictureMCQInstructions');
+        setHasSeenInstructions(seen === 'true');
+      } catch (error) {
+        console.error('Error checking instructions status:', error);
+      }
+    };
+    checkInstructions();
+  }, []);
+
+  // Handle starting the picture MCQ
+  const handleStartPictureMCQ = async () => {
+    try {
+      await AsyncStorage.setItem('hasSeenPictureMCQInstructions', 'true');
+      setHasSeenInstructions(true);
+      setShowPictureMCQ(true);
+    } catch (error) {
+      console.error('Error saving instructions status:', error);
+    }
+  };
+
   // If showing picture questions, render PictureMCQScreen component
-  if (isPictureQuestions) {
+  if (showPictureMCQ) {
     return <PictureMCQScreen />;
+  }
+
+  // If user hasn't seen instructions, show instruction screen
+  if (!hasSeenInstructions) {
+    return <PictureMCQInstructionScreen onStart={handleStartPictureMCQ} />;
   }
 
   if (showResult) {
