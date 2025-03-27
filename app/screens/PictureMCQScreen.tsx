@@ -684,13 +684,13 @@ const styles = StyleSheet.create({
   correctOption: {
     borderColor: '#4CAF50',
     borderWidth: 3,
-    backgroundColor: '#F1F8E9',
+    backgroundColor: 'rgba(76, 175, 80, 0.1)',
     transform: [{ scale: 1.05 }],
   },
   incorrectOption: {
-    borderColor: '#F44336',
+    borderColor: '#FF9800',
     borderWidth: 3,
-    backgroundColor: '#FFEBEE',
+    backgroundColor: 'rgba(255, 152, 0, 0.1)',
     transform: [{ scale: 1.05 }],
   },
   correctText: {
@@ -700,7 +700,7 @@ const styles = StyleSheet.create({
   incorrectText: {
     fontSize: 24,
     fontWeight: 'bold',
-    color: '#F44336',
+    color: '#FF9800',
     marginTop: 10,
   },
   explanationContainer: {
@@ -764,6 +764,8 @@ const styles = StyleSheet.create({
     shadowRadius: 12,
     overflow: 'hidden',
     marginTop: 16,
+    borderWidth: 2,
+    borderColor: '#6B54AE',
   },
   trophyContainer: {
     alignItems: 'center',
@@ -795,22 +797,28 @@ const styles = StyleSheet.create({
     borderRadius: 30,
     borderWidth: 2,
     marginBottom: 16,
+    borderColor: '#6B54AE',
+    backgroundColor: 'rgba(107, 84, 174, 0.1)',
   },
   percentageText: {
     fontSize: 24,
     fontWeight: '600',
     textAlign: 'center',
+    color: '#6B54AE',
   },
   messageContainer: {
     padding: 20,
     borderRadius: 20,
     borderWidth: 2,
+    borderColor: '#6B54AE',
+    backgroundColor: 'rgba(107, 84, 174, 0.05)',
   },
   messageText: {
     fontSize: 20,
     textAlign: 'center',
     lineHeight: 32,
     fontWeight: '600',
+    color: '#6B54AE',
   },
   actionButtons: {
     width: '100%',
@@ -849,7 +857,7 @@ const styles = StyleSheet.create({
   celebrationContent: {
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: 'rgba(255, 255, 255, 0.9)',
+    backgroundColor: 'rgba(255, 255, 255, 0.95)',
     borderRadius: 20,
     padding: 20,
     shadowColor: '#000',
@@ -857,9 +865,11 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.25,
     shadowRadius: 3.84,
     elevation: 5,
+    borderWidth: 2,
+    borderColor: '#4CAF50',
   },
   celebrationText: {
-    fontSize: 24,
+    fontSize: 28,
     fontWeight: 'bold',
     color: '#4CAF50',
     marginTop: 10,
@@ -877,7 +887,7 @@ const styles = StyleSheet.create({
   incorrectContent: {
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: 'rgba(255, 255, 255, 0.9)',
+    backgroundColor: 'rgba(255, 255, 255, 0.95)',
     borderRadius: 20,
     padding: 20,
     shadowColor: '#000',
@@ -885,6 +895,8 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.25,
     shadowRadius: 3.84,
     elevation: 5,
+    borderWidth: 2,
+    borderColor: '#FF9800',
   },
   formContainer: {
     flex: 1,

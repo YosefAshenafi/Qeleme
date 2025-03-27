@@ -76,7 +76,6 @@ export default function MCQScreen() {
   const [showChapterDropdown, setShowChapterDropdown] = useState(false);
   const [userPhoneNumber, setUserPhoneNumber] = useState<string | null>(null);
   const [isPictureQuestions, setIsPictureQuestions] = useState(false);
-  const [hasSeenInstructions, setHasSeenInstructions] = useState(false);
   const [showPictureMCQ, setShowPictureMCQ] = useState(false);
   
   // Timer states
@@ -418,38 +417,19 @@ export default function MCQScreen() {
   const totalQuestions = selectedChapterData?.questions.length || 0;
   const progress = ((currentQuestionIndex + 1) / totalQuestions) * 100;
 
-  // Check if user has seen the instructions
-  useEffect(() => {
-    const checkInstructions = async () => {
-      try {
-        const seen = await AsyncStorage.getItem('hasSeenPictureMCQInstructions');
-        setHasSeenInstructions(seen === 'true');
-      } catch (error) {
-        console.error('Error checking instructions status:', error);
-      }
-    };
-    checkInstructions();
-  }, []);
-
   // Handle starting the picture MCQ
-  const handleStartPictureMCQ = async () => {
-    try {
-      await AsyncStorage.setItem('hasSeenPictureMCQInstructions', 'true');
-      setHasSeenInstructions(true);
-      setShowPictureMCQ(true);
-    } catch (error) {
-      console.error('Error saving instructions status:', error);
-    }
+  const handleStartPictureMCQ = () => {
+    setShowPictureMCQ(true);
   };
 
-  // If showing picture questions, render PictureMCQScreen component
-  if (showPictureMCQ) {
-    return <PictureMCQScreen />;
+  // If showing picture questions, always show instruction screen first
+  if (isPictureQuestions && !showPictureMCQ) {
+    return <PictureMCQInstructionScreen onStart={handleStartPictureMCQ} />;
   }
 
-  // If user hasn't seen instructions, show instruction screen
-  if (!hasSeenInstructions) {
-    return <PictureMCQInstructionScreen onStart={handleStartPictureMCQ} />;
+  // If user has clicked start, show picture MCQ screen
+  if (showPictureMCQ) {
+    return <PictureMCQScreen />;
   }
 
   if (showResult) {
