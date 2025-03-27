@@ -13,6 +13,8 @@ import Animated, {
 import { LinearGradient } from 'expo-linear-gradient';
 import { useTheme } from '@/contexts/ThemeContext';
 import { getColors } from '@/constants/Colors';
+import { useAuth } from '@/contexts/AuthContext';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import { Header } from '@/components/Header';
 import { ThemedText } from '@/components/ThemedText';
@@ -38,8 +40,14 @@ interface Subject {
   chapters: Chapter[];
 }
 
-interface FlashcardData {
+interface Grade {
+  id: string;
+  name: string;
   subjects: Subject[];
+}
+
+interface FlashcardData {
+  grades: Grade[];
 }
 
 const typedFlashcardData = flashcardData as FlashcardData;
@@ -49,6 +57,7 @@ const CARD_WIDTH = SCREEN_WIDTH - 40;
 
 export default function FlashcardsScreen() {
   const { isDarkMode } = useTheme();
+  const { user } = useAuth();
   const colors = getColors(isDarkMode);
   
   const [selectedSubject, setSelectedSubject] = useState<string>('');
@@ -58,11 +67,28 @@ export default function FlashcardsScreen() {
   const [showSubjectDropdown, setShowSubjectDropdown] = useState(false);
   const [showChapterDropdown, setShowChapterDropdown] = useState(false);
   const [showFlashcards, setShowFlashcards] = useState(false);
+  const [userPhoneNumber, setUserPhoneNumber] = useState<string | null>(null);
+  const [selectedGrade, setSelectedGrade] = useState<string>('grade-12'); // Default to grade 12
   
   const revealAnimation = useSharedValue(0);
   const progressAnimation = useSharedValue(0);
 
-  const selectedSubjectData = typedFlashcardData.subjects.find((subject: Subject) => subject.id === selectedSubject);
+  useEffect(() => {
+    // Check phone number when component mounts
+    const checkPhoneNumber = async () => {
+      const phoneNumber = await AsyncStorage.getItem('userPhoneNumber');
+      setUserPhoneNumber(phoneNumber);
+      
+      // If phone number starts with 911, set grade to 9
+      if (phoneNumber?.startsWith('+251911')) {
+        setSelectedGrade('grade-9');
+      }
+    };
+    checkPhoneNumber();
+  }, []);
+
+  const selectedGradeData = typedFlashcardData.grades.find((grade: Grade) => grade.id === selectedGrade);
+  const selectedSubjectData = selectedGradeData?.subjects.find((subject: Subject) => subject.id === selectedSubject);
   const selectedChapterData = selectedSubjectData?.chapters.find((chapter: Chapter) => chapter.id === selectedChapter);
   const currentCard = selectedChapterData?.flashcards[currentIndex];
   const progress = ((currentIndex + 1) / (selectedChapterData?.flashcards.length || 0)) * 100;
@@ -179,7 +205,7 @@ export default function FlashcardsScreen() {
                   onPress={() => setShowSubjectDropdown(!showSubjectDropdown)}
                 >
                   <ThemedText style={[styles.formInputText, { color: colors.text }]}>
-                    {selectedSubject ? typedFlashcardData.subjects.find((s: Subject) => s.id === selectedSubject)?.name : 'Select a subject'}
+                    {selectedSubject ? selectedGradeData?.subjects.find((s: Subject) => s.id === selectedSubject)?.name : 'Select a subject'}
                   </ThemedText>
                   <IconSymbol name="chevron.right" size={20} color={colors.tint} />
                 </TouchableOpacity>
@@ -197,7 +223,7 @@ export default function FlashcardsScreen() {
                     >
                       <ThemedView style={[styles.modalContent, { backgroundColor: colors.background }]}>
                         <ScrollView>
-                          {typedFlashcardData.subjects.map((subject: Subject) => (
+                          {selectedGradeData?.subjects.map((subject: Subject) => (
                             <TouchableOpacity
                               key={subject.id}
                               style={[styles.modalItem, { backgroundColor: colors.background, borderBottomColor: colors.border }]}
@@ -284,18 +310,16 @@ export default function FlashcardsScreen() {
                 )}
               </ThemedView>
 
-              {/* Start Button */}
               <TouchableOpacity
                 style={[
                   styles.startButton,
                   { backgroundColor: colors.tint },
-                  (!selectedSubject || !selectedChapter) && styles.startButtonDisabled
+                  (!selectedSubject || !selectedChapter) && { opacity: 0.5 }
                 ]}
                 onPress={handleStartFlashcards}
                 disabled={!selectedSubject || !selectedChapter}
               >
-                <ThemedText style={[styles.startButtonText, { color: '#fff' }]}>Start Flashcards</ThemedText>
-                <IconSymbol name="chevron.right" size={24} color="#fff" />
+                <ThemedText style={styles.startButtonText}>Start Flashcards</ThemedText>
               </TouchableOpacity>
             </ThemedView>
           </ThemedView>

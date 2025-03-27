@@ -1,54 +1,162 @@
 {
-  "questions": [
+  "grades": [
     {
-      "id": 1,
-      "question": "What is this animal?",
-      "image": "lion.png",
-      "options": [
-        { "id": "A", "text": "Lion", "isCorrect": true },
-        { "id": "B", "text": "Tiger", "isCorrect": false }
-      ],
-      "explanation": "This is a lion, known as the king of the jungle."
-    },
-    {
-      "id": 2,
-      "question": "Which marine mammal is shown in the image?",
-      "image": "dolphin.png",
-      "options": [
-        { "id": "A", "text": "Shark", "isCorrect": false },
-        { "id": "B", "text": "Dolphin", "isCorrect": true },
-      ],
-      "explanation": "This is a dolphin, known for its intelligence and playful nature."
-    },
-    {
-      "id": 3,
-      "question": "Identify this bird species:",
-      "image": "penguin.png",
-      "options": [
-        { "id": "A", "text": "Penguin", "isCorrect": true },
-        { "id": "B", "text": "Puffin", "isCorrect": false }
-      ],
-      "explanation": "This is a penguin, a flightless bird adapted to life in cold waters."
-    },
-    {
-      "id": 4,
-      "question": "What species of bear is this?",
-      "image": "panda.png",
-      "options": [
-        { "id": "A", "text": "Polar Bear", "isCorrect": false },
-        { "id": "B", "text": "Giant Panda", "isCorrect": true }
-      ],
-      "explanation": "This is a Giant Panda, native to the bamboo forests of central China."
-    },
-    {
-      "id": 5,
-      "question": "Which big cat is shown here?",
-      "image": "cheetah.png",
-      "options": [
-        { "id": "A", "text": "Leopard", "isCorrect": false },
-        { "id": "B", "text": "Cheetah", "isCorrect": true },
-      ],
-      "explanation": "This is a cheetah, the fastest land animal, capable of reaching speeds up to 70 mph."
+      "id": "grade-9",
+      "name": "Grade 9",
+      "subjects": [
+        {
+          "id": "biology",
+          "name": "Biology",
+          "chapters": [
+            {
+              "id": "cell-biology",
+              "name": "Cell Biology",
+              "questions": [
+                {
+                  "id": 1,
+                  "question": "Identify the cell organelle shown in the image",
+                  "image": "https://example.com/cell-organelle.jpg",
+                  "options": [
+                    {
+                      "id": "A",
+                      "text": "Nucleus",
+                      "isCorrect": true
+                    },
+                    {
+                      "id": "B",
+                      "text": "Mitochondria",
+                      "isCorrect": false
+                    },
+                    {
+                      "id": "C",
+                      "text": "Golgi Apparatus",
+                      "isCorrect": false
+                    },
+                    {
+                      "id": "D",
+                      "text": "Endoplasmic Reticulum",
+                      "isCorrect": false
+                    }
+                  ],
+                  "explanation": "The image shows a nucleus, which is the control center of the cell containing DNA."
+                },
+                {
+                  "id": 2,
+                  "question": "Which cell structure is shown in this image?",
+                  "image": "https://example.com/mitochondria.jpg",
+                  "options": [
+                    {
+                      "id": "A",
+                      "text": "Nucleus",
+                      "isCorrect": false
+                    },
+                    {
+                      "id": "B",
+                      "text": "Mitochondria",
+                      "isCorrect": true
+                    },
+                    {
+                      "id": "C",
+                      "text": "Ribosomes",
+                      "isCorrect": false
+                    },
+                    {
+                      "id": "D",
+                      "text": "Lysosomes",
+                      "isCorrect": false
+                    }
+                  ],
+                  "explanation": "This is a mitochondria, the powerhouse of the cell responsible for energy production."
+                },
+                {
+                  "id": 3,
+                  "question": "What cell structure is depicted in this image?",
+                  "image": "https://example.com/endoplasmic-reticulum.jpg",
+                  "options": [
+                    {
+                      "id": "A",
+                      "text": "Golgi Apparatus",
+                      "isCorrect": false
+                    },
+                    {
+                      "id": "B",
+                      "text": "Endoplasmic Reticulum",
+                      "isCorrect": true
+                    },
+                    {
+                      "id": "C",
+                      "text": "Nucleus",
+                      "isCorrect": false
+                    },
+                    {
+                      "id": "D",
+                      "text": "Vacuole",
+                      "isCorrect": false
+                    }
+                  ],
+                  "explanation": "This is the endoplasmic reticulum, involved in protein synthesis and transport."
+                },
+                {
+                  "id": 4,
+                  "question": "Identify the cell structure shown in this image",
+                  "image": "https://example.com/golgi-apparatus.jpg",
+                  "options": [
+                    {
+                      "id": "A",
+                      "text": "Endoplasmic Reticulum",
+                      "isCorrect": false
+                    },
+                    {
+                      "id": "B",
+                      "text": "Golgi Apparatus",
+                      "isCorrect": true
+                    },
+                    {
+                      "id": "C",
+                      "text": "Lysosome",
+                      "isCorrect": false
+                    },
+                    {
+                      "id": "D",
+                      "text": "Vacuole",
+                      "isCorrect": false
+                    }
+                  ],
+                  "explanation": "This is the Golgi apparatus, responsible for modifying and packaging proteins."
+                },
+                {
+                  "id": 5,
+                  "question": "What cell structure is shown in this image?",
+                  "image": "https://example.com/lysosome.jpg",
+                  "options": [
+                    {
+                      "id": "A",
+                      "text": "Golgi Apparatus",
+                      "isCorrect": false
+                    },
+                    {
+                      "id": "B",
+                      "text": "Lysosome",
+                      "isCorrect": true
+                    },
+                    {
+                      "id": "C",
+                      "text": "Vacuole",
+                      "isCorrect": false
+                    },
+                    {
+                      "id": "D",
+                      "text": "Ribosome",
+                      "isCorrect": false
+                    }
+                  ],
+                  "explanation": "This is a lysosome, containing digestive enzymes for breaking down waste materials."
+                }
+              ]
+            }
+          ]
+        }
+      ]
     }
   ]
 } 

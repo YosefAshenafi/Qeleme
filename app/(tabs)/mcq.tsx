@@ -7,6 +7,7 @@ import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useTheme } from '@/contexts/ThemeContext';
 import { getColors } from '@/constants/Colors';
+import { useAuth } from '@/contexts/AuthContext';
 
 import { Header } from '@/components/Header';
 import { ThemedText } from '@/components/ThemedText';
@@ -40,16 +41,24 @@ interface Subject {
   chapters: Chapter[];
 }
 
-interface MCQData {
+interface Grade {
+  id: string;
+  name: string;
   subjects: Subject[];
+}
+
+interface MCQData {
+  grades: Grade[];
 }
 
 const typedMcqData = mcqData as MCQData;
 
 export default function MCQScreen() {
   const { isDarkMode } = useTheme();
+  const { user } = useAuth();
   const colors = getColors(isDarkMode);
   const params = useLocalSearchParams();
+  const [selectedGrade, setSelectedGrade] = useState<string>('grade-12'); // Default to grade 12
   const [selectedSubject, setSelectedSubject] = useState('');
   const [selectedChapter, setSelectedChapter] = useState('');
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
@@ -64,12 +73,14 @@ export default function MCQScreen() {
   const [showTest, setShowTest] = useState(false);
   const [showSubjectDropdown, setShowSubjectDropdown] = useState(false);
   const [showChapterDropdown, setShowChapterDropdown] = useState(false);
+  const [userPhoneNumber, setUserPhoneNumber] = useState<string | null>(null);
+  const [isPictureQuestions, setIsPictureQuestions] = useState(false);
   
   // Timer states
   const [time, setTime] = useState(0);
   const [isTimerRunning, setIsTimerRunning] = useState(false);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
-  
+
   // Animation refs for result screen
   const scaleAnim = useRef(new Animated.Value(0)).current;
   const rotateAnim = useRef(new Animated.Value(0)).current;
@@ -82,10 +93,8 @@ export default function MCQScreen() {
     rotate: new Animated.Value(0),
   }))).current;
 
-  const [userPhoneNumber, setUserPhoneNumber] = useState<string | null>(null);
-  const [isPictureQuestions, setIsPictureQuestions] = useState(false);
-
-  const selectedSubjectData = typedMcqData.subjects.find((subject: Subject) => subject.id === selectedSubject);
+  const selectedGradeData = typedMcqData.grades.find((grade: Grade) => grade.id === selectedGrade);
+  const selectedSubjectData = selectedGradeData?.subjects.find((subject: Subject) => subject.id === selectedSubject);
   const selectedChapterData = selectedSubjectData?.chapters.find((chapter: Chapter) => chapter.id === selectedChapter);
   const currentQuestion = selectedChapterData?.questions[currentQuestionIndex];
   const isLastQuestion = currentQuestionIndex === (selectedChapterData?.questions.length || 0) - 1;
@@ -116,6 +125,7 @@ export default function MCQScreen() {
   useFocusEffect(
     React.useCallback(() => {
       // Reset states when tab is focused
+      setSelectedGrade('grade-12');
       setSelectedSubject('');
       setSelectedChapter('');
       setCurrentQuestionIndex(0);
@@ -142,6 +152,11 @@ export default function MCQScreen() {
       const phoneNumber = await AsyncStorage.getItem('userPhoneNumber');
       setUserPhoneNumber(phoneNumber);
       
+      // If phone number starts with 911, set grade to 9
+      if (phoneNumber?.startsWith('+251911')) {
+        setSelectedGrade('grade-9');
+      }
+      
       // If phone number starts with 911, show picture questions
       if (phoneNumber?.startsWith('+251911')) {
         setIsPictureQuestions(true);
@@ -153,6 +168,7 @@ export default function MCQScreen() {
   useEffect(() => {
     // Handle reset parameters
     if (params.reset === 'true') {
+      setSelectedGrade('grade-12');
       setSelectedSubject('');
       setSelectedChapter('');
       setCurrentQuestionIndex(0);
@@ -356,7 +372,7 @@ export default function MCQScreen() {
   };
 
   const handleStartTest = () => {
-    if (!selectedSubject || !selectedChapter) return;
+    if (!selectedGrade || !selectedSubject || !selectedChapter) return;
     setShowTest(true);
     setCurrentQuestionIndex(0);
     setSelectedAnswer(null);
@@ -496,6 +512,7 @@ export default function MCQScreen() {
               onPress={() => {
                 setShowResult(false);
                 setShowTest(false);
+                setSelectedGrade('grade-12');
                 setSelectedSubject('');
                 setSelectedChapter('');
               }}
@@ -511,7 +528,7 @@ export default function MCQScreen() {
   if (!showTest) {
     return (
       <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]}>
-        <Header title="MCQ Questions" />
+        <Header title="Multiple Choice Questions" />
         <ThemedView style={[styles.container, { backgroundColor: colors.background }]}>
           <ThemedView style={[styles.formContainer, { backgroundColor: colors.background }]}>
             <ThemedText style={[styles.formTitle, { color: colors.tint }]}>Select Subject and Chapter</ThemedText>
@@ -524,8 +541,8 @@ export default function MCQScreen() {
                   style={[styles.formInput, { backgroundColor: colors.cardAlt, borderColor: colors.border }]}
                   onPress={() => setShowSubjectDropdown(!showSubjectDropdown)}
                 >
-                  <ThemedText style={[styles.formInputText, { color: colors.tint }]}>
-                    {selectedSubject ? typedMcqData.subjects.find((s: Subject) => s.id === selectedSubject)?.name : 'Select a subject'}
+                  <ThemedText style={[styles.formInputText, { color: colors.text }]}>
+                    {selectedSubject ? selectedGradeData?.subjects.find((s: Subject) => s.id === selectedSubject)?.name : 'Select a subject'}
                   </ThemedText>
                   <IconSymbol name="chevron.right" size={20} color={colors.tint} />
                 </TouchableOpacity>
@@ -537,13 +554,13 @@ export default function MCQScreen() {
                     onRequestClose={() => setShowSubjectDropdown(false)}
                   >
                     <TouchableOpacity
-                      style={[styles.modalOverlay, { backgroundColor: colors.background }]}
+                      style={[styles.modalOverlay, { backgroundColor: 'rgba(0, 0, 0, 0.5)' }]}
                       activeOpacity={1}
                       onPress={() => setShowSubjectDropdown(false)}
                     >
                       <ThemedView style={[styles.modalContent, { backgroundColor: colors.background }]}>
                         <ScrollView>
-                          {typedMcqData.subjects.map((subject: Subject) => (
+                          {selectedGradeData?.subjects.map((subject: Subject) => (
                             <TouchableOpacity
                               key={subject.id}
                               style={[styles.modalItem, { backgroundColor: colors.background, borderBottomColor: colors.border }]}
@@ -553,7 +570,7 @@ export default function MCQScreen() {
                                 setShowSubjectDropdown(false);
                               }}
                             >
-                              <ThemedText style={[styles.modalItemText, { color: colors.tint }]}>{subject.name}</ThemedText>
+                              <ThemedText style={[styles.modalItemText, { color: colors.text }]}>{subject.name}</ThemedText>
                               <IconSymbol name="chevron.right" size={20} color={colors.tint} />
                             </TouchableOpacity>
                           ))}
@@ -568,14 +585,33 @@ export default function MCQScreen() {
               <ThemedView style={[styles.formGroup, { backgroundColor: colors.background }]}>
                 <ThemedText style={[styles.formLabel, { color: colors.tint }]}>Chapter</ThemedText>
                 <TouchableOpacity
-                  style={[styles.formInput, { backgroundColor: colors.cardAlt, borderColor: colors.border }, !selectedSubject && styles.formInputDisabled]}
+                  style={[
+                    styles.formInput,
+                    { backgroundColor: colors.cardAlt, borderColor: colors.border },
+                    !selectedSubject && { 
+                      backgroundColor: isDarkMode ? 'rgba(0, 0, 0, 0.3)' : 'rgba(0, 0, 0, 0.05)',
+                      borderColor: isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'
+                    }
+                  ]}
                   onPress={() => selectedSubject && setShowChapterDropdown(!showChapterDropdown)}
                   disabled={!selectedSubject}
                 >
-                  <ThemedText style={[styles.formInputText, { color: colors.tint }, !selectedSubject && styles.formInputTextDisabled]}>
+                  <ThemedText 
+                    style={[
+                      styles.formInputText, 
+                      { color: colors.text }, 
+                      !selectedSubject && { 
+                        color: isDarkMode ? 'rgba(255, 255, 255, 0.3)' : 'rgba(0, 0, 0, 0.3)'
+                      }
+                    ]}
+                  >
                     {selectedChapter ? selectedSubjectData?.chapters.find((c: Chapter) => c.id === selectedChapter)?.name : 'Select a chapter'}
                   </ThemedText>
-                  <IconSymbol name="chevron.right" size={20} color={colors.tint} />
+                  <IconSymbol 
+                    name="chevron.right" 
+                    size={20} 
+                    color={!selectedSubject ? (isDarkMode ? 'rgba(255, 255, 255, 0.3)' : 'rgba(0, 0, 0, 0.3)') : colors.tint} 
+                  />
                 </TouchableOpacity>
                 {showChapterDropdown && selectedSubject && (
                   <Modal
@@ -585,7 +621,7 @@ export default function MCQScreen() {
                     onRequestClose={() => setShowChapterDropdown(false)}
                   >
                     <TouchableOpacity
-                      style={[styles.modalOverlay, { backgroundColor: colors.background }]}
+                      style={[styles.modalOverlay, { backgroundColor: 'rgba(0, 0, 0, 0.5)' }]}
                       activeOpacity={1}
                       onPress={() => setShowChapterDropdown(false)}
                     >
@@ -600,7 +636,7 @@ export default function MCQScreen() {
                                 setShowChapterDropdown(false);
                               }}
                             >
-                              <ThemedText style={[styles.modalItemText, { color: colors.tint }]}>{chapter.name}</ThemedText>
+                              <ThemedText style={[styles.modalItemText, { color: colors.text }]}>{chapter.name}</ThemedText>
                               <IconSymbol name="chevron.right" size={20} color={colors.tint} />
                             </TouchableOpacity>
                           ))}
@@ -611,14 +647,16 @@ export default function MCQScreen() {
                 )}
               </ThemedView>
 
-              {/* Start Test Button */}
               <TouchableOpacity
-                style={[styles.startButton, { backgroundColor: colors.tint }, (!selectedSubject || !selectedChapter) && styles.startButtonDisabled]}
+                style={[
+                  styles.startButton,
+                  { backgroundColor: colors.tint },
+                  (!selectedSubject || !selectedChapter) && { opacity: 0.5 }
+                ]}
                 onPress={handleStartTest}
                 disabled={!selectedSubject || !selectedChapter}
               >
-                <ThemedText style={[styles.startButtonText, { color: '#fff' }]}>Start Test</ThemedText>
-                <IconSymbol name="chevron.right" size={24} color="#fff" />
+                <ThemedText style={styles.startButtonText}>Start Quiz</ThemedText>
               </TouchableOpacity>
             </ThemedView>
           </ThemedView>
@@ -637,15 +675,25 @@ export default function MCQScreen() {
                 <View style={[styles.breadcrumbContainer, { backgroundColor: colors.cardAlt }]}>
                   <View style={[styles.breadcrumbItem, { backgroundColor: colors.background, borderColor: colors.border }]}>
                     <ThemedText style={[styles.breadcrumbText, { color: colors.tint }]}>
-                      {selectedSubjectData?.name || 'Select Subject'}
+                      {selectedGrade ? typedMcqData.grades.find((g: Grade) => g.id === selectedGrade)?.name : 'Select Grade'}
                     </ThemedText>
                   </View>
+                  {selectedGrade && (
+                    <>
+                      <IconSymbol name="chevron.right" size={16} color={colors.tint} />
+                      <View style={[styles.breadcrumbItem, { backgroundColor: colors.background, borderColor: colors.border }]}>
+                        <ThemedText style={[styles.breadcrumbText, { color: colors.tint }]}>
+                          {selectedSubject ? selectedGradeData?.subjects.find((s: Subject) => s.id === selectedSubject)?.name : 'Select Subject'}
+                        </ThemedText>
+                      </View>
+                    </>
+                  )}
                   {selectedSubject && (
                     <>
                       <IconSymbol name="chevron.right" size={16} color={colors.tint} />
                       <View style={[styles.breadcrumbItem, { backgroundColor: colors.background, borderColor: colors.border }]}>
                         <ThemedText style={[styles.breadcrumbText, { color: colors.tint }]}>
-                          {selectedChapterData?.name || 'Select Chapter'}
+                          {selectedChapter ? selectedSubjectData?.chapters.find((c: Chapter) => c.id === selectedChapter)?.name : 'Select Chapter'}
                         </ThemedText>
                       </View>
                     </>
@@ -786,6 +834,7 @@ export default function MCQScreen() {
                   onPress={() => {
                     setShowResult(false);
                     setShowTest(false);
+                    setSelectedGrade('grade-12');
                     setSelectedSubject('');
                     setSelectedChapter('');
                   }}

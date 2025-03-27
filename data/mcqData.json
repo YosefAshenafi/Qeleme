@@ -1,268 +1,441 @@
 {
-  "subjects": [
+  "grades": [
     {
-      "id": "biology",
-      "name": "Biology",
-      "chapters": [
+      "id": "grade-12",
+      "name": "Grade 12",
+      "subjects": [
         {
-          "id": "enzymes",
-          "name": "Enzymes",
-          "questions": [
+          "id": "biology",
+          "name": "Biology",
+          "chapters": [
             {
-              "id": 1,
-              "question": "What is the primary function of enzymes in biological systems?",
-              "options": [
-                { "id": "A", "text": "To provide energy", "isCorrect": false },
-                { "id": "B", "text": "To speed up chemical reactions", "isCorrect": true },
-                { "id": "C", "text": "To store genetic information", "isCorrect": false },
-                { "id": "D", "text": "To transport molecules", "isCorrect": false }
-              ],
-              "explanation": "Enzymes are biological catalysts that speed up chemical reactions in living organisms."
+              "id": "cell-biology",
+              "name": "Cell Biology",
+              "questions": [
+                {
+                  "id": 1,
+                  "question": "What is the primary function of the cell membrane?",
+                  "options": [
+                    {
+                      "id": "A",
+                      "text": "Protein synthesis",
+                      "isCorrect": false
+                    },
+                    {
+                      "id": "B",
+                      "text": "Energy production",
+                      "isCorrect": false
+                    },
+                    {
+                      "id": "C",
+                      "text": "Regulating substance movement",
+                      "isCorrect": true
+                    },
+                    {
+                      "id": "D",
+                      "text": "DNA replication",
+                      "isCorrect": false
+                    }
+                  ],
+                  "explanation": "The cell membrane's primary function is to regulate the movement of substances in and out of the cell, maintaining homeostasis."
+                },
+                {
+                  "id": 2,
+                  "question": "Which organelle is responsible for protein synthesis?",
+                  "options": [
+                    {
+                      "id": "A",
+                      "text": "Golgi apparatus",
+                      "isCorrect": false
+                    },
+                    {
+                      "id": "B",
+                      "text": "Ribosomes",
+                      "isCorrect": true
+                    },
+                    {
+                      "id": "C",
+                      "text": "Lysosomes",
+                      "isCorrect": false
+                    },
+                    {
+                      "id": "D",
+                      "text": "Vacuoles",
+                      "isCorrect": false
+                    }
+                  ],
+                  "explanation": "Ribosomes are the organelles responsible for protein synthesis in the cell."
+                },
+                {
+                  "id": 3,
+                  "question": "What is the main function of mitochondria?",
+                  "options": [
+                    {
+                      "id": "A",
+                      "text": "Protein synthesis",
+                      "isCorrect": false
+                    },
+                    {
+                      "id": "B",
+                      "text": "ATP production",
+                      "isCorrect": true
+                    },
+                    {
+                      "id": "C",
+                      "text": "DNA storage",
+                      "isCorrect": false
+                    },
+                    {
+                      "id": "D",
+                      "text": "Waste disposal",
+                      "isCorrect": false
+                    }
+                  ],
+                  "explanation": "Mitochondria are the powerhouses of the cell, responsible for producing ATP through cellular respiration."
+                },
+                {
+                  "id": 4,
+                  "question": "Which of the following is a function of the endoplasmic reticulum?",
+                  "options": [
+                    {
+                      "id": "A",
+                      "text": "ATP synthesis",
+                      "isCorrect": false
+                    },
+                    {
+                      "id": "B",
+                      "text": "Protein modification",
+                      "isCorrect": true
+                    },
+                    {
+                      "id": "C",
+                      "text": "DNA replication",
+                      "isCorrect": false
+                    },
+                    {
+                      "id": "D",
+                      "text": "Cell division",
+                      "isCorrect": false
+                    }
+                  ],
+                  "explanation": "The ER is involved in protein synthesis, modification, and transport within the cell."
+                },
+                {
+                  "id": 5,
+                  "question": "What is the function of lysosomes?",
+                  "options": [
+                    {
+                      "id": "A",
+                      "text": "Protein synthesis",
+                      "isCorrect": false
+                    },
+                    {
+                      "id": "B",
+                      "text": "Energy production",
+                      "isCorrect": false
+                    },
+                    {
+                      "id": "C",
+                      "text": "Waste digestion",
+                      "isCorrect": true
+                    },
+                    {
+                      "id": "D",
+                      "text": "DNA storage",
+                      "isCorrect": false
+                    }
+                  ],
+                  "explanation": "Lysosomes contain digestive enzymes and are responsible for breaking down waste materials and cellular debris."
+                }
+              ]
             },
             {
-              "id": 2,
-              "question": "What is the active site of an enzyme?",
-              "options": [
-                { "id": "A", "text": "The region where the enzyme is produced", "isCorrect": false },
-                { "id": "B", "text": "The region where the substrate binds", "isCorrect": true },
-                { "id": "C", "text": "The region where ATP is stored", "isCorrect": false },
-                { "id": "D", "text": "The region where DNA is located", "isCorrect": false }
-              ],
-              "explanation": "The active site is the specific region of an enzyme where the substrate binds and the chemical reaction occurs."
-            },
-            {
-              "id": 3,
-              "question": "What happens to an enzyme when it is denatured?",
-              "options": [
-                { "id": "A", "text": "It becomes more active", "isCorrect": false },
-                { "id": "B", "text": "It loses its shape and function", "isCorrect": true },
-                { "id": "C", "text": "It produces more products", "isCorrect": false },
-                { "id": "D", "text": "It becomes more stable", "isCorrect": false }
-              ],
-              "explanation": "Denaturation causes the enzyme to lose its three-dimensional structure, which is essential for its function."
-            },
-            {
-              "id": 4,
-              "question": "What is the optimal pH for most enzymes in the human body?",
-              "options": [
-                { "id": "A", "text": "pH 2", "isCorrect": false },
-                { "id": "B", "text": "pH 7", "isCorrect": true },
-                { "id": "C", "text": "pH 12", "isCorrect": false },
-                { "id": "D", "text": "pH 14", "isCorrect": false }
-              ],
-              "explanation": "Most enzymes in the human body work best at neutral pH (around 7)."
-            },
-            {
-              "id": 5,
-              "question": "What is enzyme specificity?",
-              "options": [
-                { "id": "A", "text": "The ability to work at any temperature", "isCorrect": false },
-                { "id": "B", "text": "The ability to catalyze only one specific reaction", "isCorrect": true },
-                { "id": "C", "text": "The ability to work with any substrate", "isCorrect": false },
-                { "id": "D", "text": "The ability to work at any pH", "isCorrect": false }
-              ],
-              "explanation": "Enzyme specificity refers to the ability of an enzyme to catalyze only one specific reaction with a specific substrate."
+              "id": "genetics",
+              "name": "Genetics",
+              "questions": [
+                {
+                  "id": 6,
+                  "question": "What is the process of DNA replication?",
+                  "options": [
+                    {
+                      "id": "A",
+                      "text": "Creating new DNA from RNA",
+                      "isCorrect": false
+                    },
+                    {
+                      "id": "B",
+                      "text": "Making an identical copy of DNA",
+                      "isCorrect": true
+                    },
+                    {
+                      "id": "C",
+                      "text": "Converting DNA to protein",
+                      "isCorrect": false
+                    },
+                    {
+                      "id": "D",
+                      "text": "Breaking down DNA",
+                      "isCorrect": false
+                    }
+                  ],
+                  "explanation": "DNA replication is the process by which a cell makes an identical copy of its DNA before cell division."
+                },
+                {
+                  "id": 7,
+                  "question": "What is the difference between transcription and translation?",
+                  "options": [
+                    {
+                      "id": "A",
+                      "text": "Transcription makes RNA, translation makes DNA",
+                      "isCorrect": false
+                    },
+                    {
+                      "id": "B",
+                      "text": "Transcription makes DNA, translation makes RNA",
+                      "isCorrect": false
+                    },
+                    {
+                      "id": "C",
+                      "text": "Transcription makes RNA, translation makes protein",
+                      "isCorrect": true
+                    },
+                    {
+                      "id": "D",
+                      "text": "Transcription makes protein, translation makes RNA",
+                      "isCorrect": false
+                    }
+                  ],
+                  "explanation": "Transcription converts DNA into RNA, while translation converts RNA into protein."
+                },
+                {
+                  "id": 8,
+                  "question": "What is a mutation?",
+                  "options": [
+                    {
+                      "id": "A",
+                      "text": "A change in RNA sequence",
+                      "isCorrect": false
+                    },
+                    {
+                      "id": "B",
+                      "text": "A change in DNA sequence",
+                      "isCorrect": true
+                    },
+                    {
+                      "id": "C",
+                      "text": "A change in protein structure",
+                      "isCorrect": false
+                    },
+                    {
+                      "id": "D",
+                      "text": "A change in cell shape",
+                      "isCorrect": false
+                    }
+                  ],
+                  "explanation": "A mutation is a change in the DNA sequence that can affect protein synthesis and function."
+                },
+                {
+                  "id": 9,
+                  "question": "What is the role of tRNA in protein synthesis?",
+                  "options": [
+                    {
+                      "id": "A",
+                      "text": "Carrying amino acids to ribosomes",
+                      "isCorrect": true
+                    },
+                    {
+                      "id": "B",
+                      "text": "Making DNA copies",
+                      "isCorrect": false
+                    },
+                    {
+                      "id": "C",
+                      "text": "Breaking down proteins",
+                      "isCorrect": false
+                    },
+                    {
+                      "id": "D",
+                      "text": "Storing genetic information",
+                      "isCorrect": false
+                    }
+                  ],
+                  "explanation": "tRNA carries amino acids to the ribosome and matches them with the correct codons on mRNA."
+                },
+                {
+                  "id": 10,
+                  "question": "What is the genetic code?",
+                  "options": [
+                    {
+                      "id": "A",
+                      "text": "The sequence of DNA bases",
+                      "isCorrect": false
+                    },
+                    {
+                      "id": "B",
+                      "text": "The sequence of RNA bases",
+                      "isCorrect": false
+                    },
+                    {
+                      "id": "C",
+                      "text": "The relationship between codons and amino acids",
+                      "isCorrect": true
+                    },
+                    {
+                      "id": "D",
+                      "text": "The structure of chromosomes",
+                      "isCorrect": false
+                    }
+                  ],
+                  "explanation": "The genetic code is the set of rules by which information encoded in DNA or RNA is translated into proteins."
+                }
+              ]
             }
           ]
-        }
-      ]
-    },
-    {
-      "id": "chemistry",
-      "name": "Chemistry",
-      "chapters": [
+        },
         {
-          "id": "organic",
-          "name": "Organic Compounds",
-          "questions": [
+          "id": "chemistry",
+          "name": "Chemistry",
+          "chapters": [
             {
-              "id": 1,
-              "question": "What is the general formula for alkanes?",
-              "options": [
-                { "id": "A", "text": "CnH2n", "isCorrect": false },
-                { "id": "B", "text": "CnH2n+2", "isCorrect": true },
-                { "id": "C", "text": "CnH2n-2", "isCorrect": false },
-                { "id": "D", "text": "CnH2n+1", "isCorrect": false }
-              ],
-              "explanation": "Alkanes follow the general formula CnH2n+2, where n is the number of carbon atoms."
-            },
-            {
-              "id": 2,
-              "question": "What is the functional group of alcohols?",
-              "options": [
-                { "id": "A", "text": "-COOH", "isCorrect": false },
-                { "id": "B", "text": "-OH", "isCorrect": true },
-                { "id": "C", "text": "-CHO", "isCorrect": false },
-                { "id": "D", "text": "-NH2", "isCorrect": false }
-              ],
-              "explanation": "Alcohols contain the hydroxyl functional group (-OH)."
-            },
-            {
-              "id": 3,
-              "question": "What type of bond is formed between carbon atoms in alkenes?",
-              "options": [
-                { "id": "A", "text": "Single bond", "isCorrect": false },
-                { "id": "B", "text": "Double bond", "isCorrect": true },
-                { "id": "C", "text": "Triple bond", "isCorrect": false },
-                { "id": "D", "text": "Ionic bond", "isCorrect": false }
-              ],
-              "explanation": "Alkenes contain at least one double bond between carbon atoms."
-            },
-            {
-              "id": 4,
-              "question": "What is the name of the process that converts alkenes to alkanes?",
-              "options": [
-                { "id": "A", "text": "Hydrolysis", "isCorrect": false },
-                { "id": "B", "text": "Hydrogenation", "isCorrect": true },
-                { "id": "C", "text": "Dehydration", "isCorrect": false },
-                { "id": "D", "text": "Oxidation", "isCorrect": false }
-              ],
-              "explanation": "Hydrogenation is the process of adding hydrogen to convert alkenes to alkanes."
-            },
-            {
-              "id": 5,
-              "question": "What is the functional group of carboxylic acids?",
-              "options": [
-                { "id": "A", "text": "-OH", "isCorrect": false },
-                { "id": "B", "text": "-COOH", "isCorrect": true },
-                { "id": "C", "text": "-CHO", "isCorrect": false },
-                { "id": "D", "text": "-NH2", "isCorrect": false }
-              ],
-              "explanation": "Carboxylic acids contain the carboxyl functional group (-COOH)."
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "id": "physics",
-      "name": "Physics",
-      "chapters": [
-        {
-          "id": "mechanics",
-          "name": "Mechanics",
-          "questions": [
-            {
-              "id": 1,
-              "question": "What is Newton's First Law of Motion?",
-              "options": [
-                { "id": "A", "text": "Force equals mass times acceleration", "isCorrect": false },
-                { "id": "B", "text": "An object at rest stays at rest, and an object in motion stays in motion", "isCorrect": true },
-                { "id": "C", "text": "For every action, there is an equal and opposite reaction", "isCorrect": false },
-                { "id": "D", "text": "Energy cannot be created or destroyed", "isCorrect": false }
-              ],
-              "explanation": "Newton's First Law states that an object will remain at rest or in uniform motion in a straight line unless acted upon by an external force."
-            },
-            {
-              "id": 2,
-              "question": "What is the SI unit of force?",
-              "options": [
-                { "id": "A", "text": "Watt", "isCorrect": false },
-                { "id": "B", "text": "Newton", "isCorrect": true },
-                { "id": "C", "text": "Joule", "isCorrect": false },
-                { "id": "D", "text": "Pascal", "isCorrect": false }
-              ],
-              "explanation": "The SI unit of force is the Newton (N), named after Sir Isaac Newton."
-            },
-            {
-              "id": 3,
-              "question": "What is the formula for calculating kinetic energy?",
-              "options": [
-                { "id": "A", "text": "KE = mv", "isCorrect": false },
-                { "id": "B", "text": "KE = ½mv²", "isCorrect": true },
-                { "id": "C", "text": "KE = mgh", "isCorrect": false },
-                { "id": "D", "text": "KE = Fd", "isCorrect": false }
-              ],
-              "explanation": "The formula for kinetic energy is KE = ½mv², where m is mass and v is velocity."
-            },
-            {
-              "id": 4,
-              "question": "What is the acceleration due to gravity on Earth?",
-              "options": [
-                { "id": "A", "text": "7.8 m/s²", "isCorrect": false },
-                { "id": "B", "text": "9.8 m/s²", "isCorrect": true },
-                { "id": "C", "text": "10.2 m/s²", "isCorrect": false },
-                { "id": "D", "text": "8.9 m/s²", "isCorrect": false }
-              ],
-              "explanation": "The standard acceleration due to gravity on Earth is approximately 9.8 m/s²."
-            },
-            {
-              "id": 5,
-              "question": "What is the principle of conservation of energy?",
-              "options": [
-                { "id": "A", "text": "Energy can be created but not destroyed", "isCorrect": false },
-                { "id": "B", "text": "Energy cannot be created or destroyed, only transformed", "isCorrect": true },
-                { "id": "C", "text": "Energy can be destroyed but not created", "isCorrect": false },
-                { "id": "D", "text": "Energy is always increasing", "isCorrect": false }
-              ],
-              "explanation": "The principle of conservation of energy states that energy cannot be created or destroyed, only transformed from one form to another."
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "id": "english",
-      "name": "English",
-      "chapters": [
-        {
-          "id": "grammar",
-          "name": "Grammar and Literature",
-          "questions": [
-            {
-              "id": 1,
-              "question": "Which of the following is a correct example of a complex sentence?",
-              "options": [
-                { "id": "A", "text": "I went to the store and bought milk.", "isCorrect": false },
-                { "id": "B", "text": "Although it was raining, we went for a walk.", "isCorrect": true },
-                { "id": "C", "text": "The cat sat on the mat.", "isCorrect": false },
-                { "id": "D", "text": "She ran fast and won the race.", "isCorrect": false }
-              ],
-              "explanation": "A complex sentence contains one independent clause and at least one dependent clause. 'Although it was raining' is the dependent clause, and 'we went for a walk' is the independent clause."
-            },
-            {
-              "id": 2,
-              "question": "What is the literary device used in the phrase 'The wind whispered through the trees'?",
-              "options": [
-                { "id": "A", "text": "Simile", "isCorrect": false },
-                { "id": "B", "text": "Personification", "isCorrect": true },
-                { "id": "C", "text": "Metaphor", "isCorrect": false },
-                { "id": "D", "text": "Hyperbole", "isCorrect": false }
-              ],
-              "explanation": "Personification is the attribution of human characteristics to non-human things. In this case, the wind is given the human ability to whisper."
-            },
-            {
-              "id": 3,
-              "question": "Which of these sentences uses the correct form of 'their', 'there', or 'they're'?",
-              "options": [
-                { "id": "A", "text": "Their going to the park.", "isCorrect": false },
-                { "id": "B", "text": "There going to the park.", "isCorrect": false },
-                { "id": "C", "text": "They're going to the park.", "isCorrect": true },
-                { "id": "D", "text": "Their going to the park.", "isCorrect": false }
-              ],
-              "explanation": "'They're' is the contraction of 'they are', which is the correct form to use in this sentence."
-            },
-            {
-              "id": 4,
-              "question": "What is the main theme of William Shakespeare's 'Romeo and Juliet'?",
-              "options": [
-                { "id": "A", "text": "The power of friendship", "isCorrect": false },
-                { "id": "B", "text": "The destructive nature of love", "isCorrect": true },
-                { "id": "C", "text": "The importance of family business", "isCorrect": false },
-                { "id": "D", "text": "The value of education", "isCorrect": false }
-              ],
-              "explanation": "The main theme of 'Romeo and Juliet' is the destructive nature of love, as the intense passion between the two lovers leads to their tragic deaths."
-            },
-            {
-              "id": 5,
-              "question": "Which of these is an example of a prepositional phrase?",
-              "options": [
-                { "id": "A", "text": "The cat sat", "isCorrect": false },
-                { "id": "B", "text": "Under the bridge", "isCorrect": true },
-                { "id": "C", "text": "Running quickly", "isCorrect": false },
-                { "id": "D", "text": "Beautiful sunset", "isCorrect": false }
-              ],
-              "explanation": "A prepositional phrase begins with a preposition and ends with a noun or pronoun. 'Under the bridge' starts with the preposition 'under' and ends with the noun 'bridge'."
+              "id": "organic-chemistry",
+              "name": "Organic Chemistry",
+              "questions": [
+                {
+                  "id": 11,
+                  "question": "What is the general formula for alkanes?",
+                  "options": [
+                    {
+                      "id": "A",
+                      "text": "CnH2n",
+                      "isCorrect": false
+                    },
+                    {
+                      "id": "B",
+                      "text": "CnH2n+2",
+                      "isCorrect": true
+                    },
+                    {
+                      "id": "C",
+                      "text": "CnH2n-2",
+                      "isCorrect": false
+                    },
+                    {
+                      "id": "D",
+                      "text": "CnH2n+1",
+                      "isCorrect": false
+                    }
+                  ],
+                  "explanation": "The general formula for alkanes is CnH2n+2, where n is the number of carbon atoms."
+                },
+                {
+                  "id": 12,
+                  "question": "Which functional group is characteristic of alcohols?",
+                  "options": [
+                    {
+                      "id": "A",
+                      "text": "-COOH",
+                      "isCorrect": false
+                    },
+                    {
+                      "id": "B",
+                      "text": "-OH",
+                      "isCorrect": true
+                    },
+                    {
+                      "id": "C",
+                      "text": "-CHO",
+                      "isCorrect": false
+                    },
+                    {
+                      "id": "D",
+                      "text": "-NH2",
+                      "isCorrect": false
+                    }
+                  ],
+                  "explanation": "Alcohols are characterized by the hydroxyl (-OH) functional group."
+                },
+                {
+                  "id": 13,
+                  "question": "What is polymerization?",
+                  "options": [
+                    {
+                      "id": "A",
+                      "text": "Breaking down large molecules",
+                      "isCorrect": false
+                    },
+                    {
+                      "id": "B",
+                      "text": "Combining small molecules into larger ones",
+                      "isCorrect": true
+                    },
+                    {
+                      "id": "C",
+                      "text": "Converting solids to liquids",
+                      "isCorrect": false
+                    },
+                    {
+                      "id": "D",
+                      "text": "Breaking chemical bonds",
+                      "isCorrect": false
+                    }
+                  ],
+                  "explanation": "Polymerization is the process of combining small molecules (monomers) to form larger molecules (polymers)."
+                },
+                {
+                  "id": 14,
+                  "question": "What is the difference between primary and secondary alcohols?",
+                  "options": [
+                    {
+                      "id": "A",
+                      "text": "Number of carbon atoms",
+                      "isCorrect": false
+                    },
+                    {
+                      "id": "B",
+                      "text": "Number of R groups attached to the carbon with OH",
+                      "isCorrect": true
+                    },
+                    {
+                      "id": "C",
+                      "text": "Molecular weight",
+                      "isCorrect": false
+                    },
+                    {
+                      "id": "D",
+                      "text": "Boiling point",
+                      "isCorrect": false
+                    }
+                  ],
+                  "explanation": "Primary alcohols have one R group attached to the carbon with the OH group, while secondary alcohols have two."
+                },
+                {
+                  "id": 15,
+                  "question": "What is the main type of reaction in organic chemistry?",
+                  "options": [
+                    {
+                      "id": "A",
+                      "text": "Nuclear reactions",
+                      "isCorrect": false
+                    },
+                    {
+                      "id": "B",
+                      "text": "Redox reactions",
+                      "isCorrect": false
+                    },
+                    {
+                      "id": "C",
+                      "text": "Substitution reactions",
+                      "isCorrect": true
+                    },
+                    {
+                      "id": "D",
+                      "text": "Ionic reactions",
+                      "isCorrect": false
+                    }
+                  ],
+                  "explanation": "Substitution reactions are common in organic chemistry, where one atom or group is replaced by another."
+                }
+              ]
             }
           ]
         }

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { StyleSheet, TouchableOpacity, ScrollView, View, Dimensions, Image } from 'react-native';
+import { StyleSheet, TouchableOpacity, ScrollView, View, Dimensions, Image, Modal } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import { router, useLocalSearchParams } from 'expo-router';
@@ -8,6 +8,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { GestureHandlerRootView, GestureDetector, Gesture } from 'react-native-gesture-handler';
 import { useTheme } from '@/contexts/ThemeContext';
 import { getColors } from '@/constants/Colors';
+import { useAuth } from '@/contexts/AuthContext';
 import Animated, { 
   useAnimatedStyle, 
   useSharedValue, 
@@ -34,13 +35,52 @@ const imageMapping: { [key: string]: any } = {
   // Add more image mappings here as needed
 };
 
-// Picture questions data
-const pictureQuestions = pictureQuestionsData.questions;
+interface Option {
+  id: string;
+  text: string;
+  isCorrect: boolean;
+}
+
+interface Question {
+  id: number;
+  question: string;
+  image: string;
+  options: Option[];
+  explanation: string;
+}
+
+interface Chapter {
+  id: string;
+  name: string;
+  questions: Question[];
+}
+
+interface Subject {
+  id: string;
+  name: string;
+  chapters: Chapter[];
+}
+
+interface Grade {
+  id: string;
+  name: string;
+  subjects: Subject[];
+}
+
+interface PictureMCQData {
+  grades: Grade[];
+}
+
+const typedPictureQuestionsData = pictureQuestionsData as PictureMCQData;
 
 export default function PictureMCQScreen() {
   const { isDarkMode } = useTheme();
+  const { user } = useAuth();
   const colors = getColors(isDarkMode);
   const params = useLocalSearchParams();
+  const [selectedGrade, setSelectedGrade] = useState('');
+  const [selectedSubject, setSelectedSubject] = useState('');
+  const [selectedChapter, setSelectedChapter] = useState('');
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null);
   const [showExplanation, setShowExplanation] = useState(false);
@@ -53,11 +93,17 @@ export default function PictureMCQScreen() {
   const [dropZones, setDropZones] = useState<{ [key: string]: { x: number, y: number, width: number, height: number } }>({});
   const [hoveredOption, setHoveredOption] = useState<string | null>(null);
   const [droppedOption, setDroppedOption] = useState<string | null>(null);
+  const [showGradeDropdown, setShowGradeDropdown] = useState(false);
+  const [showSubjectDropdown, setShowSubjectDropdown] = useState(false);
+  const [showChapterDropdown, setShowChapterDropdown] = useState(false);
 
+  const selectedGradeData = typedPictureQuestionsData.grades.find((grade: Grade) => grade.id === selectedGrade);
+  const selectedSubjectData = selectedGradeData?.subjects.find((subject: Subject) => subject.id === selectedSubject);
+  const selectedChapterData = selectedSubjectData?.chapters.find((chapter: Chapter) => chapter.id === selectedChapter);
+  const currentQuestion = selectedChapterData?.questions[currentQuestionIndex];
   const isFirstQuestion = currentQuestionIndex === 0;
-  const isLastQuestion = currentQuestionIndex === pictureQuestions.length - 1;
-  const currentQuestion = pictureQuestions[currentQuestionIndex];
-  const percentage = Math.round((score / pictureQuestions.length) * 100);
+  const isLastQuestion = currentQuestionIndex === (selectedChapterData?.questions.length || 0) - 1;
+  const percentage = Math.round((score / (selectedChapterData?.questions.length || 0)) * 100);
 
   // Animation refs
   const scaleAnim = useSharedValue(0);
@@ -161,7 +207,7 @@ export default function PictureMCQScreen() {
       imagePosition.value = withSpring({ x: 0, y: 0 });
       runOnJS(setHoveredOption)(null);
 
-      if (hoveredOption) {
+      if (hoveredOption && currentQuestion) {
         const selectedOption = currentQuestion.options.find(opt => opt.id === hoveredOption);
         if (selectedOption) {
           runOnJS(setDroppedOption)(hoveredOption);
@@ -222,7 +268,8 @@ export default function PictureMCQScreen() {
   }, [params]);
 
   const handleNextQuestion = () => {
-    if (currentQuestionIndex < pictureQuestions.length - 1) {
+    if (!currentQuestion) return;
+    if (currentQuestionIndex < (selectedChapterData?.questions.length || 0) - 1) {
       setCurrentQuestionIndex(prev => prev + 1);
       setSelectedAnswer(null);
       setShowExplanation(false);
@@ -233,6 +280,7 @@ export default function PictureMCQScreen() {
   };
 
   const handlePreviousQuestion = () => {
+    if (!currentQuestion) return;
     if (currentQuestionIndex > 0) {
       setCurrentQuestionIndex(prev => prev - 1);
       setSelectedAnswer(null);
@@ -250,6 +298,19 @@ export default function PictureMCQScreen() {
     setShowCelebration(false);
     setShowWrongAnswer(false);
     setScore(0);
+    setSelectedGrade('');
+    setSelectedSubject('');
+    setSelectedChapter('');
+  };
+
+  const handleStartTest = () => {
+    if (!selectedGrade || !selectedSubject || !selectedChapter) return;
+    setCurrentQuestionIndex(0);
+    setSelectedAnswer(null);
+    setShowExplanation(false);
+    setShowCelebration(false);
+    setShowWrongAnswer(false);
+    setScore(0);
   };
 
   const getMessage = () => {
@@ -260,13 +321,14 @@ export default function PictureMCQScreen() {
   };
 
   const handleNavigation = () => {
+    if (!currentQuestion) return;
     const currentScore = Number(score) || 0; // Ensure score is a number
     if (isLastQuestion) {
       router.push({
         pathname: '/picture-mcq-result',
         params: { 
           score: currentScore,
-          totalQuestions: pictureQuestions.length 
+          totalQuestions: selectedChapterData?.questions.length 
         }
       });
     } else {
@@ -296,6 +358,216 @@ export default function PictureMCQScreen() {
     );
   }
 
+  if (!selectedGrade || !selectedSubject || !selectedChapter) {
+    return (
+      <GestureHandlerRootView style={{ flex: 1 }}>
+        <SafeAreaView style={[styles.safeArea, { backgroundColor: isDarkMode ? '#000000' : '#FFFFFF' }]}>
+          <Header title="Picture Questions" />
+          <ThemedView style={[styles.container, { backgroundColor: isDarkMode ? '#000000' : '#FFFFFF' }]}>
+            <ThemedView style={[styles.formContainer, { backgroundColor: isDarkMode ? '#000000' : '#FFFFFF' }]}>
+              <ThemedText style={[styles.formTitle, { color: colors.tint }]}>Select Grade, Subject and Chapter</ThemedText>
+              
+              <ThemedView style={[styles.formContent, { backgroundColor: isDarkMode ? '#000000' : '#FFFFFF' }]}>
+                {/* Grade Selection */}
+                <ThemedView style={[styles.formGroup, { backgroundColor: isDarkMode ? '#000000' : '#FFFFFF' }]}>
+                  <ThemedText style={[styles.formLabel, { color: colors.tint }]}>Grade</ThemedText>
+                  <TouchableOpacity
+                    style={[styles.formInput, { backgroundColor: colors.cardAlt, borderColor: colors.border }]}
+                    onPress={() => setShowGradeDropdown(!showGradeDropdown)}
+                  >
+                    <ThemedText style={[styles.formInputText, { color: colors.text }]}>
+                      {selectedGrade ? typedPictureQuestionsData.grades.find((g: Grade) => g.id === selectedGrade)?.name : 'Select a grade'}
+                    </ThemedText>
+                    <IconSymbol name="chevron.right" size={20} color={colors.tint} />
+                  </TouchableOpacity>
+                  {showGradeDropdown && (
+                    <Modal
+                      visible={showGradeDropdown}
+                      transparent={true}
+                      animationType="fade"
+                      onRequestClose={() => setShowGradeDropdown(false)}
+                    >
+                      <TouchableOpacity
+                        style={[styles.modalOverlay, { backgroundColor: 'rgba(0, 0, 0, 0.5)' }]}
+                        activeOpacity={1}
+                        onPress={() => setShowGradeDropdown(false)}
+                      >
+                        <ThemedView style={[styles.modalContent, { backgroundColor: colors.background }]}>
+                          <ScrollView>
+                            {typedPictureQuestionsData.grades.map((grade: Grade) => (
+                              <TouchableOpacity
+                                key={grade.id}
+                                style={[styles.modalItem, { backgroundColor: colors.background, borderBottomColor: colors.border }]}
+                                onPress={() => {
+                                  setSelectedGrade(grade.id);
+                                  setSelectedSubject('');
+                                  setSelectedChapter('');
+                                  setShowGradeDropdown(false);
+                                }}
+                              >
+                                <ThemedText style={[styles.modalItemText, { color: colors.text }]}>{grade.name}</ThemedText>
+                                <IconSymbol name="chevron.right" size={20} color={colors.tint} />
+                              </TouchableOpacity>
+                            ))}
+                          </ScrollView>
+                        </ThemedView>
+                      </TouchableOpacity>
+                    </Modal>
+                  )}
+                </ThemedView>
+
+                {/* Subject Selection */}
+                <ThemedView style={[styles.formGroup, { backgroundColor: isDarkMode ? '#000000' : '#FFFFFF' }]}>
+                  <ThemedText style={[styles.formLabel, { color: colors.tint }]}>Subject</ThemedText>
+                  <TouchableOpacity
+                    style={[
+                      styles.formInput,
+                      { backgroundColor: colors.cardAlt, borderColor: colors.border },
+                      !selectedGrade && { 
+                        backgroundColor: isDarkMode ? 'rgba(0, 0, 0, 0.3)' : 'rgba(0, 0, 0, 0.05)',
+                        borderColor: isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'
+                      }
+                    ]}
+                    onPress={() => selectedGrade && setShowSubjectDropdown(!showSubjectDropdown)}
+                    disabled={!selectedGrade}
+                  >
+                    <ThemedText 
+                      style={[
+                        styles.formInputText, 
+                        { color: colors.text }, 
+                        !selectedGrade && { 
+                          color: isDarkMode ? 'rgba(255, 255, 255, 0.3)' : 'rgba(0, 0, 0, 0.3)'
+                        }
+                      ]}
+                    >
+                      {selectedSubject ? selectedGradeData?.subjects.find((s: Subject) => s.id === selectedSubject)?.name : 'Select a subject'}
+                    </ThemedText>
+                    <IconSymbol 
+                      name="chevron.right" 
+                      size={20} 
+                      color={!selectedGrade ? (isDarkMode ? 'rgba(255, 255, 255, 0.3)' : 'rgba(0, 0, 0, 0.3)') : colors.tint} 
+                    />
+                  </TouchableOpacity>
+                  {showSubjectDropdown && selectedGrade && (
+                    <Modal
+                      visible={showSubjectDropdown}
+                      transparent={true}
+                      animationType="fade"
+                      onRequestClose={() => setShowSubjectDropdown(false)}
+                    >
+                      <TouchableOpacity
+                        style={[styles.modalOverlay, { backgroundColor: 'rgba(0, 0, 0, 0.5)' }]}
+                        activeOpacity={1}
+                        onPress={() => setShowSubjectDropdown(false)}
+                      >
+                        <ThemedView style={[styles.modalContent, { backgroundColor: colors.background }]}>
+                          <ScrollView>
+                            {selectedGradeData?.subjects.map((subject: Subject) => (
+                              <TouchableOpacity
+                                key={subject.id}
+                                style={[styles.modalItem, { backgroundColor: colors.background, borderBottomColor: colors.border }]}
+                                onPress={() => {
+                                  setSelectedSubject(subject.id);
+                                  setSelectedChapter('');
+                                  setShowSubjectDropdown(false);
+                                }}
+                              >
+                                <ThemedText style={[styles.modalItemText, { color: colors.text }]}>{subject.name}</ThemedText>
+                                <IconSymbol name="chevron.right" size={20} color={colors.tint} />
+                              </TouchableOpacity>
+                            ))}
+                          </ScrollView>
+                        </ThemedView>
+                      </TouchableOpacity>
+                    </Modal>
+                  )}
+                </ThemedView>
+
+                {/* Chapter Selection */}
+                <ThemedView style={[styles.formGroup, { backgroundColor: isDarkMode ? '#000000' : '#FFFFFF' }]}>
+                  <ThemedText style={[styles.formLabel, { color: colors.tint }]}>Chapter</ThemedText>
+                  <TouchableOpacity
+                    style={[
+                      styles.formInput,
+                      { backgroundColor: colors.cardAlt, borderColor: colors.border },
+                      !selectedSubject && { 
+                        backgroundColor: isDarkMode ? 'rgba(0, 0, 0, 0.3)' : 'rgba(0, 0, 0, 0.05)',
+                        borderColor: isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'
+                      }
+                    ]}
+                    onPress={() => selectedSubject && setShowChapterDropdown(!showChapterDropdown)}
+                    disabled={!selectedSubject}
+                  >
+                    <ThemedText 
+                      style={[
+                        styles.formInputText, 
+                        { color: colors.text }, 
+                        !selectedSubject && { 
+                          color: isDarkMode ? 'rgba(255, 255, 255, 0.3)' : 'rgba(0, 0, 0, 0.3)'
+                        }
+                      ]}
+                    >
+                      {selectedChapter ? selectedSubjectData?.chapters.find((c: Chapter) => c.id === selectedChapter)?.name : 'Select a chapter'}
+                    </ThemedText>
+                    <IconSymbol 
+                      name="chevron.right" 
+                      size={20} 
+                      color={!selectedSubject ? (isDarkMode ? 'rgba(255, 255, 255, 0.3)' : 'rgba(0, 0, 0, 0.3)') : colors.tint} 
+                    />
+                  </TouchableOpacity>
+                  {showChapterDropdown && selectedSubject && (
+                    <Modal
+                      visible={showChapterDropdown}
+                      transparent={true}
+                      animationType="fade"
+                      onRequestClose={() => setShowChapterDropdown(false)}
+                    >
+                      <TouchableOpacity
+                        style={[styles.modalOverlay, { backgroundColor: 'rgba(0, 0, 0, 0.5)' }]}
+                        activeOpacity={1}
+                        onPress={() => setShowChapterDropdown(false)}
+                      >
+                        <ThemedView style={[styles.modalContent, { backgroundColor: colors.background }]}>
+                          <ScrollView>
+                            {selectedSubjectData?.chapters.map((chapter: Chapter) => (
+                              <TouchableOpacity
+                                key={chapter.id}
+                                style={[styles.modalItem, { backgroundColor: colors.background, borderBottomColor: colors.border }]}
+                                onPress={() => {
+                                  setSelectedChapter(chapter.id);
+                                  setShowChapterDropdown(false);
+                                }}
+                              >
+                                <ThemedText style={[styles.modalItemText, { color: colors.text }]}>{chapter.name}</ThemedText>
+                                <IconSymbol name="chevron.right" size={20} color={colors.tint} />
+                              </TouchableOpacity>
+                            ))}
+                          </ScrollView>
+                        </ThemedView>
+                      </TouchableOpacity>
+                    </Modal>
+                  )}
+                </ThemedView>
+
+                <TouchableOpacity
+                  style={[
+                    styles.startButton,
+                    { backgroundColor: colors.tint },
+                    (!selectedGrade || !selectedSubject || !selectedChapter) && { opacity: 0.5 }
+                  ]}
+                  onPress={handleStartTest}
+                  disabled={!selectedGrade || !selectedSubject || !selectedChapter}
+                >
+                  <ThemedText style={styles.startButtonText}>Start Quiz</ThemedText>
+                </TouchableOpacity>
+              </ThemedView>
+            </ThemedView>
+          </ThemedView>
+        </SafeAreaView>
+      </GestureHandlerRootView>
+    );
+  }
+
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <SafeAreaView style={[styles.safeArea, { backgroundColor: isDarkMode ? '#000000' : '#FFFFFF' }]}>
@@ -308,98 +580,102 @@ export default function PictureMCQScreen() {
               <View style={styles.progressLabels}>
                 <View style={styles.questionLabelContainer}>
                   <ThemedText style={[styles.progressText, { color: '#6B54AE' }]}>
-                    Question {currentQuestionIndex + 1} of {pictureQuestions.length}
+                    Question {currentQuestionIndex + 1} of {selectedChapterData?.questions.length}
                   </ThemedText>
                 </View>
               </View>
             </View>
 
-            <View style={styles.questionContainer}>
-              <ThemedText style={[styles.questionText, { color: colors.text }]}>
-                {currentQuestion.question}
-              </ThemedText>
-            </View>
+            {currentQuestion && (
+              <>
+                <View style={styles.questionContainer}>
+                  <ThemedText style={[styles.questionText, { color: colors.text }]}>
+                    {currentQuestion.question}
+                  </ThemedText>
+                </View>
 
-            <GestureDetector gesture={imagePan}>
-              <Animated.View 
-                style={[
-                  styles.imageContainer,
-                  imageAnimatedStyle,
-                  { backgroundColor: isDarkMode ? '#1C1C1E' : '#F5F5F5' }
-                ]}
-              >
-                <Image
-                  source={imageMapping[currentQuestion.image]}
-                  style={styles.questionImage}
-                  resizeMode="contain"
-                />
-              </Animated.View>
-            </GestureDetector>
+                <GestureDetector gesture={imagePan}>
+                  <Animated.View 
+                    style={[
+                      styles.imageContainer,
+                      imageAnimatedStyle,
+                      { backgroundColor: isDarkMode ? '#1C1C1E' : '#F5F5F5' }
+                    ]}
+                  >
+                    <Image
+                      source={imageMapping[currentQuestion.image]}
+                      style={styles.questionImage}
+                      resizeMode="contain"
+                    />
+                  </Animated.View>
+                </GestureDetector>
 
-            {/* Celebration Animation */}
-            <Animated.View style={[styles.celebrationContainer, celebrationAnimatedStyle]}>
-              <View style={[styles.celebrationContent, { backgroundColor: isDarkMode ? 'rgba(28, 28, 30, 0.9)' : 'rgba(255, 255, 255, 0.9)' }]}>
-                <IconSymbol name="trophy.fill" size={80} color="#4CAF50" />
-                <ThemedText style={styles.celebrationText}>Correct!</ThemedText>
-              </View>
-            </Animated.View>
+                {/* Celebration Animation */}
+                <Animated.View style={[styles.celebrationContainer, celebrationAnimatedStyle]}>
+                  <View style={[styles.celebrationContent, { backgroundColor: isDarkMode ? 'rgba(28, 28, 30, 0.9)' : 'rgba(255, 255, 255, 0.9)' }]}>
+                    <IconSymbol name="trophy.fill" size={80} color="#4CAF50" />
+                    <ThemedText style={styles.celebrationText}>Correct!</ThemedText>
+                  </View>
+                </Animated.View>
 
-            {/* Incorrect Animation */}
-            <Animated.View style={[styles.incorrectContainer, incorrectAnimatedStyle]}>
-              <View style={[styles.incorrectContent, { backgroundColor: isDarkMode ? 'rgba(28, 28, 30, 0.9)' : 'rgba(255, 255, 255, 0.9)' }]}>
-                <IconSymbol name="xmark.circle.fill" size={80} color="#F44336" />
-                <ThemedText style={styles.incorrectText}>Incorrect!</ThemedText>
-              </View>
-            </Animated.View>
+                {/* Incorrect Animation */}
+                <Animated.View style={[styles.incorrectContainer, incorrectAnimatedStyle]}>
+                  <View style={[styles.incorrectContent, { backgroundColor: isDarkMode ? 'rgba(28, 28, 30, 0.9)' : 'rgba(255, 255, 255, 0.9)' }]}>
+                    <IconSymbol name="xmark.circle.fill" size={80} color="#F44336" />
+                    <ThemedText style={styles.incorrectText}>Incorrect!</ThemedText>
+                  </View>
+                </Animated.View>
 
-            <View style={styles.optionsContainer}>
-              {currentQuestion.options.map((option) => (
-                <View
-                  key={option.id}
-                  style={[
-                    styles.optionWrapper,
-                    {
-                      backgroundColor: isDarkMode ? '#1C1C1E' : '#FFFFFF',
-                      borderColor: isDarkMode ? '#3C3C3E' : '#E0E0E0',
-                    },
-                    selectedAnswer === option.id && option.isCorrect && styles.correctOption,
-                    selectedAnswer === option.id && !option.isCorrect && styles.incorrectOption,
-                    hoveredOption === option.id && !selectedAnswer && [
-                      styles.dropZone,
-                      { borderColor: '#6B54AE', backgroundColor: isDarkMode ? 'rgba(107, 84, 174, 0.2)' : 'rgba(107, 84, 174, 0.1)' }
-                    ],
-                    droppedOption === option.id && option.isCorrect && styles.correctOption,
-                    droppedOption === option.id && !option.isCorrect && styles.incorrectOption,
-                  ]}
-                  onLayout={(event) => {
-                    const { x, y, width, height } = event.nativeEvent.layout;
-                    setDropZones(prev => ({
-                      ...prev,
-                      [option.id]: { x, y, width, height }
-                    }));
-                  }}
-                >
-                  <View style={styles.optionContent}>
-                    <ThemedText style={[
-                      styles.optionText,
-                      { color: isDarkMode ? colors.text : '#333333' },
-                      selectedAnswer === option.id && option.isCorrect && styles.correctText,
-                      selectedAnswer === option.id && !option.isCorrect && styles.incorrectText,
-                    ]}>
-                      {option.text}
+                <View style={styles.optionsContainer}>
+                  {currentQuestion.options.map((option) => (
+                    <View
+                      key={option.id}
+                      style={[
+                        styles.optionWrapper,
+                        {
+                          backgroundColor: isDarkMode ? '#1C1C1E' : '#FFFFFF',
+                          borderColor: isDarkMode ? '#3C3C3E' : '#E0E0E0',
+                        },
+                        selectedAnswer === option.id && option.isCorrect && styles.correctOption,
+                        selectedAnswer === option.id && !option.isCorrect && styles.incorrectOption,
+                        hoveredOption === option.id && !selectedAnswer && [
+                          styles.dropZone,
+                          { borderColor: '#6B54AE', backgroundColor: isDarkMode ? 'rgba(107, 84, 174, 0.2)' : 'rgba(107, 84, 174, 0.1)' }
+                        ],
+                        droppedOption === option.id && option.isCorrect && styles.correctOption,
+                        droppedOption === option.id && !option.isCorrect && styles.incorrectOption,
+                      ]}
+                      onLayout={(event) => {
+                        const { x, y, width, height } = event.nativeEvent.layout;
+                        setDropZones(prev => ({
+                          ...prev,
+                          [option.id]: { x, y, width, height }
+                        }));
+                      }}
+                    >
+                      <View style={styles.optionContent}>
+                        <ThemedText style={[
+                          styles.optionText,
+                          { color: isDarkMode ? colors.text : '#333333' },
+                          selectedAnswer === option.id && option.isCorrect && styles.correctText,
+                          selectedAnswer === option.id && !option.isCorrect && styles.incorrectText,
+                        ]}>
+                          {option.text}
+                        </ThemedText>
+                      </View>
+                    </View>
+                  ))}
+                </View>
+
+                {showExplanation && (
+                  <View style={[styles.explanationContainer, { backgroundColor: isDarkMode ? '#1C1C1E' : '#F5F5F5' }]}>
+                    <ThemedText style={[styles.explanationTitle, { color: '#6B54AE' }]}>Explanation:</ThemedText>
+                    <ThemedText style={[styles.explanationText, { color: colors.text }]}>
+                      {currentQuestion.explanation}
                     </ThemedText>
                   </View>
-                </View>
-              ))}
-            </View>
-
-            {showExplanation && (
-              <View style={[styles.explanationContainer, { backgroundColor: isDarkMode ? '#1C1C1E' : '#F5F5F5' }]}>
-                <ThemedText style={[styles.explanationTitle, { color: '#6B54AE' }]}>Explanation:</ThemedText>
-                <ThemedText style={[styles.explanationText, { color: colors.text }]}>
-                  {currentQuestion.explanation}
-                </ThemedText>
-              </View>
+                )}
+              </>
             )}
 
             <View style={[styles.navigationContainer, {
@@ -767,5 +1043,72 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.25,
     shadowRadius: 3.84,
     elevation: 5,
+  },
+  formContainer: {
+    flex: 1,
+    padding: 20,
+    justifyContent: 'center',
+  },
+  formTitle: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    marginBottom: 20,
+    textAlign: 'center',
+  },
+  formContent: {
+    gap: 20,
+  },
+  formGroup: {
+    gap: 8,
+  },
+  formLabel: {
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  formInput: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    padding: 12,
+    borderRadius: 8,
+    borderWidth: 1,
+  },
+  formInputText: {
+    fontSize: 16,
+  },
+  modalOverlay: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  modalContent: {
+    width: '80%',
+    maxHeight: '80%',
+    borderRadius: 12,
+    overflow: 'hidden',
+  },
+  modalItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    padding: 16,
+    borderBottomWidth: 1,
+  },
+  modalItemText: {
+    fontSize: 16,
+  },
+  startButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 16,
+    borderRadius: 8,
+    marginTop: 20,
+    gap: 8,
+  },
+  startButtonText: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#fff',
   },
 }); 

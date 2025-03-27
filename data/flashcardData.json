@@ -1,396 +1,111 @@
 {
-  "subjects": [
+  "grades": [
     {
-      "id": "biology",
-      "name": "Biology",
-      "chapters": [
+      "id": "grade-12",
+      "name": "Grade 12",
+      "subjects": [
         {
-          "id": "cell-biology",
-          "name": "Cell Biology",
-          "flashcards": [
+          "id": "biology",
+          "name": "Biology",
+          "chapters": [
             {
-              "id": 1,
-              "question": "What is the basic unit of life?",
-              "answer": "The cell is the basic unit of life, the smallest unit that can perform all the processes necessary for life."
+              "id": "cell-biology",
+              "name": "Cell Biology",
+              "flashcards": [
+                {
+                  "id": 1,
+                  "question": "What is the function of the cell membrane?",
+                  "answer": "The cell membrane regulates the movement of substances in and out of the cell, maintains cell shape, and provides protection."
+                },
+                {
+                  "id": 2,
+                  "question": "What are the main components of a eukaryotic cell?",
+                  "answer": "The main components include the nucleus, mitochondria, endoplasmic reticulum, Golgi apparatus, lysosomes, and cytoskeleton."
+                },
+                {
+                  "id": 3,
+                  "question": "What is the role of mitochondria in the cell?",
+                  "answer": "Mitochondria are the powerhouses of the cell, responsible for producing ATP through cellular respiration."
+                },
+                {
+                  "id": 4,
+                  "question": "How does the endoplasmic reticulum function in protein synthesis?",
+                  "answer": "The rough ER is studded with ribosomes and is involved in protein synthesis and modification, while the smooth ER is involved in lipid synthesis and detoxification."
+                },
+                {
+                  "id": 5,
+                  "question": "What is the function of lysosomes in the cell?",
+                  "answer": "Lysosomes contain digestive enzymes and are responsible for breaking down waste materials and cellular debris."
+                }
+              ]
             },
             {
-              "id": 2,
-              "question": "What are the two main types of cells?",
-              "answer": "Prokaryotic cells (bacteria) and eukaryotic cells (plants, animals, fungi)."
-            },
-            {
-              "id": 3,
-              "question": "What is the function of the cell membrane?",
-              "answer": "The cell membrane regulates what enters and exits the cell, maintaining homeostasis."
-            },
-            {
-              "id": 4,
-              "question": "What is the powerhouse of the cell?",
-              "answer": "The mitochondria is known as the powerhouse of the cell, producing ATP through cellular respiration."
-            },
-            {
-              "id": 5,
-              "question": "What is the function of the nucleus?",
-              "answer": "The nucleus controls cell activities and contains genetic material (DNA)."
+              "id": "genetics",
+              "name": "Genetics",
+              "flashcards": [
+                {
+                  "id": 6,
+                  "question": "What is DNA replication?",
+                  "answer": "DNA replication is the process by which a cell makes an identical copy of its DNA before cell division."
+                },
+                {
+                  "id": 7,
+                  "question": "What is the role of RNA in protein synthesis?",
+                  "answer": "RNA serves as a messenger (mRNA) to carry genetic information from DNA to ribosomes, where proteins are synthesized."
+                },
+                {
+                  "id": 8,
+                  "question": "What is the difference between transcription and translation?",
+                  "answer": "Transcription is the process of copying DNA into RNA, while translation is the process of converting RNA into protein."
+                },
+                {
+                  "id": 9,
+                  "question": "What is a mutation and how can it affect protein synthesis?",
+                  "answer": "A mutation is a change in the DNA sequence that can alter the amino acid sequence of proteins, potentially affecting their function."
+                },
+                {
+                  "id": 10,
+                  "question": "What is the role of tRNA in protein synthesis?",
+                  "answer": "tRNA (transfer RNA) carries amino acids to the ribosome and matches them with the correct codons on mRNA during translation."
+                }
+              ]
             }
           ]
         },
         {
-          "id": "genetics",
-          "name": "Genetics",
-          "flashcards": [
+          "id": "chemistry",
+          "name": "Chemistry",
+          "chapters": [
             {
-              "id": 6,
-              "question": "What is DNA?",
-              "answer": "DNA (Deoxyribonucleic acid) is the molecule carrying genetic instructions for development and functioning."
-            },
-            {
-              "id": 7,
-              "question": "What is a gene?",
-              "answer": "A gene is a segment of DNA that contains instructions for making a specific protein or RNA molecule."
-            },
-            {
-              "id": 8,
-              "question": "What is mitosis?",
-              "answer": "Mitosis is the process of cell division that produces two identical daughter cells."
-            },
-            {
-              "id": 9,
-              "question": "What is meiosis?",
-              "answer": "Meiosis is the process of cell division that produces four genetically different daughter cells with half the number of chromosomes."
-            },
-            {
-              "id": 10,
-              "question": "What is a mutation?",
-              "answer": "A mutation is a change in the DNA sequence that can affect the structure and function of proteins."
-            }
-          ]
-        },
-        {
-          "id": "ecosystems",
-          "name": "Ecosystems",
-          "flashcards": [
-            {
-              "id": 11,
-              "question": "What is an ecosystem?",
-              "answer": "An ecosystem is a community of living organisms interacting with their physical environment."
-            },
-            {
-              "id": 12,
-              "question": "What is photosynthesis?",
-              "answer": "Photosynthesis is the process by which plants convert light energy into chemical energy (glucose)."
-            },
-            {
-              "id": 13,
-              "question": "What is the food chain?",
-              "answer": "A food chain shows how energy and nutrients move through an ecosystem from producers to consumers."
-            },
-            {
-              "id": 14,
-              "question": "What is biodiversity?",
-              "answer": "Biodiversity refers to the variety of life forms in an ecosystem or on Earth."
-            },
-            {
-              "id": 15,
-              "question": "What is the carbon cycle?",
-              "answer": "The carbon cycle is the process by which carbon moves between the atmosphere, organisms, and Earth."
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "id": "chemistry",
-      "name": "Chemistry",
-      "chapters": [
-        {
-          "id": "atomic-structure",
-          "name": "Atomic Structure",
-          "flashcards": [
-            {
-              "id": 16,
-              "question": "What is an atom?",
-              "answer": "An atom is the smallest unit of matter that retains the properties of an element."
-            },
-            {
-              "id": 17,
-              "question": "What are the three subatomic particles?",
-              "answer": "Protons, neutrons, and electrons are the three subatomic particles."
-            },
-            {
-              "id": 18,
-              "question": "What is the atomic number?",
-              "answer": "The atomic number is the number of protons in an atom's nucleus."
-            },
-            {
-              "id": 19,
-              "question": "What is an isotope?",
-              "answer": "Isotopes are atoms of the same element with different numbers of neutrons."
-            },
-            {
-              "id": 20,
-              "question": "What is the electron configuration?",
-              "answer": "Electron configuration describes the arrangement of electrons in an atom's orbitals."
-            }
-          ]
-        },
-        {
-          "id": "chemical-bonds",
-          "name": "Chemical Bonds",
-          "flashcards": [
-            {
-              "id": 21,
-              "question": "What is an ionic bond?",
-              "answer": "An ionic bond is formed by the transfer of electrons between atoms, creating oppositely charged ions."
-            },
-            {
-              "id": 22,
-              "question": "What is a covalent bond?",
-              "answer": "A covalent bond is formed by the sharing of electrons between atoms."
-            },
-            {
-              "id": 23,
-              "question": "What is a polar bond?",
-              "answer": "A polar bond is a covalent bond where electrons are shared unequally between atoms."
-            },
-            {
-              "id": 24,
-              "question": "What is a hydrogen bond?",
-              "answer": "A hydrogen bond is a weak attraction between a hydrogen atom and an electronegative atom."
-            },
-            {
-              "id": 25,
-              "question": "What is electronegativity?",
-              "answer": "Electronegativity is the ability of an atom to attract electrons in a chemical bond."
-            }
-          ]
-        },
-        {
-          "id": "reactions",
-          "name": "Chemical Reactions",
-          "flashcards": [
-            {
-              "id": 26,
-              "question": "What is a chemical reaction?",
-              "answer": "A chemical reaction is a process where substances are converted into new substances."
-            },
-            {
-              "id": 27,
-              "question": "What is the law of conservation of mass?",
-              "answer": "The law states that mass is neither created nor destroyed in a chemical reaction."
-            },
-            {
-              "id": 28,
-              "question": "What is an exothermic reaction?",
-              "answer": "An exothermic reaction releases energy in the form of heat."
-            },
-            {
-              "id": 29,
-              "question": "What is an endothermic reaction?",
-              "answer": "An endothermic reaction absorbs energy from its surroundings."
-            },
-            {
-              "id": 30,
-              "question": "What is a catalyst?",
-              "answer": "A catalyst is a substance that speeds up a chemical reaction without being consumed."
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "id": "english",
-      "name": "English",
-      "chapters": [
-        {
-          "id": "grammar",
-          "name": "Grammar",
-          "flashcards": [
-            {
-              "id": 31,
-              "question": "What is a noun?",
-              "answer": "A noun is a word that names a person, place, thing, or idea."
-            },
-            {
-              "id": 32,
-              "question": "What is a verb?",
-              "answer": "A verb is a word that expresses an action or state of being."
-            },
-            {
-              "id": 33,
-              "question": "What is an adjective?",
-              "answer": "An adjective is a word that describes or modifies a noun or pronoun."
-            },
-            {
-              "id": 34,
-              "question": "What is an adverb?",
-              "answer": "An adverb is a word that modifies a verb, adjective, or another adverb."
-            },
-            {
-              "id": 35,
-              "question": "What is a preposition?",
-              "answer": "A preposition is a word that shows the relationship between a noun and another word in the sentence."
-            }
-          ]
-        },
-        {
-          "id": "literature",
-          "name": "Literature",
-          "flashcards": [
-            {
-              "id": 36,
-              "question": "What is a metaphor?",
-              "answer": "A metaphor is a figure of speech that directly compares two unlike things."
-            },
-            {
-              "id": 37,
-              "question": "What is a simile?",
-              "answer": "A simile is a figure of speech that compares two things using 'like' or 'as'."
-            },
-            {
-              "id": 38,
-              "question": "What is personification?",
-              "answer": "Personification is giving human characteristics to non-human things."
-            },
-            {
-              "id": 39,
-              "question": "What is alliteration?",
-              "answer": "Alliteration is the repetition of initial consonant sounds in words."
-            },
-            {
-              "id": 40,
-              "question": "What is onomatopoeia?",
-              "answer": "Onomatopoeia is the use of words that imitate sounds."
-            }
-          ]
-        },
-        {
-          "id": "writing",
-          "name": "Writing",
-          "flashcards": [
-            {
-              "id": 41,
-              "question": "What is a thesis statement?",
-              "answer": "A thesis statement is the main idea or argument of an essay."
-            },
-            {
-              "id": 42,
-              "question": "What is a topic sentence?",
-              "answer": "A topic sentence states the main idea of a paragraph."
-            },
-            {
-              "id": 43,
-              "question": "What is a supporting detail?",
-              "answer": "A supporting detail provides evidence or examples to support the main idea."
-            },
-            {
-              "id": 44,
-              "question": "What is a conclusion?",
-              "answer": "A conclusion summarizes the main points and restates the thesis."
-            },
-            {
-              "id": 45,
-              "question": "What is a transition?",
-              "answer": "A transition is a word or phrase that connects ideas between paragraphs or sentences."
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "id": "math",
-      "name": "Mathematics",
-      "chapters": [
-        {
-          "id": "algebra",
-          "name": "Algebra",
-          "flashcards": [
-            {
-              "id": 46,
-              "question": "What is a variable?",
-              "answer": "A variable is a symbol (usually a letter) that represents an unknown value."
-            },
-            {
-              "id": 47,
-              "question": "What is an equation?",
-              "answer": "An equation is a mathematical statement showing that two expressions are equal."
-            },
-            {
-              "id": 48,
-              "question": "What is the distributive property?",
-              "answer": "The distributive property states that a(b + c) = ab + ac."
-            },
-            {
-              "id": 49,
-              "question": "What is a coefficient?",
-              "answer": "A coefficient is the numerical factor of a term containing variables."
-            },
-            {
-              "id": 50,
-              "question": "What is a constant?",
-              "answer": "A constant is a term that does not contain any variables."
-            }
-          ]
-        },
-        {
-          "id": "geometry",
-          "name": "Geometry",
-          "flashcards": [
-            {
-              "id": 51,
-              "question": "What is a polygon?",
-              "answer": "A polygon is a closed figure with straight sides."
-            },
-            {
-              "id": 52,
-              "question": "What is the Pythagorean theorem?",
-              "answer": "In a right triangle, a² + b² = c², where c is the hypotenuse."
-            },
-            {
-              "id": 53,
-              "question": "What is the area of a circle?",
-              "answer": "The area of a circle is πr², where r is the radius."
-            },
-            {
-              "id": 54,
-              "question": "What is a congruent figure?",
-              "answer": "Congruent figures have the same shape and size."
-            },
-            {
-              "id": 55,
-              "question": "What is a similar figure?",
-              "answer": "Similar figures have the same shape but different sizes."
-            }
-          ]
-        },
-        {
-          "id": "statistics",
-          "name": "Statistics",
-          "flashcards": [
-            {
-              "id": 56,
-              "question": "What is the mean?",
-              "answer": "The mean is the average of a set of numbers, calculated by adding all numbers and dividing by the count."
-            },
-            {
-              "id": 57,
-              "question": "What is the median?",
-              "answer": "The median is the middle number in a set of numbers arranged in order."
-            },
-            {
-              "id": 58,
-              "question": "What is the mode?",
-              "answer": "The mode is the number that appears most frequently in a set of numbers."
-            },
-            {
-              "id": 59,
-              "question": "What is range?",
-              "answer": "The range is the difference between the highest and lowest values in a set of numbers."
-            },
-            {
-              "id": 60,
-              "question": "What is standard deviation?",
-              "answer": "Standard deviation measures how spread out numbers are from the mean."
+              "id": "organic-chemistry",
+              "name": "Organic Chemistry",
+              "flashcards": [
+                {
+                  "id": 11,
+                  "question": "What is a functional group?",
+                  "answer": "A functional group is a specific group of atoms within a molecule that determines the molecule's chemical properties and reactivity."
+                },
+                {
+                  "id": 12,
+                  "question": "What is the difference between alkanes and alkenes?",
+                  "answer": "Alkanes have only single bonds between carbon atoms, while alkenes have at least one double bond between carbon atoms."
+                },
+                {
+                  "id": 13,
+                  "question": "What is the process of polymerization?",
+                  "answer": "Polymerization is the process of combining small molecules (monomers) to form larger molecules (polymers) through chemical reactions."
+                },
+                {
+                  "id": 14,
+                  "question": "What are the main types of organic reactions?",
+                  "answer": "The main types include substitution, addition, elimination, and rearrangement reactions."
+                },
+                {
+                  "id": 15,
+                  "question": "What is the difference between primary, secondary, and tertiary alcohols?",
+                  "answer": "Primary alcohols have one R group attached to the carbon with the OH group, secondary have two, and tertiary have three R groups."
+                }
+              ]
             }
           ]
         }
