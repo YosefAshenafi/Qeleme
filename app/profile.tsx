@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, Animated } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, Animated, RefreshControl } from 'react-native';
 import { useColorScheme } from '@/hooks/useColorScheme';
 import { Colors } from '@/constants/Colors';
 import { IconSymbol, IconSymbolName } from '@/components/ui/IconSymbol';
@@ -76,6 +76,7 @@ export default function ProfileScreen() {
   const { logout } = useAuth();
   const [openAccordion, setOpenAccordion] = useState<string | null>(null);
   const [profileImage, setProfileImage] = useState<string | null>(null);
+  const [refreshing, setRefreshing] = useState(false);
   const [stats, setStats] = useState([
     { label: 'MCQs Completed', value: '0', icon: 'questionmark.circle.fill' as const },
     { label: 'Flashcards Clicked', value: '0', icon: 'rectangle.stack.fill' as const },
@@ -83,6 +84,15 @@ export default function ProfileScreen() {
     { label: 'Study Hours', value: '0', icon: 'clock.fill' as const },
   ]);
   const colors = getColors(isDarkMode);
+
+  const onRefresh = React.useCallback(async () => {
+    setRefreshing(true);
+    await Promise.all([
+      loadProfileImage(),
+      loadStats()
+    ]);
+    setRefreshing(false);
+  }, []);
 
   useEffect(() => {
     loadProfileImage();
@@ -227,7 +237,17 @@ export default function ProfileScreen() {
           <IconSymbol name="chevron.right" size={24} color={colors.background} style={{ transform: [{ rotate: '180deg' }] }} />
         </TouchableOpacity>
       </View>
-      <ScrollView style={styles.scrollView}>
+      <ScrollView 
+        style={styles.scrollView}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            tintColor={colors.tint}
+            colors={[colors.tint]}
+          />
+        }
+      >
         {/* Profile Header */}
         <View style={[styles.profileHeader, { backgroundColor: colors.tint }]}>
           <View style={styles.profileImageContainer}>

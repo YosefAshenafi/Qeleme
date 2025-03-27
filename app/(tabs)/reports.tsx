@@ -1,4 +1,4 @@
-import { StyleSheet, ScrollView, View, Dimensions } from 'react-native';
+import { StyleSheet, ScrollView, View, Dimensions, RefreshControl } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import { IconSymbol } from '@/components/ui/IconSymbol';
@@ -6,6 +6,7 @@ import { useTheme } from '@/contexts/ThemeContext';
 import { getColors } from '@/constants/Colors';
 import { useState, useEffect } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import React from 'react';
 
 import { Header } from '@/components/Header';
 import { ThemedText } from '@/components/ThemedText';
@@ -16,6 +17,7 @@ const { width: SCREEN_WIDTH } = Dimensions.get('window');
 export default function ReportsScreen() {
   const { isDarkMode } = useTheme();
   const colors = getColors(isDarkMode);
+  const [refreshing, setRefreshing] = useState(false);
   const [reportData, setReportData] = useState({
     overallProgress: {
       percentage: 0,
@@ -38,62 +40,68 @@ export default function ReportsScreen() {
     recentActivity: [] as Array<{ type: string; subject: string; score?: number; duration?: string; status?: string; date: string }>,
   });
 
-  useEffect(() => {
-    const loadReportData = async () => {
-      try {
-        // Load recent activities
-        const activitiesJson = await AsyncStorage.getItem('recentActivities');
-        let activities: any[] = [];
-        if (activitiesJson) {
-          activities = JSON.parse(activitiesJson);
-          const recentActivity = activities.map((activity: any) => ({
-            type: activity.type,
-            subject: activity.subject,
-            score: activity.type === 'mcq' ? parseInt(activity.details.match(/\d+/)[0]) : undefined,
-            duration: activity.duration,
-            status: activity.status,
-            date: new Date(activity.timestamp).toLocaleDateString()
-          }));
-          setReportData(prev => ({ ...prev, recentActivity }));
-        }
-
-        // Calculate study hours from activities
-        const studyHours = activities
-          .filter((activity: any) => activity.type === 'study')
-          .reduce((total: number, activity: any) => {
-            const hours = parseInt(activity.duration?.replace('h', '') || '0');
-            return total + hours;
-          }, 0);
-
-        // Calculate performance metrics
-        const mcqActivities = activities.filter((activity: any) => activity.type === 'mcq');
-        const totalQuizzes = mcqActivities.length;
-        const totalScore = mcqActivities.reduce((sum: number, activity: any) => {
-          const score = parseInt(activity.details.match(/\d+/)[0]);
-          return sum + score;
-        }, 0);
-        const averageScore = totalQuizzes > 0 ? Math.round(totalScore / totalQuizzes) : 0;
-
-        // Update report data
-        setReportData(prev => ({
-          ...prev,
-          overallProgress: {
-            ...prev.overallProgress,
-            studyHours,
-          },
-          performance: {
-            ...prev.performance,
-            averageScore,
-            quizzesTaken: totalQuizzes,
-            successRate: averageScore,
-            improvement: '+5%', // This could be calculated based on historical data
-          },
+  const loadReportData = async () => {
+    try {
+      // Load recent activities
+      const activitiesJson = await AsyncStorage.getItem('recentActivities');
+      let activities: any[] = [];
+      if (activitiesJson) {
+        activities = JSON.parse(activitiesJson);
+        const recentActivity = activities.map((activity: any) => ({
+          type: activity.type,
+          subject: activity.subject,
+          score: activity.type === 'mcq' ? parseInt(activity.details.match(/\d+/)[0]) : undefined,
+          duration: activity.duration,
+          status: activity.status,
+          date: new Date(activity.timestamp).toLocaleDateString()
         }));
-      } catch (error) {
-        console.error('Error loading report data:', error);
+        setReportData(prev => ({ ...prev, recentActivity }));
       }
-    };
 
+      // Calculate study hours from activities
+      const studyHours = activities
+        .filter((activity: any) => activity.type === 'study')
+        .reduce((total: number, activity: any) => {
+          const hours = parseInt(activity.duration?.replace('h', '') || '0');
+          return total + hours;
+        }, 0);
+
+      // Calculate performance metrics
+      const mcqActivities = activities.filter((activity: any) => activity.type === 'mcq');
+      const totalQuizzes = mcqActivities.length;
+      const totalScore = mcqActivities.reduce((sum: number, activity: any) => {
+        const score = parseInt(activity.details.match(/\d+/)[0]);
+        return sum + score;
+      }, 0);
+      const averageScore = totalQuizzes > 0 ? Math.round(totalScore / totalQuizzes) : 0;
+
+      // Update report data
+      setReportData(prev => ({
+        ...prev,
+        overallProgress: {
+          ...prev.overallProgress,
+          studyHours,
+        },
+        performance: {
+          ...prev.performance,
+          averageScore,
+          quizzesTaken: totalQuizzes,
+          successRate: averageScore,
+          improvement: '+5%', // This could be calculated based on historical data
+        },
+      }));
+    } catch (error) {
+      console.error('Error loading report data:', error);
+    }
+  };
+
+  const onRefresh = React.useCallback(async () => {
+    setRefreshing(true);
+    await loadReportData();
+    setRefreshing(false);
+  }, []);
+
+  useEffect(() => {
     loadReportData();
   }, []);
 
@@ -112,7 +120,17 @@ export default function ReportsScreen() {
   return (
     <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]}>
       <Header title="Learning Reports" />
-      <ScrollView style={styles.scrollView}>
+      <ScrollView 
+        style={styles.scrollView}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            tintColor={colors.tint}
+            colors={[colors.tint]}
+          />
+        }
+      >
         <ThemedView style={[styles.container, { backgroundColor: colors.background }]}>
           {/* Overall Progress Card */}
           <ThemedView style={[styles.card, { backgroundColor: colors.background }]}>
