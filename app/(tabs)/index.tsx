@@ -6,6 +6,7 @@ import { IconSymbol } from '@/components/ui/IconSymbol';
 import { useState, useRef, useEffect } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import React from 'react';
+import { useFocusEffect } from '@react-navigation/native';
 
 import { Header } from '@/components/Header';
 import { ThemedText } from '@/components/ThemedText';
@@ -85,9 +86,20 @@ export default function HomeScreen() {
     loadRecentActivities();
   }, []);
 
+  // Add useFocusEffect to reload data when screen comes into focus
+  useFocusEffect(
+    React.useCallback(() => {
+      const loadData = async () => {
+        await loadRecentActivities();
+        await loadReportData();
+      };
+      loadData();
+    }, [])
+  );
+
   const onRefresh = React.useCallback(async () => {
     setRefreshing(true);
-    await loadRecentActivities();
+    await Promise.all([loadRecentActivities(), loadReportData()]);
     setRefreshing(false);
   }, []);
 
@@ -133,107 +145,103 @@ export default function HomeScreen() {
     return () => clearInterval(interval);
   }, []);
 
-  useEffect(() => {
-    const loadReportData = async () => {
-      try {
-        // Load recent activities
-        const activitiesJson = await AsyncStorage.getItem('recentActivities');
-        let activities: any[] = [];
-        if (activitiesJson) {
-          activities = JSON.parse(activitiesJson);
-        }
-
-        // Calculate study hours from activities
-        const studyHours = activities
-          .filter((activity: any) => activity.type === 'study')
-          .reduce((total: number, activity: any) => {
-            const hours = parseInt(activity.duration?.replace('h', '') || '0');
-            return total + hours;
-          }, 0);
-
-        // Calculate performance metrics
-        const mcqActivities = activities.filter((activity: any) => activity.type === 'mcq');
-        const totalQuizzes = mcqActivities.length;
-        const totalScore = mcqActivities.reduce((sum: number, activity: any) => {
-          const score = parseInt(activity.details.match(/\d+/)?.[0] || '0');
-          return sum + score;
-        }, 0);
-        const averageScore = totalQuizzes > 0 ? Math.round(totalScore / totalQuizzes) : 0;
-
-        // Calculate learning streak
-        const today = new Date();
-        const yesterday = new Date(today);
-        yesterday.setDate(yesterday.getDate() - 1);
-        
-        const hasActivityToday = activities.some((activity: any) => {
-          const activityDate = new Date(activity.timestamp);
-          return activityDate.toDateString() === today.toDateString();
-        });
-
-        const hasActivityYesterday = activities.some((activity: any) => {
-          const activityDate = new Date(activity.timestamp);
-          return activityDate.toDateString() === yesterday.toDateString();
-        });
-
-        const currentStreak = hasActivityToday ? 1 : 0;
-        const bestStreak = 1; // This could be stored and retrieved from AsyncStorage
-
-        // Create report cards based on available data
-        const cards: ReportCard[] = [];
-
-        // Study Progress Card
-        if (studyHours > 0) {
-          cards.push({
-            title: 'Study Progress',
-            number: `${studyHours}h`,
-            subtitle: 'Total Study Hours',
-            gradient: ['#4A2B8E', '#6B54AE', '#8B6BCE'] as const,
-            icon: 'chart.bar',
-            stats: [
-              { label: 'Study Hours', value: `${studyHours}h` },
-              { label: 'Quizzes Taken', value: `${totalQuizzes}` }
-            ]
-          });
-        }
-
-        // Performance Card
-        if (totalQuizzes > 0) {
-          cards.push({
-            title: 'Performance',
-            number: `${averageScore}%`,
-            subtitle: 'Average Score',
-            gradient: ['#0A3D0A', '#1B5E20', '#2E7D32'] as const,
-            icon: 'trophy.fill',
-            stats: [
-              { label: 'Quizzes Taken', value: `${totalQuizzes}` },
-              { label: 'Success Rate', value: `${averageScore}%` }
-            ]
-          });
-        }
-
-        // Learning Streak Card
-        if (currentStreak > 0 || hasActivityYesterday) {
-          cards.push({
-            title: 'Learning Streak',
-            number: `${currentStreak}`,
-            subtitle: 'Days Active',
-            gradient: ['#002171', '#0D47A1', '#1976D2'] as const,
-            icon: 'clock.fill',
-            stats: [
-              { label: 'Current Streak', value: `${currentStreak}d` },
-              { label: 'Best Streak', value: `${bestStreak}d` }
-            ]
-          });
-        }
-
-        setReportCards(cards);
-      } catch (error) {
-        console.error('Error loading report data:', error);
+  const loadReportData = async () => {
+    try {
+      // Load recent activities
+      const activitiesJson = await AsyncStorage.getItem('recentActivities');
+      let activities: any[] = [];
+      if (activitiesJson) {
+        activities = JSON.parse(activitiesJson);
       }
-    };
 
-    loadReportData();
-  }, [refreshing]);
+      // Calculate study hours from activities
+      const studyHours = activities
+        .filter((activity: any) => activity.type === 'study')
+        .reduce((total: number, activity: any) => {
+          const hours = parseInt(activity.duration?.replace('h', '') || '0');
+          return total + hours;
+        }, 0);
+
+      // Calculate performance metrics
+      const mcqActivities = activities.filter((activity: any) => activity.type === 'mcq');
+      const totalQuizzes = mcqActivities.length;
+      const totalScore = mcqActivities.reduce((sum: number, activity: any) => {
+        const score = parseInt(activity.details.match(/\d+/)?.[0] || '0');
+        return sum + score;
+      }, 0);
+      const averageScore = totalQuizzes > 0 ? Math.round(totalScore / totalQuizzes) : 0;
+
+      // Calculate learning streak
+      const today = new Date();
+      const yesterday = new Date(today);
+      yesterday.setDate(yesterday.getDate() - 1);
+      
+      const hasActivityToday = activities.some((activity: any) => {
+        const activityDate = new Date(activity.timestamp);
+        return activityDate.toDateString() === today.toDateString();
+      });
+
+      const hasActivityYesterday = activities.some((activity: any) => {
+        const activityDate = new Date(activity.timestamp);
+        return activityDate.toDateString() === yesterday.toDateString();
+      });
+
+      const currentStreak = hasActivityToday ? 1 : 0;
+      const bestStreak = 1; // This could be stored and retrieved from AsyncStorage
+
+      // Create report cards based on available data
+      const cards: ReportCard[] = [];
+
+      // Study Progress Card
+      if (studyHours > 0) {
+        cards.push({
+          title: 'Study Progress',
+          number: `${studyHours}h`,
+          subtitle: 'Total Study Hours',
+          gradient: ['#4A2B8E', '#6B54AE', '#8B6BCE'] as const,
+          icon: 'chart.bar',
+          stats: [
+            { label: 'Study Hours', value: `${studyHours}h` },
+            { label: 'Quizzes Taken', value: `${totalQuizzes}` }
+          ]
+        });
+      }
+
+      // Performance Card
+      if (totalQuizzes > 0) {
+        cards.push({
+          title: 'Performance',
+          number: `${averageScore}%`,
+          subtitle: 'Average Score',
+          gradient: ['#0A3D0A', '#1B5E20', '#2E7D32'] as const,
+          icon: 'trophy.fill',
+          stats: [
+            { label: 'Quizzes Taken', value: `${totalQuizzes}` },
+            { label: 'Success Rate', value: `${averageScore}%` }
+          ]
+        });
+      }
+
+      // Learning Streak Card
+      if (currentStreak > 0 || hasActivityYesterday) {
+        cards.push({
+          title: 'Learning Streak',
+          number: `${currentStreak}`,
+          subtitle: 'Days Active',
+          gradient: ['#002171', '#0D47A1', '#1976D2'] as const,
+          icon: 'clock.fill',
+          stats: [
+            { label: 'Current Streak', value: `${currentStreak}d` },
+            { label: 'Best Streak', value: `${bestStreak}d` }
+          ]
+        });
+      }
+
+      setReportCards(cards);
+    } catch (error) {
+      console.error('Error loading report data:', error);
+    }
+  };
 
   const getShimmerStyle = () => {
     const translateX = shimmerAnim.interpolate({
