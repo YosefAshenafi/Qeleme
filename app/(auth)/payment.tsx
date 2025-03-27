@@ -53,14 +53,14 @@ export default function PaymentScreen() {
                   }]}
                 >
                   <LinearGradient
-                    colors={isDarkMode ? ['#2D1B4E', '#1A1B2E'] : ['#FFFFFF', '#F5F3FF']}
+                    colors={[isDarkMode ? '#2D1B4D' : '#FFFFFF', isDarkMode ? '#2D1B4D' : '#FFFFFF']}
                     style={styles.paymentOptionGradient}
                   >
                     <View style={styles.paymentOptionHeader}>
                       <ThemedText style={[styles.paymentOptionTitle, { color: isDarkMode ? '#A78BFA' : '#7C3AED' }]}>Free Trial</ThemedText>
-                      <View style={[styles.badge, { backgroundColor: isDarkMode ? '#6D28D9' : '#EDE9FE' }]}>
-                        <ThemedText style={[styles.badgeText, { color: isDarkMode ? '#A78BFA' : '#7C3AED' }]}>Basic trial</ThemedText>
-                      </View>
+                      {/* <View style={[styles.badge, { backgroundColor: isDarkMode ? '#6D28D9' : '#EDE9FE' }]}>
+                        <ThemedText style={[styles.badgeText, { color: isDarkMode ? '#A78BFA' : '#7C3AED' }]}>Starter</ThemedText>
+                      </View> */}
                     </View>
                     <View style={styles.featuresContainer}>
                       <View style={styles.featureItem}>
@@ -80,6 +80,12 @@ export default function PaymentScreen() {
                       <ThemedText style={[styles.paymentOptionPrice, { color: isDarkMode ? '#A78BFA' : '#7C3AED' }]}>ETB 0</ThemedText>
                       <ThemedText style={[styles.paymentOptionPeriod, { color: isDarkMode ? '#E9D8FD' : '#4C1D95' }]}></ThemedText>
                     </View>
+                    <TouchableOpacity 
+                      style={[styles.getStartedButton, { backgroundColor: isDarkMode ? '#6D28D9' : '#7C3AED' }]}
+                      onPress={() => router.replace('/(tabs)')}
+                    >
+                      <ThemedText style={styles.getStartedButtonText}>Get Started</ThemedText>
+                    </TouchableOpacity>
                   </LinearGradient>
                 </TouchableOpacity>
 
@@ -90,7 +96,7 @@ export default function PaymentScreen() {
                   onFailure={handlePaymentFailure}
                 >
                   <LinearGradient
-                    colors={['#7C3AED', '#5B21B6']}
+                    colors={[isDarkMode ? '#4B3A7A' : '#6B54AE', isDarkMode ? '#4B3A7A' : '#6B54AE']}
                     style={styles.paymentOptionGradient}
                   >
                     <View style={styles.paymentOptionHeader}>
@@ -117,6 +123,11 @@ export default function PaymentScreen() {
                       <ThemedText style={[styles.paymentOptionPrice, { color: '#FFFFFF' }]}>ETB 499</ThemedText>
                       <ThemedText style={[styles.paymentOptionPeriod, { color: '#FFFFFF' }]}>/6 months</ThemedText>
                     </View>
+                    <TouchableOpacity 
+                      style={[styles.getStartedButton, { backgroundColor: 'rgba(255, 255, 255, 0.15)' }]}
+                    >
+                      <ThemedText style={styles.getStartedButtonText}>Get Started</ThemedText>
+                    </TouchableOpacity>
                   </LinearGradient>
                 </PaymentButton>
 
@@ -126,35 +137,45 @@ export default function PaymentScreen() {
                   onSuccess={handlePaymentSuccess}
                   onFailure={handlePaymentFailure}
                 >
-                  <LinearGradient
-                    colors={['#4F46E5', '#3730A3']}
-                    style={styles.paymentOptionGradient}
-                  >
-                    <View style={styles.paymentOptionHeader}>
-                      <ThemedText style={[styles.paymentOptionTitle, { color: '#FFFFFF' }]}>12 Month Plan</ThemedText>
-                      <View style={[styles.badge, { backgroundColor: 'rgba(255, 255, 255, 0.15)' }]}>
-                        <ThemedText style={[styles.badgeText, { color: '#FFFFFF' }]}>Best Value</ThemedText>
+                  <View style={[styles.paymentOption, {
+                    borderColor: isDarkMode ? '#6D28D9' : '#7C3AED',
+                    borderWidth: 2,
+                  }]}>
+                    <LinearGradient
+                      colors={[isDarkMode ? '#2D1B4D' : '#FFFFFF', isDarkMode ? '#2D1B4D' : '#FFFFFF']}
+                      style={styles.paymentOptionGradient}
+                    >
+                      <View style={styles.paymentOptionHeader}>
+                        <ThemedText style={[styles.paymentOptionTitle, { color: isDarkMode ? '#A78BFA' : '#7C3AED' }]}>12 Month Plan</ThemedText>
+                        <View style={[styles.badge, { backgroundColor: isDarkMode ? '#6D28D9' : '#EDE9FE' }]}>
+                          <ThemedText style={[styles.badgeText, { color: isDarkMode ? '#A78BFA' : '#7C3AED' }]}>Best Value</ThemedText>
+                        </View>
                       </View>
-                    </View>
-                    <View style={styles.featuresContainer}>
-                      <View style={styles.featureItem}>
-                        <Ionicons name="infinite" size={20} color="#FFFFFF" />
-                        <ThemedText style={[styles.featureText, { color: '#FFFFFF' }]}>Unlimited Questions</ThemedText>
+                      <View style={styles.featuresContainer}>
+                        <View style={styles.featureItem}>
+                          <Ionicons name="infinite" size={20} color={isDarkMode ? '#A78BFA' : '#7C3AED'} />
+                          <ThemedText style={[styles.featureText, { color: isDarkMode ? '#E9D8FD' : '#4C1D95' }]}>Unlimited Questions</ThemedText>
+                        </View>
+                        <View style={styles.featureItem}>
+                          <Ionicons name="infinite" size={20} color={isDarkMode ? '#A78BFA' : '#7C3AED'} />
+                          <ThemedText style={[styles.featureText, { color: isDarkMode ? '#E9D8FD' : '#4C1D95' }]}>Unlimited Flashcards</ThemedText>
+                        </View>
+                        <View style={styles.featureItem}>
+                          <Ionicons name="infinite" size={20} color={isDarkMode ? '#A78BFA' : '#7C3AED'} />
+                          <ThemedText style={[styles.featureText, { color: isDarkMode ? '#E9D8FD' : '#4C1D95' }]}>Unlimited Homework Helps</ThemedText>
+                        </View>
                       </View>
-                      <View style={styles.featureItem}>
-                        <Ionicons name="infinite" size={20} color="#FFFFFF" />
-                        <ThemedText style={[styles.featureText, { color: '#FFFFFF' }]}>Unlimited Flashcards</ThemedText>
+                      <View style={styles.priceContainer}>
+                        <ThemedText style={[styles.paymentOptionPrice, { color: isDarkMode ? '#A78BFA' : '#7C3AED' }]}>ETB 799</ThemedText>
+                        <ThemedText style={[styles.paymentOptionPeriod, { color: isDarkMode ? '#E9D8FD' : '#4C1D95' }]}>/12 months</ThemedText>
                       </View>
-                      <View style={styles.featureItem}>
-                        <Ionicons name="infinite" size={20} color="#FFFFFF" />
-                        <ThemedText style={[styles.featureText, { color: '#FFFFFF' }]}>Unlimited Homework Helps</ThemedText>
-                      </View>
-                    </View>
-                    <View style={styles.priceContainer}>
-                      <ThemedText style={[styles.paymentOptionPrice, { color: '#FFFFFF' }]}>ETB 799</ThemedText>
-                      <ThemedText style={[styles.paymentOptionPeriod, { color: '#FFFFFF' }]}>/12 months</ThemedText>
-                    </View>
-                  </LinearGradient>
+                      <TouchableOpacity 
+                        style={[styles.getStartedButton, { backgroundColor: isDarkMode ? '#6D28D9' : '#7C3AED' }]}
+                      >
+                        <ThemedText style={styles.getStartedButtonText}>Get Started</ThemedText>
+                      </TouchableOpacity>
+                    </LinearGradient>
+                  </View>
                 </PaymentButton>
               </View>
             </View>
@@ -261,5 +282,17 @@ const styles = StyleSheet.create({
   },
   paymentOptionPeriod: {
     fontSize: 16,
+  },
+  getStartedButton: {
+    marginTop: 24,
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+    borderRadius: 12,
+    alignItems: 'center',
+  },
+  getStartedButtonText: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontWeight: '600',
   },
 }); 
