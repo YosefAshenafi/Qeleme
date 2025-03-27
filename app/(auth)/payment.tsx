@@ -81,7 +81,7 @@ export default function PaymentScreen() {
                       <ThemedText style={[styles.paymentOptionPeriod, { color: isDarkMode ? '#E9D8FD' : '#4C1D95' }]}></ThemedText>
                     </View>
                     <TouchableOpacity 
-                      style={[styles.getStartedButton, { backgroundColor: isDarkMode ? '#6D28D9' : '#7C3AED' }]}
+                      style={[styles.getStartedButton, { backgroundColor: isDarkMode ? '#6D28D9' : '#6B54AE' }]}
                       onPress={() => router.replace('/(tabs)')}
                     >
                       <ThemedText style={styles.getStartedButtonText}>Get Started</ThemedText>
@@ -125,6 +125,7 @@ export default function PaymentScreen() {
                     </View>
                     <TouchableOpacity 
                       style={[styles.getStartedButton, { backgroundColor: 'rgba(255, 255, 255, 0.15)' }]}
+                      onPress={() => {}}
                     >
                       <ThemedText style={styles.getStartedButtonText}>Get Started</ThemedText>
                     </TouchableOpacity>
@@ -170,7 +171,8 @@ export default function PaymentScreen() {
                         <ThemedText style={[styles.paymentOptionPeriod, { color: isDarkMode ? '#E9D8FD' : '#4C1D95' }]}>/12 months</ThemedText>
                       </View>
                       <TouchableOpacity 
-                        style={[styles.getStartedButton, { backgroundColor: isDarkMode ? '#6D28D9' : '#7C3AED' }]}
+                        style={[styles.getStartedButton, { backgroundColor: isDarkMode ? '#6D28D9' : '#6B54AE' }]}
+                        onPress={() => {}}
                       >
                         <ThemedText style={styles.getStartedButtonText}>Get Started</ThemedText>
                       </TouchableOpacity>
