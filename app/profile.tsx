@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, Animated } from 'react-native';
 import { useColorScheme } from '@/hooks/useColorScheme';
 import { Colors } from '@/constants/Colors';
@@ -12,6 +12,8 @@ import { ThemeChooser } from '@/components/profile/ThemeChooser';
 import { getColors } from '@/constants/Colors';
 import { useTheme } from '@/contexts/ThemeContext';
 import { useAuth } from '@/contexts/AuthContext';
+import * as ImagePicker from 'expo-image-picker';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 interface AccordionItemProps {
   title: string;
@@ -73,7 +75,51 @@ export default function ProfileScreen() {
   const { isDarkMode, toggleTheme } = useTheme();
   const { logout } = useAuth();
   const [openAccordion, setOpenAccordion] = useState<string | null>(null);
+  const [profileImage, setProfileImage] = useState<string | null>(null);
   const colors = getColors(isDarkMode);
+
+  useEffect(() => {
+    loadProfileImage();
+  }, []);
+
+  const loadProfileImage = async () => {
+    try {
+      const imageUri = await AsyncStorage.getItem('profileImage');
+      if (imageUri) {
+        setProfileImage(imageUri);
+      }
+    } catch (error) {
+      console.error('Error loading profile image:', error);
+    }
+  };
+
+  const pickImage = async () => {
+    try {
+      // Request permission
+      const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      if (status !== 'granted') {
+        alert('Sorry, we need camera roll permissions to make this work!');
+        return;
+      }
+
+      // Pick the image
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsEditing: true,
+        aspect: [1, 1],
+        quality: 0.8,
+      });
+
+      if (!result.canceled) {
+        // Save the image URI
+        await AsyncStorage.setItem('profileImage', result.assets[0].uri);
+        setProfileImage(result.assets[0].uri);
+      }
+    } catch (error) {
+      console.error('Error picking image:', error);
+      alert('Error picking image. Please try again.');
+    }
+  };
 
   const profileData = {
     englishName: 'Yosef Ashenafi',
@@ -150,12 +196,21 @@ export default function ProfileScreen() {
         {/* Profile Header */}
         <View style={[styles.profileHeader, { backgroundColor: colors.tint }]}>
           <View style={styles.profileImageContainer}>
-            <Image
-              source={require('@/assets/images/profile/YOSEF.jpeg')}
-              style={styles.profileImage}
-            />
-            <TouchableOpacity style={styles.profileEditButton}>
-              <IconSymbol name="pencil.circle.fill" size={24} color={colors.background} />
+            {profileImage ? (
+              <Image
+                source={{ uri: profileImage }}
+                style={styles.profileImage}
+              />
+            ) : (
+              <View style={[styles.profileImagePlaceholder, { backgroundColor: colors.background }]}>
+                <IconSymbol name="person" size={60} color={colors.tint} />
+              </View>
+            )}
+            <TouchableOpacity 
+              style={styles.profileEditButton}
+              onPress={pickImage}
+            >
+              <IconSymbol name="pencil.circle.fill" size={24} color={colors.tint} />
             </TouchableOpacity>
           </View>
           <Text style={[styles.englishName, { color: colors.background }]}>{profileData.englishName}</Text>
@@ -424,5 +479,14 @@ const styles = StyleSheet.create({
   themeToggleText: {
     fontSize: 14,
     fontWeight: '500',
+  },
+  profileImagePlaceholder: {
+    width: 120,
+    height: 120,
+    borderRadius: 60,
+    borderWidth: 4,
+    borderColor: 'white',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 }); 
