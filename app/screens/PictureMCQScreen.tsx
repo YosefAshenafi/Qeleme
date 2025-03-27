@@ -90,6 +90,7 @@ export default function PictureMCQScreen() {
   const [dropZones, setDropZones] = useState<{ [key: string]: { x: number, y: number, width: number, height: number } }>({});
   const [hoveredOption, setHoveredOption] = useState<string | null>(null);
   const [droppedOption, setDroppedOption] = useState<string | null>(null);
+  const [showResult, setShowResult] = useState(false);
 
   // Get the first grade's first subject's first chapter's questions
   const questions = typedPictureQuestionsData.grades[0]?.subjects[0]?.chapters[0]?.questions || [];
@@ -291,6 +292,7 @@ export default function PictureMCQScreen() {
     setShowCelebration(false);
     setShowWrongAnswer(false);
     setScore(0);
+    setShowResult(false);
   };
 
   const getMessage = () => {
@@ -304,13 +306,7 @@ export default function PictureMCQScreen() {
     if (!currentQuestion) return;
     const currentScore = Number(score) || 0; // Ensure score is a number
     if (isLastQuestion) {
-      router.push({
-        pathname: '/picture-mcq-result',
-        params: { 
-          score: currentScore,
-          totalQuestions: questions.length 
-        }
-      });
+      setShowResult(true);
     } else {
       handleNextQuestion();
     }
@@ -354,6 +350,81 @@ export default function PictureMCQScreen() {
                 <IconSymbol name="house.fill" size={24} color="#4CAF50" />
               </TouchableOpacity>
             </ThemedView>
+          </ThemedView>
+        </SafeAreaView>
+      </GestureHandlerRootView>
+    );
+  }
+
+  if (showResult) {
+    return (
+      <GestureHandlerRootView style={{ flex: 1 }}>
+        <SafeAreaView style={[styles.safeArea, { backgroundColor: isDarkMode ? '#000000' : '#FFFFFF' }]}>
+          <Header title="Quiz Results" />
+          <ThemedView style={[styles.container, { backgroundColor: isDarkMode ? '#000000' : '#FFFFFF' }]}>
+            <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent}>
+              <Animated.View 
+                style={[
+                  styles.resultCard,
+                  { backgroundColor: colors.card }
+                ]}
+              >
+                <LinearGradient
+                  colors={[colors.cardGradientStart, colors.cardGradientEnd]}
+                  style={StyleSheet.absoluteFill}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 1 }}
+                />
+
+                <View style={styles.trophyContainer}>
+                  <IconSymbol 
+                    name="trophy.fill" 
+                    size={80} 
+                    color={percentage >= 90 ? '#FFD700' : colors.tint} 
+                  />
+                </View>
+
+                <View style={styles.resultContent}>
+                  <View style={styles.scoreContainer}>
+                    <ThemedText style={[styles.scoreLabel, { color: colors.text }]}>
+                      Your Score
+                    </ThemedText>
+                    <ThemedText style={[styles.scoreText, { color: colors.text }]}>
+                      {score}/{questions.length}
+                    </ThemedText>
+                  </View>
+
+                  <View style={[styles.percentageContainer, { 
+                    backgroundColor: colors.cardAlt,
+                    borderColor: colors.border 
+                  }]}>
+                    <ThemedText style={[styles.percentageText, { color: colors.text }]}>
+                      {percentage}%
+                    </ThemedText>
+                  </View>
+                  
+                  <View style={[styles.messageContainer, { 
+                    backgroundColor: colors.cardAlt,
+                    borderColor: colors.border 
+                  }]}>
+                    <ThemedText style={[styles.messageText, { color: colors.text }]}>
+                      {getMessage()}
+                    </ThemedText>
+                  </View>
+                </View>
+              </Animated.View>
+
+              {/* Action Buttons */}
+              <ThemedView style={[styles.actionButtons, { backgroundColor: colors.background }]}>
+                <TouchableOpacity
+                  style={[styles.button, { backgroundColor: colors.tint }]}
+                  onPress={handleRetry}
+                >
+                  <ThemedText style={[styles.buttonText, { color: colors.background }]}>Try Again</ThemedText>
+                  <Ionicons name="repeat" size={24} color={colors.background} />
+                </TouchableOpacity>
+              </ThemedView>
+            </ScrollView>
           </ThemedView>
         </SafeAreaView>
       </GestureHandlerRootView>
@@ -681,11 +752,7 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontWeight: '600',
   },
-  resultScrollContent: {
-    flexGrow: 1,
-    paddingVertical: 20,
-  },
-  pictureResultCard: {
+  resultCard: {
     width: '90%',
     alignSelf: 'center',
     borderRadius: 24,
@@ -693,98 +760,81 @@ const styles = StyleSheet.create({
     elevation: 8,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    backgroundColor: '#fff',
+    shadowOpacity: 0.2,
+    shadowRadius: 12,
     overflow: 'hidden',
-    borderWidth: 4,
-    borderColor: '#FFA000',
+    marginTop: 16,
   },
-  pictureTrophyContainer: {
+  trophyContainer: {
     alignItems: 'center',
-    paddingVertical: 20,
+    paddingVertical: 16,
     backgroundColor: 'transparent',
   },
-  pictureScoreContainer: {
+  resultContent: {
+    gap: 16,
+  },
+  scoreContainer: {
     alignItems: 'center',
-    marginTop: 20,
   },
-  pictureScoreLabel: {
+  scoreLabel: {
     fontSize: 24,
-    color: '#FFA000',
-    marginBottom: 8,
-    fontWeight: 'bold',
+    marginBottom: 16,
+    fontWeight: '600',
   },
-  pictureScoreText: {
-    fontSize: 72,
+  scoreText: {
+    paddingTop: 30,
+    fontSize: 48,
     fontWeight: '700',
-    color: '#FFA000',
+    textAlign: 'center',
     marginBottom: 16,
   },
-  picturePercentageContainer: {
-    backgroundColor: '#FFF3E0',
+  percentageContainer: {
+    alignSelf: 'center',
     paddingHorizontal: 24,
     paddingVertical: 12,
     borderRadius: 30,
-    borderWidth: 3,
-    borderColor: '#FFA000',
+    borderWidth: 2,
+    marginBottom: 16,
   },
-  picturePercentageText: {
-    fontSize: 32,
-    fontWeight: '600',
-    color: '#FFA000',
-  },
-  pictureMessageContainer: {
-    marginTop: 24,
-    padding: 20,
-    backgroundColor: 'rgba(255, 255, 255, 0.9)',
-    borderRadius: 20,
-    borderWidth: 3,
-    borderColor: '#FFA000',
-  },
-  pictureMessageText: {
+  percentageText: {
     fontSize: 24,
+    fontWeight: '600',
     textAlign: 'center',
-    color: '#FFA000',
+  },
+  messageContainer: {
+    padding: 20,
+    borderRadius: 20,
+    borderWidth: 2,
+  },
+  messageText: {
+    fontSize: 20,
+    textAlign: 'center',
     lineHeight: 32,
     fontWeight: '600',
   },
-  pictureActionButtons: {
-    marginTop: 32,
-    gap: 16,
+  actionButtons: {
+    width: '100%',
+    gap: 12,
+    marginTop: 24,
+    marginBottom: 40,
     paddingHorizontal: 20,
   },
-  pictureButton: {
+  button: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    padding: 20,
-    borderRadius: 20,
+    padding: 16,
+    borderRadius: 16,
     gap: 12,
+    width: '100%',
   },
-  pictureRetryButton: {
-    backgroundColor: '#FFA000',
-  },
-  pictureHomeButton: {
-    backgroundColor: 'transparent',
-    borderWidth: 3,
-    borderColor: '#FFA000',
-  },
-  pictureRetryButtonText: {
-    color: '#fff',
-    fontSize: 24,
-    fontWeight: '600',
-  },
-  pictureHomeButtonText: {
-    color: '#FFA000',
-    fontSize: 24,
-    fontWeight: '600',
-  },
-  unauthorizedText: {
+  buttonText: {
     fontSize: 18,
-    textAlign: 'center',
-    color: '#6B54AE',
-    marginBottom: 20,
+    fontWeight: '600',
+  },
+  scrollContent: {
+    flexGrow: 1,
+    paddingVertical: 20,
   },
   celebrationContainer: {
     position: 'absolute',
@@ -902,5 +952,29 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: '600',
     color: '#fff',
+  },
+  unauthorizedText: {
+    fontSize: 18,
+    textAlign: 'center',
+    color: '#6B54AE',
+    marginBottom: 20,
+  },
+  pictureButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 20,
+    borderRadius: 20,
+    gap: 12,
+  },
+  pictureHomeButton: {
+    backgroundColor: 'transparent',
+    borderWidth: 3,
+    borderColor: '#FFA000',
+  },
+  pictureHomeButtonText: {
+    color: '#FFA000',
+    fontSize: 24,
+    fontWeight: '600',
   },
 }); 
