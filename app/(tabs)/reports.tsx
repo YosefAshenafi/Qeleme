@@ -1,10 +1,10 @@
-import { StyleSheet, ScrollView, View, Dimensions, RefreshControl } from 'react-native';
+import { StyleSheet, ScrollView, View, Dimensions, RefreshControl, TouchableOpacity, Animated } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import { IconSymbol } from '@/components/ui/IconSymbol';
 import { useTheme } from '@/contexts/ThemeContext';
 import { getColors } from '@/constants/Colors';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import React from 'react';
 
@@ -39,6 +39,9 @@ export default function ReportsScreen() {
     subjectBreakdown: [] as Array<{ subject: string; progress: number; score: number }>,
     recentActivity: [] as Array<{ type: string; subject: string; score?: number; duration?: string; status?: string; date: string }>,
   });
+  const [isInfoExpanded, setIsInfoExpanded] = useState(false);
+  const animatedHeight = useRef(new Animated.Value(0)).current;
+  const animatedRotate = useRef(new Animated.Value(0)).current;
 
   const loadReportData = async () => {
     try {
@@ -75,11 +78,40 @@ export default function ReportsScreen() {
       }, 0);
       const averageScore = totalQuizzes > 0 ? Math.round(totalScore / totalQuizzes) : 0;
 
+      // Calculate subject breakdown and completed topics
+      const subjectProgress = new Map<string, { totalQuizzes: number; totalScore: number }>();
+      let totalTopics = 0;
+      let completedTopics = 0;
+
+      activities.forEach((activity: any) => {
+        if (activity.subject) {
+          if (!subjectProgress.has(activity.subject)) {
+            subjectProgress.set(activity.subject, { totalQuizzes: 0, totalScore: 0 });
+            totalTopics++;
+          }
+          
+          const subjectData = subjectProgress.get(activity.subject)!;
+          if (activity.type === 'mcq') {
+            subjectData.totalQuizzes++;
+            subjectData.totalScore += parseInt(activity.details.match(/\d+/)[0]);
+            if (subjectData.totalQuizzes >= 5 && (subjectData.totalScore / subjectData.totalQuizzes) >= 70) {
+              completedTopics++;
+            }
+          }
+        }
+      });
+
+      // Calculate overall progress percentage
+      const overallProgress = totalTopics > 0 ? Math.round((completedTopics / totalTopics) * 100) : 0;
+
       // Update report data
       setReportData(prev => ({
         ...prev,
         overallProgress: {
           ...prev.overallProgress,
+          percentage: overallProgress,
+          totalTopics,
+          completedTopics,
           studyHours,
         },
         performance: {
@@ -116,6 +148,30 @@ export default function ReportsScreen() {
       ? ['#0D47A1', '#1976D2', '#2196F3'] as const
       : ['#1976D2', '#2196F3', '#64B5F6'] as const,
   };
+
+  const toggleInfo = () => {
+    const toValue = isInfoExpanded ? 0 : 1;
+    Animated.parallel([
+      Animated.spring(animatedHeight, {
+        toValue,
+        useNativeDriver: false,
+        friction: 8,
+        tension: 40,
+      }),
+      Animated.spring(animatedRotate, {
+        toValue,
+        useNativeDriver: true,
+        friction: 8,
+        tension: 40,
+      }),
+    ]).start();
+    setIsInfoExpanded(!isInfoExpanded);
+  };
+
+  const spin = animatedRotate.interpolate({
+    inputRange: [0, 1],
+    outputRange: ['0deg', '180deg'],
+  });
 
   return (
     <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]}>
@@ -319,6 +375,96 @@ export default function ReportsScreen() {
               </ThemedView>
             ))}
           </ThemedView>
+
+          {/* How Reports are Calculated */}
+          <ThemedView style={[styles.section, { backgroundColor: colors.background, marginBottom: 40 }]}>
+            <TouchableOpacity 
+              onPress={toggleInfo}
+              style={[styles.accordionHeader, { 
+                backgroundColor: colors.cardAlt,
+                borderColor: colors.border,
+                borderWidth: isDarkMode ? 1 : 0,
+              }]}
+            >
+              <View style={styles.accordionTitleContainer}>
+                <IconSymbol 
+                  name="questionmark.circle.fill" 
+                  size={24} 
+                  color={colors.tint} 
+                  style={styles.infoIcon}
+                />
+                <ThemedText style={[styles.sectionTitle, styles.accordionTitle, { color: colors.text }]}>
+                  How Reports are Calculated
+                </ThemedText>
+              </View>
+              <Animated.View style={{ transform: [{ rotate: spin }] }}>
+                <IconSymbol 
+                  name="chevron.right" 
+                  size={24} 
+                  color={colors.text}
+                />
+              </Animated.View>
+            </TouchableOpacity>
+
+            <Animated.View style={[
+              styles.accordionContent,
+              {
+                maxHeight: animatedHeight.interpolate({
+                  inputRange: [0, 1],
+                  outputRange: [0, 500], // Adjust this value based on content height
+                }),
+                opacity: animatedHeight,
+              }
+            ]}>
+              <ThemedView 
+                style={[styles.infoCard, { 
+                  backgroundColor: colors.cardAlt,
+                  borderColor: colors.border,
+                  borderWidth: isDarkMode ? 1 : 0,
+                  borderTopWidth: 0,
+                  borderTopLeftRadius: 0,
+                  borderTopRightRadius: 0,
+                }]}
+              >
+                <View style={styles.infoSection}>
+                  <View style={styles.infoTitleContainer}>
+                    <IconSymbol name="message.fill" size={20} color={colors.tint} />
+                    <ThemedText style={[styles.infoTitle, { color: colors.text }]}>Overall Progress</ThemedText>
+                  </View>
+                  <ThemedText style={[styles.infoText, { color: colors.text }]}>
+                    • Each unique subject counts as a topic{'\n'}
+                    • A topic is considered completed when:{'\n'}
+                    {'  '}- You've taken at least 5 MCQ quizzes{'\n'}
+                    {'  '}- Your average score is 70% or higher{'\n'}
+                    • Progress = (Completed Topics / Total Topics) × 100
+                  </ThemedText>
+                </View>
+
+                <View style={styles.infoSection}>
+                  <View style={styles.infoTitleContainer}>
+                    <IconSymbol name="message.fill" size={20} color={colors.tint} />
+                    <ThemedText style={[styles.infoTitle, { color: colors.text }]}>Performance Metrics</ThemedText>
+                  </View>
+                  <ThemedText style={[styles.infoText, { color: colors.text }]}>
+                    • Average Score: Total of all MCQ scores ÷ Number of quizzes{'\n'}
+                    • Success Rate: Same as average score{'\n'}
+                    • Quizzes Taken: Total number of MCQ quizzes completed
+                  </ThemedText>
+                </View>
+
+                <View style={styles.infoSection}>
+                  <View style={styles.infoTitleContainer}>
+                    <IconSymbol name="clock.fill" size={20} color={colors.tint} />
+                    <ThemedText style={[styles.infoTitle, { color: colors.text }]}>Study Hours</ThemedText>
+                  </View>
+                  <ThemedText style={[styles.infoText, { color: colors.text }]}>
+                    • Calculated from all study sessions{'\n'}
+                    • Each study activity's duration is added to the total
+                  </ThemedText>
+                </View>
+              </ThemedView>
+            </Animated.View>
+          </ThemedView>
         </ThemedView>
       </ScrollView>
     </SafeAreaView>
@@ -461,5 +607,48 @@ const styles = StyleSheet.create({
   },
   activityDate: {
     fontSize: 14,
+  },
+  accordionHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: 16,
+    borderRadius: 12,
+  },
+  accordionTitleContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  accordionTitle: {
+    marginBottom: 0,
+  },
+  accordionContent: {
+    overflow: 'hidden',
+  },
+  infoIcon: {
+    opacity: 0.8,
+  },
+  infoCard: {
+    borderRadius: 12,
+    padding: 16,
+    gap: 16,
+  },
+  infoSection: {
+    gap: 8,
+  },
+  infoTitleContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  infoTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  infoText: {
+    fontSize: 14,
+    lineHeight: 22,
+    paddingLeft: 28,
   },
 }); 
