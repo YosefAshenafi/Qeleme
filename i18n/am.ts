@@ -248,5 +248,23 @@ export default {
       "grade-11": "11ኛ ክፍል",
       "grade-12": "12ኛ ክፍል"
     }
+  },
+  homework: {
+    title: 'የቤት ስራ እርዳታ',
+    emptyState: 'የቤት ስራዎ በተመለከተ ማንኛውንም ጥያቄ ጠይቁኝ!',
+    inputPlaceholder: 'የቤት ስራዎ ጥያቄ ይጠይቁ...',
+    thinking: 'በማሰብ ላይ',
+    error: 'ይቅርታ፣ ስህተት ተከስቷል። እባክዎ እንደገና ይሞክሩ።',
+    imageButton: 'ምስል ጨምር',
+    sendButton: 'መልእክት ላክ',
+    removeImage: 'ምስል አውጣ',
+    activity: {
+      type: 'homework',
+      grade: 'grade-12',
+      subject: 'አጠቃላይ',
+      chapter: 'የቤት ስራ እርዳታ',
+      details: 'የቤት ስራ ጥያቄ ጠይቋል',
+      status: 'ተጠናቅቋል'
+    }
   }
 } 

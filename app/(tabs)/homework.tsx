@@ -5,6 +5,7 @@ import * as ImagePicker from 'expo-image-picker';
 import { useTheme } from '@/contexts/ThemeContext';
 import { getColors } from '@/constants/Colors';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useTranslation } from 'react-i18next';
 
 import { Header } from '@/components/Header';
 import { ThemedText } from '@/components/ThemedText';
@@ -32,6 +33,7 @@ type RecentActivity = {
 export default function HomeworkScreen() {
   const { isDarkMode } = useTheme();
   const colors = getColors(isDarkMode);
+  const { t } = useTranslation();
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputText, setInputText] = useState('');
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
@@ -195,7 +197,7 @@ export default function HomeworkScreen() {
 
   return (
     <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]}>
-      <Header title="Homework Help" />
+      <Header title={t('homework.title')} />
       <KeyboardAvoidingView 
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
         style={styles.keyboardAvoidingView}
@@ -216,7 +218,7 @@ export default function HomeworkScreen() {
               {messages.length === 0 && (
                 <ThemedView style={[styles.emptyStateContainer, { backgroundColor: colors.background }]}>
                   <ThemedText style={[styles.emptyStateText, { color: colors.text }]}>
-                    Ask me anything about your homework!
+                    {t('homework.emptyState')}
                   </ThemedText>
                 </ThemedView>
               )}
@@ -251,7 +253,7 @@ export default function HomeworkScreen() {
                 <ThemedView style={[styles.messageContainer, styles.botMessage, { backgroundColor: colors.cardAlt }]}>
                   <View style={styles.thinkingContainer}>
                     <ThemedText style={[styles.messageText, styles.botMessageText, { color: colors.text }]}>
-                      Thinking
+                      {t('homework.thinking')}
                     </ThemedText>
                     <Animated.View style={styles.dotsContainer}>
                       {[0, 1, 2].map((i) => (
@@ -309,7 +311,7 @@ export default function HomeworkScreen() {
               }]}
               value={inputText}
               onChangeText={setInputText}
-              placeholder="Ask your homework question..."
+              placeholder={t('homework.inputPlaceholder')}
               placeholderTextColor={isDarkMode ? 'rgba(255, 255, 255, 0.5)' : 'rgba(0, 0, 0, 0.5)'}
               multiline
               editable={!isLoading}

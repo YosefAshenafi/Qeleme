@@ -240,5 +240,23 @@ export default {
       "grade-11": "Grade 11",
       "grade-12": "Grade 12"
     }
+  },
+  homework: {
+    title: 'Homework Help',
+    emptyState: 'Ask me anything about your homework!',
+    inputPlaceholder: 'Ask your homework question...',
+    thinking: 'Thinking',
+    error: 'Sorry, I encountered an error. Please try again.',
+    imageButton: 'Add Image',
+    sendButton: 'Send Message',
+    removeImage: 'Remove Image',
+    activity: {
+      type: 'homework',
+      grade: 'grade-12',
+      subject: 'General',
+      chapter: 'Homework Help',
+      details: 'Asked a homework question',
+      status: 'Completed'
+    }
   }
 } 
