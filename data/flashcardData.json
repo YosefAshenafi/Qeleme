@@ -1,72 +1,25 @@
 {
-  "grades": [
-    {
-      "id": "grade-12",
-      "name": "Grade 12",
+  "grades": {
+    "grade-9": {
+      "name": "Grade 9",
       "subjects": [
         {
-          "id": "biology",
-          "name": "Biology",
+          "id": "physics",
+          "name": "Physics",
           "chapters": [
             {
-              "id": "cell-biology",
-              "name": "Cell Biology",
+              "id": "motion",
+              "name": "Motion",
               "flashcards": [
                 {
-                  "id": 1,
-                  "question": "What is the function of the cell membrane?",
-                  "answer": "The cell membrane regulates the movement of substances in and out of the cell, maintains cell shape, and provides protection."
+                  "id": "motion-1",
+                  "question": "What is the SI unit of velocity?",
+                  "answer": "meters per second (m/s)"
                 },
                 {
-                  "id": 2,
-                  "question": "What are the main components of a eukaryotic cell?",
-                  "answer": "The main components include the nucleus, mitochondria, endoplasmic reticulum, Golgi apparatus, lysosomes, and cytoskeleton."
-                },
-                {
-                  "id": 3,
-                  "question": "What is the role of mitochondria in the cell?",
-                  "answer": "Mitochondria are the powerhouses of the cell, responsible for producing ATP through cellular respiration."
-                },
-                {
-                  "id": 4,
-                  "question": "How does the endoplasmic reticulum function in protein synthesis?",
-                  "answer": "The rough ER is studded with ribosomes and is involved in protein synthesis and modification, while the smooth ER is involved in lipid synthesis and detoxification."
-                },
-                {
-                  "id": 5,
-                  "question": "What is the function of lysosomes in the cell?",
-                  "answer": "Lysosomes contain digestive enzymes and are responsible for breaking down waste materials and cellular debris."
-                }
-              ]
-            },
-            {
-              "id": "genetics",
-              "name": "Genetics",
-              "flashcards": [
-                {
-                  "id": 6,
-                  "question": "What is DNA replication?",
-                  "answer": "DNA replication is the process by which a cell makes an identical copy of its DNA before cell division."
-                },
-                {
-                  "id": 7,
-                  "question": "What is the role of RNA in protein synthesis?",
-                  "answer": "RNA serves as a messenger (mRNA) to carry genetic information from DNA to ribosomes, where proteins are synthesized."
-                },
-                {
-                  "id": 8,
-                  "question": "What is the difference between transcription and translation?",
-                  "answer": "Transcription is the process of copying DNA into RNA, while translation is the process of converting RNA into protein."
-                },
-                {
-                  "id": 9,
-                  "question": "What is a mutation and how can it affect protein synthesis?",
-                  "answer": "A mutation is a change in the DNA sequence that can alter the amino acid sequence of proteins, potentially affecting their function."
-                },
-                {
-                  "id": 10,
-                  "question": "What is the role of tRNA in protein synthesis?",
-                  "answer": "tRNA (transfer RNA) carries amino acids to the ribosome and matches them with the correct codons on mRNA during translation."
+                  "id": "motion-2",
+                  "question": "What is acceleration?",
+                  "answer": "The rate of change of velocity with respect to time"
                 }
               ]
             }
@@ -77,33 +30,266 @@
           "name": "Chemistry",
           "chapters": [
             {
-              "id": "organic-chemistry",
-              "name": "Organic Chemistry",
+              "id": "atoms",
+              "name": "Atoms and Molecules",
               "flashcards": [
                 {
-                  "id": 11,
-                  "question": "What is a functional group?",
-                  "answer": "A functional group is a specific group of atoms within a molecule that determines the molecule's chemical properties and reactivity."
+                  "id": "atoms-1",
+                  "question": "What is an atom?",
+                  "answer": "The smallest unit of matter that retains the properties of an element"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "grade-10": {
+      "name": "Grade 10",
+      "subjects": [
+        {
+          "id": "biology",
+          "name": "Biology",
+          "chapters": [
+            {
+              "id": "cells",
+              "name": "Cell Structure",
+              "flashcards": [
+                {
+                  "id": "cells-1",
+                  "question": "What is the basic unit of life?",
+                  "answer": "The cell"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "grade-11": {
+      "name": "Grade 11",
+      "subjects": [
+        {
+          "id": "mathematics",
+          "name": "Mathematics",
+          "chapters": [
+            {
+              "id": "algebra",
+              "name": "Algebra",
+              "flashcards": [
+                {
+                  "id": "algebra-1",
+                  "question": "What is a quadratic equation?",
+                  "answer": "An equation of the form ax² + bx + c = 0"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "grade-12": {
+      "name": "Grade 12",
+      "subjects": [
+        {
+          "id": "physics",
+          "name": "Physics",
+          "chapters": [
+            {
+              "id": "motion",
+              "name": "Motion",
+              "flashcards": [
+                {
+                  "id": "motion-1",
+                  "question": "What is the SI unit of velocity?",
+                  "answer": "meters per second (m/s)"
                 },
                 {
-                  "id": 12,
-                  "question": "What is the difference between alkanes and alkenes?",
-                  "answer": "Alkanes have only single bonds between carbon atoms, while alkenes have at least one double bond between carbon atoms."
+                  "id": "motion-2",
+                  "question": "What is acceleration?",
+                  "answer": "The rate of change of velocity with respect to time"
                 },
                 {
-                  "id": 13,
-                  "question": "What is the process of polymerization?",
-                  "answer": "Polymerization is the process of combining small molecules (monomers) to form larger molecules (polymers) through chemical reactions."
+                  "id": "motion-3",
+                  "question": "What is Newton's First Law of Motion?",
+                  "answer": "An object at rest stays at rest, and an object in motion stays in motion unless acted upon by an external force"
                 },
                 {
-                  "id": 14,
-                  "question": "What are the main types of organic reactions?",
-                  "answer": "The main types include substitution, addition, elimination, and rearrangement reactions."
+                  "id": "motion-4",
+                  "question": "What is the formula for calculating average velocity?",
+                  "answer": "Average velocity = (final position - initial position) / time"
                 },
                 {
-                  "id": 15,
-                  "question": "What is the difference between primary, secondary, and tertiary alcohols?",
-                  "answer": "Primary alcohols have one R group attached to the carbon with the OH group, secondary have two, and tertiary have three R groups."
+                  "id": "motion-5",
+                  "question": "What is the difference between speed and velocity?",
+                  "answer": "Speed is a scalar quantity (magnitude only), while velocity is a vector quantity (magnitude and direction)"
+                }
+              ]
+            },
+            {
+              "id": "forces",
+              "name": "Forces",
+              "flashcards": [
+                {
+                  "id": "forces-1",
+                  "question": "What is Newton's Second Law of Motion?",
+                  "answer": "Force equals mass times acceleration (F = ma)"
+                },
+                {
+                  "id": "forces-2",
+                  "question": "What is the SI unit of force?",
+                  "answer": "Newton (N)"
+                },
+                {
+                  "id": "forces-3",
+                  "question": "What is Newton's Third Law of Motion?",
+                  "answer": "For every action, there is an equal and opposite reaction"
+                },
+                {
+                  "id": "forces-4",
+                  "question": "What is gravitational force?",
+                  "answer": "The force of attraction between any two masses"
+                },
+                {
+                  "id": "forces-5",
+                  "question": "What is friction?",
+                  "answer": "A force that opposes the relative motion of two surfaces in contact"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "chemistry",
+          "name": "Chemistry",
+          "chapters": [
+            {
+              "id": "atoms",
+              "name": "Atoms and Molecules",
+              "flashcards": [
+                {
+                  "id": "atoms-1",
+                  "question": "What is an atom?",
+                  "answer": "The smallest unit of matter that retains the properties of an element"
+                },
+                {
+                  "id": "atoms-2",
+                  "question": "What are the three subatomic particles?",
+                  "answer": "Protons, neutrons, and electrons"
+                },
+                {
+                  "id": "atoms-3",
+                  "question": "What is the atomic number?",
+                  "answer": "The number of protons in an atom's nucleus"
+                },
+                {
+                  "id": "atoms-4",
+                  "question": "What is a molecule?",
+                  "answer": "A group of two or more atoms held together by chemical bonds"
+                },
+                {
+                  "id": "atoms-5",
+                  "question": "What is the difference between an atom and a molecule?",
+                  "answer": "An atom is a single particle, while a molecule is made up of two or more atoms bonded together"
+                }
+              ]
+            },
+            {
+              "id": "reactions",
+              "name": "Chemical Reactions",
+              "flashcards": [
+                {
+                  "id": "reactions-1",
+                  "question": "What is a chemical reaction?",
+                  "answer": "A process where substances are converted into different substances"
+                },
+                {
+                  "id": "reactions-2",
+                  "question": "What is the law of conservation of mass?",
+                  "answer": "Mass is neither created nor destroyed in a chemical reaction"
+                },
+                {
+                  "id": "reactions-3",
+                  "question": "What is a catalyst?",
+                  "answer": "A substance that speeds up a chemical reaction without being consumed"
+                },
+                {
+                  "id": "reactions-4",
+                  "question": "What is an exothermic reaction?",
+                  "answer": "A reaction that releases energy in the form of heat"
+                },
+                {
+                  "id": "reactions-5",
+                  "question": "What is an endothermic reaction?",
+                  "answer": "A reaction that absorbs energy from its surroundings"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "biology",
+          "name": "Biology",
+          "chapters": [
+            {
+              "id": "cells",
+              "name": "Cell Structure",
+              "flashcards": [
+                {
+                  "id": "cells-1",
+                  "question": "What is the basic unit of life?",
+                  "answer": "The cell"
+                },
+                {
+                  "id": "cells-2",
+                  "question": "What is the function of the cell membrane?",
+                  "answer": "Controls what enters and exits the cell"
+                },
+                {
+                  "id": "cells-3",
+                  "question": "What is the nucleus?",
+                  "answer": "The control center of the cell containing DNA"
+                },
+                {
+                  "id": "cells-4",
+                  "question": "What are mitochondria?",
+                  "answer": "The powerhouse of the cell that produces energy"
+                },
+                {
+                  "id": "cells-5",
+                  "question": "What is the difference between prokaryotic and eukaryotic cells?",
+                  "answer": "Prokaryotic cells lack a nucleus and membrane-bound organelles, while eukaryotic cells have both"
+                }
+              ]
+            },
+            {
+              "id": "genetics",
+              "name": "Genetics",
+              "flashcards": [
+                {
+                  "id": "genetics-1",
+                  "question": "What is DNA?",
+                  "answer": "Deoxyribonucleic acid, the molecule carrying genetic instructions"
+                },
+                {
+                  "id": "genetics-2",
+                  "question": "What is a gene?",
+                  "answer": "A segment of DNA that codes for a specific protein"
+                },
+                {
+                  "id": "genetics-3",
+                  "question": "What is mitosis?",
+                  "answer": "Cell division that produces two identical daughter cells"
+                },
+                {
+                  "id": "genetics-4",
+                  "question": "What is meiosis?",
+                  "answer": "Cell division that produces four genetically different daughter cells"
+                },
+                {
+                  "id": "genetics-5",
+                  "question": "What is a mutation?",
+                  "answer": "A change in the DNA sequence that can affect protein production"
                 }
               ]
             }
@@ -111,5 +297,5 @@
         }
       ]
     }
-  ]
+  }
 } 

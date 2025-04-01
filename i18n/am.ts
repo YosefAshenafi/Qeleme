@@ -230,4 +230,23 @@ export default {
       noQuestions: 'ጥያቄዎች አልተገኙም'
     }
   },
+  flashcards: {
+    title: "ፍላሽ ካርዶች",
+    selectSubjectAndChapter: "መጽሐፍ እና ምዕራፍ ይምረጡ",
+    subject: "መጽሐፍ",
+    selectSubject: "መጽሐፍ ይምረጡ",
+    chapter: "ምዕራፍ",
+    selectChapter: "ምዕራፍ ይምረጡ",
+    startFlashcards: "ፍላሽ ካርዶች ጀምር",
+    cardProgress: "ካርድ {{current}} ከ {{total}}",
+    previous: "የቀድሞ",
+    next: "ቀጣይ",
+    finish: "ጨርስ",
+    grades: {
+      "grade-9": "9ኛ ክፍል",
+      "grade-10": "10ኛ ክፍል",
+      "grade-11": "11ኛ ክፍል",
+      "grade-12": "12ኛ ክፍል"
+    }
+  }
 } 

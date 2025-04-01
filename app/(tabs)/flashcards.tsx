@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { StyleSheet, TouchableOpacity, Dimensions, View, Modal, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
+import { useTranslation } from 'react-i18next';
 import Animated, {
   useAnimatedStyle,
   withTiming,
@@ -23,7 +24,7 @@ import { IconSymbol } from '@/components/ui/IconSymbol';
 import flashcardData from '@/data/flashcardData.json';
 
 interface Flashcard {
-  id: number;
+  id: string;
   question: string;
   answer: string;
 }
@@ -41,13 +42,14 @@ interface Subject {
 }
 
 interface Grade {
-  id: string;
   name: string;
   subjects: Subject[];
 }
 
 interface FlashcardData {
-  grades: Grade[];
+  grades: {
+    [key: string]: Grade;
+  };
 }
 
 interface RecentActivity {
@@ -67,17 +69,18 @@ const CARD_WIDTH = SCREEN_WIDTH - 40;
 export default function FlashcardsScreen() {
   const { isDarkMode } = useTheme();
   const { user } = useAuth();
+  const { t } = useTranslation();
   const colors = getColors(isDarkMode);
   
+  const [selectedGrade] = useState<string>('grade-12');
   const [selectedSubject, setSelectedSubject] = useState<string>('');
   const [selectedChapter, setSelectedChapter] = useState<string>('');
+  const [showFlashcards, setShowFlashcards] = useState(false);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isRevealed, setIsRevealed] = useState(false);
   const [showSubjectDropdown, setShowSubjectDropdown] = useState(false);
   const [showChapterDropdown, setShowChapterDropdown] = useState(false);
-  const [showFlashcards, setShowFlashcards] = useState(false);
   const [userPhoneNumber, setUserPhoneNumber] = useState<string | null>(null);
-  const [selectedGrade, setSelectedGrade] = useState<string>('grade-12'); // Default to grade 12
   
   const revealAnimation = useSharedValue(0);
   const progressAnimation = useSharedValue(0);
@@ -96,9 +99,13 @@ export default function FlashcardsScreen() {
     checkPhoneNumber();
   }, []);
 
-  const selectedGradeData = typedFlashcardData.grades.find((grade: Grade) => grade.id === selectedGrade);
-  const selectedSubjectData = selectedGradeData?.subjects.find((subject: Subject) => subject.id === selectedSubject);
-  const selectedChapterData = selectedSubjectData?.chapters.find((chapter: Chapter) => chapter.id === selectedChapter);
+  const selectedGradeData = selectedGrade ? typedFlashcardData.grades[selectedGrade] : null;
+  const selectedSubjectData = selectedSubject && selectedGradeData
+    ? selectedGradeData.subjects.find(s => s.id === selectedSubject)
+    : null;
+  const selectedChapterData = selectedChapter && selectedSubjectData
+    ? selectedSubjectData.chapters.find(c => c.id === selectedChapter)
+    : null;
   const currentCard = selectedChapterData?.flashcards[currentIndex];
   const progress = ((currentIndex + 1) / (selectedChapterData?.flashcards.length || 0)) * 100;
 
@@ -237,21 +244,25 @@ export default function FlashcardsScreen() {
   if (!showFlashcards) {
     return (
       <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]}>
-        <Header title="Flash Cards" />
+        <Header title={t('flashcards.title')} />
         <ThemedView style={[styles.container, { backgroundColor: colors.background }]}>
           <ThemedView style={[styles.formContainer, { backgroundColor: colors.background }]}>
-            <ThemedText style={[styles.formTitle, { color: colors.tint }]}>Select Subject and Chapter</ThemedText>
+            <ThemedText style={[styles.formTitle, { color: colors.tint }]}>
+              {t('flashcards.selectSubjectAndChapter')}
+            </ThemedText>
             
             <ThemedView style={[styles.formContent, { backgroundColor: colors.background }]}>
               {/* Subject Selection */}
               <ThemedView style={[styles.formGroup, { backgroundColor: colors.background }]}>
-                <ThemedText style={[styles.formLabel, { color: colors.tint }]}>Subject</ThemedText>
+                <ThemedText style={[styles.formLabel, { color: colors.tint }]}>
+                  {t('flashcards.subject')}
+                </ThemedText>
                 <TouchableOpacity
                   style={[styles.formInput, { backgroundColor: colors.cardAlt, borderColor: colors.border }]}
                   onPress={() => setShowSubjectDropdown(!showSubjectDropdown)}
                 >
                   <ThemedText style={[styles.formInputText, { color: colors.text }]}>
-                    {selectedSubject ? selectedGradeData?.subjects.find((s: Subject) => s.id === selectedSubject)?.name : 'Select a subject'}
+                    {selectedSubject ? selectedGradeData?.subjects.find((s: Subject) => s.id === selectedSubject)?.name : t('flashcards.selectSubject')}
                   </ThemedText>
                   <IconSymbol name="chevron.right" size={20} color={colors.tint} />
                 </TouchableOpacity>
@@ -292,7 +303,9 @@ export default function FlashcardsScreen() {
 
               {/* Chapter Selection */}
               <ThemedView style={[styles.formGroup, { backgroundColor: colors.background }]}>
-                <ThemedText style={[styles.formLabel, { color: colors.tint }]}>Chapter</ThemedText>
+                <ThemedText style={[styles.formLabel, { color: colors.tint }]}>
+                  {t('flashcards.chapter')}
+                </ThemedText>
                 <TouchableOpacity
                   style={[
                     styles.formInput,
@@ -314,7 +327,7 @@ export default function FlashcardsScreen() {
                       }
                     ]}
                   >
-                    {selectedChapter ? selectedSubjectData?.chapters.find((c: Chapter) => c.id === selectedChapter)?.name : 'Select a chapter'}
+                    {selectedChapter ? selectedSubjectData?.chapters.find((c: Chapter) => c.id === selectedChapter)?.name : t('flashcards.selectChapter')}
                   </ThemedText>
                   <IconSymbol 
                     name="chevron.right" 
@@ -365,7 +378,9 @@ export default function FlashcardsScreen() {
                 onPress={handleStartFlashcards}
                 disabled={!selectedSubject || !selectedChapter}
               >
-                <ThemedText style={[styles.startButtonText, { color: '#fff' }]}>Start Flashcards</ThemedText>
+                <ThemedText style={[styles.startButtonText, { color: '#fff' }]}>
+                  {t('flashcards.startFlashcards')}
+                </ThemedText>
               </TouchableOpacity>
             </ThemedView>
           </ThemedView>
@@ -376,7 +391,7 @@ export default function FlashcardsScreen() {
 
   return (
     <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]}>
-      <Header title="Flash Cards" />
+      <Header title={t('flashcards.title')} />
       <ThemedView style={[styles.container, { backgroundColor: colors.background }]}>
         <View style={styles.progressTimeContainer}>
           <View style={styles.progressContainer}>
@@ -386,7 +401,7 @@ export default function FlashcardsScreen() {
             <View style={styles.progressLabels}>
               <View style={[styles.questionLabelContainer]}>
                 <ThemedText style={[styles.progressText, { color: colors.tint }]}>
-                  Card {currentIndex + 1} of {selectedChapterData?.flashcards.length || 0}
+                  {t('flashcards.cardProgress', { current: currentIndex + 1, total: selectedChapterData?.flashcards.length || 0 })}
                 </ThemedText>
               </View>
             </View>
@@ -395,22 +410,10 @@ export default function FlashcardsScreen() {
 
         <View style={styles.cardContainer}>
           <TouchableOpacity onPress={handleReveal} activeOpacity={0.9} style={styles.cardWrapper}>
-            <Animated.View style={[styles.card, frontAnimatedStyle, { backgroundColor: colors.cardAlt }]}>
-              <LinearGradient
-                colors={[colors.cardGradientStart, colors.cardGradientEnd]}
-                style={StyleSheet.absoluteFill}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 1 }}
-              />
+            <Animated.View style={[styles.card, frontAnimatedStyle, { borderColor: colors.border, backgroundColor: colors.cardAlt }]}>
               <ThemedText style={[styles.cardText, { color: colors.text }]}>{currentCard?.question}</ThemedText>
             </Animated.View>
-            <Animated.View style={[styles.card, styles.cardBack, backAnimatedStyle, { backgroundColor: colors.cardAlt }]}>
-              <LinearGradient
-                colors={[colors.cardGradientStart, colors.cardGradientEnd]}
-                style={StyleSheet.absoluteFill}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 1 }}
-              />
+            <Animated.View style={[styles.card, styles.cardBack, backAnimatedStyle, { borderColor: colors.border, backgroundColor: colors.cardAlt }]}>
               <ThemedText style={[styles.cardText, { color: colors.text }]}>{currentCard?.answer}</ThemedText>
             </Animated.View>
           </TouchableOpacity>
@@ -428,7 +431,9 @@ export default function FlashcardsScreen() {
             disabled={currentIndex === 0}
           >
             <IconSymbol name="chevron.left.forwardslash.chevron.right" size={24} color={colors.tint} />
-            <ThemedText style={[styles.prevButtonText, { color: colors.tint }]}>Previous</ThemedText>
+            <ThemedText style={[styles.prevButtonText, { color: colors.tint }]}>
+              {t('flashcards.previous')}
+            </ThemedText>
           </TouchableOpacity>
 
           <TouchableOpacity
@@ -453,7 +458,7 @@ export default function FlashcardsScreen() {
             disabled={false}
           >
             <ThemedText style={[styles.nextButtonText, { color: '#fff' }]}>
-              {currentIndex === (selectedChapterData?.flashcards.length || 0) - 1 ? 'Finish' : 'Next'}
+              {currentIndex === (selectedChapterData?.flashcards.length || 0) - 1 ? t('flashcards.finish') : t('flashcards.next')}
             </ThemedText>
             <IconSymbol name="chevron.right" size={24} color="#fff" />
           </TouchableOpacity>
@@ -528,13 +533,14 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backfaceVisibility: 'hidden',
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 4,
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.3,
+    shadowRadius: 16,
+    elevation: 12,
     position: 'absolute',
     top: 0,
     left: 0,
+    borderWidth: 1,
   },
   cardBack: {
     transform: [{ rotateY: '180deg' }],

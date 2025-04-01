@@ -222,4 +222,23 @@ export default {
       noQuestions: 'No Questions Available'
     }
   },
+  flashcards: {
+    title: "Flash Cards",
+    selectSubjectAndChapter: "Select Subject and Chapter",
+    subject: "Subject",
+    selectSubject: "Select a subject",
+    chapter: "Chapter",
+    selectChapter: "Select a chapter",
+    startFlashcards: "Start Flashcards",
+    cardProgress: "Card {{current}} of {{total}}",
+    previous: "Previous",
+    next: "Next",
+    finish: "Finish",
+    grades: {
+      "grade-9": "Grade 9",
+      "grade-10": "Grade 10",
+      "grade-11": "Grade 11",
+      "grade-12": "Grade 12"
+    }
+  }
 } 
