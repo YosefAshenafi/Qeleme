@@ -76,7 +76,7 @@ const AccordionItem: React.FC<AccordionItemProps> = ({ title, icon, children, is
 export default function ProfileScreen() {
   const { isDarkMode, toggleTheme } = useTheme();
   const { logout } = useAuth();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [openAccordion, setOpenAccordion] = useState<string | null>(null);
   const [profileImage, setProfileImage] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
@@ -87,6 +87,16 @@ export default function ProfileScreen() {
     { label: t('profile.stats.studyHours'), value: '0', icon: 'clock.fill' as const },
   ]);
   const colors = getColors(isDarkMode);
+
+  // Update stats when language changes
+  useEffect(() => {
+    setStats([
+      { label: t('profile.stats.mcqsCompleted'), value: stats[0].value, icon: 'questionmark.circle.fill' as const },
+      { label: t('profile.stats.flashcardsClicked'), value: stats[1].value, icon: 'rectangle.stack.fill' as const },
+      { label: t('profile.stats.homeworkQuestions'), value: stats[2].value, icon: 'message.fill' as const },
+      { label: t('profile.stats.studyHours'), value: stats[3].value, icon: 'clock.fill' as const },
+    ]);
+  }, [t, i18n.language]);
 
   const onRefresh = React.useCallback(async () => {
     setRefreshing(true);
@@ -176,16 +186,16 @@ export default function ProfileScreen() {
     }
   };
 
-  const profileData = {
-    englishName: 'Yosef Ashenafi',
-    email: 'yosefashenafi7@gmail.com',
+  const profileData = React.useMemo(() => ({
+    englishName: t('profile.englishName', { defaultValue: 'Yosef Ashenafi' }),
+    email: t('profile.email', { defaultValue: 'yosefashenafi7@gmail.com' }),
     role: t('profile.role'),
     grade: t('profile.grade'),
     school: t('profile.school'),
-    joinDate: t('profile.joinDate', { date: 'January 2024' }),
-  };
+    joinDate: t('profile.joinDate', { date: t('profile.joinDateValue', { defaultValue: 'January 2024' }) }),
+  }), [t, i18n.language]);
 
-  const menuItems: MenuItem[] = [
+  const menuItems: MenuItem[] = React.useMemo(() => [
     { 
       title: t('profile.accountSettings'),
       icon: 'person.fill' as const,
@@ -198,7 +208,7 @@ export default function ProfileScreen() {
     },
     {
       title: t('profile.language'),
-      icon: 'paperplane.fill' as const,
+      icon: 'globe' as const,
       content: <LanguageSelector colors={colors} />
     },
     { 
@@ -219,7 +229,7 @@ export default function ProfileScreen() {
       icon: 'rectangle.portrait.and.arrow.right' as const, 
       action: logout
     },
-  ];
+  ], [t, i18n.language, isDarkMode, colors, profileData]);
 
   const handleAccordionToggle = (title: string) => {
     setOpenAccordion(openAccordion === title ? null : title);

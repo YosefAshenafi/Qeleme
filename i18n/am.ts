@@ -144,6 +144,9 @@ export default {
     grade: '12ኛ ክፍል',
     school: 'ምሳሌ ሁለተኛ ደረጃ ትምህርት ቤት',
     joinDate: '{date} ተቀላቅለዋል',
+    joinDateValue: 'ጃንዋሪ 2024',
+    englishName: 'ዮሴፍ አሸናፊ',
+    email: 'yosefashenafi7@gmail.com',
     stats: {
       mcqsCompleted: 'የተጠናቀቁ ምርጫዎች',
       flashcardsClicked: 'የተመለከቱ ፍላሽካርዶች',
@@ -329,5 +332,17 @@ export default {
         ]
       }
     }
+  },
+  subjects: {
+    mathematics: 'ሒሳብ',
+    physics: 'ፊዚክስ',
+    chemistry: 'ኬሚስትሪ',
+    biology: 'ባዮሎጂ',
+    history: 'ታሪክ',
+    geography: 'ጂኦግራፊ',
+    english: 'እንግሊዝኛ',
+    amharic: 'አማርኛ',
+    civics: 'ሲቪክስ',
+    ict: 'አይሲቲ'
   }
 } 

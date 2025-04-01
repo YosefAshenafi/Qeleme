@@ -21,7 +21,7 @@ export const LanguageSelector: React.FC<{ colors: any }> = ({ colors }) => {
           <View style={styles.languageRow}>
             <Text style={[styles.languageText, { color: colors.text }]}>{name}</Text>
             {currentLanguage === code && (
-              <IconSymbol name="message.fill" size={20} color={colors.tint} />
+              <IconSymbol name="checkmark.circle.fill" size={20} color={colors.tint} />
             )}
           </View>
         </TouchableOpacity>

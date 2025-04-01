@@ -35,6 +35,8 @@ const MAPPING = {
   'moon.fill': 'dark-mode',
   'sun.max.fill': 'light-mode',
   'xmark.circle.fill': 'close',
+  'globe': 'language',
+  'checkmark.circle.fill': 'check-circle',
 } as const;
 
 export type IconSymbolName = keyof typeof MAPPING;

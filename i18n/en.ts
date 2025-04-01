@@ -142,6 +142,11 @@ export default {
     logout: 'Logout',
     role: 'Student',
     grade: '12th Grade',
+    school: 'Example High School',
+    joinDate: 'Joined {date}',
+    joinDateValue: 'January 2024',
+    englishName: 'Yosef Ashenafi',
+    email: 'yosefashenafi7@gmail.com',
     stats: {
       mcqsCompleted: 'MCQs Completed',
       flashcardsClicked: 'Flashcards Clicked',
@@ -321,5 +326,17 @@ export default {
         ]
       }
     }
+  },
+  subjects: {
+    mathematics: 'Mathematics',
+    physics: 'Physics',
+    chemistry: 'Chemistry',
+    biology: 'Biology',
+    history: 'History',
+    geography: 'Geography',
+    english: 'English',
+    amharic: 'Amharic',
+    civics: 'Civics',
+    ict: 'ICT'
   }
 } 

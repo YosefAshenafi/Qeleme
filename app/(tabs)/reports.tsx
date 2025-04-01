@@ -16,7 +16,7 @@ import { ThemedView } from '@/components/ThemedView';
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
 export default function ReportsScreen() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { isDarkMode } = useTheme();
   const colors = getColors(isDarkMode);
   const [refreshing, setRefreshing] = useState(false);
@@ -45,6 +45,10 @@ export default function ReportsScreen() {
   const animatedHeight = useRef(new Animated.Value(0)).current;
   const animatedRotate = useRef(new Animated.Value(0)).current;
 
+  useEffect(() => {
+    loadReportData();
+  }, [i18n.language]);
+
   const loadReportData = async () => {
     try {
       // Sample data for demonstration
@@ -67,41 +71,41 @@ export default function ReportsScreen() {
           totalDaysActive: 90,
         },
         subjectBreakdown: [
-          { subject: 'ሒሳብ', progress: 90, score: 95 },
-          { subject: 'ፊዚክስ', progress: 85, score: 88 },
-          { subject: 'ኬሚስትሪ', progress: 75, score: 80 },
-          { subject: 'ባዮሎጂ', progress: 70, score: 75 },
+          { subject: t('subjects.mathematics'), progress: 90, score: 95 },
+          { subject: t('subjects.physics'), progress: 85, score: 88 },
+          { subject: t('subjects.chemistry'), progress: 75, score: 80 },
+          { subject: t('subjects.biology'), progress: 70, score: 75 },
         ],
         recentActivity: [
           {
             type: 'quiz',
-            subject: 'ሒሳብ',
+            subject: t('subjects.mathematics'),
             score: 95,
-            date: new Date().toLocaleDateString()
+            date: new Date().toLocaleDateString(i18n.language === 'am' ? 'am-ET' : 'en-US')
           },
           {
             type: 'study',
-            subject: 'ፊዚክስ',
-            duration: '2.5ሰ',
-            date: new Date(Date.now() - 86400000).toLocaleDateString()
+            subject: t('subjects.physics'),
+            duration: t('home.activityDetails.duration', { hours: '2.5' }),
+            date: new Date(Date.now() - 86400000).toLocaleDateString(i18n.language === 'am' ? 'am-ET' : 'en-US')
           },
           {
             type: 'homework',
-            subject: 'ኬሚስትሪ',
-            status: 'ተጠናቅቋል',
-            date: new Date(Date.now() - 172800000).toLocaleDateString()
+            subject: t('subjects.chemistry'),
+            status: t('home.activityDetails.completed'),
+            date: new Date(Date.now() - 172800000).toLocaleDateString(i18n.language === 'am' ? 'am-ET' : 'en-US')
           },
           {
             type: 'quiz',
-            subject: 'ባዮሎጂ',
+            subject: t('subjects.biology'),
             score: 85,
-            date: new Date(Date.now() - 259200000).toLocaleDateString()
+            date: new Date(Date.now() - 259200000).toLocaleDateString(i18n.language === 'am' ? 'am-ET' : 'en-US')
           },
           {
             type: 'study',
-            subject: 'ሒሳብ',
-            duration: '3ሰ',
-            date: new Date(Date.now() - 345600000).toLocaleDateString()
+            subject: t('subjects.mathematics'),
+            duration: t('home.activityDetails.duration', { hours: '3' }),
+            date: new Date(Date.now() - 345600000).toLocaleDateString(i18n.language === 'am' ? 'am-ET' : 'en-US')
           }
         ]
       };
@@ -125,10 +129,6 @@ export default function ReportsScreen() {
     setRefreshing(true);
     await loadReportData();
     setRefreshing(false);
-  }, []);
-
-  useEffect(() => {
-    loadReportData();
   }, []);
 
   const gradients = {
@@ -302,7 +302,7 @@ export default function ReportsScreen() {
                     {subject.subject}
                   </ThemedText>
                   <ThemedText style={[styles.subjectScore, { color: colors.tint }]}>
-                    {`${subject.progress}% ${t('reports.subjectBreakdown.progress').split(' ')[1]}`}
+                    {t('reports.subjectBreakdown.progress', { progress: subject.progress })}
                   </ThemedText>
                 </View>
                 <View style={[styles.progressBar, { backgroundColor: isDarkMode ? 'rgba(255, 255, 255, 0.1)' : '#E0E0E0' }]}>
@@ -341,21 +341,14 @@ export default function ReportsScreen() {
                 </View>
                 <View style={styles.activityContent}>
                   <ThemedText style={[styles.activityTitle, { color: colors.text }]}>
-                    {activity.type === 'quiz' ? `${activity.subject} - ፈተና` :
-                     activity.type === 'study' ? `${activity.subject} - ጥናት` :
-                     `${activity.subject} - የቤት ስራ`}
+                    {t(`reports.recentActivity.${activity.type}`, { subject: activity.subject })}
                   </ThemedText>
                   <ThemedText style={[styles.activitySubtitle, { color: colors.text }]}>
-                    {activity.type === 'quiz' ? `ውጤት: ${activity.score}%` :
-                     activity.type === 'study' ? `ጊዜ: ${activity.duration}` :
-                     `ሁኔታ: ${activity.status}`}
+                    {activity.score ? t('reports.recentActivity.score', { score: activity.score }) :
+                     activity.duration ? t('reports.recentActivity.duration', { duration: activity.duration }) :
+                     activity.status ? t('reports.recentActivity.status', { status: activity.status }) : ''}
                   </ThemedText>
                 </View>
-                <ThemedText style={[styles.activityDate, { 
-                  color: isDarkMode ? 'rgba(255, 255, 255, 0.5)' : 'rgba(0, 0, 0, 0.5)'
-                }]}>
-                  {activity.date}
-                </ThemedText>
               </ThemedView>
             ))}
           </ThemedView>
@@ -595,9 +588,6 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   activitySubtitle: {
-    fontSize: 14,
-  },
-  activityDate: {
     fontSize: 14,
   },
   accordionHeader: {
