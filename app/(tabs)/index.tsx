@@ -7,6 +7,7 @@ import { useState, useRef, useEffect } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import React from 'react';
 import { useFocusEffect } from '@react-navigation/native';
+import { useTranslation } from 'react-i18next';
 
 import { Header } from '@/components/Header';
 import { ThemedText } from '@/components/ThemedText';
@@ -61,6 +62,7 @@ type RecentActivity = {
 };
 
 export default function HomeScreen() {
+  const { t } = useTranslation();
   const { isDarkMode } = useTheme();
   const colors = getColors(isDarkMode);
   const [activeIndex, setActiveIndex] = useState(0);
@@ -270,8 +272,8 @@ export default function HomeScreen() {
   return (
     <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]}>
       <Header 
-        title="Welcome back, Yosef!"
-        subtitle="Ready to learn something new today?"
+        title={t('home.welcome', { name: 'Yosef' })}
+        subtitle={t('home.subtitle')}
       />
       <ScrollView 
         style={[styles.scrollView, { backgroundColor: colors.background }]}
@@ -308,10 +310,10 @@ export default function HomeScreen() {
             ) : (
               <Animated.View style={{ opacity: fadeAnim }}>
                 <ThemedText style={[styles.quoteText, { color: colors.text }]}>
-                  "{motivationalQuotes[quoteIndex].quote}"
+                  "{t(`home.motivationalQuotes.${quoteIndex}.quote`)}"
                 </ThemedText>
                 <ThemedText style={[styles.quoteAuthor, { color: colors.text + '80' }]}>
-                  - {motivationalQuotes[quoteIndex].author}
+                  - {t(`home.motivationalQuotes.${quoteIndex}.author`)}
                 </ThemedText>
               </Animated.View>
             )}
@@ -388,8 +390,12 @@ export default function HomeScreen() {
                   <IconSymbol name="questionmark.circle" size={32} color={colors.tint} />
                 </View>
                 <View style={styles.gridTextContainer}>
-                  <ThemedText numberOfLines={1} style={[styles.gridItemTitle, { color: colors.text }]}>Practice MCQ</ThemedText>
-                  <ThemedText numberOfLines={1} style={[styles.gridItemSubtitle, { color: colors.text + '80' }]}>Test your knowledge</ThemedText>
+                  <ThemedText numberOfLines={1} style={[styles.gridItemTitle, { color: colors.text }]}>
+                    {t('home.quickActions.mcq.title')}
+                  </ThemedText>
+                  <ThemedText numberOfLines={1} style={[styles.gridItemSubtitle, { color: colors.text + '80' }]}>
+                    {t('home.quickActions.mcq.subtitle')}
+                  </ThemedText>
                 </View>
               </LinearGradient>
             </TouchableOpacity>
@@ -408,8 +414,12 @@ export default function HomeScreen() {
                   <IconSymbol name="rectangle.stack" size={32} color="#2E7D32" />
                 </View>
                 <View style={styles.gridTextContainer}>
-                  <ThemedText numberOfLines={1} style={[styles.gridItemTitle, { color: colors.text }]}>Flashcards</ThemedText>
-                  <ThemedText numberOfLines={1} style={[styles.gridItemSubtitle, { color: colors.text + '80' }]}>Review key concepts</ThemedText>
+                  <ThemedText numberOfLines={1} style={[styles.gridItemTitle, { color: colors.text }]}>
+                    {t('home.quickActions.flashcards.title')}
+                  </ThemedText>
+                  <ThemedText numberOfLines={1} style={[styles.gridItemSubtitle, { color: colors.text + '80' }]}>
+                    {t('home.quickActions.flashcards.subtitle')}
+                  </ThemedText>
                 </View>
               </LinearGradient>
             </TouchableOpacity>
@@ -428,8 +438,12 @@ export default function HomeScreen() {
                   <IconSymbol name="message" size={32} color="#1976D2" />
                 </View>
                 <View style={styles.gridTextContainer}>
-                  <ThemedText numberOfLines={1} style={[styles.gridItemTitle, { color: colors.text }]}>Homework Help</ThemedText>
-                  <ThemedText numberOfLines={1} style={[styles.gridItemSubtitle, { color: colors.text + '80' }]}>Get expert assistance</ThemedText>
+                  <ThemedText numberOfLines={1} style={[styles.gridItemTitle, { color: colors.text }]}>
+                    {t('home.quickActions.homework.title')}
+                  </ThemedText>
+                  <ThemedText numberOfLines={1} style={[styles.gridItemSubtitle, { color: colors.text + '80' }]}>
+                    {t('home.quickActions.homework.subtitle')}
+                  </ThemedText>
                 </View>
               </LinearGradient>
             </TouchableOpacity>
@@ -448,16 +462,22 @@ export default function HomeScreen() {
                   <IconSymbol name="chart.bar" size={32} color="#ED6C02" />
                 </View>
                 <View style={styles.gridTextContainer}>
-                  <ThemedText numberOfLines={1} style={[styles.gridItemTitle, { color: colors.text }]}>Progress Report</ThemedText>
-                  <ThemedText numberOfLines={1} style={[styles.gridItemSubtitle, { color: colors.text + '80' }]}>Track your learning</ThemedText>
+                  <ThemedText numberOfLines={1} style={[styles.gridItemTitle, { color: colors.text }]}>
+                    {t('home.quickActions.reports.title')}
+                  </ThemedText>
+                  <ThemedText numberOfLines={1} style={[styles.gridItemSubtitle, { color: colors.text + '80' }]}>
+                    {t('home.quickActions.reports.subtitle')}
+                  </ThemedText>
                 </View>
               </LinearGradient>
             </TouchableOpacity>
           </ThemedView>
 
-                    {/* Recent Activity Section */}
+          {/* Recent Activity Section */}
           <ThemedView style={[styles.recentActivitySection, { backgroundColor: colors.background }]}>
-            <ThemedText style={[styles.sectionTitle, { color: colors.text }]}>Recent Activity</ThemedText>
+            <ThemedText style={[styles.sectionTitle, { color: colors.text }]}>
+              {t('home.recentActivity')}
+            </ThemedText>
             {recentActivities.length > 0 ? (
               recentActivities.map((activity, index) => (
                 <ThemedView 
@@ -476,25 +496,25 @@ export default function HomeScreen() {
                       color={colors.tint} 
                     />
                     <ThemedText style={[styles.activityType, { color: colors.text }]}>
-                      {activity.type === 'mcq' ? 'MCQ Quiz' : 
-                       activity.type === 'flashcard' ? 'Flashcards' :
-                       activity.type === 'homework' ? 'Homework' :
-                       'Study Session'}
+                      {t(`home.activityTypes.${activity.type}`)}
                     </ThemedText>
                   </View>
                   <ThemedText style={[styles.activityDetails, { color: colors.text }]}>
-                    {activity.details}
+                    {activity.type === 'mcq' && t('home.activityDetails.questions.completed', { count: parseInt(activity.details.match(/\d+/)?.[0] || '0', 10) })}
+                    {activity.type === 'flashcard' && t('home.activityDetails.flashcards.reviewed', { count: parseInt(activity.details.match(/\d+/)?.[0] || '0', 10) })}
+                    {activity.type === 'homework' && t(`home.activityDetails.homework.${activity.status === 'Completed' ? 'submitted' : 'working'}`)}
+                    {activity.type === 'study' && t('home.activityDetails.study.session', { duration: activity.duration })}
                   </ThemedText>
                   <ThemedText style={[styles.activityMeta, { color: colors.text + '80' }]}>
-                    {activity.grade} • {activity.subject} • {activity.chapter}
-                    {activity.status && ` • ${activity.status}`}
-                    {activity.duration && ` • ${activity.duration}`}
+                    {t('home.activityDetails.grade')}: {activity.grade} • {t('home.activityDetails.subject')}: {activity.subject} • {t('home.activityDetails.chapter')}: {activity.chapter}
+                    {activity.status && ` • ${t(`home.activityDetails.${activity.status.toLowerCase()}`)}`}
+                    {activity.duration && ` • ${t('home.activityDetails.duration', { hours: activity.duration.replace('h', '') })}`}
                   </ThemedText>
                 </ThemedView>
               ))
             ) : (
               <ThemedText style={[styles.noActivity, { color: colors.text + '80' }]}>
-                No recent activity. Start learning!
+                {t('home.noActivity')}
               </ThemedText>
             )}
           </ThemedView>

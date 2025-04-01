@@ -9,6 +9,16 @@ export default {
     edit: 'አስተካክል',
     back: 'ተመለስ',
   },
+  navigation: {
+    tabs: {
+      home: 'ዋና ገጽ',
+      mcq: 'ምርጫ',
+      flashcards: 'ፍላሽካርድ',
+      homework: 'የቤት ስራ',
+      profile: 'መገለጫ',
+      reports: 'ሪፖርቶች'
+    }
+  },
   auth: {
     signIn: 'ግባ',
     signUp: 'ተመዝገብ',
@@ -19,10 +29,104 @@ export default {
     alreadyHaveAccount: 'አካውንት አለዎት?',
   },
   home: {
-    welcome: 'እንኳን ደህና መጡ ወደ ቀለም',
-    recentQuestions: 'የቅርብ ጊዜ ጥያቄዎች',
-    popularTopics: 'ታዋቂ ርዕሶች',
-    askQuestion: 'ጥያቄ ጠይቅ',
+    welcome: 'እንኳን በደህና ተመለሱ፣ {name}!',
+    subtitle: 'ዛሬ አዲስ ነገር ለመማር ዝግጁ ነዎት?',
+    recentActivity: 'የቅርብ ጊዜ እንቅስቃሴዎች',
+    noActivity: 'ምንም የቅርብ ጊዜ እንቅስቃሴ የለም። መማር ይጀምሩ!',
+    quickActions: {
+      mcq: {
+        title: 'ምርጫ ለመለማመድ',
+        subtitle: 'እውቀትዎን ይፈትሹ'
+      },
+      flashcards: {
+        title: 'ፍላሽካርዶች',
+        subtitle: 'ዋና ሃሳቦችን ይከልሱ'
+      },
+      homework: {
+        title: 'የቤት ስራ እርዳታ',
+        subtitle: 'የባለሙያ እርዳታ ያግኙ'
+      },
+      reports: {
+        title: 'የእድገት ሪፖርት',
+        subtitle: 'ትምህርትዎን ይከታተሉ'
+      }
+    },
+    reportCards: {
+      performance: {
+        title: 'አፈጻጸም',
+        subtitle: 'አማካይ ውጤት',
+        stats: {
+          quizzesTaken: 'የተወሰዱ ፈተናዎች',
+          successRate: 'የስኬት መጠን'
+        }
+      },
+      studyProgress: {
+        title: 'የጥናት እድገት',
+        subtitle: 'ጠቅላላ የጥናት ሰዓታት',
+        stats: {
+          dailyGoal: 'የዕለት ግብ',
+          weeklyGoal: 'የሳምንት ግብ'
+        }
+      },
+      learningStreak: {
+        title: 'የመማር ተከታታይነት',
+        subtitle: 'ንቁ የነበሩባቸው ቀናት',
+        stats: {
+          currentStreak: 'የአሁኑ ተከታታይነት',
+          bestStreak: 'ምርጥ ተከታታይነት'
+        }
+      },
+      studyFocus: {
+        title: 'የጥናት ትኩረት',
+        subtitle: 'የተሸፈኑ ትምህርቶች',
+        stats: {
+          topSubject: 'ከፍተኛ ትምህርት',
+          hoursPerSubject: 'ሰዓት/ትምህርት'
+        }
+      }
+    },
+    activityTypes: {
+      mcq: 'ምርጫ ፈተና',
+      flashcard: 'ፍላሽካርዶች',
+      homework: 'የቤት ስራ',
+      study: 'የጥናት ክፍለ ጊዜ'
+    },
+    activityDetails: {
+      completed: 'ተጠናቅቋል',
+      inProgress: 'በሂደት ላይ',
+      grade: 'ክፍል',
+      subject: 'ትምህርት',
+      chapter: 'ምዕራፍ',
+      duration: '{hours}ሰ',
+      questions: {
+        completed: '{count} ጥያቄዎችን አጠናቅቋል',
+        reviewed: '{count} ጥያቄዎችን ገምግሟል'
+      },
+      flashcards: {
+        reviewed: '{count} ፍላሽካርዶችን ገምግሟል'
+      },
+      homework: {
+        submitted: 'የቤት ስራ አስገብቷል',
+        working: 'በቤት ስራ ላይ እየሰራ ነው'
+      },
+      study: {
+        session: 'የጥናት ክፍለ ጊዜ - {duration}'
+      }
+    },
+    motivationalQuotes: [
+      {
+        quote: "ታላቅ ስራ የምንሰራው የምንወደውን ስራ ስንሰራ ብቻ ነው።",
+        author: "ስቲቭ ጆብስ"
+      },
+      {
+        quote: "ትምህርት ለህይወት ዝግጅት አይደለም፤ ትምህርት በራሱ ህይወት ነው።",
+        author: "ጆን ዴዊ"
+      },
+      {
+        quote: "ስለ ትምህርት ያለው ቆንጆ ነገር፣ ማንም ሊወስደው የማይችል መሆኑ ነው።",
+        author: "ቢ.ቢ. ኪንግ"
+      }
+    ]
   },
   profile: {
     myProfile: 'የእኔ መገለጫ',

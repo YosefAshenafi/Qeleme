@@ -3,6 +3,7 @@ import React from 'react';
 import { Platform, TouchableOpacity, View, StyleSheet } from 'react-native';
 import { router } from 'expo-router';
 import { BlurView } from 'expo-blur';
+import { useTranslation } from 'react-i18next';
 
 import { HapticTab } from '@/components/HapticTab';
 import { IconSymbol } from '@/components/ui/IconSymbol';
@@ -12,6 +13,7 @@ import { getColors } from '@/constants/Colors';
 export default function TabLayout() {
   const { isDarkMode } = useTheme();
   const colors = getColors(isDarkMode);
+  const { t } = useTranslation();
 
   return (
     <Tabs
@@ -59,7 +61,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="index"
         options={{
-          title: 'Dashboard',
+          title: t('navigation.tabs.home'),
           tabBarIcon: ({ color, focused }) => (
             <IconSymbol 
               size={28} 
@@ -72,7 +74,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="mcq"
         options={{
-          title: 'MCQ',
+          title: t('navigation.tabs.mcq'),
           tabBarIcon: ({ color, focused }) => (
             <IconSymbol 
               size={28} 
@@ -85,7 +87,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="flashcards"
         options={{
-          title: 'Flash Cards',
+          title: t('navigation.tabs.flashcards'),
           tabBarIcon: ({ color, focused }) => (
             <IconSymbol 
               size={28} 
@@ -98,7 +100,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="homework"
         options={{
-          title: 'Homework Help',
+          title: t('navigation.tabs.homework'),
           tabBarIcon: ({ color, focused }) => (
             <IconSymbol 
               size={28} 
@@ -111,7 +113,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="reports"
         options={{
-          title: 'Reports',
+          title: t('navigation.tabs.reports'),
           tabBarIcon: ({ color, focused }) => (
             <IconSymbol 
               size={28} 
