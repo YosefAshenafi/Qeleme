@@ -197,50 +197,50 @@ export default function HomeScreen() {
       const currentStreak = hasActivityToday ? 1 : 0;
       const bestStreak = 1;
 
-      // Create report cards
+      // Create report cards with translations
       const cards: ReportCard[] = [
         {
-          title: 'Performance',
+          title: t('home.reportCards.performance.title'),
           number: `${averageScore}%`,
-          subtitle: 'Average Score',
+          subtitle: t('home.reportCards.performance.subtitle'),
           gradient: 'purple',
           icon: 'chart.bar',
           stats: [
-            { label: 'Quizzes Taken', value: `${totalQuizzes}` },
-            { label: 'Success Rate', value: `${averageScore}%` }
+            { label: t('home.reportCards.performance.stats.quizzesTaken'), value: totalQuizzes.toString() },
+            { label: t('home.reportCards.performance.stats.successRate'), value: `${averageScore}%` }
           ]
         },
         {
-          title: 'Study Progress',
+          title: t('home.reportCards.studyProgress.title'),
           number: `${studyHours}h`,
-          subtitle: 'Total Study Hours',
+          subtitle: t('home.reportCards.studyProgress.subtitle'),
           gradient: 'blue',
           icon: 'clock.fill',
           stats: [
-            { label: 'Daily Goal', value: '2h' },
-            { label: 'Weekly Goal', value: '14h' }
+            { label: t('home.reportCards.studyProgress.stats.dailyGoal'), value: '2h' },
+            { label: t('home.reportCards.studyProgress.stats.weeklyGoal'), value: '10h' }
           ]
         },
         {
-          title: 'Learning Streak',
-          number: `${currentStreak}`,
-          subtitle: 'Days Active',
-          gradient: 'orange',
+          title: t('home.reportCards.learningStreak.title'),
+          number: `${currentStreak}d`,
+          subtitle: t('home.reportCards.learningStreak.subtitle'),
+          gradient: 'green',
           icon: 'trophy.fill',
           stats: [
-            { label: 'Current Streak', value: `${currentStreak}d` },
-            { label: 'Best Streak', value: `${bestStreak}d` }
+            { label: t('home.reportCards.learningStreak.stats.currentStreak'), value: `${currentStreak}d` },
+            { label: t('home.reportCards.learningStreak.stats.bestStreak'), value: `${bestStreak}d` }
           ]
         },
         {
-          title: 'Study Focus',
+          title: t('home.reportCards.studyFocus.title'),
           number: '4',
-          subtitle: 'Subjects Covered',
-          gradient: 'green',
+          subtitle: t('home.reportCards.studyFocus.subtitle'),
+          gradient: 'orange',
           icon: 'chart.bar',
           stats: [
-            { label: 'Top Subject', value: 'Math' },
-            { label: 'Hours/Subject', value: '2.5h' }
+            { label: t('home.reportCards.studyFocus.stats.topSubject'), value: 'Math' },
+            { label: t('home.reportCards.studyFocus.stats.hoursPerSubject'), value: '2.5h' }
           ]
         }
       ];
