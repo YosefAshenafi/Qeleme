@@ -8,6 +8,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useTheme } from '@/contexts/ThemeContext';
 import { getColors } from '@/constants/Colors';
 import { useAuth } from '@/contexts/AuthContext';
+import { useTranslation } from 'react-i18next';
 
 import { Header } from '@/components/Header';
 import { ThemedText } from '@/components/ThemedText';
@@ -68,6 +69,7 @@ export default function MCQScreen() {
   const { user } = useAuth();
   const colors = getColors(isDarkMode);
   const params = useLocalSearchParams();
+  const { t } = useTranslation();
   const [selectedGrade, setSelectedGrade] = useState<string>('grade-12'); // Default to grade 12
   const [selectedSubject, setSelectedSubject] = useState('');
   const [selectedChapter, setSelectedChapter] = useState('');
@@ -585,10 +587,10 @@ export default function MCQScreen() {
   if (!showTest) {
     return (
       <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]}>
-        <Header title="Multiple Choice Questions" />
+        <Header title={t('mcq.title')} />
         <ThemedView style={[styles.container, { backgroundColor: colors.background }]}>
           <ThemedView style={[styles.formContainer, { backgroundColor: colors.background }]}>
-            <ThemedText style={[styles.formTitle, { color: colors.tint }]}>Select Subject and Chapter</ThemedText>
+            <ThemedText style={[styles.formTitle, { color: colors.tint }]}>{t('mcq.selectSubject')}</ThemedText>
             
             <ThemedView style={[styles.formContent, { backgroundColor: colors.background }]}>
               {/* Subject Selection */}

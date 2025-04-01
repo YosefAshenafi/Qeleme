@@ -7,6 +7,7 @@ import { getColors } from '@/constants/Colors';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 import { Header } from '@/components/Header';
+import { useTranslation } from 'react-i18next';
 
 const { width } = Dimensions.get('window');
 
@@ -17,57 +18,48 @@ interface PictureMCQInstructionScreenProps {
 export default function PictureMCQInstructionScreen({ onStart }: PictureMCQInstructionScreenProps) {
   const { isDarkMode } = useTheme();
   const colors = getColors(isDarkMode);
-
-  const instructions = [
-    {
-      title: "Look at the Picture 👀",
-      description: "You'll see a picture at the top!",
-      icon: "👀"
-    },
-    {
-      title: "Drag to Answer 🖼️",
-      description: "Drag the picture to the correct answer below!",
-      icon: "🖼️"
-    },
-    {
-      title: "Next Question! ➡️",
-      description: "See if you're right and continue to the next one!",
-      icon: "➡️"
-    }
-  ];
+  const { t } = useTranslation();
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
       <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent}>
-        <Header title="Picture Quiz Time! 🎨" />
+        <Header title={t('mcq.pictureQuiz.title')} />
         <LinearGradient
           colors={[colors.tint, colors.tint]}
           style={styles.headerGradient}
         >
-          
           <ThemedText style={styles.subtitleText}>
-            Let's learn with pictures!
+            {t('mcq.pictureQuiz.subtitle')}
           </ThemedText>
         </LinearGradient>
 
         <View style={styles.instructionsContainer}>
-          {instructions.map((instruction, index) => (
-            <View key={index} style={[styles.instructionCard, { backgroundColor: colors.card }]}>
-              <View style={styles.iconContainer}>
-                <ThemedText style={styles.instructionIcon}>
-                  {instruction.icon}
-                </ThemedText>
-              </View>
-              <View style={styles.textContainer}>
-                <ThemedText style={[styles.instructionTitle, { color: colors.text }]}>
-                  {instruction.title}
-                </ThemedText>
-                <ThemedText style={[styles.instructionDescription, { color: colors.text }]}>
-                  {instruction.description}
-                </ThemedText>
-              </View>
-            </View>
-          ))}
+          <View style={styles.instructionItem}>
+            <ThemedText style={styles.instructionTitle}>
+              {t('mcq.pictureQuiz.instructions.look.title')}
+            </ThemedText>
+            <ThemedText style={styles.instructionDescription}>
+              {t('mcq.pictureQuiz.instructions.look.description')}
+            </ThemedText>
+          </View>
+
+          <View style={styles.instructionItem}>
+            <ThemedText style={styles.instructionTitle}>
+              {t('mcq.pictureQuiz.instructions.drag.title')}
+            </ThemedText>
+            <ThemedText style={styles.instructionDescription}>
+              {t('mcq.pictureQuiz.instructions.drag.description')}
+            </ThemedText>
+          </View>
+
+          <View style={styles.instructionItem}>
+            <ThemedText style={styles.instructionTitle}>
+              {t('mcq.pictureQuiz.instructions.next.title')}
+            </ThemedText>
+            <ThemedText style={styles.instructionDescription}>
+              {t('mcq.pictureQuiz.instructions.next.description')}
+            </ThemedText>
+          </View>
         </View>
 
         <TouchableOpacity
@@ -75,7 +67,7 @@ export default function PictureMCQInstructionScreen({ onStart }: PictureMCQInstr
           onPress={onStart}
         >
           <ThemedText style={styles.startButtonText}>
-            Start Quiz! 🎉
+            {t('mcq.pictureQuiz.startQuiz')}
           </ThemedText>
         </TouchableOpacity>
       </ScrollView>
@@ -116,43 +108,22 @@ const styles = StyleSheet.create({
   instructionsContainer: {
     padding: 15,
   },
-  instructionCard: {
-    flexDirection: 'row',
-    borderRadius: 20,
+  instructionItem: {
+    marginBottom: 25,
     padding: 15,
-    marginBottom: 12,
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.1,
-    shadowRadius: 3.84,
-    elevation: 5,
-  },
-  iconContainer: {
-    width: 60,
-    height: 60,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: 15,
-  },
-  instructionIcon: {
-    fontSize: 36,
-  },
-  textContainer: {
-    flex: 1,
-    justifyContent: 'center',
+    backgroundColor: '#f5f5f5',
+    borderRadius: 10,
   },
   instructionTitle: {
-    fontSize: 22,
+    fontSize: 18,
     fontWeight: 'bold',
-    marginBottom: 4,
+    marginBottom: 10,
+    color: '#333',
   },
   instructionDescription: {
-    fontSize: 18,
+    fontSize: 16,
+    color: '#666',
     lineHeight: 24,
-    opacity: 0.9,
   },
   startButton: {
     margin: 15,

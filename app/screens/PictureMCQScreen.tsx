@@ -18,6 +18,7 @@ import Animated, {
   runOnJS,
   useAnimatedReaction,
 } from 'react-native-reanimated';
+import { useTranslation } from 'react-i18next';
 
 import { Header } from '@/components/Header';
 import { ThemedText } from '@/components/ThemedText';
@@ -95,6 +96,7 @@ export default function PictureMCQScreen({ onBackToInstructions }: PictureMCQScr
   const [hoveredOption, setHoveredOption] = useState<string | null>(null);
   const [droppedOption, setDroppedOption] = useState<string | null>(null);
   const [showResult, setShowResult] = useState(false);
+  const { t } = useTranslation();
 
   // Get the first grade's first subject's first chapter's questions
   const questions = typedPictureQuestionsData.grades[0]?.subjects[0]?.chapters[0]?.questions || [];
@@ -331,16 +333,16 @@ export default function PictureMCQScreen({ onBackToInstructions }: PictureMCQScr
     return (
       <GestureHandlerRootView style={{ flex: 1 }}>
         <SafeAreaView style={[styles.safeArea, { backgroundColor: isDarkMode ? '#000000' : '#FFFFFF' }]}>
-          <Header title="Picture Questions" />
+          <Header title={t('mcq.pictureQuiz.title')} />
           <ThemedView style={[styles.container, { backgroundColor: isDarkMode ? '#000000' : '#FFFFFF' }]}>
             <ThemedText style={[styles.unauthorizedText, { color: isDarkMode ? '#A0A0A5' : '#6B54AE' }]}>
-              You are not authorized to access picture questions.
+              {t('mcq.pictureQuiz.unauthorizedText')}
             </ThemedText>
             <TouchableOpacity
               style={[styles.pictureButton, styles.pictureHomeButton]}
               onPress={() => router.push('/mcq')}
             >
-              <ThemedText style={styles.pictureHomeButtonText}>Go to Regular Questions</ThemedText>
+              <ThemedText style={styles.pictureHomeButtonText}>{t('mcq.pictureQuiz.goToRegularQuestions')}</ThemedText>
               <IconSymbol name="house.fill" size={24} color="#4CAF50" />
             </TouchableOpacity>
           </ThemedView>
@@ -353,15 +355,15 @@ export default function PictureMCQScreen({ onBackToInstructions }: PictureMCQScr
     return (
       <GestureHandlerRootView style={{ flex: 1 }}>
         <SafeAreaView style={[styles.safeArea, { backgroundColor: isDarkMode ? '#000000' : '#FFFFFF' }]}>
-          <Header title="Picture Questions" />
+          <Header title={t('mcq.pictureQuiz.title')} />
           <ThemedView style={[styles.container, { backgroundColor: isDarkMode ? '#000000' : '#FFFFFF' }]}>
             <ThemedView style={[styles.formContainer, { backgroundColor: isDarkMode ? '#000000' : '#FFFFFF' }]}>
-              <ThemedText style={[styles.formTitle, { color: colors.tint }]}>No Questions Available</ThemedText>
+              <ThemedText style={[styles.formTitle, { color: colors.tint }]}>{t('mcq.pictureQuiz.noQuestionsAvailable')}</ThemedText>
               <TouchableOpacity
                 style={[styles.pictureButton, styles.pictureHomeButton]}
                 onPress={() => router.push('/mcq')}
               >
-                <ThemedText style={styles.pictureHomeButtonText}>Go to Regular Questions</ThemedText>
+                <ThemedText style={styles.pictureHomeButtonText}>{t('mcq.pictureQuiz.goToRegularQuestions')}</ThemedText>
                 <IconSymbol name="house.fill" size={24} color="#4CAF50" />
               </TouchableOpacity>
             </ThemedView>
@@ -375,7 +377,7 @@ export default function PictureMCQScreen({ onBackToInstructions }: PictureMCQScr
     return (
       <GestureHandlerRootView style={{ flex: 1 }}>
         <SafeAreaView style={[styles.safeArea, { backgroundColor: isDarkMode ? '#000000' : '#FFFFFF' }]}>
-          <Header title="Quiz Results" />
+          <Header title={t('mcq.results.title')} />
           <ThemedView style={[styles.container, { backgroundColor: isDarkMode ? '#000000' : '#FFFFFF' }]}>
             <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent}>
               <Animated.View 
@@ -402,7 +404,7 @@ export default function PictureMCQScreen({ onBackToInstructions }: PictureMCQScr
                 <View style={styles.resultContent}>
                   <View style={styles.scoreContainer}>
                     <ThemedText style={[styles.scoreLabel, { color: colors.text }]}>
-                      Your Score
+                      {t('mcq.results.score')}
                     </ThemedText>
                     <ThemedText style={[styles.scoreText, { color: colors.text }]}>
                       {score}/{questions.length}
@@ -435,7 +437,7 @@ export default function PictureMCQScreen({ onBackToInstructions }: PictureMCQScr
                   style={[styles.button, styles.retryButton, { backgroundColor: colors.tint }]}
                   onPress={handleRetry}
                 >
-                  <ThemedText style={[styles.retryButtonText, { color: '#fff' }]}>Try Again</ThemedText>
+                  <ThemedText style={[styles.retryButtonText, { color: '#fff' }]}>{t('mcq.tryAgain')}</ThemedText>
                   <Ionicons name="refresh" size={24} color="#fff" />
                 </TouchableOpacity>
                 
@@ -443,7 +445,7 @@ export default function PictureMCQScreen({ onBackToInstructions }: PictureMCQScr
                   style={[styles.button, { backgroundColor: colors.cardAlt, borderColor: colors.tint, borderWidth: 2 }]}
                   onPress={handleGoToInstructions}
                 >
-                  <ThemedText style={[styles.buttonText, { color: colors.tint }]}>Go to Instructions</ThemedText>
+                  <ThemedText style={[styles.buttonText, { color: colors.tint }]}>{t('mcq.pictureQuiz.goToInstructions')}</ThemedText>
                   <IconSymbol name="questionmark.circle" size={24} color={colors.tint} />
                 </TouchableOpacity>
               </ThemedView>
@@ -466,7 +468,7 @@ export default function PictureMCQScreen({ onBackToInstructions }: PictureMCQScr
               <View style={styles.progressLabels}>
                 <View style={styles.questionLabelContainer}>
                   <ThemedText style={[styles.progressText, { color: '#6B54AE' }]}>
-                    Question {currentQuestionIndex + 1} of {questions.length}
+                    {t('mcq.question')} {currentQuestionIndex + 1} {t('mcq.of')} {questions.length}
                   </ThemedText>
                 </View>
               </View>
@@ -500,7 +502,7 @@ export default function PictureMCQScreen({ onBackToInstructions }: PictureMCQScr
                 <Animated.View style={[styles.celebrationContainer, celebrationAnimatedStyle]}>
                   <View style={[styles.celebrationContent, { backgroundColor: isDarkMode ? 'rgba(28, 28, 30, 0.9)' : 'rgba(255, 255, 255, 0.9)' }]}>
                     <IconSymbol name="trophy.fill" size={80} color="#4CAF50" />
-                    <ThemedText style={styles.celebrationText}>Correct!</ThemedText>
+                    <ThemedText style={styles.celebrationText}>{t('mcq.correct')}</ThemedText>
                   </View>
                 </Animated.View>
 
@@ -508,7 +510,7 @@ export default function PictureMCQScreen({ onBackToInstructions }: PictureMCQScr
                 <Animated.View style={[styles.incorrectContainer, incorrectAnimatedStyle]}>
                   <View style={[styles.incorrectContent, { backgroundColor: isDarkMode ? 'rgba(28, 28, 30, 0.9)' : 'rgba(255, 255, 255, 0.9)' }]}>
                     <IconSymbol name="xmark.circle.fill" size={80} color="#F44336" />
-                    <ThemedText style={styles.incorrectText}>Incorrect!</ThemedText>
+                    <ThemedText style={styles.incorrectText}>{t('mcq.incorrect')}</ThemedText>
                   </View>
                 </Animated.View>
 
@@ -555,7 +557,7 @@ export default function PictureMCQScreen({ onBackToInstructions }: PictureMCQScr
 
                 {showExplanation && (
                   <View style={[styles.explanationContainer, { backgroundColor: isDarkMode ? '#1C1C1E' : '#F5F5F5' }]}>
-                    <ThemedText style={[styles.explanationTitle, { color: '#6B54AE' }]}>Explanation:</ThemedText>
+                    <ThemedText style={[styles.explanationTitle, { color: '#6B54AE' }]}>{t('mcq.explanation')}</ThemedText>
                     <ThemedText style={[styles.explanationText, { color: colors.text }]}>
                       {currentQuestion.explanation}
                     </ThemedText>
@@ -579,7 +581,7 @@ export default function PictureMCQScreen({ onBackToInstructions }: PictureMCQScr
                 disabled={isFirstQuestion}
               >
                 <IconSymbol name="chevron.left.forwardslash.chevron.right" size={24} color="#6B54AE" />
-                <ThemedText style={styles.prevButtonText}>Previous</ThemedText>
+                <ThemedText style={styles.prevButtonText}>{t('mcq.previous')}</ThemedText>
               </TouchableOpacity>
 
               <TouchableOpacity
@@ -587,7 +589,7 @@ export default function PictureMCQScreen({ onBackToInstructions }: PictureMCQScr
                 onPress={handleNavigation}
               >
                 <ThemedText style={styles.nextButtonText}>
-                  {isLastQuestion ? 'Show Result' : 'Next'}
+                  {isLastQuestion ? t('mcq.finish') : t('mcq.next')}
                 </ThemedText>
                 <IconSymbol name="chevron.right" size={24} color="#fff" />
               </TouchableOpacity>

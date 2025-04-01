@@ -164,4 +164,62 @@ export default {
     about: 'About',
     logout: 'Logout',
   },
+  mcq: {
+    title: 'Multiple Choice Questions',
+    selectSubject: 'Select Subject and Chapter',
+    correct: 'Correct!',
+    incorrect: 'Incorrect!',
+    subject: 'Subject',
+    chapter: 'Chapter',
+    selectSubjectPlaceholder: 'Select a subject',
+    selectChapterPlaceholder: 'Select a chapter',
+    startQuiz: 'Start Quiz',
+    question: 'Question',
+    of: 'of',
+    timeTaken: 'Time Taken:',
+    explanation: 'Explanation:',
+    previous: 'Previous',
+    next: 'Next',
+    finish: 'Finish',
+    tryAgain: 'Try Again',
+    chooseAnotherSubject: 'Choose Another Subject',
+    selectAnswerMessage: 'Please select an answer before proceeding',
+    results: {
+      title: 'Quiz Results',
+      score: 'Score',
+      percentage: 'Percentage',
+      message: {
+        outstanding: "Outstanding! You're a genius!",
+        great: "Great job! You're doing well!",
+        good: "Not bad! Keep practicing!",
+        keepLearning: "Keep learning! You can do better!"
+      }
+    },
+    pictureQuiz: {
+      title: 'Picture Quiz Time! 🎨',
+      subtitle: "Let's learn with pictures!",
+      instructions: {
+        look: {
+          title: "Look at the Picture 👀",
+          description: "You'll see a picture at the top!"
+        },
+        drag: {
+          title: "Drag to Answer 🖼️",
+          description: "Drag the picture to the correct answer below!"
+        },
+        next: {
+          title: "Next Question! ➡️",
+          description: "See if you're right and continue to the next one!"
+        }
+      },
+      startQuiz: 'Start Quiz! 🎉',
+      correct: 'Correct!',
+      incorrect: 'Incorrect!',
+      showResult: 'Show Result',
+      goToInstructions: 'Go to Instructions',
+      unauthorized: 'You are not authorized to access picture questions.',
+      goToRegular: 'Go to Regular Questions',
+      noQuestions: 'No Questions Available'
+    }
+  },
 } 
