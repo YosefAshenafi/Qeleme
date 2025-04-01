@@ -33,11 +33,18 @@ const motivationalQuotes = [
   }
 ];
 
+const GRADIENTS = {
+  purple: ['#8E6FFF', '#9577FF', '#9C7FFF'] as const,
+  blue: ['#5478FF', '#5B80FF', '#6288FF'] as const,
+  green: ['#00BA88', '#0AC090', '#14C698'] as const,
+  orange: ['#FF8F6B', '#FF9775', '#FF9F7F'] as const,
+} as const;
+
 type ReportCard = {
   title: string;
   number: string;
   subtitle: string;
-  gradient: readonly [string, string, string];
+  gradient: keyof typeof GRADIENTS;
   icon: 'chart.bar' | 'trophy.fill' | 'clock.fill';
   stats: Array<{ label: string; value: string }>;
 };
@@ -147,7 +154,6 @@ export default function HomeScreen() {
 
   const loadReportData = async () => {
     try {
-      // Load recent activities
       const activitiesJson = await AsyncStorage.getItem('recentActivities');
       let activities: any[] = [];
       if (activitiesJson) {
@@ -187,57 +193,55 @@ export default function HomeScreen() {
       });
 
       const currentStreak = hasActivityToday ? 1 : 0;
-      const bestStreak = 1; // This could be stored and retrieved from AsyncStorage
+      const bestStreak = 1;
 
-      // Create report cards based on available data
-      const cards: ReportCard[] = [];
-
-      // Study Progress Card
-      if (studyHours > 0) {
-        cards.push({
-          title: 'Study Progress',
-          number: `${studyHours}h`,
-          subtitle: 'Total Study Hours',
-          gradient: ['#4A2B8E', '#6B54AE', '#8B6BCE'] as const,
-          icon: 'chart.bar',
-          stats: [
-            { label: 'Study Hours', value: `${studyHours}h` },
-            { label: 'Quizzes Taken', value: `${totalQuizzes}` }
-          ]
-        });
-      }
-
-      // Performance Card
-      if (totalQuizzes > 0) {
-        cards.push({
+      // Create report cards
+      const cards: ReportCard[] = [
+        {
           title: 'Performance',
           number: `${averageScore}%`,
           subtitle: 'Average Score',
-          gradient: isDarkMode 
-            ? ['#2D1B4D', '#3D2B6D', '#4A2B8E'] as const
-            : ['#F3E5F5', '#E1BEE7', '#6B54AE'] as const,
-          icon: 'trophy.fill',
+          gradient: 'purple',
+          icon: 'chart.bar',
           stats: [
             { label: 'Quizzes Taken', value: `${totalQuizzes}` },
             { label: 'Success Rate', value: `${averageScore}%` }
           ]
-        });
-      }
-
-      // Learning Streak Card
-      if (currentStreak > 0 || hasActivityYesterday) {
-        cards.push({
+        },
+        {
+          title: 'Study Progress',
+          number: `${studyHours}h`,
+          subtitle: 'Total Study Hours',
+          gradient: 'blue',
+          icon: 'clock.fill',
+          stats: [
+            { label: 'Daily Goal', value: '2h' },
+            { label: 'Weekly Goal', value: '14h' }
+          ]
+        },
+        {
           title: 'Learning Streak',
           number: `${currentStreak}`,
           subtitle: 'Days Active',
-          gradient: ['#002171', '#0D47A1', '#1976D2'] as const,
-          icon: 'clock.fill',
+          gradient: 'orange',
+          icon: 'trophy.fill',
           stats: [
             { label: 'Current Streak', value: `${currentStreak}d` },
             { label: 'Best Streak', value: `${bestStreak}d` }
           ]
-        });
-      }
+        },
+        {
+          title: 'Study Focus',
+          number: '4',
+          subtitle: 'Subjects Covered',
+          gradient: 'green',
+          icon: 'chart.bar',
+          stats: [
+            { label: 'Top Subject', value: 'Math' },
+            { label: 'Hours/Subject', value: '2.5h' }
+          ]
+        }
+      ];
 
       setReportCards(cards);
     } catch (error) {
@@ -328,7 +332,7 @@ export default function HomeScreen() {
               {reportCards.map((card, index) => (
                 <ThemedView key={index} style={styles.reportCard}>
                   <LinearGradient
-                    colors={card.gradient}
+                    colors={GRADIENTS[card.gradient]}
                     style={styles.reportCardContent}
                     start={{ x: 0, y: 0 }}
                     end={{ x: 1, y: 1 }}
