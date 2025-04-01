@@ -100,7 +100,7 @@ export default function ProfileScreen() {
   useEffect(() => {
     loadProfileImage();
     loadStats();
-  }, []);
+  }, [t]);
 
   const loadProfileImage = async () => {
     try {

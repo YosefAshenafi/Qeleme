@@ -99,11 +99,11 @@ export default {
       chapter: 'Chapter',
       duration: '{hours}h',
       questions: {
-        completed: 'Completed {count} questions',
-        reviewed: 'Reviewed {count} questions'
+        completed: 'Completed 5 questions',
+        reviewed: 'Reviewed 3 questions'
       },
       flashcards: {
-        reviewed: 'Reviewed {count} flashcards'
+        reviewed: 'Reviewed 10 flashcards'
       },
       homework: {
         submitted: 'Submitted homework',

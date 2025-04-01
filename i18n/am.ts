@@ -99,11 +99,11 @@ export default {
       chapter: 'ምዕራፍ',
       duration: '{hours}ሰ',
       questions: {
-        completed: '{count} ጥያቄዎችን አጠናቅቋል',
-        reviewed: '{count} ጥያቄዎችን ገምግሟል'
+        completed: '5 ጥያቄዎችን አጠናቅቋል',
+        reviewed: '3 ጥያቄዎችን ገምግሟል'
       },
       flashcards: {
-        reviewed: '{count} ፍላሽካርዶችን ገምግሟል'
+        reviewed: '10 ፍላሽካርዶችን ገምግሟል'
       },
       homework: {
         submitted: 'የቤት ስራ አስገብቷል',
