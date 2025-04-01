@@ -197,10 +197,10 @@ export default {
       score: 'ውጤት',
       percentage: 'መቶኛ',
       message: {
-        outstanding: 'በጣም ጥሩ! ታላቅ ነዎት!',
-        great: 'በጣም ጥሩ! በደንብ እየሰራ ነዎት!',
-        good: 'በጣም አይደለም! መለማመድዎን ይቀጥሉ!',
-        keepLearning: 'መማርዎን ይቀጥሉ! ይበልጥ ይችላሉ!'
+        outstanding: "እጅግ በጣም ጥሩ! አንቺ/አንተ ኃያል ነሽ/ህ!",
+        great: "በጣም ጥሩ! በጥሩ ሁኔታ እየሰራህ/ሽ ነው!",
+        good: "መጥፎ አይደለም! መለማመድ ይቀጥሉ!",
+        keepLearning: "መማር ይቀጥሉ! የተሻለ ማድረግ ይችላሉ!"
       }
     },
     pictureQuiz: {
