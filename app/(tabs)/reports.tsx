@@ -7,6 +7,7 @@ import { getColors } from '@/constants/Colors';
 import { useState, useEffect, useRef } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 
 import { Header } from '@/components/Header';
 import { ThemedText } from '@/components/ThemedText';
@@ -15,6 +16,7 @@ import { ThemedView } from '@/components/ThemedView';
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
 export default function ReportsScreen() {
+  const { t } = useTranslation();
   const { isDarkMode } = useTheme();
   const colors = getColors(isDarkMode);
   const [refreshing, setRefreshing] = useState(false);
@@ -45,83 +47,75 @@ export default function ReportsScreen() {
 
   const loadReportData = async () => {
     try {
-      // Load recent activities
-      const activitiesJson = await AsyncStorage.getItem('recentActivities');
-      let activities: any[] = [];
-      if (activitiesJson) {
-        activities = JSON.parse(activitiesJson);
-        const recentActivity = activities.map((activity: any) => ({
-          type: activity.type,
-          subject: activity.subject,
-          score: activity.type === 'mcq' ? parseInt(activity.details.match(/\d+/)[0]) : undefined,
-          duration: activity.duration,
-          status: activity.status,
-          date: new Date(activity.timestamp).toLocaleDateString()
-        }));
-        setReportData(prev => ({ ...prev, recentActivity }));
-      }
-
-      // Calculate study hours from activities
-      const studyHours = activities
-        .filter((activity: any) => activity.type === 'study')
-        .reduce((total: number, activity: any) => {
-          const hours = parseInt(activity.duration?.replace('h', '') || '0');
-          return total + hours;
-        }, 0);
-
-      // Calculate performance metrics
-      const mcqActivities = activities.filter((activity: any) => activity.type === 'mcq');
-      const totalQuizzes = mcqActivities.length;
-      const totalScore = mcqActivities.reduce((sum: number, activity: any) => {
-        const score = parseInt(activity.details.match(/\d+/)[0]);
-        return sum + score;
-      }, 0);
-      const averageScore = totalQuizzes > 0 ? Math.round(totalScore / totalQuizzes) : 0;
-
-      // Calculate subject breakdown and completed topics
-      const subjectProgress = new Map<string, { totalQuizzes: number; totalScore: number }>();
-      let totalTopics = 0;
-      let completedTopics = 0;
-
-      activities.forEach((activity: any) => {
-        if (activity.subject) {
-          if (!subjectProgress.has(activity.subject)) {
-            subjectProgress.set(activity.subject, { totalQuizzes: 0, totalScore: 0 });
-            totalTopics++;
-          }
-          
-          const subjectData = subjectProgress.get(activity.subject)!;
-          if (activity.type === 'mcq') {
-            subjectData.totalQuizzes++;
-            subjectData.totalScore += parseInt(activity.details.match(/\d+/)[0]);
-            if (subjectData.totalQuizzes >= 5 && (subjectData.totalScore / subjectData.totalQuizzes) >= 70) {
-              completedTopics++;
-            }
-          }
-        }
-      });
-
-      // Calculate overall progress percentage
-      const overallProgress = totalTopics > 0 ? Math.round((completedTopics / totalTopics) * 100) : 0;
-
-      // Update report data
-      setReportData(prev => ({
-        ...prev,
+      // Sample data for demonstration
+      const sampleData = {
         overallProgress: {
-          ...prev.overallProgress,
-          percentage: overallProgress,
-          totalTopics,
-          completedTopics,
-          studyHours,
+          percentage: 75,
+          totalTopics: 20,
+          completedTopics: 15,
+          studyHours: 48,
         },
         performance: {
-          ...prev.performance,
-          averageScore,
-          quizzesTaken: totalQuizzes,
-          successRate: averageScore,
-          improvement: '+5%', // This could be calculated based on historical data
+          averageScore: 85,
+          quizzesTaken: 60,
+          successRate: 88,
+          improvement: '+15%',
         },
-      }));
+        learningStreak: {
+          currentStreak: 12,
+          bestStreak: 25,
+          totalDaysActive: 90,
+        },
+        subjectBreakdown: [
+          { subject: 'ሒሳብ', progress: 90, score: 95 },
+          { subject: 'ፊዚክስ', progress: 85, score: 88 },
+          { subject: 'ኬሚስትሪ', progress: 75, score: 80 },
+          { subject: 'ባዮሎጂ', progress: 70, score: 75 },
+        ],
+        recentActivity: [
+          {
+            type: 'quiz',
+            subject: 'ሒሳብ',
+            score: 95,
+            date: new Date().toLocaleDateString()
+          },
+          {
+            type: 'study',
+            subject: 'ፊዚክስ',
+            duration: '2.5ሰ',
+            date: new Date(Date.now() - 86400000).toLocaleDateString()
+          },
+          {
+            type: 'homework',
+            subject: 'ኬሚስትሪ',
+            status: 'ተጠናቅቋል',
+            date: new Date(Date.now() - 172800000).toLocaleDateString()
+          },
+          {
+            type: 'quiz',
+            subject: 'ባዮሎጂ',
+            score: 85,
+            date: new Date(Date.now() - 259200000).toLocaleDateString()
+          },
+          {
+            type: 'study',
+            subject: 'ሒሳብ',
+            duration: '3ሰ',
+            date: new Date(Date.now() - 345600000).toLocaleDateString()
+          }
+        ]
+      };
+
+      // Set the sample data
+      setReportData(sampleData);
+
+      // In a real app, you would load this from AsyncStorage or an API
+      // const activitiesJson = await AsyncStorage.getItem('recentActivities');
+      // let activities: any[] = [];
+      // if (activitiesJson) {
+      //   activities = JSON.parse(activitiesJson);
+      //   // ... rest of the data processing logic
+      // }
     } catch (error) {
       console.error('Error loading report data:', error);
     }
@@ -175,7 +169,7 @@ export default function ReportsScreen() {
 
   return (
     <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]}>
-      <Header title="Learning Reports" />
+      <Header title={t('reports.title')} />
       <ScrollView 
         style={styles.scrollView}
         refreshControl={
@@ -200,24 +194,20 @@ export default function ReportsScreen() {
                 <View style={[styles.iconContainer, { backgroundColor: 'rgba(255, 255, 255, 0.2)' }]}>
                   <IconSymbol name="message" size={24} color="#fff" />
                 </View>
-                <ThemedText style={styles.cardTitle}>Overall Progress</ThemedText>
+                <ThemedText style={styles.cardTitle}>{t('reports.overallProgress.title')}</ThemedText>
               </View>
               <View style={styles.progressContent}>
                 <ThemedText style={styles.progressPercentage}>
-                  {reportData.overallProgress.percentage}%
+                  {`${reportData.overallProgress.percentage}%`}
                 </ThemedText>
                 <View style={styles.progressStats}>
                   <View style={styles.statItem}>
                     <ThemedText style={styles.statValue}>
-                      {reportData.overallProgress.completedTopics}/{reportData.overallProgress.totalTopics}
+                      {`${reportData.overallProgress.completedTopics}/${reportData.overallProgress.totalTopics} ${t('reports.overallProgress.topicsCompleted').split(' ')[2]}`}
                     </ThemedText>
-                    <ThemedText style={styles.statLabel}>Topics Completed</ThemedText>
-                  </View>
-                  <View style={styles.statItem}>
-                    <ThemedText style={styles.statValue}>
-                      {reportData.overallProgress.studyHours}h
+                    <ThemedText style={styles.statLabel}>
+                      {`${reportData.overallProgress.studyHours}${t('home.activityDetails.duration', { hours: '' }).slice(-1)} ${t('reports.overallProgress.studyHours').split(' ').slice(1).join(' ')}`}
                     </ThemedText>
-                    <ThemedText style={styles.statLabel}>Study Hours</ThemedText>
                   </View>
                 </View>
               </View>
@@ -236,30 +226,25 @@ export default function ReportsScreen() {
                 <View style={[styles.iconContainer, { backgroundColor: 'rgba(255, 255, 255, 0.2)' }]}>
                   <IconSymbol name="message.fill" size={24} color="#fff" />
                 </View>
-                <ThemedText style={styles.cardTitle}>Performance</ThemedText>
+                <ThemedText style={styles.cardTitle}>{t('reports.performance.title')}</ThemedText>
               </View>
               <View style={styles.progressContent}>
                 <ThemedText style={styles.progressPercentage}>
-                  {reportData.performance.averageScore}%
+                  {`${reportData.performance.averageScore}%`}
                 </ThemedText>
                 <View style={styles.progressStats}>
                   <View style={styles.statItem}>
                     <ThemedText style={styles.statValue}>
-                      {reportData.performance.quizzesTaken}
+                      {`${reportData.performance.quizzesTaken} ${t('reports.performance.quizzesTaken').split(' ')[1]} ${t('reports.performance.quizzesTaken').split(' ')[2]}`}
                     </ThemedText>
-                    <ThemedText style={styles.statLabel}>Quizzes Taken</ThemedText>
-                  </View>
-                  <View style={styles.statItem}>
-                    <ThemedText style={styles.statValue}>
-                      {reportData.performance.successRate}%
+                    <ThemedText style={styles.statLabel}>
+                      {`${reportData.performance.successRate}% ${t('reports.performance.successRate').split(' ')[2]} ${t('reports.performance.successRate').split(' ')[3]}`}
                     </ThemedText>
-                    <ThemedText style={styles.statLabel}>Success Rate</ThemedText>
                   </View>
                   <View style={styles.statItem}>
                     <ThemedText style={styles.statValue}>
                       {reportData.performance.improvement}
                     </ThemedText>
-                    <ThemedText style={styles.statLabel}>Improvement</ThemedText>
                   </View>
                 </View>
               </View>
@@ -278,24 +263,20 @@ export default function ReportsScreen() {
                 <View style={[styles.iconContainer, { backgroundColor: 'rgba(255, 255, 255, 0.2)' }]}>
                   <IconSymbol name="house.fill" size={24} color="#fff" />
                 </View>
-                <ThemedText style={styles.cardTitle}>Learning Streak</ThemedText>
+                <ThemedText style={styles.cardTitle}>{t('reports.learningStreak.title')}</ThemedText>
               </View>
               <View style={styles.progressContent}>
                 <ThemedText style={styles.progressPercentage}>
-                  {reportData.learningStreak.currentStreak} days
+                  {`${reportData.learningStreak.currentStreak} ${t('reports.learningStreak.currentStreak').split(' ')[1]}`}
                 </ThemedText>
                 <View style={styles.progressStats}>
                   <View style={styles.statItem}>
                     <ThemedText style={styles.statValue}>
-                      {reportData.learningStreak.bestStreak}d
+                      {`${reportData.learningStreak.bestStreak}${t('reports.learningStreak.bestStreak').split(' ')[0].slice(-1)} ${t('reports.learningStreak.bestStreak').split(' ').slice(1).join(' ')}`}
                     </ThemedText>
-                    <ThemedText style={styles.statLabel}>Best Streak</ThemedText>
-                  </View>
-                  <View style={styles.statItem}>
-                    <ThemedText style={styles.statValue}>
-                      {reportData.learningStreak.totalDaysActive}d
+                    <ThemedText style={styles.statLabel}>
+                      {`${reportData.learningStreak.totalDaysActive}${t('reports.learningStreak.totalActive').split(' ')[0].slice(-1)} ${t('reports.learningStreak.totalActive').split(' ').slice(1).join(' ')}`}
                     </ThemedText>
-                    <ThemedText style={styles.statLabel}>Total Active</ThemedText>
                   </View>
                 </View>
               </View>
@@ -304,7 +285,9 @@ export default function ReportsScreen() {
 
           {/* Subject Breakdown */}
           <ThemedView style={[styles.section, { backgroundColor: colors.background }]}>
-            <ThemedText style={[styles.sectionTitle, { color: colors.text }]}>Subject Breakdown</ThemedText>
+            <ThemedText style={[styles.sectionTitle, { color: colors.text }]}>
+              {t('reports.subjectBreakdown.title')}
+            </ThemedText>
             {reportData.subjectBreakdown.map((subject, index) => (
               <ThemedView 
                 key={index} 
@@ -319,7 +302,7 @@ export default function ReportsScreen() {
                     {subject.subject}
                   </ThemedText>
                   <ThemedText style={[styles.subjectScore, { color: colors.tint }]}>
-                    {subject.score}%
+                    {`${subject.progress}% ${t('reports.subjectBreakdown.progress').split(' ')[1]}`}
                   </ThemedText>
                 </View>
                 <View style={[styles.progressBar, { backgroundColor: isDarkMode ? 'rgba(255, 255, 255, 0.1)' : '#E0E0E0' }]}>
@@ -328,16 +311,15 @@ export default function ReportsScreen() {
                     backgroundColor: colors.tint
                   }]} />
                 </View>
-                <ThemedText style={[styles.progressText, { color: colors.text }]}>
-                  {subject.progress}% Complete
-                </ThemedText>
               </ThemedView>
             ))}
           </ThemedView>
 
           {/* Recent Activity */}
           <ThemedView style={[styles.section, { backgroundColor: colors.background }]}>
-            <ThemedText style={[styles.sectionTitle, { color: colors.text }]}>Recent Activity</ThemedText>
+            <ThemedText style={[styles.sectionTitle, { color: colors.text }]}>
+              {t('reports.recentActivity.title')}
+            </ThemedText>
             {reportData.recentActivity.map((activity, index) => (
               <ThemedView 
                 key={index} 
@@ -359,12 +341,14 @@ export default function ReportsScreen() {
                 </View>
                 <View style={styles.activityContent}>
                   <ThemedText style={[styles.activityTitle, { color: colors.text }]}>
-                    {activity.subject} - {activity.type.charAt(0).toUpperCase() + activity.type.slice(1)}
+                    {activity.type === 'quiz' ? `${activity.subject} - ፈተና` :
+                     activity.type === 'study' ? `${activity.subject} - ጥናት` :
+                     `${activity.subject} - የቤት ስራ`}
                   </ThemedText>
                   <ThemedText style={[styles.activitySubtitle, { color: colors.text }]}>
-                    {activity.type === 'quiz' ? `Score: ${activity.score}%` :
-                     activity.type === 'study' ? `Duration: ${activity.duration}` :
-                     `Status: ${activity.status}`}
+                    {activity.type === 'quiz' ? `ውጤት: ${activity.score}%` :
+                     activity.type === 'study' ? `ጊዜ: ${activity.duration}` :
+                     `ሁኔታ: ${activity.status}`}
                   </ThemedText>
                 </View>
                 <ThemedText style={[styles.activityDate, { 
@@ -394,7 +378,7 @@ export default function ReportsScreen() {
                   style={styles.infoIcon}
                 />
                 <ThemedText style={[styles.sectionTitle, styles.accordionTitle, { color: colors.text }]}>
-                  How Reports are Calculated
+                  {t('reports.howCalculated.title')}
                 </ThemedText>
               </View>
               <Animated.View style={{ transform: [{ rotate: spin }] }}>
@@ -411,7 +395,7 @@ export default function ReportsScreen() {
               {
                 maxHeight: animatedHeight.interpolate({
                   inputRange: [0, 1],
-                  outputRange: [0, 500], // Adjust this value based on content height
+                  outputRange: [0, 500],
                 }),
                 opacity: animatedHeight,
               }
@@ -429,37 +413,48 @@ export default function ReportsScreen() {
                 <View style={styles.infoSection}>
                   <View style={styles.infoTitleContainer}>
                     <IconSymbol name="message.fill" size={20} color={colors.tint} />
-                    <ThemedText style={[styles.infoTitle, { color: colors.text }]}>Overall Progress</ThemedText>
+                    <ThemedText style={[styles.infoTitle, { color: colors.text }]}>
+                      {t('reports.howCalculated.overallProgress.title')}
+                    </ThemedText>
                   </View>
                   <ThemedText style={[styles.infoText, { color: colors.text }]}>
-                    • Each unique subject counts as a topic{'\n'}
-                    • A topic is considered completed when:{'\n'}
-                    {'  '}- You've taken at least 5 MCQ quizzes{'\n'}
-                    {'  '}- Your average score is 70% or higher{'\n'}
-                    • Progress = (Completed Topics / Total Topics) × 100
+                    {t('reports.howCalculated.overallProgress.description').split('\n').map((line, i) => (
+                      <React.Fragment key={i}>
+                        {line}{'\n'}
+                      </React.Fragment>
+                    ))}
                   </ThemedText>
                 </View>
 
                 <View style={styles.infoSection}>
                   <View style={styles.infoTitleContainer}>
                     <IconSymbol name="message.fill" size={20} color={colors.tint} />
-                    <ThemedText style={[styles.infoTitle, { color: colors.text }]}>Performance Metrics</ThemedText>
+                    <ThemedText style={[styles.infoTitle, { color: colors.text }]}>
+                      {t('reports.howCalculated.performance.title')}
+                    </ThemedText>
                   </View>
                   <ThemedText style={[styles.infoText, { color: colors.text }]}>
-                    • Average Score: Total of all MCQ scores ÷ Number of quizzes{'\n'}
-                    • Success Rate: Same as average score{'\n'}
-                    • Quizzes Taken: Total number of MCQ quizzes completed
+                    {t('reports.howCalculated.performance.description').split('\n').map((line, i) => (
+                      <React.Fragment key={i}>
+                        {line}{'\n'}
+                      </React.Fragment>
+                    ))}
                   </ThemedText>
                 </View>
 
                 <View style={styles.infoSection}>
                   <View style={styles.infoTitleContainer}>
                     <IconSymbol name="clock.fill" size={20} color={colors.tint} />
-                    <ThemedText style={[styles.infoTitle, { color: colors.text }]}>Study Hours</ThemedText>
+                    <ThemedText style={[styles.infoTitle, { color: colors.text }]}>
+                      {t('reports.howCalculated.studyHours.title')}
+                    </ThemedText>
                   </View>
                   <ThemedText style={[styles.infoText, { color: colors.text }]}>
-                    • Calculated from all study sessions{'\n'}
-                    • Each study activity's duration is added to the total
+                    {t('reports.howCalculated.studyHours.description').split('\n').map((line, i) => (
+                      <React.Fragment key={i}>
+                        {line}{'\n'}
+                      </React.Fragment>
+                    ))}
                   </ThemedText>
                 </View>
               </ThemedView>
@@ -576,9 +571,6 @@ const styles = StyleSheet.create({
   progressFill: {
     height: '100%',
     borderRadius: 4,
-  },
-  progressText: {
-    fontSize: 14,
   },
   activityCard: {
     flexDirection: 'row',

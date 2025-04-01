@@ -266,5 +266,68 @@ export default {
       details: 'የቤት ስራ ጥያቄ ጠይቋል',
       status: 'ተጠናቅቋል'
     }
+  },
+  reports: {
+    title: 'የመማር ሪፖርቶች',
+    overallProgress: {
+      title: 'ጠቅላላ እድገት',
+      percentage: '{percentage}%',
+      topicsCompleted: '{completed}/{total} የተጠናቀቁ ትምህርቶች',
+      studyHours: '{hours}ሰ የጥናት ሰዓታት'
+    },
+    performance: {
+      title: 'አፈጻጸም',
+      averageScore: '{score}%',
+      quizzesTaken: '{count} የተወሰዱ ፈተናዎች',
+      successRate: '{rate}% የስኬት መጠን',
+      improvement: '{value} እድገት'
+    },
+    learningStreak: {
+      title: 'የመማር ተከታታይነት',
+      currentStreak: '{days} ቀናት',
+      bestStreak: '{days}ቀ ምርጥ ተከታታይነት',
+      totalActive: '{days}ቀ ጠቅላላ ንቁ ቀናት'
+    },
+    subjectBreakdown: {
+      title: 'የትምህርቶች ተካፋይነት',
+      progress: '{progress}% ተጠናቅቋል'
+    },
+    recentActivity: {
+      title: 'የቅርብ ጊዜ እንቅስቃሴ',
+      quiz: '{subject} - ፈተና',
+      study: '{subject} - ጥናት',
+      homework: '{subject} - የቤት ስራ',
+      score: 'ውጤት: {score}%',
+      duration: 'ጊዜ: {duration}',
+      status: 'ሁኔታ: {status}'
+    },
+    howCalculated: {
+      title: 'ሪፖርቶች እንዴት ይሰላሉ',
+      overallProgress: {
+        title: 'ጠቅላላ እድገት',
+        description: [
+          '• እያንዳንዱ የተለየ ትምህርት እንደ ርዕስ ይቆጠራል',
+          '• ርዕስ ተጠናቅቋል ተብሏል የሚሆነው:',
+          '  - ቢያንስ 5 ምርጫ ፈተናዎች ስትወስድ',
+          '  - አማካይ ውጤትዎ 70% ወይም ከዚያ በላይ ሲሆን',
+          '• እድገት = (የተጠናቀቁ ርዕሶች / ጠቅላላ ርዕሶች) × 100'
+        ]
+      },
+      performance: {
+        title: 'የአፈጻጸም መለኪያዎች',
+        description: [
+          '• አማካይ ውጤት: የሁሉም ምርጫ ፈተናዎች ድምር ÷ የፈተናዎች ቁጥር',
+          '• የስኬት መጠን: እንደ አማካይ ውጤት',
+          '• የተወሰዱ ፈተናዎች: የተጠናቀቁ ምርጫ ፈተናዎች ጠቅላላ ቁጥር'
+        ]
+      },
+      studyHours: {
+        title: 'የጥናት ሰዓታት',
+        description: [
+          '• ከሁሉም የጥናት ክፍለ ጊዜዎች ይሰላል',
+          '• እያንዳንዱ የጥናት እንቅስቃሴ ጊዜ ድምር ውስጥ ይጨመራል'
+        ]
+      }
+    }
   }
 } 

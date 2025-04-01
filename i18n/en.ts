@@ -258,5 +258,68 @@ export default {
       details: 'Asked a homework question',
       status: 'Completed'
     }
+  },
+  reports: {
+    title: 'Learning Reports',
+    overallProgress: {
+      title: 'Overall Progress',
+      percentage: '{percentage}%',
+      topicsCompleted: '{completed}/{total} Topics Completed',
+      studyHours: '{hours}h Study Hours'
+    },
+    performance: {
+      title: 'Performance',
+      averageScore: '{score}%',
+      quizzesTaken: '{count} Quizzes Taken',
+      successRate: '{rate}% Success Rate',
+      improvement: '{value} Improvement'
+    },
+    learningStreak: {
+      title: 'Learning Streak',
+      currentStreak: '{days} days',
+      bestStreak: '{days}d Best Streak',
+      totalActive: '{days}d Total Active'
+    },
+    subjectBreakdown: {
+      title: 'Subject Breakdown',
+      progress: '{progress}% Complete'
+    },
+    recentActivity: {
+      title: 'Recent Activity',
+      quiz: '{subject} - Quiz',
+      study: '{subject} - Study',
+      homework: '{subject} - Homework',
+      score: 'Score: {score}%',
+      duration: 'Duration: {duration}',
+      status: 'Status: {status}'
+    },
+    howCalculated: {
+      title: 'How Reports are Calculated',
+      overallProgress: {
+        title: 'Overall Progress',
+        description: [
+          '• Each unique subject counts as a topic',
+          '• A topic is considered completed when:',
+          '  - You\'ve taken at least 5 MCQ quizzes',
+          '  - Your average score is 70% or higher',
+          '• Progress = (Completed Topics / Total Topics) × 100'
+        ]
+      },
+      performance: {
+        title: 'Performance Metrics',
+        description: [
+          '• Average Score: Total of all MCQ scores ÷ Number of quizzes',
+          '• Success Rate: Same as average score',
+          '• Quizzes Taken: Total number of MCQ quizzes completed'
+        ]
+      },
+      studyHours: {
+        title: 'Study Hours',
+        description: [
+          '• Calculated from all study sessions',
+          '• Each study activity\'s duration is added to the total'
+        ]
+      }
+    }
   }
 } 
