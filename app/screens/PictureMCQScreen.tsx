@@ -313,10 +313,10 @@ export default function PictureMCQScreen({ onBackToInstructions }: PictureMCQScr
   };
 
   const getMessage = () => {
-    if (percentage >= 90) return "Outstanding! You're a genius!";
-    if (percentage >= 70) return "Great job! You're doing well!";
-    if (percentage >= 50) return "Not bad! Keep practicing!";
-    return "Keep learning! You can do better!";
+    if (percentage >= 90) return t('mcq.results.message.outstanding');
+    if (percentage >= 70) return t('mcq.results.message.great');
+    if (percentage >= 50) return t('mcq.results.message.good');
+    return t('mcq.results.message.keepLearning');
   };
 
   const handleNavigation = () => {

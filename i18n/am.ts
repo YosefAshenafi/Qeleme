@@ -197,8 +197,8 @@ export default {
       score: 'ውጤት',
       percentage: 'መቶኛ',
       message: {
-        outstanding: "እጅግ በጣም ጥሩ! አንቺ/አንተ ኃያል ነሽ/ህ!",
-        great: "በጣም ጥሩ! በጥሩ ሁኔታ እየሰራህ/ሽ ነው!",
+        outstanding: "እጅግ በጣም ጥሩ! እርሶ ኃያል ነዎት!",
+        great: "በጣም ጥሩ! በጥሩ ሁኔታ እየሰሩ ነው!",
         good: "መጥፎ አይደለም! መለማመድ ይቀጥሉ!",
         keepLearning: "መማር ይቀጥሉ! የተሻለ ማድረግ ይችላሉ!"
       }
