@@ -29,7 +29,7 @@ export default {
     alreadyHaveAccount: 'Already have an account?',
   },
   home: {
-    welcome: 'Welcome back, {name}!',
+    welcome: 'Welcome back, Yosef!',
     subtitle: 'Ready to learn something new today?',
     recentActivity: 'Recent Activity',
     noActivity: 'No recent activity. Start learning!',

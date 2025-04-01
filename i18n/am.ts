@@ -29,7 +29,7 @@ export default {
     alreadyHaveAccount: 'አካውንት አለዎት?',
   },
   home: {
-    welcome: 'እንኳን በደህና ተመለሱ፣ {name}!',
+    welcome: 'እንኳን በደህና ተመለሱ፣ ዮሴፍ!',
     subtitle: 'ዛሬ አዲስ ነገር ለመማር ዝግጁ ነዎት?',
     recentActivity: 'የቅርብ ጊዜ እንቅስቃሴዎች',
     noActivity: 'ምንም የቅርብ ጊዜ እንቅስቃሴ የለም። መማር ይጀምሩ!',
@@ -146,9 +146,9 @@ export default {
     joinDate: '{date} ተቀላቅለዋል',
     stats: {
       mcqsCompleted: 'የተጠናቀቁ ምርጫዎች',
-      flashcardsClicked: 'የታዩ ፍላሽካርዶች',
+      flashcardsClicked: 'የተመለከቱ ፍላሽካርዶች',
       homeworkQuestions: 'የቤት ስራ ጥያቄዎች',
-      studyHours: 'የጥናት ሰዓታት',
+      studyHours: 'የጥናት ሰዓታት'
     },
     errors: {
       imagePermission: 'ይቅርታ፣ ፎቶ ለመውሰድ ፈቃድ ያስፈልገናል!',
