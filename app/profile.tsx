@@ -12,6 +12,8 @@ import { ThemeChooser } from '@/components/profile/ThemeChooser';
 import { getColors } from '@/constants/Colors';
 import { useTheme } from '@/contexts/ThemeContext';
 import { useAuth } from '@/contexts/AuthContext';
+import { LanguageSelector } from '@/components/LanguageSelector';
+import { useTranslation } from 'react-i18next';
 import * as ImagePicker from 'expo-image-picker';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
@@ -74,14 +76,15 @@ const AccordionItem: React.FC<AccordionItemProps> = ({ title, icon, children, is
 export default function ProfileScreen() {
   const { isDarkMode, toggleTheme } = useTheme();
   const { logout } = useAuth();
+  const { t } = useTranslation();
   const [openAccordion, setOpenAccordion] = useState<string | null>(null);
   const [profileImage, setProfileImage] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
   const [stats, setStats] = useState([
-    { label: 'MCQs Completed', value: '0', icon: 'questionmark.circle.fill' as const },
-    { label: 'Flashcards Clicked', value: '0', icon: 'rectangle.stack.fill' as const },
-    { label: 'Homework Questions', value: '0', icon: 'message.fill' as const },
-    { label: 'Study Hours', value: '0', icon: 'clock.fill' as const },
+    { label: t('profile.stats.mcqsCompleted'), value: '0', icon: 'questionmark.circle.fill' as const },
+    { label: t('profile.stats.flashcardsClicked'), value: '0', icon: 'rectangle.stack.fill' as const },
+    { label: t('profile.stats.homeworkQuestions'), value: '0', icon: 'message.fill' as const },
+    { label: t('profile.stats.studyHours'), value: '0', icon: 'clock.fill' as const },
   ]);
   const colors = getColors(isDarkMode);
 
@@ -106,7 +109,7 @@ export default function ProfileScreen() {
         setProfileImage(imageUri);
       }
     } catch (error) {
-      console.error('Error loading profile image:', error);
+      console.error(t('profile.errors.loadingImage'), error);
     }
   };
 
@@ -134,14 +137,14 @@ export default function ProfileScreen() {
           }, 0);
 
         setStats([
-          { label: 'MCQs Completed', value: mcqCount.toString(), icon: 'questionmark.circle.fill' as const },
-          { label: 'Flashcards Clicked', value: flashcardCount.toString(), icon: 'rectangle.stack.fill' as const },
-          { label: 'Homework Questions', value: homeworkCount.toString(), icon: 'message.fill' as const },
-          { label: 'Study Hours', value: studyHours.toString(), icon: 'clock.fill' as const },
+          { label: t('profile.stats.mcqsCompleted'), value: mcqCount.toString(), icon: 'questionmark.circle.fill' as const },
+          { label: t('profile.stats.flashcardsClicked'), value: flashcardCount.toString(), icon: 'rectangle.stack.fill' as const },
+          { label: t('profile.stats.homeworkQuestions'), value: homeworkCount.toString(), icon: 'message.fill' as const },
+          { label: t('profile.stats.studyHours'), value: studyHours.toString(), icon: 'clock.fill' as const },
         ]);
       }
     } catch (error) {
-      console.error('Error loading stats:', error);
+      console.error(t('profile.errors.loadingStats'), error);
     }
   };
 
@@ -150,7 +153,7 @@ export default function ProfileScreen() {
       // Request permission
       const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
       if (status !== 'granted') {
-        alert('Sorry, we need camera roll permissions to make this work!');
+        alert(t('profile.errors.imagePermission'));
         return;
       }
 
@@ -169,57 +172,50 @@ export default function ProfileScreen() {
       }
     } catch (error) {
       console.error('Error picking image:', error);
-      alert('Error picking image. Please try again.');
+      alert(t('profile.errors.imagePicking'));
     }
   };
 
   const profileData = {
     englishName: 'Yosef Ashenafi',
     email: 'yosefashenafi7@gmail.com',
-    role: 'Student',
-    grade: '12th Grade',
-    school: 'Example High School',
-    joinDate: 'January 2024',
+    role: t('profile.role'),
+    grade: t('profile.grade'),
+    school: t('profile.school'),
+    joinDate: t('profile.joinDate', { date: 'January 2024' }),
   };
 
   const menuItems: MenuItem[] = [
     { 
-      title: 'Account Settings', 
+      title: t('profile.accountSettings'),
       icon: 'person.fill' as const,
       content: <AccountSettings colors={colors} profileData={profileData} />
     },
     { 
-      title: 'Notifications', 
+      title: t('profile.notifications'),
       icon: 'bell.fill' as const, 
       content: <Notifications colors={colors} />
     },
+    {
+      title: t('profile.language'),
+      icon: 'paperplane.fill' as const,
+      content: <LanguageSelector colors={colors} />
+    },
     { 
-      title: 'Theme',
+      title: t('profile.theme'),
       icon: isDarkMode ? 'moon.fill' : 'sun.max.fill' as const,
       action: () => {
         toggleTheme();
       },
-      customContent: (
-        <View style={styles.themeMenuItem}>
-          <View style={styles.themeMenuLeft}>
-            <IconSymbol name={isDarkMode ? 'moon.fill' : 'sun.max.fill'} size={24} color={colors.tint} />
-            <Text style={[styles.menuItemText, { color: colors.text }]}>Theme</Text>
-          </View>
-          <View style={[styles.themeToggleWrapper, { backgroundColor: isDarkMode ? colors.tint : 'rgba(0,0,0,0.1)' }]}>
-            <Text style={[styles.themeToggleText, { color: isDarkMode ? colors.background : colors.text }]}>
-              {isDarkMode ? 'Dark' : 'Light'}
-            </Text>
-          </View>
-        </View>
-      )
+      content: <ThemeChooser colors={colors} />
     },
     { 
-      title: 'Reset App', 
+      title: t('profile.resetApp'),
       icon: 'house.fill' as const, 
       action: () => router.replace('/(auth)/onboarding')
     },
     { 
-      title: 'Logout', 
+      title: t('profile.logout'),
       icon: 'rectangle.portrait.and.arrow.right' as const, 
       action: logout
     },
