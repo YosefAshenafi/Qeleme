@@ -384,12 +384,12 @@ export default {
   login: {
     welcome: 'Welcome to Qelem',
     subtitle: 'Empowering minds, one lesson at a time',
-    phoneNumber: {
-      label: 'Phone Number',
-      placeholder: '912345678',
+    username: {
+      label: 'Username',
+      placeholder: 'Enter your username',
       error: {
-        required: 'Phone number is required',
-        invalid: 'Please enter a valid Ethiopian phone number'
+        required: 'Username is required',
+        invalid: 'Please enter a valid username'
       }
     },
     password: {
@@ -474,6 +474,8 @@ export default {
       incompleteChildrenData: 'Please complete all children information',
       generic: 'An error occurred during signup',
       network: 'Network error. Please try again.',
+      networkConnection: 'Unable to connect to the server. Please check your internet connection.',
+      timeout: 'Request timed out. Please try again.',
     },
   },
   payment: {

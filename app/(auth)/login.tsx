@@ -15,19 +15,19 @@ import { ThemedView } from '@/components/ThemedView';
 
 const { width, height } = Dimensions.get('window');
 
-// Phone number validation regex for Ethiopian numbers
-// Matches formats: +251912345678, 0912345678, 251912345678
-const PHONE_REGEX = /^(?:\+251|0|251)?([9][0-9]{8})$/;
+// Username validation regex
+// Allows letters, numbers, and underscores, 3-20 characters
+const USERNAME_REGEX = /^[a-zA-Z0-9_]{3,20}$/;
 
 export default function LoginScreen() {
   const { login } = useAuth();
   const { isDarkMode } = useTheme();
   const colors = getColors(isDarkMode);
   const { t } = useTranslation();
-  const [phoneNumber, setPhoneNumber] = useState('');
+  const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [errors, setErrors] = useState({
-    phoneNumber: '',
+    username: '',
     password: ''
   });
   const fadeAnim = useRef(new Animated.Value(0)).current;
@@ -48,13 +48,12 @@ export default function LoginScreen() {
     ]).start();
   }, []);
 
-  const validatePhoneNumber = (phone: string) => {
-    if (!phone.trim()) {
-      return t('login.phoneNumber.error.required');
+  const validateUsername = (username: string) => {
+    if (!username.trim()) {
+      return t('login.username.error.required');
     }
-    const fullNumber = `+251${phone}`;
-    if (!PHONE_REGEX.test(fullNumber)) {
-      return t('login.phoneNumber.error.invalid');
+    if (!USERNAME_REGEX.test(username)) {
+      return t('login.username.error.invalid');
     }
     return '';
   };
@@ -62,13 +61,13 @@ export default function LoginScreen() {
   const validateForm = () => {
     let isValid = true;
     const newErrors = {
-      phoneNumber: '',
+      username: '',
       password: ''
     };
 
-    const phoneError = validatePhoneNumber(phoneNumber);
-    if (phoneError) {
-      newErrors.phoneNumber = phoneError;
+    const usernameError = validateUsername(username);
+    if (usernameError) {
+      newErrors.username = usernameError;
       isValid = false;
     }
 
@@ -81,28 +80,16 @@ export default function LoginScreen() {
     return isValid;
   };
 
-  const formatPhoneNumber = (text: string) => {
-    // Remove any non-digit characters except plus sign
-    const cleaned = text.replace(/[^\d+]/g, '');
-    
-    // Ensure only one plus sign at the start
-    if (cleaned.startsWith('+')) {
-      return '+' + cleaned.substring(1).replace(/\+/g, '');
-    }
-    return cleaned;
-  };
-
   const handleLogin = async () => {
     if (validateForm()) {
       try {
-        // Store the complete phone number in AsyncStorage
-        const fullPhoneNumber = `+251${phoneNumber}`;
-        await AsyncStorage.setItem('userPhoneNumber', fullPhoneNumber);
+        // Store the username in AsyncStorage
+        await AsyncStorage.setItem('username', username);
         
         // For now, we'll simulate a successful login with mock data
         const userData = {
           id: '1',
-          phoneNumber: fullPhoneNumber,
+          username: username,
           name: 'Test User',
           // Add other user data as needed
         };
@@ -149,32 +136,27 @@ export default function LoginScreen() {
               <View style={styles.inputWrapper}>
                 <View style={[
                   styles.inputContainer, 
-                  errors.phoneNumber ? styles.inputError : null,
+                  errors.username ? styles.inputError : null,
                   { backgroundColor: isDarkMode ? '#2C2C2E' : '#F9FAFB' }
                 ]}>
-                  <Ionicons name="call-outline" size={20} color={isDarkMode ? '#A0A0A5' : '#6B7280'} style={styles.inputIcon} />
-                  <View style={styles.phoneInputContainer}>
-                    <ThemedText style={[styles.countryCode, { color: colors.text }]}>+251</ThemedText>
-                    <TextInput
-                      style={[styles.input, styles.phoneInput, { color: colors.text }]}
-                      placeholder={t('login.phoneNumber.placeholder')}
-                      placeholderTextColor={isDarkMode ? '#A0A0A5' : '#9CA3AF'}
-                      value={phoneNumber}
-                      onChangeText={(text) => {
-                        const cleaned = text.replace(/[^\d]/g, '').slice(0, 9);
-                        setPhoneNumber(cleaned);
-                        if (errors.phoneNumber) {
-                          setErrors(prev => ({ ...prev, phoneNumber: '' }));
-                        }
-                      }}
-                      keyboardType="phone-pad"
-                      autoCapitalize="none"
-                      maxLength={9}
-                    />
-                  </View>
+                  <Ionicons name="at-outline" size={20} color={isDarkMode ? '#A0A0A5' : '#6B7280'} style={styles.inputIcon} />
+                  <TextInput
+                    style={[styles.input, { color: colors.text }]}
+                    placeholder={t('login.username.placeholder')}
+                    placeholderTextColor={isDarkMode ? '#A0A0A5' : '#9CA3AF'}
+                    value={username}
+                    onChangeText={(text) => {
+                      setUsername(text);
+                      if (errors.username) {
+                        setErrors(prev => ({ ...prev, username: '' }));
+                      }
+                    }}
+                    autoCapitalize="none"
+                    autoCorrect={false}
+                  />
                 </View>
-                {errors.phoneNumber ? (
-                  <ThemedText style={styles.errorText}>{errors.phoneNumber}</ThemedText>
+                {errors.username ? (
+                  <ThemedText style={styles.errorText}>{errors.username}</ThemedText>
                 ) : null}
 
                 <View style={[
@@ -374,18 +356,5 @@ const styles = StyleSheet.create({
     color: '#4F46E5',
     fontSize: 14,
     fontWeight: '600',
-  },
-  phoneInputContainer: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  countryCode: {
-    fontSize: 16,
-    color: '#1F2937',
-    marginRight: 4,
-  },
-  phoneInput: {
-    flex: 1,
   },
 }); 

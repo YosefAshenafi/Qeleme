@@ -390,12 +390,12 @@ export default {
   login: {
     welcome: 'እንኳን በደህና መጡ',
     subtitle: 'አእምሮዎን በእያንዳንዱ ትምህርት ያጠናክሩ',
-    phoneNumber: {
-      label: 'ስልክ ቁጥር',
-      placeholder: '912345678',
+    username: {
+      label: 'መለያ ስም',
+      placeholder: 'መለያ ስምዎን ያስገቡ',
       error: {
-        required: 'ስልክ ቁጥር ያስፈልጋል',
-        invalid: 'የኢትዮጵያ ስልክ ቁጥር ያስገቡ'
+        required: 'መለያ ስም ያስፈልጋል',
+        invalid: 'የሚፈልጉትን መለያ ስም ያስገቡ'
       }
     },
     password: {
@@ -481,6 +481,8 @@ export default {
       incompleteChildrenData: 'እባክዎ የልጆች መረጃ ሁሉን ይጨምሩ',
       generic: 'በተመዝገበ ጊዜ ስህተት ተከስቷል',
       network: 'የድረ-ገጽ ስህተት። እባክዎ እንደገና ይሞክሩ።',
+      networkConnection: 'ወደ አገልግሎት መገናኘት አልተቻለም። የበይነመረብ ግንኙነትዎን ይፈትሹ።',
+      timeout: 'ጥያቄው ጊዜው አብቅቷል። እባክዎ እንደገና ይሞክሩ።',
     },
   },
   payment: {

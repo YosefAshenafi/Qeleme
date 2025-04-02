@@ -13,8 +13,14 @@ const LANGUAGES = {
 const loadLanguage = async () => {
   try {
     const savedLanguage = await AsyncStorage.getItem('user-language');
-    return savedLanguage || 'en';
+    // If no language is saved, set English as default and save it
+    if (!savedLanguage) {
+      await AsyncStorage.setItem('user-language', 'en');
+      return 'en';
+    }
+    return savedLanguage;
   } catch {
+    // If there's any error, default to English
     return 'en';
   }
 };

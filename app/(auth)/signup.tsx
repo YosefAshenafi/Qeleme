@@ -126,14 +126,21 @@ export default function SignupScreen() {
 
       console.log('Sending signup request with body:', JSON.stringify(requestBody, null, 2));
 
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+
       const response = await fetch('https://api.qelem.net/auth/signup', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Accept': 'application/json',
+          'User-Agent': 'Qelem-Mobile-App',
         },
         body: JSON.stringify(requestBody),
+        signal: controller.signal,
       });
+
+      clearTimeout(timeoutId);
 
       console.log('Response status:', response.status);
       console.log('Response headers:', JSON.stringify(response.headers, null, 2));
@@ -165,10 +172,16 @@ export default function SignupScreen() {
       }
     } catch (err) {
       console.error('Network error details:', err);
-      if (err instanceof TypeError && err.message.includes('NetworkError')) {
-        setError(t('signup.errors.networkConnection'));
+      if (err instanceof TypeError) {
+        if (err.message.includes('NetworkError')) {
+          setError(t('signup.errors.networkConnection'));
+        } else if (err.name === 'AbortError') {
+          setError(t('signup.errors.timeout'));
+        } else {
+          setError(t('signup.errors.network'));
+        }
       } else {
-        setError(t('signup.errors.network'));
+        setError(t('signup.errors.generic'));
       }
     }
   };
