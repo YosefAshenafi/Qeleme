@@ -21,6 +21,7 @@ export default function SignupScreen() {
   const params = useLocalSearchParams();
   const numberOfChildren = params.numberOfChildren ? parseInt(params.numberOfChildren as string) : 1;
   const [fullName, setFullName] = useState('');
+  const [username, setUsername] = useState('');
   const [phoneNumber, setPhoneNumber] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -86,6 +87,10 @@ export default function SignupScreen() {
       setError(t('signup.errors.fullNameRequired'));
       return;
     }
+    if (!username) {
+      setError(t('signup.errors.usernameRequired'));
+      return;
+    }
     if (!phoneNumber) {
       setError(t('signup.errors.phoneRequired'));
       return;
@@ -118,7 +123,8 @@ export default function SignupScreen() {
     try {
       const requestBody = {
         fullName,
-        phoneNumber,
+        username,
+        phoneNumber: `+251${phoneNumber}`,
         password,
         role: numberOfChildren > 1 ? 'parent' : 'student',
         ...(numberOfChildren > 1 ? { children: childrenData } : { grade }),
@@ -129,7 +135,9 @@ export default function SignupScreen() {
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
 
-      const response = await fetch('https://api.qelem.net/auth/signup', {
+      // Use environment variable for API URL if available, fallback to localhost
+      const API_URL = process.env.EXPO_PUBLIC_API_URL || 'http://localhost:3000';
+      const response = await fetch(`${API_URL}/auth/signup`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -145,35 +153,41 @@ export default function SignupScreen() {
       console.log('Response status:', response.status);
       console.log('Response headers:', JSON.stringify(response.headers, null, 2));
 
+      if (!response.ok) {
+        // Try to parse error response
+        try {
+          const errorData = await response.json();
+          throw new Error(errorData.message || errorData.error || t('signup.errors.generic'));
+        } catch (parseError) {
+          // If we can't parse the error response, throw a generic error
+          throw new Error(t('signup.errors.generic'));
+        }
+      }
+
       const data = await response.json();
       console.log('Response data:', JSON.stringify(data, null, 2));
 
-      if (response.ok) {
-        const userData = {
-          fullName,
-          phoneNumber,
-          password,
-          role: numberOfChildren > 1 ? 'parent' : 'student',
-          ...(numberOfChildren > 1 ? { children: childrenData } : { grade }),
-        };
+      const userData = {
+        fullName,
+        username,
+        phoneNumber: `+251${phoneNumber}`,
+        password,
+        role: numberOfChildren > 1 ? 'parent' : 'student',
+        ...(numberOfChildren > 1 ? { children: childrenData } : { grade }),
+      };
 
-        router.push({
-          pathname: '/(auth)/otp',
-          params: {
-            otp: data.otp,
-            userData: JSON.stringify(userData),
-            nextScreen: 'plan-selection'
-          }
-        });
-      } else {
-        const errorMessage = data.message || data.error || t('signup.errors.generic');
-        console.error('Signup error:', errorMessage);
-        setError(errorMessage);
-      }
-    } catch (err) {
+      router.push({
+        pathname: '/(auth)/otp',
+        params: {
+          otp: data.otp,
+          userData: JSON.stringify(userData),
+          nextScreen: 'plan-selection'
+        }
+      });
+    } catch (err: any) {
       console.error('Network error details:', err);
       if (err instanceof TypeError) {
-        if (err.message.includes('NetworkError')) {
+        if (err.message.includes('NetworkError') || err.message.includes('Network request failed')) {
           setError(t('signup.errors.networkConnection'));
         } else if (err.name === 'AbortError') {
           setError(t('signup.errors.timeout'));
@@ -181,7 +195,7 @@ export default function SignupScreen() {
           setError(t('signup.errors.network'));
         }
       } else {
-        setError(t('signup.errors.generic'));
+        setError(err.message || t('signup.errors.generic'));
       }
     }
   };
@@ -238,6 +252,22 @@ export default function SignupScreen() {
                       value={fullName}
                       onChangeText={setFullName}
                       autoCapitalize="words"
+                    />
+                  </View>
+
+                  <View style={[styles.inputContainer, {
+                    backgroundColor: isDarkMode ? '#2C2C2E' : '#F9FAFB',
+                    borderColor: isDarkMode ? '#3C3C3E' : '#E5E7EB',
+                  }]}>
+                    <Ionicons name="at-outline" size={20} color={isDarkMode ? '#A0A0A5' : '#6B7280'} style={styles.inputIcon} />
+                    <TextInput
+                      style={[styles.input, { color: colors.text }]}
+                      placeholder={t('signup.username')}
+                      placeholderTextColor={isDarkMode ? '#A0A0A5' : '#9CA3AF'}
+                      value={username}
+                      onChangeText={(text) => setUsername(text.toLowerCase().replace(/[^a-z0-9]/g, ''))}
+                      autoCapitalize="none"
+                      autoCorrect={false}
                     />
                   </View>
 
