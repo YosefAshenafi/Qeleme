@@ -432,11 +432,21 @@ export default {
       subtitle: 'በቀለም እንዴት መጠቀም እንደሚፈልጉ ይምረጡ',
       student: {
         title: 'ተማሪ',
-        description: 'መማር እና መለማመድ እፈልጋለሁ'
+        description: 'መማር እና መለማመድ እፈልጋለሁ',
+        features: {
+          materials: 'የጥናት ቁሳቁሶችን ይድረሱ',
+          practice: 'ጥያቄዎችን ይለማመዱ',
+          progress: 'የጥናት እድገት ይከታተሉ'
+        }
       },
       parent: {
         title: 'ወላጅ',
-        description: 'የልጆቼን መማር መመራት እፈልጋለሁ'
+        description: 'የልጆቼን መማር መመራት እፈልጋለሁ',
+        features: {
+          monitor: 'የጥናት እድገት ይከታተሉ',
+          manage: 'ልጆችን ይመራሉ',
+          updates: 'የዛሬ ዜና ያግኙ'
+        }
       }
     },
     childrenSelection: {

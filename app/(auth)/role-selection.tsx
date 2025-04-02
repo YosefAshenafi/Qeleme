@@ -1,9 +1,9 @@
-import { StyleSheet, TouchableOpacity, View, ScrollView } from 'react-native';
+import { StyleSheet, TouchableOpacity, View, ScrollView, Animated } from 'react-native';
 import { router } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { useTheme } from '@/contexts/ThemeContext';
 import { getColors } from '@/constants/Colors';
 import { useTranslation } from 'react-i18next';
@@ -15,14 +15,45 @@ export default function RoleSelectionScreen() {
   const { isDarkMode } = useTheme();
   const colors = getColors(isDarkMode);
   const [selectedRole, setSelectedRole] = useState<'student' | 'parent' | null>(null);
+  const scaleAnim = useRef(new Animated.Value(1)).current;
+  const opacityAnim = useRef(new Animated.Value(1)).current;
 
   const handleRoleSelect = (role: 'student' | 'parent') => {
     setSelectedRole(role);
-    if (role === 'student') {
-      router.push('/(auth)/signup');
-    } else {
-      router.push('/(auth)/children-selection');
-    }
+    
+    // Animate the selection
+    Animated.sequence([
+      Animated.parallel([
+        Animated.timing(scaleAnim, {
+          toValue: 0.95,
+          duration: 100,
+          useNativeDriver: true,
+        }),
+        Animated.timing(opacityAnim, {
+          toValue: 0.8,
+          duration: 100,
+          useNativeDriver: true,
+        }),
+      ]),
+      Animated.parallel([
+        Animated.timing(scaleAnim, {
+          toValue: 1,
+          duration: 100,
+          useNativeDriver: true,
+        }),
+        Animated.timing(opacityAnim, {
+          toValue: 1,
+          duration: 100,
+          useNativeDriver: true,
+        }),
+      ]),
+    ]).start(() => {
+      if (role === 'student') {
+        router.push('/(auth)/signup');
+      } else {
+        router.push('/(auth)/children-selection');
+      }
+    });
   };
 
   return (
@@ -39,56 +70,140 @@ export default function RoleSelectionScreen() {
             >
               <Ionicons name="arrow-back" size={24} color={isDarkMode ? '#A0A0A5' : '#1F2937'} />
             </TouchableOpacity>
-            <ThemedText style={[styles.title, { color: colors.text }]}>
-              {t('signup.roleSelection.title')}
-            </ThemedText>
-            <ThemedText style={[styles.subtitle, { color: colors.text + '80' }]}>
-              {t('signup.roleSelection.subtitle')}
-            </ThemedText>
+            <View style={styles.titleContainer}>
+              <ThemedText style={[styles.title, { color: colors.text }]}>
+                {t('signup.roleSelection.title')}
+              </ThemedText>
+              <ThemedText style={[styles.subtitle, { color: colors.text + '80' }]}>
+                {t('signup.roleSelection.subtitle')}
+              </ThemedText>
+            </View>
           </View>
 
           <View style={styles.roleContainer}>
-            <TouchableOpacity
-              style={[
-                styles.roleCard,
-                {
-                  backgroundColor: isDarkMode ? '#2C2C2E' : '#FFFFFF',
-                  borderColor: selectedRole === 'student' ? '#4F46E5' : (isDarkMode ? '#3C3C3E' : '#E5E7EB'),
-                }
-              ]}
-              onPress={() => handleRoleSelect('student')}
-            >
-              <View style={styles.roleIcon}>
-                <Ionicons name="school-outline" size={32} color="#4F46E5" />
-              </View>
-              <ThemedText style={[styles.roleTitle, { color: colors.text }]}>
-                {t('signup.roleSelection.student.title')}
-              </ThemedText>
-              <ThemedText style={[styles.roleDescription, { color: colors.text + '80' }]}>
-                {t('signup.roleSelection.student.description')}
-              </ThemedText>
-            </TouchableOpacity>
+            <Animated.View style={{ transform: [{ scale: scaleAnim }], opacity: opacityAnim }}>
+              <TouchableOpacity
+                style={[
+                  styles.roleCard,
+                  {
+                    backgroundColor: isDarkMode ? '#2C2C2E' : '#FFFFFF',
+                    borderColor: selectedRole === 'student' ? '#4F46E5' : (isDarkMode ? '#3C3C3E' : '#E5E7EB'),
+                    shadowColor: selectedRole === 'student' ? '#4F46E5' : '#000',
+                    shadowOffset: {
+                      width: 0,
+                      height: selectedRole === 'student' ? 4 : 2,
+                    },
+                    shadowOpacity: selectedRole === 'student' ? 0.2 : 0.1,
+                    shadowRadius: selectedRole === 'student' ? 8 : 4,
+                    elevation: selectedRole === 'student' ? 5 : 2,
+                  }
+                ]}
+                onPress={() => handleRoleSelect('student')}
+                activeOpacity={0.7}
+              >
+                <View style={[styles.roleIconContainer, { 
+                  backgroundColor: selectedRole === 'student' ? '#EEF2FF' : (isDarkMode ? '#1C1C1E' : '#F3F4F6')
+                }]}>
+                  <View style={[styles.roleIcon, { 
+                    backgroundColor: selectedRole === 'student' ? '#4F46E5' + '20' : '#4F46E5' + '10'
+                  }]}>
+                    <Ionicons name="school" size={32} color="#4F46E5" />
+                  </View>
+                </View>
+                <View style={styles.roleContent}>
+                  <ThemedText style={[styles.roleTitle, { 
+                    color: selectedRole === 'student' ? '#4F46E5' : colors.text 
+                  }]}>
+                    {t('signup.roleSelection.student.title')}
+                  </ThemedText>
+                  <ThemedText style={[styles.roleDescription, { color: colors.text + '80' }]}>
+                    {t('signup.roleSelection.student.description')}
+                  </ThemedText>
+                  <View style={styles.roleFeatures}>
+                    <View style={styles.featureItem}>
+                      <Ionicons name="book-outline" size={16} color="#4F46E5" />
+                      <ThemedText style={[styles.featureText, { color: colors.text + '80' }]}>
+                        {t('signup.roleSelection.student.features.materials')}
+                      </ThemedText>
+                    </View>
+                    <View style={styles.featureItem}>
+                      <Ionicons name="pencil-outline" size={16} color="#4F46E5" />
+                      <ThemedText style={[styles.featureText, { color: colors.text + '80' }]}>
+                        {t('signup.roleSelection.student.features.practice')}
+                      </ThemedText>
+                    </View>
+                    <View style={styles.featureItem}>
+                      <Ionicons name="trophy-outline" size={16} color="#4F46E5" />
+                      <ThemedText style={[styles.featureText, { color: colors.text + '80' }]}>
+                        {t('signup.roleSelection.student.features.progress')}
+                      </ThemedText>
+                    </View>
+                  </View>
+                </View>
+              </TouchableOpacity>
+            </Animated.View>
 
-            <TouchableOpacity
-              style={[
-                styles.roleCard,
-                {
-                  backgroundColor: isDarkMode ? '#2C2C2E' : '#FFFFFF',
-                  borderColor: selectedRole === 'parent' ? '#4F46E5' : (isDarkMode ? '#3C3C3E' : '#E5E7EB'),
-                }
-              ]}
-              onPress={() => handleRoleSelect('parent')}
-            >
-              <View style={styles.roleIcon}>
-                <Ionicons name="people-outline" size={32} color="#4F46E5" />
-              </View>
-              <ThemedText style={[styles.roleTitle, { color: colors.text }]}>
-                {t('signup.roleSelection.parent.title')}
-              </ThemedText>
-              <ThemedText style={[styles.roleDescription, { color: colors.text + '80' }]}>
-                {t('signup.roleSelection.parent.description')}
-              </ThemedText>
-            </TouchableOpacity>
+            <Animated.View style={{ transform: [{ scale: scaleAnim }], opacity: opacityAnim }}>
+              <TouchableOpacity
+                style={[
+                  styles.roleCard,
+                  {
+                    backgroundColor: isDarkMode ? '#2C2C2E' : '#FFFFFF',
+                    borderColor: selectedRole === 'parent' ? '#4F46E5' : (isDarkMode ? '#3C3C3E' : '#E5E7EB'),
+                    shadowColor: selectedRole === 'parent' ? '#4F46E5' : '#000',
+                    shadowOffset: {
+                      width: 0,
+                      height: selectedRole === 'parent' ? 4 : 2,
+                    },
+                    shadowOpacity: selectedRole === 'parent' ? 0.2 : 0.1,
+                    shadowRadius: selectedRole === 'parent' ? 8 : 4,
+                    elevation: selectedRole === 'parent' ? 5 : 2,
+                  }
+                ]}
+                onPress={() => handleRoleSelect('parent')}
+                activeOpacity={0.7}
+              >
+                <View style={[styles.roleIconContainer, { 
+                  backgroundColor: selectedRole === 'parent' ? '#EEF2FF' : (isDarkMode ? '#1C1C1E' : '#F3F4F6')
+                }]}>
+                  <View style={[styles.roleIcon, { 
+                    backgroundColor: selectedRole === 'parent' ? '#4F46E5' + '20' : '#4F46E5' + '10'
+                  }]}>
+                    <Ionicons name="people" size={32} color="#4F46E5" />
+                  </View>
+                </View>
+                <View style={styles.roleContent}>
+                  <ThemedText style={[styles.roleTitle, { 
+                    color: selectedRole === 'parent' ? '#4F46E5' : colors.text 
+                  }]}>
+                    {t('signup.roleSelection.parent.title')}
+                  </ThemedText>
+                  <ThemedText style={[styles.roleDescription, { color: colors.text + '80' }]}>
+                    {t('signup.roleSelection.parent.description')}
+                  </ThemedText>
+                  <View style={styles.roleFeatures}>
+                    <View style={styles.featureItem}>
+                      <Ionicons name="analytics-outline" size={16} color="#4F46E5" />
+                      <ThemedText style={[styles.featureText, { color: colors.text + '80' }]}>
+                        {t('signup.roleSelection.parent.features.monitor')}
+                      </ThemedText>
+                    </View>
+                    <View style={styles.featureItem}>
+                      <Ionicons name="school-outline" size={16} color="#4F46E5" />
+                      <ThemedText style={[styles.featureText, { color: colors.text + '80' }]}>
+                        {t('signup.roleSelection.parent.features.manage')}
+                      </ThemedText>
+                    </View>
+                    <View style={styles.featureItem}>
+                      <Ionicons name="notifications-outline" size={16} color="#4F46E5" />
+                      <ThemedText style={[styles.featureText, { color: colors.text + '80' }]}>
+                        {t('signup.roleSelection.parent.features.updates')}
+                      </ThemedText>
+                    </View>
+                  </View>
+                </View>
+              </TouchableOpacity>
+            </Animated.View>
           </View>
         </ScrollView>
       </SafeAreaView>
@@ -108,42 +223,74 @@ const styles = StyleSheet.create({
     padding: 24,
   },
   header: {
-    marginBottom: 32,
+    marginBottom: 40,
   },
   backButton: {
-    marginBottom: 16,
+    marginBottom: 24,
+    padding: 8,
+  },
+  titleContainer: {
+    gap: 8,
   },
   title: {
-    fontSize: 32,
+    paddingTop: 20,
+    fontSize: 36,
     fontWeight: '700',
-    marginBottom: 8,
-    paddingTop: 10,
+    letterSpacing: -0.5,
   },
   subtitle: {
-    fontSize: 16,
+    fontSize: 17,
+    lineHeight: 24,
   },
   roleContainer: {
-    gap: 16,
+    gap: 20,
   },
   roleCard: {
     padding: 24,
-    borderRadius: 16,
+    borderRadius: 20,
     borderWidth: 1,
-    gap: 16,
+    flexDirection: 'row',
+    gap: 20,
+    backgroundColor: '#FFFFFF',
+  },
+  roleIconContainer: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   roleIcon: {
     width: 64,
     height: 64,
     borderRadius: 32,
-    backgroundColor: '#EEF2FF',
     alignItems: 'center',
     justifyContent: 'center',
   },
+  roleContent: {
+    flex: 1,
+    gap: 12,
+  },
   roleTitle: {
-    fontSize: 20,
+    fontSize: 24,
     fontWeight: '600',
+    letterSpacing: -0.5,
   },
   roleDescription: {
-    fontSize: 16,
+    fontSize: 17,
+    lineHeight: 24,
+  },
+  roleFeatures: {
+    gap: 8,
+    marginTop: 4,
+  },
+  featureItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  featureText: {
+    fontSize: 15,
+    lineHeight: 20,
   },
 }); 

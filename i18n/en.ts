@@ -426,11 +426,21 @@ export default {
       subtitle: 'Choose how you want to use Qelem',
       student: {
         title: 'Student',
-        description: 'I want to learn and practice'
+        description: 'I want to learn and practice',
+        features: {
+          materials: 'Access study materials',
+          practice: 'Practice questions',
+          progress: 'Track progress'
+        }
       },
       parent: {
         title: 'Parent',
-        description: 'I want to manage my children\'s learning'
+        description: 'I want to manage my children\'s learning',
+        features: {
+          monitor: 'Monitor progress',
+          manage: 'Manage children',
+          updates: 'Get updates'
+        }
       }
     },
     childrenSelection: {
