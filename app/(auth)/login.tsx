@@ -8,6 +8,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useTheme } from '@/contexts/ThemeContext';
 import { getColors } from '@/constants/Colors';
+import { useTranslation } from 'react-i18next';
 
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
@@ -22,6 +23,7 @@ export default function LoginScreen() {
   const { login } = useAuth();
   const { isDarkMode } = useTheme();
   const colors = getColors(isDarkMode);
+  const { t } = useTranslation();
   const [phoneNumber, setPhoneNumber] = useState('');
   const [password, setPassword] = useState('');
   const [errors, setErrors] = useState({
@@ -48,12 +50,11 @@ export default function LoginScreen() {
 
   const validatePhoneNumber = (phone: string) => {
     if (!phone.trim()) {
-      return 'Phone number is required';
+      return t('login.phoneNumber.error.required');
     }
-    // Add +251 to the phone number before testing
     const fullNumber = `+251${phone}`;
     if (!PHONE_REGEX.test(fullNumber)) {
-      return 'Please enter a valid Ethiopian phone number';
+      return t('login.phoneNumber.error.invalid');
     }
     return '';
   };
@@ -65,16 +66,14 @@ export default function LoginScreen() {
       password: ''
     };
 
-    // Validate phone number
     const phoneError = validatePhoneNumber(phoneNumber);
     if (phoneError) {
       newErrors.phoneNumber = phoneError;
       isValid = false;
     }
 
-    // Validate password
     if (!password.trim()) {
-      newErrors.password = 'Password is required';
+      newErrors.password = t('login.password.error.required');
       isValid = false;
     }
 
@@ -140,8 +139,8 @@ export default function LoginScreen() {
                 style={styles.logoImage}
                 resizeMode="contain"
               />
-              <ThemedText style={[styles.welcomeText, { color: colors.text }]}>Welcome to Qelem</ThemedText>
-              <ThemedText style={[styles.subtitleText, { color: colors.text + '80' }]}>Empowering minds, one lesson at a time</ThemedText>
+              <ThemedText style={[styles.welcomeText, { color: colors.text }]}>{t('login.welcome')}</ThemedText>
+              <ThemedText style={[styles.subtitleText, { color: colors.text + '80' }]}>{t('login.subtitle')}</ThemedText>
             </View>
 
             <View style={[styles.formContainer, {
@@ -158,7 +157,7 @@ export default function LoginScreen() {
                     <ThemedText style={[styles.countryCode, { color: colors.text }]}>+251</ThemedText>
                     <TextInput
                       style={[styles.input, styles.phoneInput, { color: colors.text }]}
-                      placeholder="912345678"
+                      placeholder={t('login.phoneNumber.placeholder')}
                       placeholderTextColor={isDarkMode ? '#A0A0A5' : '#9CA3AF'}
                       value={phoneNumber}
                       onChangeText={(text) => {
@@ -186,7 +185,7 @@ export default function LoginScreen() {
                   <Ionicons name="lock-closed-outline" size={20} color={isDarkMode ? '#A0A0A5' : '#6B7280'} style={styles.inputIcon} />
                   <TextInput
                     style={[styles.input, { color: colors.text }]}
-                    placeholder="Password"
+                    placeholder={t('login.password.placeholder')}
                     placeholderTextColor={isDarkMode ? '#A0A0A5' : '#9CA3AF'}
                     value={password}
                     onChangeText={(text) => {
@@ -212,7 +211,7 @@ export default function LoginScreen() {
                   colors={['#4F46E5', '#7C3AED']}
                   style={styles.buttonGradient}
                 >
-                  <ThemedText style={styles.buttonText}>Sign In</ThemedText>
+                  <ThemedText style={styles.buttonText}>{t('login.signIn')}</ThemedText>
                 </LinearGradient>
               </TouchableOpacity>
 
@@ -220,18 +219,18 @@ export default function LoginScreen() {
                 style={styles.forgotButton} 
                 onPress={() => router.push('/(auth)/forgot-password')}
               >
-                <ThemedText style={[styles.forgotPassword, { color: isDarkMode ? '#A0A0A5' : '#6B7280' }]}>Forgot password?</ThemedText>
+                <ThemedText style={[styles.forgotPassword, { color: isDarkMode ? '#A0A0A5' : '#6B7280' }]}>{t('login.forgotPassword')}</ThemedText>
               </TouchableOpacity>
             </View>
 
             <View style={styles.footer}>
-              <ThemedText style={[styles.footerText, { color: isDarkMode ? '#A0A0A5' : '#6B7280' }]}>Don't have an account?</ThemedText>
+              <ThemedText style={[styles.footerText, { color: isDarkMode ? '#A0A0A5' : '#6B7280' }]}>{t('login.noAccount')}</ThemedText>
               <TouchableOpacity 
                 style={styles.signupButton} 
                 onPress={() => router.push('/(auth)/signup')}
                 activeOpacity={0.8}
               >
-                <ThemedText style={[styles.signupText, { color: '#4F46E5' }]}>Sign Up</ThemedText>
+                <ThemedText style={[styles.signupText, { color: '#4F46E5' }]}>{t('login.signUp')}</ThemedText>
               </TouchableOpacity>
             </View>
           </Animated.View>

@@ -9,6 +9,35 @@ export default {
     edit: 'Edit',
     back: 'Back',
   },
+  onboarding: {
+    language: {
+      title: 'Choose Your Language',
+      subtitle: 'Select your preferred language',
+    },
+    welcome: {
+      title: 'Welcome to Qelem',
+      subtitle: 'Your personal learning companion',
+      description: 'Start your learning journey with personalized study materials and interactive exercises.',
+    },
+    mcq: {
+      title: 'Practice with MCQs',
+      subtitle: 'Test your knowledge',
+      description: 'Challenge yourself with questions and track your progress.',
+    },
+    flashcards: {
+      title: 'Learn with Flashcards',
+      subtitle: 'Review key concepts',
+      description: 'Flip and study with interactive flashcards to reinforce your learning.',
+    },
+    homework: {
+      title: 'Get Homework Help',
+      subtitle: 'Expert assistance',
+      description: 'Connect with tutors and get help with your homework questions.',
+    },
+    skip: 'Skip',
+    next: 'Next',
+    getStarted: 'Get Started',
+  },
   navigation: {
     tabs: {
       home: 'Home',
@@ -338,5 +367,28 @@ export default {
     amharic: 'Amharic',
     civics: 'Civics',
     ict: 'ICT'
+  },
+  login: {
+    welcome: 'Welcome to Qelem',
+    subtitle: 'Empowering minds, one lesson at a time',
+    phoneNumber: {
+      label: 'Phone Number',
+      placeholder: '912345678',
+      error: {
+        required: 'Phone number is required',
+        invalid: 'Please enter a valid Ethiopian phone number'
+      }
+    },
+    password: {
+      label: 'Password',
+      placeholder: 'Password',
+      error: {
+        required: 'Password is required'
+      }
+    },
+    signIn: 'Sign In',
+    forgotPassword: 'Forgot password?',
+    noAccount: "Don't have an account?",
+    signUp: 'Sign Up'
   }
 } 

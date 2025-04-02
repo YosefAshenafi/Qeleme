@@ -344,5 +344,57 @@ export default {
     amharic: 'አማርኛ',
     civics: 'ሲቪክስ',
     ict: 'አይሲቲ'
-  }
+  },
+  onboarding: {
+    language: {
+      title: 'ቋንቋዎን ይምረጡ',
+      subtitle: 'የሚፈልጉትን ቋንቋ ይምረጡ',
+    },
+    welcome: {
+      title: 'ወደ ቀለም እንኳን በደህና መጡ',
+      subtitle: 'የእርስዎ የግል የመማር ጓደኛ',
+      description: 'በግል የተበጠሱ የጥናት ቁሳቁሶች እና መስመር ላይ የሚደረግ የመለማመጃ እንቅስቃሴዎች የመማር ጉዞዎን ይጀምሩ።',
+    },
+    mcq: {
+      title: 'በምርጫ ይለማመዱ',
+      subtitle: 'እውቀትዎን ይፈትሹ',
+      description: 'በጥያቄዎች ይፈትሹ እና እድገትዎን ይከታተሉ።',
+    },
+    flashcards: {
+      title: 'በፍላሽካርዶች ይማሩ',
+      subtitle: 'ዋና ሃሳቦችን ይከልሱ',
+      description: 'በፍላሽካርዶች ይገምግሙ እና የመማርዎን እድገት ያጠናክሩ።',
+    },
+    homework: {
+      title: 'የቤት ስራ እርዳታ ያግኙ',
+      subtitle: 'የባለሙያ እርዳታ',
+      description: 'ከመምህራን ጋር ይገናኙ እና የቤት ስራ ጥያቄዎችዎን ይጠይቁ።',
+    },
+    skip: 'ይዝለሉ',
+    next: 'ቀጣይ',
+    getStarted: 'ይጀምሩ',
+  },
+  login: {
+    welcome: 'እንኳን በደህና መጡ',
+    subtitle: 'አእምሮዎን በእያንዳንዱ ትምህርት ያጠናክሩ',
+    phoneNumber: {
+      label: 'ስልክ ቁጥር',
+      placeholder: '912345678',
+      error: {
+        required: 'ስልክ ቁጥር ያስፈልጋል',
+        invalid: 'የኢትዮጵያ ስልክ ቁጥር ያስገቡ'
+      }
+    },
+    password: {
+      label: 'የይለፍ ቃል',
+      placeholder: 'የይለፍ ቃል',
+      error: {
+        required: 'የይለፍ ቃል ያስፈልጋል'
+      }
+    },
+    signIn: 'ግባ',
+    forgotPassword: 'የይለፍ ቃልዎን ረስተዋል?',
+    noAccount: 'መለያ የሎትም?',
+    signUp: 'ይመዝገቡ'
+  },
 } 
