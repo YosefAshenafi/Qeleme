@@ -7,10 +7,12 @@ import { useState, useRef } from 'react';
 import { useTheme } from '@/contexts/ThemeContext';
 import { getColors } from '@/constants/Colors';
 import { sendOTP } from '@/utils/otpService';
+import { useTranslation } from 'react-i18next';
 
 import { ThemedText } from '@/components/ThemedText';
 
 export default function OTPScreen() {
+  const { t } = useTranslation();
   const { isDarkMode } = useTheme();
   const colors = getColors(isDarkMode);
   const [otp, setOtp] = useState(['', '', '', '', '', '']);
@@ -57,7 +59,7 @@ export default function OTPScreen() {
   const handleVerify = () => {
     const enteredOtp = otp.join('');
     if (enteredOtp.length !== 6) {
-      setError('Please enter all digits');
+      setError(t('auth.otp.error.incomplete'));
       return;
     }
 
@@ -65,7 +67,7 @@ export default function OTPScreen() {
       // OTP is correct, proceed to payment
       router.push('/(auth)/payment');
     } else {
-      setError('Invalid verification code');
+      setError(t('auth.otp.error.invalid'));
       // Clear the inputs
       setOtp(['', '', '', '', '', '']);
       // Focus on first input
@@ -91,9 +93,9 @@ export default function OTPScreen() {
               >
                 <Ionicons name="arrow-back" size={24} color={isDarkMode ? '#A0A0A5' : '#1F2937'} />
               </TouchableOpacity>
-              <ThemedText style={[styles.title, { color: colors.text }]}>Verify Your Phone</ThemedText>
+              <ThemedText style={[styles.title, { color: colors.text }]}>{t('auth.otp.title')}</ThemedText>
               <ThemedText style={[styles.subtitle, { color: colors.text + '80' }]}>
-                Enter the 6-digit code sent to your phone
+                {t('auth.otp.subtitle')}
               </ThemedText>
             </View>
 
@@ -138,16 +140,16 @@ export default function OTPScreen() {
                 colors={['#4F46E5', '#7C3AED']}
                 style={styles.buttonGradient}
               >
-                <ThemedText style={styles.buttonText}>Verify</ThemedText>
+                <ThemedText style={styles.buttonText}>{t('auth.otp.verify')}</ThemedText>
               </LinearGradient>
             </TouchableOpacity>
 
             <View style={styles.resendContainer}>
               <ThemedText style={[styles.resendText, { color: isDarkMode ? '#A0A0A5' : '#6B7280' }]}>
-                Didn't receive the code?
+                {t('auth.otp.resend.text')}
               </ThemedText>
               <TouchableOpacity onPress={handleResend}>
-                <ThemedText style={styles.resendButton}>Resend</ThemedText>
+                <ThemedText style={styles.resendButton}>{t('auth.otp.resend.button')}</ThemedText>
               </TouchableOpacity>
             </View>
           </View>

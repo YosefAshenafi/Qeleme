@@ -27,6 +27,19 @@ export default {
     forgotPassword: 'የይለፍ ቃል ረስተዋል?',
     createAccount: 'አካውንት ፍጠር',
     alreadyHaveAccount: 'አካውንት አለዎት?',
+    otp: {
+      title: 'ስልክዎን ያረጋግጡ',
+      subtitle: 'ወደ ስልክዎ የተላከውን 6-ዲጂት ኮድ ያስገቡ',
+      error: {
+        invalid: 'ልክ ያልሆነ የማረጋገጫ ኮድ',
+        incomplete: 'እባክዎ ሁሉንም አሃዞች ያስገቡ'
+      },
+      resend: {
+        text: 'ኮዱ አልደረሰዎትም?',
+        button: 'እንደገና ይላኩ'
+      },
+      verify: 'ያረጋግጡ'
+    }
   },
   home: {
     welcome: 'እንኳን በደህና ተመለሱ፣ ዮሴፍ!',
@@ -432,4 +445,44 @@ export default {
     alreadyHaveAccount: 'አካውንት አለዎት?',
     signIn: 'ይግቡ'
   },
+  payment: {
+    title: 'የእርስዎን እቅድ ይምረጡ',
+    subtitle: 'የመማሪያ ፍላጎትዎን በተሻለ የሚያሟላ እቅድ ይምረጡ',
+    plans: {
+      freeTrial: {
+        title: 'የነፃ ሙከራ',
+        features: {
+          questions: '20 ጥያቄዎች',
+          flashcards: '20 ፍላሽ ካርዶች',
+          homework: '20 የቤት ስራ እርዳታዎች'
+        },
+        price: 'ብር 0',
+        getStarted: 'ጀምር'
+      },
+      sixMonth: {
+        title: 'የ6 ወር እቅድ',
+        badge: 'በጣም ተወዳጅ',
+        features: {
+          questions: 'ያለገደብ ጥያቄዎች',
+          flashcards: 'ያለገደብ ፍላሽ ካርዶች',
+          homework: 'ያለገደብ የቤት ስራ እርዳታዎች'
+        },
+        price: 'ብር 499',
+        period: '/6 ወራት',
+        getStarted: 'ጀምር'
+      },
+      twelveMonth: {
+        title: 'የ12 ወር እቅድ',
+        badge: 'በጣም ተስማሚ',
+        features: {
+          questions: 'ያለገደብ ጥያቄዎች',
+          flashcards: 'ያለገደብ ፍላሽ ካርዶች',
+          homework: 'ያለገደብ የቤት ስራ እርዳታዎች'
+        },
+        price: 'ብር 799',
+        period: '/12 ወራት',
+        getStarted: 'ጀምር'
+      }
+    }
+  }
 } 

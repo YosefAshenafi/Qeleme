@@ -56,6 +56,19 @@ export default {
     forgotPassword: 'Forgot Password?',
     createAccount: 'Create Account',
     alreadyHaveAccount: 'Already have an account?',
+    otp: {
+      title: 'Verify Your Phone',
+      subtitle: 'Enter the 6-digit code sent to your phone',
+      error: {
+        invalid: 'Invalid verification code',
+        incomplete: 'Please enter all digits'
+      },
+      resend: {
+        text: "Didn't receive the code?",
+        button: 'Resend'
+      },
+      verify: 'Verify'
+    }
   },
   home: {
     welcome: 'Welcome back, Yosef!',
@@ -425,5 +438,45 @@ export default {
     createAccount: 'Create Account',
     alreadyHaveAccount: 'Already have an account?',
     signIn: 'Sign In'
+  },
+  payment: {
+    title: 'Choose Your Plan',
+    subtitle: 'Select the plan that best suits your learning needs',
+    plans: {
+      freeTrial: {
+        title: 'Free Trial',
+        features: {
+          questions: '20 Questions',
+          flashcards: '20 Flashcards',
+          homework: '20 Homework Helps'
+        },
+        price: 'ETB 0',
+        getStarted: 'Get Started'
+      },
+      sixMonth: {
+        title: '6 Month Plan',
+        badge: 'Most Popular',
+        features: {
+          questions: 'Unlimited Questions',
+          flashcards: 'Unlimited Flashcards',
+          homework: 'Unlimited Homework Helps'
+        },
+        price: 'ETB 499',
+        period: '/6 months',
+        getStarted: 'Get Started'
+      },
+      twelveMonth: {
+        title: '12 Month Plan',
+        badge: 'Best Value',
+        features: {
+          questions: 'Unlimited Questions',
+          flashcards: 'Unlimited Flashcards',
+          homework: 'Unlimited Homework Helps'
+        },
+        price: 'ETB 799',
+        period: '/12 months',
+        getStarted: 'Get Started'
+      }
+    }
   }
 } 
