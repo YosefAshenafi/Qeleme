@@ -4,12 +4,18 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useState, useEffect, useRef } from 'react';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
+import { useTranslation } from 'react-i18next';
+import { useTheme } from '@/contexts/ThemeContext';
+import { getColors } from '@/constants/Colors';
 
 import { ThemedText } from '@/components/ThemedText';
 
 const { width, height } = Dimensions.get('window');
 
 export default function ForgotPasswordScreen() {
+  const { t } = useTranslation();
+  const { isDarkMode } = useTheme();
+  const colors = getColors(isDarkMode);
   const [phoneNumber, setPhoneNumber] = useState('');
   const [verificationCode, setVerificationCode] = useState('');
   const [newPassword, setNewPassword] = useState('');
@@ -55,12 +61,12 @@ export default function ForgotPasswordScreen() {
   const renderPhoneStep = () => (
     <View style={styles.formContainer}>
       <View style={styles.inputWrapper}>
-        <View style={styles.inputContainer}>
-          <Ionicons name="call-outline" size={20} color="#6B7280" style={styles.inputIcon} />
+        <View style={[styles.inputContainer, { backgroundColor: isDarkMode ? '#2C2C2E' : '#F9FAFB' }]}>
+          <Ionicons name="call-outline" size={20} color={isDarkMode ? '#A0A0A5' : '#6B7280'} style={styles.inputIcon} />
           <TextInput
-            style={styles.input}
-            placeholder="Phone number"
-            placeholderTextColor="#9CA3AF"
+            style={[styles.input, { color: colors.text }]}
+            placeholder={t('resetPassword.phoneNumber')}
+            placeholderTextColor={isDarkMode ? '#A0A0A5' : '#9CA3AF'}
             value={phoneNumber}
             onChangeText={setPhoneNumber}
             keyboardType="phone-pad"
@@ -78,7 +84,7 @@ export default function ForgotPasswordScreen() {
           colors={['#4F46E5', '#7C3AED']}
           style={styles.buttonGradient}
         >
-          <ThemedText style={styles.buttonText}>Send Verification Code</ThemedText>
+          <ThemedText style={styles.buttonText}>{t('resetPassword.sendCode')}</ThemedText>
         </LinearGradient>
       </TouchableOpacity>
     </View>
@@ -87,12 +93,12 @@ export default function ForgotPasswordScreen() {
   const renderVerifyStep = () => (
     <View style={styles.formContainer}>
       <View style={styles.inputWrapper}>
-        <View style={styles.inputContainer}>
-          <Ionicons name="key-outline" size={20} color="#6B7280" style={styles.inputIcon} />
+        <View style={[styles.inputContainer, { backgroundColor: isDarkMode ? '#2C2C2E' : '#F9FAFB' }]}>
+          <Ionicons name="key-outline" size={20} color={isDarkMode ? '#A0A0A5' : '#6B7280'} style={styles.inputIcon} />
           <TextInput
-            style={styles.input}
-            placeholder="Enter verification code"
-            placeholderTextColor="#9CA3AF"
+            style={[styles.input, { color: colors.text }]}
+            placeholder={t('resetPassword.verificationCode')}
+            placeholderTextColor={isDarkMode ? '#A0A0A5' : '#9CA3AF'}
             value={verificationCode}
             onChangeText={setVerificationCode}
             keyboardType="number-pad"
@@ -110,7 +116,7 @@ export default function ForgotPasswordScreen() {
           colors={['#4F46E5', '#7C3AED']}
           style={styles.buttonGradient}
         >
-          <ThemedText style={styles.buttonText}>Verify Code</ThemedText>
+          <ThemedText style={styles.buttonText}>{t('resetPassword.verifyCode')}</ThemedText>
         </LinearGradient>
       </TouchableOpacity>
     </View>
@@ -119,24 +125,24 @@ export default function ForgotPasswordScreen() {
   const renderResetStep = () => (
     <View style={styles.formContainer}>
       <View style={styles.inputWrapper}>
-        <View style={styles.inputContainer}>
-          <Ionicons name="lock-closed-outline" size={20} color="#6B7280" style={styles.inputIcon} />
+        <View style={[styles.inputContainer, { backgroundColor: isDarkMode ? '#2C2C2E' : '#F9FAFB' }]}>
+          <Ionicons name="lock-closed-outline" size={20} color={isDarkMode ? '#A0A0A5' : '#6B7280'} style={styles.inputIcon} />
           <TextInput
-            style={styles.input}
-            placeholder="New password"
-            placeholderTextColor="#9CA3AF"
+            style={[styles.input, { color: colors.text }]}
+            placeholder={t('resetPassword.newPassword')}
+            placeholderTextColor={isDarkMode ? '#A0A0A5' : '#9CA3AF'}
             value={newPassword}
             onChangeText={setNewPassword}
             secureTextEntry
           />
         </View>
 
-        <View style={styles.inputContainer}>
-          <Ionicons name="lock-closed-outline" size={20} color="#6B7280" style={styles.inputIcon} />
+        <View style={[styles.inputContainer, { backgroundColor: isDarkMode ? '#2C2C2E' : '#F9FAFB' }]}>
+          <Ionicons name="lock-closed-outline" size={20} color={isDarkMode ? '#A0A0A5' : '#6B7280'} style={styles.inputIcon} />
           <TextInput
-            style={styles.input}
-            placeholder="Confirm new password"
-            placeholderTextColor="#9CA3AF"
+            style={[styles.input, { color: colors.text }]}
+            placeholder={t('resetPassword.confirmPassword')}
+            placeholderTextColor={isDarkMode ? '#A0A0A5' : '#9CA3AF'}
             value={confirmPassword}
             onChangeText={setConfirmPassword}
             secureTextEntry
@@ -153,7 +159,7 @@ export default function ForgotPasswordScreen() {
           colors={['#4F46E5', '#7C3AED']}
           style={styles.buttonGradient}
         >
-          <ThemedText style={styles.buttonText}>Reset Password</ThemedText>
+          <ThemedText style={styles.buttonText}>{t('resetPassword.resetPassword')}</ThemedText>
         </LinearGradient>
       </TouchableOpacity>
     </View>
@@ -161,7 +167,7 @@ export default function ForgotPasswordScreen() {
 
   return (
     <LinearGradient
-      colors={['#F8F9FA', '#FFFFFF']}
+      colors={isDarkMode ? ['#000000', '#1C1C1E'] : ['#F8F9FA', '#FFFFFF']}
       style={styles.gradient}
     >
       <SafeAreaView style={styles.safeArea}>
@@ -184,11 +190,11 @@ export default function ForgotPasswordScreen() {
                 style={styles.logoImage}
                 resizeMode="contain"
               />
-              <ThemedText style={styles.welcomeText}>Reset Password</ThemedText>
-              <ThemedText style={styles.subtitleText}>
-                {step === 'phone' && 'Enter your phone number to receive a verification code'}
-                {step === 'verify' && 'Enter the verification code sent to your phone'}
-                {step === 'reset' && 'Create a new password'}
+              <ThemedText style={[styles.welcomeText, { color: colors.text }]}>{t('resetPassword.title')}</ThemedText>
+              <ThemedText style={[styles.subtitleText, { color: colors.text + '80' }]}>
+                {step === 'phone' && t('resetPassword.phoneSubtitle')}
+                {step === 'verify' && t('resetPassword.verifySubtitle')}
+                {step === 'reset' && t('resetPassword.resetSubtitle')}
               </ThemedText>
             </View>
 
@@ -202,7 +208,7 @@ export default function ForgotPasswordScreen() {
                 onPress={() => router.back()}
                 activeOpacity={0.8}
               >
-                <ThemedText style={styles.backButtonText}>Back to Login</ThemedText>
+                <ThemedText style={[styles.backButtonText, { color: colors.text + '80' }]}>{t('resetPassword.backToLogin')}</ThemedText>
               </TouchableOpacity>
             </View>
           </Animated.View>

@@ -390,5 +390,40 @@ export default {
     forgotPassword: 'Forgot password?',
     noAccount: "Don't have an account?",
     signUp: 'Sign Up'
+  },
+  resetPassword: {
+    title: 'Reset Password',
+    phoneNumber: 'Phone number',
+    verificationCode: 'Enter verification code',
+    newPassword: 'New password',
+    confirmPassword: 'Confirm new password',
+    sendCode: 'Send Verification Code',
+    verifyCode: 'Verify Code',
+    resetPassword: 'Reset Password',
+    phoneSubtitle: 'Enter your phone number to receive a verification code',
+    verifySubtitle: 'Enter the verification code sent to your phone',
+    resetSubtitle: 'Create a new password',
+    backToLogin: 'Back to Login',
+  },
+  signup: {
+    title: 'Create Account',
+    subtitle: 'Join our community',
+    fullName: 'Full Name',
+    phoneNumber: '9-digit number',
+    password: 'Password',
+    confirmPassword: 'Confirm Password',
+    grade: {
+      label: 'Select your grade',
+      title: 'Select Grade'
+    },
+    terms: {
+      prefix: 'I accept the ',
+      link: 'Terms and Conditions',
+      title: 'Terms and Conditions',
+      content: `1. Acceptance of Terms\n\nBy accessing and using the Qelem app, you agree to be bound by these Terms and Conditions.\n\n2. User Registration\n\nUsers must provide accurate and complete information during registration. Users are responsible for maintaining the confidentiality of their account credentials.\n\n3. Privacy Policy\n\nYour use of the app is also governed by our Privacy Policy, which outlines how we collect, use, and protect your personal information.\n\n4. User Conduct\n\nUsers agree to:\n- Use the app for lawful purposes only\n- Respect other users' privacy and rights\n- Not share inappropriate or harmful content\n- Not attempt to disrupt the app's functionality\n\n5. Content\n\nUsers retain ownership of their content but grant us license to use it for app functionality.\n\n6. Termination\n\nWe reserve the right to terminate or suspend accounts that violate these terms.\n\n7. Changes to Terms\n\nWe may update these terms periodically. Continued use of the app constitutes acceptance of new terms.`
+    },
+    createAccount: 'Create Account',
+    alreadyHaveAccount: 'Already have an account?',
+    signIn: 'Sign In'
   }
 } 

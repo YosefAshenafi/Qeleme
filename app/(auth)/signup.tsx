@@ -10,10 +10,12 @@ import { useTheme } from '@/contexts/ThemeContext';
 import { getColors } from '@/constants/Colors';
 import { sendOTP } from '@/utils/otpService';
 import { grades, Grade } from '@/constants/Grades';
+import { useTranslation } from 'react-i18next';
 
 import { ThemedText } from '@/components/ThemedText';
 
 export default function SignupScreen() {
+  const { t } = useTranslation();
   const { isDarkMode } = useTheme();
   const colors = getColors(isDarkMode);
   const [fullName, setFullName] = useState('');
@@ -119,8 +121,8 @@ export default function SignupScreen() {
                   style={styles.logoImage}
                   resizeMode="contain"
                 />
-                <ThemedText style={[styles.welcomeText, { color: colors.text }]}>Create Account</ThemedText>
-                <ThemedText style={[styles.subtitleText, { color: colors.text + '80' }]}>Join our community</ThemedText>
+                <ThemedText style={[styles.welcomeText, { color: colors.text }]}>{t('signup.title')}</ThemedText>
+                <ThemedText style={[styles.subtitleText, { color: colors.text + '80' }]}>{t('signup.subtitle')}</ThemedText>
               </View>
 
               <View style={[styles.formContainer, {
@@ -134,7 +136,7 @@ export default function SignupScreen() {
                     <Ionicons name="person-outline" size={20} color={isDarkMode ? '#A0A0A5' : '#6B7280'} style={styles.inputIcon} />
                     <TextInput
                       style={[styles.input, { color: colors.text }]}
-                      placeholder="Full Name"
+                      placeholder={t('signup.fullName')}
                       placeholderTextColor={isDarkMode ? '#A0A0A5' : '#9CA3AF'}
                       value={fullName}
                       onChangeText={setFullName}
@@ -151,7 +153,7 @@ export default function SignupScreen() {
                       <ThemedText style={[styles.phonePrefix, { color: colors.text }]}>+251</ThemedText>
                       <TextInput
                         style={[styles.phoneInput, { color: colors.text }]}
-                        placeholder="9-digit number"
+                        placeholder={t('signup.phoneNumber')}
                         placeholderTextColor={isDarkMode ? '#A0A0A5' : '#9CA3AF'}
                         value={phoneNumber}
                         onChangeText={(text) => {
@@ -172,7 +174,7 @@ export default function SignupScreen() {
                     <Ionicons name="lock-closed-outline" size={20} color={isDarkMode ? '#A0A0A5' : '#6B7280'} style={styles.inputIcon} />
                     <TextInput
                       style={[styles.input, { color: colors.text }]}
-                      placeholder="Password"
+                      placeholder={t('signup.password')}
                       placeholderTextColor={isDarkMode ? '#A0A0A5' : '#9CA3AF'}
                       value={password}
                       onChangeText={setPassword}
@@ -191,7 +193,7 @@ export default function SignupScreen() {
                     <Ionicons name="lock-closed-outline" size={20} color={isDarkMode ? '#A0A0A5' : '#6B7280'} style={styles.inputIcon} />
                     <TextInput
                       style={[styles.input, { color: colors.text }]}
-                      placeholder="Confirm Password"
+                      placeholder={t('signup.confirmPassword')}
                       placeholderTextColor={isDarkMode ? '#A0A0A5' : '#9CA3AF'}
                       value={confirmPassword}
                       onChangeText={setConfirmPassword}
@@ -209,7 +211,7 @@ export default function SignupScreen() {
                       onPress={() => setShowGradeModal(true)}
                     >
                       <ThemedText style={[styles.input, { color: grade ? colors.text : (isDarkMode ? '#A0A0A5' : '#9CA3AF') }]}>
-                        {grade ? grades.find(g => g.value === grade)?.label || 'Select your grade' : 'Select your grade'}
+                        {grade ? grades.find(g => g.value === grade)?.label || t('signup.grade.label') : t('signup.grade.label')}
                       </ThemedText>
                       <Ionicons name="chevron-down" size={20} color={isDarkMode ? '#A0A0A5' : '#6B7280'} />
                     </TouchableOpacity>
@@ -224,9 +226,9 @@ export default function SignupScreen() {
                     style={styles.checkbox}
                   />
                   <View style={styles.termsTextContainer}>
-                    <ThemedText style={[styles.termsText, { color: isDarkMode ? '#A0A0A5' : '#6B7280' }]}>I accept the </ThemedText>
+                    <ThemedText style={[styles.termsText, { color: isDarkMode ? '#A0A0A5' : '#6B7280' }]}>{t('signup.terms.prefix')}</ThemedText>
                     <TouchableOpacity onPress={() => setShowTermsModal(true)}>
-                      <ThemedText style={styles.termsLink}>Terms and Conditions</ThemedText>
+                      <ThemedText style={styles.termsLink}>{t('signup.terms.link')}</ThemedText>
                     </TouchableOpacity>
                   </View>
                 </View>
@@ -247,7 +249,7 @@ export default function SignupScreen() {
                       <View style={[styles.modalHeader, {
                         borderBottomColor: isDarkMode ? '#3C3C3E' : '#E5E7EB',
                       }]}>
-                        <ThemedText style={[styles.modalTitle, { color: colors.text }]}>Select Grade</ThemedText>
+                        <ThemedText style={[styles.modalTitle, { color: colors.text }]}>{t('signup.grade.title')}</ThemedText>
                         <TouchableOpacity onPress={() => setShowGradeModal(false)}>
                           <Ionicons name="close" size={24} color={isDarkMode ? '#A0A0A5' : '#6B7280'} />
                         </TouchableOpacity>
@@ -294,14 +296,14 @@ export default function SignupScreen() {
                       <View style={[styles.modalHeader, {
                         borderBottomColor: isDarkMode ? '#3C3C3E' : '#E5E7EB',
                       }]}>
-                        <ThemedText style={[styles.modalTitle, { color: colors.text }]}>Terms and Conditions</ThemedText>
+                        <ThemedText style={[styles.modalTitle, { color: colors.text }]}>{t('signup.terms.title')}</ThemedText>
                         <TouchableOpacity onPress={() => setShowTermsModal(false)}>
                           <Ionicons name="close" size={24} color={isDarkMode ? '#A0A0A5' : '#6B7280'} />
                         </TouchableOpacity>
                       </View>
                       <ScrollView style={styles.termsModalContent}>
                         <ThemedText style={[styles.termsModalText, { color: colors.text }]}>
-                          {`1. Acceptance of Terms\n\nBy accessing and using the Qelem app, you agree to be bound by these Terms and Conditions.\n\n2. User Registration\n\nUsers must provide accurate and complete information during registration. Users are responsible for maintaining the confidentiality of their account credentials.\n\n3. Privacy Policy\n\nYour use of the app is also governed by our Privacy Policy, which outlines how we collect, use, and protect your personal information.\n\n4. User Conduct\n\nUsers agree to:\n- Use the app for lawful purposes only\n- Respect other users' privacy and rights\n- Not share inappropriate or harmful content\n- Not attempt to disrupt the app's functionality\n\n5. Content\n\nUsers retain ownership of their content but grant us license to use it for app functionality.\n\n6. Termination\n\nWe reserve the right to terminate or suspend accounts that violate these terms.\n\n7. Changes to Terms\n\nWe may update these terms periodically. Continued use of the app constitutes acceptance of new terms.`}
+                          {t('signup.terms.content')}
                         </ThemedText>
                       </ScrollView>
                     </View>
@@ -318,19 +320,19 @@ export default function SignupScreen() {
                     colors={['#4F46E5', '#7C3AED']}
                     style={styles.buttonGradient}
                   >
-                    <ThemedText style={styles.buttonText}>Create Account</ThemedText>
+                    <ThemedText style={styles.buttonText}>{t('signup.createAccount')}</ThemedText>
                   </LinearGradient>
                 </TouchableOpacity>
               </View>
 
               <View style={styles.footer}>
-                <ThemedText style={[styles.footerText, { color: isDarkMode ? '#A0A0A5' : '#6B7280' }]}>Already have an account?</ThemedText>
+                <ThemedText style={[styles.footerText, { color: isDarkMode ? '#A0A0A5' : '#6B7280' }]}>{t('signup.alreadyHaveAccount')}</ThemedText>
                 <TouchableOpacity 
                   style={styles.loginButton} 
                   onPress={() => router.push('/(auth)/login')}
                   activeOpacity={0.8}
                 >
-                  <ThemedText style={styles.loginText}>Sign In</ThemedText>
+                  <ThemedText style={styles.loginText}>{t('signup.signIn')}</ThemedText>
                 </TouchableOpacity>
               </View>
             </View>
