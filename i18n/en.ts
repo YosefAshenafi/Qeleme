@@ -421,7 +421,33 @@ export default {
   signup: {
     title: 'Create Account',
     subtitle: 'Join our community',
+    roleSelection: {
+      title: 'Select Your Role',
+      subtitle: 'Choose how you want to use Qelem',
+      student: {
+        title: 'Student',
+        description: 'I want to learn and practice'
+      },
+      parent: {
+        title: 'Parent',
+        description: 'I want to manage my children\'s learning'
+      }
+    },
+    childrenSelection: {
+      title: 'Add Your Children',
+      subtitle: 'How many children do you want to register?',
+      addChild: 'Add Child',
+      child1: 'Child 1',
+      child2: 'Child 2',
+      child3: 'Child 3',
+      child4: 'Child 4',
+      child5: 'Child 5',
+      child: 'Child',
+      childNumber: 'Child {number}',
+      continue: 'Continue'
+    },
     fullName: 'Full Name',
+    username: 'Username',
     phoneNumber: '9-digit number',
     password: 'Password',
     confirmPassword: 'Confirm Password',
@@ -437,7 +463,18 @@ export default {
     },
     createAccount: 'Create Account',
     alreadyHaveAccount: 'Already have an account?',
-    signIn: 'Sign In'
+    signIn: 'Sign In',
+    errors: {
+      fullNameRequired: 'Please enter your full name',
+      phoneRequired: 'Please enter your phone number',
+      passwordRequired: 'Please enter a password',
+      passwordMismatch: 'Passwords do not match',
+      acceptTerms: 'Please accept the terms and conditions',
+      gradeRequired: 'Please select your grade',
+      incompleteChildrenData: 'Please complete all children information',
+      generic: 'An error occurred during signup',
+      network: 'Network error. Please try again.',
+    },
   },
   payment: {
     title: 'Choose Your Plan',

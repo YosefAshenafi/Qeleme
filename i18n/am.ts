@@ -427,7 +427,34 @@ export default {
   signup: {
     title: 'አካውንት ይፍጠሩ',
     subtitle: 'የእኛን ማህበረሰብ ይቀላቀሉ',
+    roleSelection: {
+      title: 'እርሶ ማንዎት?',
+      subtitle: 'በቀለም እንዴት መጠቀም እንደሚፈልጉ ይምረጡ',
+      student: {
+        title: 'ተማሪ',
+        description: 'መማር እና መለማመድ እፈልጋለሁ'
+      },
+      parent: {
+        title: 'ወላጅ',
+        description: 'የልጆቼን መማር መመራት እፈልጋለሁ'
+      }
+    },
+    childrenSelection: {
+      title: 'ልጆችዎን ይጨምሩ',
+      subtitle: 'ስንት ልጆች መመዝገብ ይፈልጋሉ?',
+      addChild: 'ልጅ ይጨምሩ',
+      child1: 'ልጅ 1',
+      child2: 'ልጅ 2',
+      child3: 'ልጅ 3',
+      child4: 'ልጅ 4',
+      child5: 'ልጅ 5',
+      child: 'ልጅ',
+      continue: 'ቀጥል',
+      howManyChildren: 'ስንት ልጆች አሉዎት?',
+      enterNumberGreaterThanOne: '1 እና ከ1 በላይ የሆነ ቁጥር ያስገቡ'
+    },
     fullName: 'ሙሉ ስም',
+    username: 'መለያ ስም',
     phoneNumber: '9 አሃዝ ቁጥር',
     password: 'የይለፍ ቃል',
     confirmPassword: 'የይለፍ ቃል ያረጋግጡ',
@@ -443,7 +470,18 @@ export default {
     },
     createAccount: 'አካውንት ይፍጠሩ',
     alreadyHaveAccount: 'አካውንት አለዎት?',
-    signIn: 'ይግቡ'
+    signIn: 'ይግቡ',
+    errors: {
+      fullNameRequired: 'እባክዎ ሙሉ ስምዎን ያስገቡ',
+      phoneRequired: 'እባክዎ የስልክ ቁጥርዎን ያስገቡ',
+      passwordRequired: 'እባክዎ የይለፍ ቃል ያስገቡ',
+      passwordMismatch: 'የይለፍ ቃላት አይመጣጠኑም',
+      acceptTerms: 'እባክዎ ውሎችን እና ሁኔታዎችን ይቀበሉ',
+      gradeRequired: 'እባክዎ ክፍልዎን ይምረጡ',
+      incompleteChildrenData: 'እባክዎ የልጆች መረጃ ሁሉን ይጨምሩ',
+      generic: 'በተመዝገበ ጊዜ ስህተት ተከስቷል',
+      network: 'የድረ-ገጽ ስህተት። እባክዎ እንደገና ይሞክሩ።',
+    },
   },
   payment: {
     title: 'የእርስዎን እቅድ ይምረጡ',

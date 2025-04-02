@@ -227,7 +227,7 @@ export default function LoginScreen() {
               <ThemedText style={[styles.footerText, { color: isDarkMode ? '#A0A0A5' : '#6B7280' }]}>{t('login.noAccount')}</ThemedText>
               <TouchableOpacity 
                 style={styles.signupButton} 
-                onPress={() => router.push('/(auth)/signup')}
+                onPress={() => router.push('/(auth)/role-selection')}
                 activeOpacity={0.8}
               >
                 <ThemedText style={[styles.signupText, { color: '#4F46E5' }]}>{t('login.signUp')}</ThemedText>

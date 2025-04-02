@@ -56,22 +56,45 @@ export default function OTPScreen() {
     }
   };
 
-  const handleVerify = () => {
-    const enteredOtp = otp.join('');
-    if (enteredOtp.length !== 6) {
-      setError(t('auth.otp.error.incomplete'));
+  const handleVerify = async () => {
+    if (!otp) {
+      setError('Please enter the OTP');
       return;
     }
 
-    if (enteredOtp === expectedOtp) {
-      // OTP is correct, proceed to payment
-      router.push('/(auth)/payment');
-    } else {
-      setError(t('auth.otp.error.invalid'));
-      // Clear the inputs
-      setOtp(['', '', '', '', '', '']);
-      // Focus on first input
-      inputRefs.current[0]?.focus();
+    try {
+      const response = await fetch('https://api.qelem.net/auth/verify', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          phoneNumber: userData.phoneNumber,
+          otp,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        // Navigate to the next screen specified in params
+        const nextScreen = params.nextScreen as string;
+        if (nextScreen === 'plan-selection') {
+          router.push({
+            pathname: '/(auth)/plan-selection',
+            params: {
+              userData: params.userData
+            }
+          });
+        } else {
+          // Default navigation if no next screen specified
+          router.push('/(tabs)');
+        }
+      } else {
+        setError(data.message || 'Invalid OTP');
+      }
+    } catch (err) {
+      setError('Network error. Please try again.');
     }
   };
 

@@ -1,5 +1,5 @@
 import { StyleSheet, TextInput, TouchableOpacity, View, Image, KeyboardAvoidingView, Platform, ScrollView, Modal, Pressable } from 'react-native';
-import { Link, router } from 'expo-router';
+import { Link, router, useLocalSearchParams } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useState } from 'react';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -18,6 +18,8 @@ export default function SignupScreen() {
   const { t } = useTranslation();
   const { isDarkMode } = useTheme();
   const colors = getColors(isDarkMode);
+  const params = useLocalSearchParams();
+  const numberOfChildren = params.numberOfChildren ? parseInt(params.numberOfChildren as string) : 1;
   const [fullName, setFullName] = useState('');
   const [phoneNumber, setPhoneNumber] = useState('');
   const [password, setPassword] = useState('');
@@ -26,73 +28,148 @@ export default function SignupScreen() {
   const [acceptTerms, setAcceptTerms] = useState(false);
   const [showGradeModal, setShowGradeModal] = useState(false);
   const [showTermsModal, setShowTermsModal] = useState(false);
+  const [childrenData, setChildrenData] = useState(
+    Array(numberOfChildren).fill({ fullName: '', username: '', grade: '' as Grade, plan: 'basic' })
+  );
+  const [selectedChildIndex, setSelectedChildIndex] = useState<number | null>(null);
+  const [showPlanModal, setShowPlanModal] = useState(false);
+  const [error, setError] = useState('');
 
-  const handleGradeSelect = (value: string) => {
-    setGrade(value as Grade);
+  const handleGradeSelect = (value: string, childIndex?: number) => {
+    if (childIndex !== undefined) {
+      const newChildrenData = [...childrenData];
+      newChildrenData[childIndex] = { ...newChildrenData[childIndex], grade: value as Grade };
+      setChildrenData(newChildrenData);
+    } else {
+      setGrade(value as Grade);
+    }
     setShowGradeModal(false);
   };
 
+  const openGradeModal = (childIndex?: number) => {
+    setSelectedChildIndex(childIndex ?? null);
+    setShowGradeModal(true);
+  };
+
+  const handleChildNameChange = (text: string, index: number) => {
+    const newChildrenData = [...childrenData];
+    newChildrenData[index] = { ...newChildrenData[index], fullName: text };
+    setChildrenData(newChildrenData);
+  };
+
+  const handleChildUsernameChange = (text: string, index: number) => {
+    // Remove spaces and special characters, convert to lowercase
+    const formattedUsername = text.toLowerCase().replace(/[^a-z0-9]/g, '');
+    const newChildrenData = [...childrenData];
+    newChildrenData[index] = { ...newChildrenData[index], username: formattedUsername };
+    setChildrenData(newChildrenData);
+  };
+
+  const handlePlanSelect = (plan: string, childIndex: number) => {
+    const newChildrenData = [...childrenData];
+    newChildrenData[childIndex] = { ...newChildrenData[childIndex], plan };
+    setChildrenData(newChildrenData);
+    setShowPlanModal(false);
+  };
+
+  const openPlanModal = (childIndex: number) => {
+    setSelectedChildIndex(childIndex);
+    setShowPlanModal(true);
+  };
+
   const handleSignup = async () => {
-    if (!acceptTerms) {
+    // Reset error state
+    setError('');
+
+    // Validate required fields
+    if (!fullName) {
+      setError(t('signup.errors.fullNameRequired'));
+      return;
+    }
+    if (!phoneNumber) {
+      setError(t('signup.errors.phoneRequired'));
+      return;
+    }
+    if (!password) {
+      setError(t('signup.errors.passwordRequired'));
       return;
     }
     if (password !== confirmPassword) {
+      setError(t('signup.errors.passwordMismatch'));
       return;
     }
-    if (!fullName || !phoneNumber || !grade) {
+    if (!acceptTerms) {
+      setError(t('signup.errors.acceptTerms'));
       return;
     }
 
-    const formattedPhoneNumber = `+251${phoneNumber}`;
+    // Validate children data if parent registration
+    if (numberOfChildren > 1) {
+      const invalidChildren = childrenData.some(child => !child.fullName || !child.username || !child.grade);
+      if (invalidChildren) {
+        setError(t('signup.errors.incompleteChildrenData'));
+        return;
+      }
+    } else if (!grade) {
+      setError(t('signup.errors.gradeRequired'));
+      return;
+    }
 
     try {
-      const response = await sendOTP(formattedPhoneNumber);
-      
-      if (response.success && response.otp) {
-        // Pass user data and OTP to the verification screen
+      const requestBody = {
+        fullName,
+        phoneNumber,
+        password,
+        role: numberOfChildren > 1 ? 'parent' : 'student',
+        ...(numberOfChildren > 1 ? { children: childrenData } : { grade }),
+      };
+
+      console.log('Sending signup request with body:', JSON.stringify(requestBody, null, 2));
+
+      const response = await fetch('https://api.qelem.net/auth/signup', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+        body: JSON.stringify(requestBody),
+      });
+
+      console.log('Response status:', response.status);
+      console.log('Response headers:', JSON.stringify(response.headers, null, 2));
+
+      const data = await response.json();
+      console.log('Response data:', JSON.stringify(data, null, 2));
+
+      if (response.ok) {
+        const userData = {
+          fullName,
+          phoneNumber,
+          password,
+          role: numberOfChildren > 1 ? 'parent' : 'student',
+          ...(numberOfChildren > 1 ? { children: childrenData } : { grade }),
+        };
+
         router.push({
           pathname: '/(auth)/otp',
           params: {
-            otp: response.otp,
-            userData: JSON.stringify({
-              fullName,
-              phoneNumber: formattedPhoneNumber,
-              password,
-              grade
-            })
+            otp: data.otp,
+            userData: JSON.stringify(userData),
+            nextScreen: 'plan-selection'
           }
         });
       } else {
-        // For testing: Use a default OTP if server fails
-        console.warn('Using default OTP for testing as server response failed');
-        router.push({
-          pathname: '/(auth)/otp',
-          params: {
-            otp: '102132',
-            userData: JSON.stringify({
-              fullName,
-              phoneNumber: formattedPhoneNumber,
-              password,
-              grade
-            })
-          }
-        });
+        const errorMessage = data.message || data.error || t('signup.errors.generic');
+        console.error('Signup error:', errorMessage);
+        setError(errorMessage);
       }
-    } catch (error) {
-      // For testing: Use the same default OTP if server is unreachable
-      console.warn('Using default OTP for testing as server is unreachable');
-      router.push({
-        pathname: '/(auth)/otp',
-        params: {
-          otp: '102132',
-          userData: JSON.stringify({
-            fullName,
-            phoneNumber: formattedPhoneNumber,
-            password,
-            grade
-          })
-        }
-      });
+    } catch (err) {
+      console.error('Network error details:', err);
+      if (err instanceof TypeError && err.message.includes('NetworkError')) {
+        setError(t('signup.errors.networkConnection'));
+      } else {
+        setError(t('signup.errors.network'));
+      }
     }
   };
 
@@ -115,6 +192,13 @@ export default function SignupScreen() {
             keyboardDismissMode="on-drag"
           >
             <View style={styles.container}>
+              <TouchableOpacity 
+                style={styles.backButton}
+                onPress={() => router.back()}
+              >
+                <Ionicons name="arrow-back" size={24} color={isDarkMode ? '#A0A0A5' : '#1F2937'} />
+              </TouchableOpacity>
+
               <View style={styles.header}>
                 <Image 
                   source={require('@/assets/images/logo.png')}
@@ -201,22 +285,82 @@ export default function SignupScreen() {
                     />
                   </View>
 
-                  <View style={[styles.inputContainer, {
-                    backgroundColor: isDarkMode ? '#2C2C2E' : '#F9FAFB',
-                    borderColor: isDarkMode ? '#3C3C3E' : '#E5E7EB',
-                  }]}>
-                    <Ionicons name="school-outline" size={20} color={isDarkMode ? '#A0A0A5' : '#6B7280'} style={styles.inputIcon} />
-                    <TouchableOpacity 
-                      style={styles.dropdownButton}
-                      onPress={() => setShowGradeModal(true)}
-                    >
-                      <ThemedText style={[styles.input, { color: grade ? colors.text : (isDarkMode ? '#A0A0A5' : '#9CA3AF') }]}>
-                        {grade ? grades.find(g => g.value === grade)?.label || t('signup.grade.label') : t('signup.grade.label')}
-                      </ThemedText>
-                      <Ionicons name="chevron-down" size={20} color={isDarkMode ? '#A0A0A5' : '#6B7280'} />
-                    </TouchableOpacity>
-                  </View>
+                  {numberOfChildren === 1 ? (
+                    <View style={[styles.inputContainer, {
+                      backgroundColor: isDarkMode ? '#2C2C2E' : '#F9FAFB',
+                      borderColor: isDarkMode ? '#3C3C3E' : '#E5E7EB',
+                    }]}>
+                      <Ionicons name="school-outline" size={20} color={isDarkMode ? '#A0A0A5' : '#6B7280'} style={styles.inputIcon} />
+                      <TouchableOpacity 
+                        style={styles.dropdownButton}
+                        onPress={() => openGradeModal()}
+                      >
+                        <ThemedText style={[styles.input, { color: grade ? colors.text : (isDarkMode ? '#A0A0A5' : '#9CA3AF') }]}>
+                          {grade ? grades.find(g => g.value === grade)?.label || t('signup.grade.label') : t('signup.grade.label')}
+                        </ThemedText>
+                        <Ionicons name="chevron-down" size={20} color={isDarkMode ? '#A0A0A5' : '#6B7280'} />
+                      </TouchableOpacity>
+                    </View>
+                  ) : (
+                    childrenData.map((child, index) => (
+                      <View key={index} style={styles.childSection}>
+                        <ThemedText style={[styles.childTitle, { color: colors.text }]}>
+                          {t(`signup.childrenSelection.child${index + 1}`)}
+                        </ThemedText>
+                        <View style={[styles.inputContainer, {
+                          backgroundColor: isDarkMode ? '#2C2C2E' : '#F9FAFB',
+                          borderColor: isDarkMode ? '#3C3C3E' : '#E5E7EB',
+                        }]}>
+                          <Ionicons name="person-outline" size={20} color={isDarkMode ? '#A0A0A5' : '#6B7280'} style={styles.inputIcon} />
+                          <TextInput
+                            style={[styles.input, { color: colors.text }]}
+                            placeholder={t('signup.fullName')}
+                            placeholderTextColor={isDarkMode ? '#A0A0A5' : '#9CA3AF'}
+                            value={child.fullName}
+                            onChangeText={(text) => handleChildNameChange(text, index)}
+                            autoCapitalize="words"
+                          />
+                        </View>
+                        <View style={[styles.inputContainer, {
+                          backgroundColor: isDarkMode ? '#2C2C2E' : '#F9FAFB',
+                          borderColor: isDarkMode ? '#3C3C3E' : '#E5E7EB',
+                        }]}>
+                          <Ionicons name="at-outline" size={20} color={isDarkMode ? '#A0A0A5' : '#6B7280'} style={styles.inputIcon} />
+                          <TextInput
+                            style={[styles.input, { color: colors.text }]}
+                            placeholder={t('signup.username')}
+                            placeholderTextColor={isDarkMode ? '#A0A0A5' : '#9CA3AF'}
+                            value={child.username}
+                            onChangeText={(text) => handleChildUsernameChange(text, index)}
+                            autoCapitalize="none"
+                            autoCorrect={false}
+                          />
+                        </View>
+                        <View style={[styles.inputContainer, {
+                          backgroundColor: isDarkMode ? '#2C2C2E' : '#F9FAFB',
+                          borderColor: isDarkMode ? '#3C3C3E' : '#E5E7EB',
+                        }]}>
+                          <Ionicons name="school-outline" size={20} color={isDarkMode ? '#A0A0A5' : '#6B7280'} style={styles.inputIcon} />
+                          <TouchableOpacity 
+                            style={styles.dropdownButton}
+                            onPress={() => openGradeModal(index)}
+                          >
+                            <ThemedText style={[styles.input, { color: child.grade ? colors.text : (isDarkMode ? '#A0A0A5' : '#9CA3AF') }]}>
+                              {child.grade ? grades.find(g => g.value === child.grade)?.label || t('signup.grade.label') : t('signup.grade.label')}
+                            </ThemedText>
+                            <Ionicons name="chevron-down" size={20} color={isDarkMode ? '#A0A0A5' : '#6B7280'} />
+                          </TouchableOpacity>
+                        </View>
+                      </View>
+                    ))
+                  )}
                 </View>
+
+                {error ? (
+                  <View style={styles.errorContainer}>
+                    <ThemedText style={styles.errorText}>{error}</ThemedText>
+                  </View>
+                ) : null}
 
                 <View style={styles.termsContainer}>
                   <Checkbox
@@ -260,16 +404,20 @@ export default function SignupScreen() {
                             key={item.value}
                             style={[
                               styles.gradeOption,
-                              grade === item.value && [styles.gradeOptionSelected, {
+                              ((selectedChildIndex !== null ? 
+                                childrenData[selectedChildIndex].grade : grade) === item.value) && 
+                              [styles.gradeOptionSelected, {
                                 backgroundColor: isDarkMode ? '#2C2C2E' : '#EEF2FF'
                               }]
                             ]}
-                            onPress={() => handleGradeSelect(item.value)}
+                            onPress={() => handleGradeSelect(item.value, selectedChildIndex ?? undefined)}
                           >
                             <ThemedText style={[
                               styles.gradeOptionText,
                               { color: isDarkMode ? colors.text : '#1F2937' },
-                              grade === item.value && styles.gradeOptionTextSelected
+                              ((selectedChildIndex !== null ? 
+                                childrenData[selectedChildIndex].grade : grade) === item.value) && 
+                              styles.gradeOptionTextSelected
                             ]}>
                               {item.label}
                             </ThemedText>
@@ -581,5 +729,31 @@ const styles = StyleSheet.create({
     height: '100%',
     fontSize: 16,
     color: '#1F2937',
+  },
+  childSection: {
+    gap: 8,
+  },
+  childTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    marginBottom: 4,
+  },
+  backButton: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    padding: 12,
+    zIndex: 1,
+  },
+  errorContainer: {
+    backgroundColor: '#FEE2E2',
+    padding: 12,
+    borderRadius: 8,
+    marginBottom: 16,
+  },
+  errorText: {
+    color: '#DC2626',
+    fontSize: 14,
+    textAlign: 'center',
   },
 }); 
