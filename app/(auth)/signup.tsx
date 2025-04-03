@@ -121,52 +121,6 @@ export default function SignupScreen() {
     }
 
     try {
-      const requestBody = {
-        fullName,
-        username,
-        phoneNumber: `+251${phoneNumber}`,
-        password,
-        role: numberOfChildren > 1 ? 'parent' : 'student',
-        ...(numberOfChildren > 1 ? { children: childrenData } : { grade }),
-      };
-
-      console.log('Sending signup request with body:', JSON.stringify(requestBody, null, 2));
-
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
-
-      // Use environment variable for API URL if available, fallback to localhost
-      const API_URL = process.env.EXPO_PUBLIC_API_URL || 'http://localhost:3000';
-      const response = await fetch(`${API_URL}/auth/signup`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-          'User-Agent': 'Qelem-Mobile-App',
-        },
-        body: JSON.stringify(requestBody),
-        signal: controller.signal,
-      });
-
-      clearTimeout(timeoutId);
-
-      console.log('Response status:', response.status);
-      console.log('Response headers:', JSON.stringify(response.headers, null, 2));
-
-      if (!response.ok) {
-        // Try to parse error response
-        try {
-          const errorData = await response.json();
-          throw new Error(errorData.message || errorData.error || t('signup.errors.generic'));
-        } catch (parseError) {
-          // If we can't parse the error response, throw a generic error
-          throw new Error(t('signup.errors.generic'));
-        }
-      }
-
-      const data = await response.json();
-      console.log('Response data:', JSON.stringify(data, null, 2));
-
       const userData = {
         fullName,
         username,
@@ -176,27 +130,16 @@ export default function SignupScreen() {
         ...(numberOfChildren > 1 ? { children: childrenData } : { grade }),
       };
 
+      // Navigate to payment page with user data
       router.push({
-        pathname: '/(auth)/otp',
+        pathname: '/(auth)/payment',
         params: {
-          otp: data.otp,
-          userData: JSON.stringify(userData),
-          nextScreen: 'plan-selection'
+          userData: JSON.stringify(userData)
         }
       });
     } catch (err: any) {
-      console.error('Network error details:', err);
-      if (err instanceof TypeError) {
-        if (err.message.includes('NetworkError') || err.message.includes('Network request failed')) {
-          setError(t('signup.errors.networkConnection'));
-        } else if (err.name === 'AbortError') {
-          setError(t('signup.errors.timeout'));
-        } else {
-          setError(t('signup.errors.network'));
-        }
-      } else {
-        setError(err.message || t('signup.errors.generic'));
-      }
+      console.error('Error:', err);
+      setError(err.message || t('signup.errors.generic'));
     }
   };
 
@@ -251,7 +194,6 @@ export default function SignupScreen() {
                       placeholderTextColor={isDarkMode ? '#A0A0A5' : '#9CA3AF'}
                       value={fullName}
                       onChangeText={setFullName}
-                      autoCapitalize="words"
                     />
                   </View>
 
@@ -361,7 +303,6 @@ export default function SignupScreen() {
                             placeholderTextColor={isDarkMode ? '#A0A0A5' : '#9CA3AF'}
                             value={child.fullName}
                             onChangeText={(text) => handleChildNameChange(text, index)}
-                            autoCapitalize="words"
                           />
                         </View>
                         <View style={[styles.inputContainer, {
@@ -612,6 +553,7 @@ const styles = StyleSheet.create({
     marginRight: 12,
   },
   input: {
+    textTransform: 'none',
     flex: 1,
     height: '100%',
     fontSize: 16,

@@ -1,5 +1,5 @@
-import { StyleSheet, TouchableOpacity, View, KeyboardAvoidingView, Platform, ScrollView, Image } from 'react-native';
-import { router } from 'expo-router';
+import { StyleSheet, TouchableOpacity, View, KeyboardAvoidingView, Platform, ScrollView, Image, Modal, Pressable } from 'react-native';
+import { router, useLocalSearchParams } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
@@ -9,15 +9,68 @@ import { getColors } from '@/constants/Colors';
 import { ThemedText } from '@/components/ThemedText';
 import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
+import { useState } from 'react';
 
 export default function PaymentScreen() {
   const router = useRouter();
   const { isDarkMode } = useTheme();
   const colors = getColors(isDarkMode);
   const { t } = useTranslation();
+  const params = useLocalSearchParams();
+  const userData = params.userData ? JSON.parse(params.userData as string) : null;
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
 
-  const handlePaymentSuccess = () => {
-    router.replace('/(tabs)');
+  const handlePaymentSuccess = async (amount: number, plan: string) => {
+    try {
+      if (!userData) {
+        throw new Error('No user data available');
+      }
+
+      const API_URL = process.env.EXPO_PUBLIC_API_URL || 'http://localhost:5001';
+      const endpoint = `${API_URL}/api/auth/register/student`;
+
+      const requestBody = {
+        fullName: userData.fullName,
+        username: userData.username,
+        password: userData.password,
+        grade: userData.grade,
+        parentId: "0",
+        paymentPlan: plan,
+        amountPaid: amount
+      };
+
+      console.log('Sending registration request to:', endpoint);
+      console.log('Request body:', JSON.stringify(requestBody, null, 2));
+
+      const response = await fetch(endpoint, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          'User-Agent': 'Qelem-Mobile-App',
+        },
+        body: JSON.stringify(requestBody),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || errorData.error || 'Failed to register user');
+      }
+
+      const data = await response.json();
+      console.log('User registered successfully:', data);
+
+      // Show success modal
+      setShowSuccessModal(true);
+
+      // Navigate to the main app after 2 seconds
+      setTimeout(() => {
+        router.replace('/(tabs)');
+      }, 2000);
+    } catch (error: any) {
+      console.error('Registration error:', error);
+      // Handle registration error - you might want to show an error message to the user
+    }
   };
 
   const handlePaymentFailure = () => {
@@ -50,7 +103,7 @@ export default function PaymentScreen() {
               <View style={styles.paymentOptionsContainer}>
                 {/* Free Trial Plan */}
                 <TouchableOpacity 
-                  onPress={() => router.replace('/(tabs)')} 
+                  onPress={() => handlePaymentSuccess(0, 'free')} 
                   style={[styles.paymentOption, {
                     borderColor: isDarkMode ? '#6D28D9' : '#7C3AED',
                     borderWidth: 2,
@@ -96,7 +149,7 @@ export default function PaymentScreen() {
                 {/* 6 Month Plan */}
                 <PaymentButton
                   amount={499}
-                  onSuccess={handlePaymentSuccess}
+                  onSuccess={() => handlePaymentSuccess(499, '6')}
                   onFailure={handlePaymentFailure}
                 >
                   <LinearGradient
@@ -136,7 +189,7 @@ export default function PaymentScreen() {
                 {/* 12 Month Plan */}
                 <PaymentButton
                   amount={799}
-                  onSuccess={handlePaymentSuccess}
+                  onSuccess={() => handlePaymentSuccess(799, '12')}
                   onFailure={handlePaymentFailure}
                 >
                   <View style={[styles.paymentOption, {
@@ -182,6 +235,34 @@ export default function PaymentScreen() {
           </ScrollView>
         </KeyboardAvoidingView>
       </SafeAreaView>
+
+      {/* Success Modal */}
+      <Modal
+        animationType="fade"
+        transparent={true}
+        visible={showSuccessModal}
+        onRequestClose={() => setShowSuccessModal(false)}
+      >
+        <Pressable 
+          style={styles.modalOverlay}
+          onPress={() => setShowSuccessModal(false)}
+        >
+          <View style={[styles.modalContent, {
+            backgroundColor: isDarkMode ? '#1C1C1E' : '#FFFFFF',
+            borderColor: isDarkMode ? '#3C3C3E' : '#E5E7EB',
+          }]}>
+            <View style={styles.modalIconContainer}>
+              <Ionicons name="checkmark-circle" size={64} color={isDarkMode ? '#A78BFA' : '#7C3AED'} />
+            </View>
+            <ThemedText style={[styles.modalTitle, { color: colors.text }]}>
+              {t('payment.success.title')}
+            </ThemedText>
+            <ThemedText style={[styles.modalMessage, { color: colors.text + '80' }]}>
+              {t('payment.success.message')}
+            </ThemedText>
+          </View>
+        </Pressable>
+      </Modal>
     </LinearGradient>
   );
 }
@@ -294,5 +375,40 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     fontSize: 16,
     fontWeight: '600',
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  modalContent: {
+    width: '80%',
+    borderRadius: 20,
+    padding: 24,
+    alignItems: 'center',
+    borderWidth: 1,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5,
+  },
+  modalIconContainer: {
+    marginBottom: 16,
+  },
+  modalTitle: {
+    fontSize: 24,
+    fontWeight: '700',
+    marginBottom: 8,
+    textAlign: 'center',
+  },
+  modalMessage: {
+    fontSize: 16,
+    lineHeight: 24,
+    textAlign: 'center',
   },
 }); 
