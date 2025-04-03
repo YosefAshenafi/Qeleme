@@ -1,11 +1,11 @@
 import { createContext, useContext, useState, useEffect } from 'react';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { router } from 'expo-router';
+import { getUserData, isAuthenticated as checkAuthState, clearAuthData, UserData } from '@/utils/authStorage';
 
 interface AuthContextType {
   isAuthenticated: boolean;
-  user: any | null;
-  login: (userData: any) => Promise<void>;
+  user: UserData | null;
+  login: (userData: UserData) => Promise<void>;
   logout: () => Promise<void>;
 }
 
@@ -13,44 +13,45 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [user, setUser] = useState<any | null>(null);
+  const [user, setUser] = useState<UserData | null>(null);
 
   useEffect(() => {
     // Check for stored authentication data on app start
-    checkAuthState();
+    checkAuthStateOnStart();
   }, []);
 
-  const checkAuthState = async () => {
+  const checkAuthStateOnStart = async () => {
     try {
-      const userData = await AsyncStorage.getItem('user');
-      if (userData) {
-        setUser(JSON.parse(userData));
-        setIsAuthenticated(true);
+      const isAuth = await checkAuthState();
+      if (isAuth) {
+        const userData = await getUserData();
+        if (userData) {
+          setUser(userData);
+          setIsAuthenticated(true);
+        }
       }
     } catch (error) {
       console.error('Error checking auth state:', error);
     }
   };
 
-  const login = async (userData: any) => {
+  const login = async (userData: UserData) => {
     try {
-      await AsyncStorage.setItem('user', JSON.stringify(userData));
       setUser(userData);
       setIsAuthenticated(true);
-      router.replace('/(tabs)');
     } catch (error) {
-      console.error('Error storing auth data:', error);
+      console.error('Error updating auth state:', error);
     }
   };
 
   const logout = async () => {
     try {
-      await AsyncStorage.removeItem('user');
+      await clearAuthData();
       setUser(null);
       setIsAuthenticated(false);
       router.replace('/(auth)/login');
     } catch (error) {
-      console.error('Error removing auth data:', error);
+      console.error('Error during logout:', error);
     }
   };
 

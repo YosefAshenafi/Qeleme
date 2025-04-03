@@ -1,14 +1,14 @@
-import { StyleSheet, TextInput, TouchableOpacity, View, Animated, Dimensions, Image, KeyboardAvoidingView, Platform } from 'react-native';
+import { StyleSheet, TextInput, TouchableOpacity, View, Animated, Dimensions, Image, KeyboardAvoidingView, Platform, ActivityIndicator } from 'react-native';
 import { Link, router } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useState, useEffect, useRef } from 'react';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '@/contexts/AuthContext';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useTheme } from '@/contexts/ThemeContext';
 import { getColors } from '@/constants/Colors';
 import { useTranslation } from 'react-i18next';
+import { storeAuthData } from '@/utils/authStorage';
 
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
@@ -26,6 +26,8 @@ export default function LoginScreen() {
   const { t } = useTranslation();
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState('');
   const [errors, setErrors] = useState({
     username: '',
     password: ''
@@ -82,21 +84,48 @@ export default function LoginScreen() {
 
   const handleLogin = async () => {
     if (validateForm()) {
+      setIsLoading(true);
+      setError('');
+      
       try {
-        // Store the username in AsyncStorage
-        await AsyncStorage.setItem('username', username);
+        const response = await fetch('http://localhost:5001/api/auth/login', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            username: username.toLowerCase(),
+            password,
+          }),
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(data.message || t('login.error.invalidCredentials'));
+        }
+
+        // Store the auth data
+        await storeAuthData(data);
         
-        // For now, we'll simulate a successful login with mock data
-        const userData = {
-          id: '1',
-          username: username,
-          name: 'Test User',
-          // Add other user data as needed
-        };
+        // Update the auth context
+        await login(data.user);
         
-        await login(userData);
+        // Navigate to the main app
+        router.replace('/(tabs)');
       } catch (error) {
-        console.error('Login error:', error);
+        if (error instanceof Error) {
+          // Check if the error message is a translation key
+          if (error.message.startsWith('login.error.')) {
+            setError(t(error.message));
+          } else {
+            setError(t('login.error.serverError'));
+          }
+        } else {
+          setError(t('login.error.serverError'));
+        }
+      } finally {
+        setIsLoading(false);
       }
     }
   };
@@ -133,6 +162,10 @@ export default function LoginScreen() {
             <View style={[styles.formContainer, {
               backgroundColor: isDarkMode ? '#1C1C1E' : '#FFFFFF',
             }]}>
+              {error ? (
+                <ThemedText style={styles.errorMessage}>{error}</ThemedText>
+              ) : null}
+
               <View style={styles.inputWrapper}>
                 <View style={[
                   styles.inputContainer, 
@@ -146,7 +179,7 @@ export default function LoginScreen() {
                     placeholderTextColor={isDarkMode ? '#A0A0A5' : '#9CA3AF'}
                     value={username}
                     onChangeText={(text) => {
-                      setUsername(text);
+                      setUsername(text.toLowerCase());
                       if (errors.username) {
                         setErrors(prev => ({ ...prev, username: '' }));
                       }
@@ -185,15 +218,20 @@ export default function LoginScreen() {
               </View>
 
               <TouchableOpacity 
-                style={styles.loginButton} 
+                style={[styles.loginButton, isLoading && styles.loginButtonDisabled]} 
                 onPress={handleLogin}
                 activeOpacity={0.8}
+                disabled={isLoading}
               >
                 <LinearGradient
                   colors={['#4F46E5', '#7C3AED']}
                   style={styles.buttonGradient}
                 >
-                  <ThemedText style={styles.buttonText}>{t('login.signIn')}</ThemedText>
+                  {isLoading ? (
+                    <ActivityIndicator color="#FFFFFF" />
+                  ) : (
+                    <ThemedText style={styles.buttonText}>{t('login.signIn')}</ThemedText>
+                  )}
                 </LinearGradient>
               </TouchableOpacity>
 
@@ -356,5 +394,17 @@ const styles = StyleSheet.create({
     color: '#4F46E5',
     fontSize: 14,
     fontWeight: '600',
+  },
+  errorMessage: {
+    color: '#EF4444',
+    fontSize: 14,
+    textAlign: 'center',
+    marginBottom: 16,
+    backgroundColor: '#FEE2E2',
+    padding: 12,
+    borderRadius: 8,
+  },
+  loginButtonDisabled: {
+    opacity: 0.7,
   },
 }); 

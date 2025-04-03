@@ -405,6 +405,10 @@ export default {
         required: 'የይለፍ ቃል ያስፈልጋል'
       }
     },
+    error: {
+      invalidCredentials: 'የሚፈልጉትን መለያ ስም ያስገቡ',
+      serverError: 'ትክክለኛ መለያ አላስገቡም'
+    },
     signIn: 'ግባ',
     forgotPassword: 'የይለፍ ቃልዎን ረስተዋል?',
     noAccount: 'መለያ የሎትም?',

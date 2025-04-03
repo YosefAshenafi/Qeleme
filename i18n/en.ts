@@ -399,6 +399,10 @@ export default {
         required: 'Password is required'
       }
     },
+    error: {
+      invalidCredentials: 'Invalid username or password',
+      serverError: 'Invalid credentials.'
+    },
     signIn: 'Sign In',
     forgotPassword: 'Forgot password?',
     noAccount: "Don't have an account?",
