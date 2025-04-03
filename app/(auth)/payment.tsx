@@ -294,7 +294,7 @@ const styles = StyleSheet.create({
     fontSize: 32,
     fontWeight: '700',
     marginBottom: 8,
-    paddingTop: 10,
+    paddingTop: 40,
   },
   subtitle: {
     fontSize: 16,

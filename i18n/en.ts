@@ -68,6 +68,54 @@ export default {
         button: 'Resend'
       },
       verify: 'Verify'
+    },
+    planSelection: {
+      title: 'Choose Your Plan',
+      subtitleSingle: 'Select your preferred plan',
+      subtitleMultiple: 'Select plans for each child',
+      total: 'Total',
+      continue: 'Continue',
+      free: 'Free',
+      success: {
+        title: 'Registration Successful!',
+        message: 'Your account has been created successfully. Please login to continue your learning journey.',
+        button: 'Go to Login'
+      },
+      error: {
+        title: 'Registration Failed',
+        message: 'We couldn\'t complete your registration. Please try again.',
+        network: 'Unable to connect to the server. Please check your internet connection and try again.',
+        button: 'Try Again'
+      },
+      plans: {
+        '3': {
+          name: 'Free',
+          features: [
+            'Basic access to learning materials',
+            'Limited practice questions',
+            'Basic progress tracking',
+            'Community support'
+          ]
+        },
+        '6': {
+          name: '6 Months',
+          features: [
+            'Access to all learning materials',
+            'Practice questions',
+            'Progress tracking',
+            'Basic support'
+          ]
+        },
+        '12': {
+          name: '12 Months',
+          features: [
+            'Everything in 6 Months plan',
+            'Priority support',
+            'Advanced analytics',
+            'Exclusive content'
+          ]
+        }
+      }
     }
   },
   home: {
