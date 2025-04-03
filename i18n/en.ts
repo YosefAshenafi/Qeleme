@@ -71,7 +71,7 @@ export default {
     }
   },
   home: {
-    welcome: 'Welcome back, Yosef!',
+    welcome: 'Welcome back, {{name}}!',
     subtitle: 'Ready to learn something new today?',
     recentActivity: 'Recent Activity',
     noActivity: 'No recent activity. Start learning!',

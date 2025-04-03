@@ -42,7 +42,7 @@ export default {
     }
   },
   home: {
-    welcome: 'እንኳን በደህና ተመለሱ፣ ዮሴፍ!',
+    welcome: 'እንኳን በደህና ተመለሱ፣ {{name}}!',
     subtitle: 'ዛሬ አዲስ ነገር ለመማር ዝግጁ ነዎት?',
     recentActivity: 'የቅርብ ጊዜ እንቅስቃሴዎች',
     noActivity: 'ምንም የቅርብ ጊዜ እንቅስቃሴ የለም። መማር ይጀምሩ!',

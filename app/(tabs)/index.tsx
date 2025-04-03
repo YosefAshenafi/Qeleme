@@ -8,6 +8,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import React from 'react';
 import { useFocusEffect } from '@react-navigation/native';
 import { useTranslation } from 'react-i18next';
+import { useAuth } from '@/contexts/AuthContext';
 
 import { Header } from '@/components/Header';
 import { ThemedText } from '@/components/ThemedText';
@@ -64,6 +65,7 @@ type RecentActivity = {
 export default function HomeScreen() {
   const { t } = useTranslation();
   const { isDarkMode } = useTheme();
+  const { user } = useAuth();
   const colors = getColors(isDarkMode);
   const [activeIndex, setActiveIndex] = useState(0);
   const [quoteIndex, setQuoteIndex] = useState(0);
@@ -272,7 +274,7 @@ export default function HomeScreen() {
   return (
     <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]}>
       <Header 
-        title={t('home.welcome', { name: 'Yosef' })}
+        title={t('home.welcome', { name: user?.fullName || '' })}
         subtitle={t('home.subtitle')}
       />
       <ScrollView 
