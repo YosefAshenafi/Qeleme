@@ -1,4 +1,4 @@
-import { StyleSheet, TouchableOpacity, View, ScrollView } from 'react-native';
+import { StyleSheet, TouchableOpacity, View, ScrollView, Alert } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -70,21 +70,73 @@ export default function PlanSelectionScreen() {
     setSelectedPlans(newPlans);
   };
 
-  const handleContinue = () => {
-    // Update userData with selected plans
-    const updatedUserData = {
-      ...userData,
-      childrenData: userData.numberOfChildren > 1 ? selectedPlans : undefined,
-      plan: userData.numberOfChildren === 1 ? selectedPlans[0].plan : undefined
-    };
+  const handleContinue = async () => {
+    try {
+      // Update userData with selected plans
+      const updatedUserData = {
+        ...userData,
+        childrenData: userData.numberOfChildren > 1 ? selectedPlans : undefined,
+        plan: userData.numberOfChildren === 1 ? selectedPlans[0].plan : undefined
+      };
 
-    router.push({
-      pathname: '/(auth)/otp',
-      params: {
-        otp: params.otp,
-        userData: JSON.stringify(updatedUserData)
+      // Call the registration API
+      const response = await fetch('http://localhost:5001/api/auth/register/student', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          fullName: updatedUserData.fullName,
+          username: updatedUserData.username,
+          password: updatedUserData.password,
+          grade: updatedUserData.grade,
+          parentId: "0", // Default value for now
+          paymentPlan: updatedUserData.plan || "6", // Default to 6 months if not specified
+          amountPaid: 1000 // Default value for now
+        }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        // Show success alert
+        Alert.alert(
+          'Success',
+          'Registration completed successfully! Please login to continue.',
+          [
+            {
+              text: 'OK',
+              onPress: () => router.replace('/(auth)/login')
+            }
+          ]
+        );
+      } else {
+        // Show error alert and go back to signup
+        Alert.alert(
+          'Registration Failed',
+          data.message || 'Registration failed. Please try again.',
+          [
+            {
+              text: 'OK',
+              onPress: () => router.back()
+            }
+          ]
+        );
       }
-    });
+    } catch (err) {
+      console.error('Registration error:', err);
+      // Show error alert and go back to signup
+      Alert.alert(
+        'Error',
+        'An error occurred during registration. Please try again.',
+        [
+          {
+            text: 'OK',
+            onPress: () => router.back()
+          }
+        ]
+      );
+    }
   };
 
   return (

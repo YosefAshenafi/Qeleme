@@ -57,8 +57,27 @@ export default function OTPScreen() {
   };
 
   const handleVerify = async () => {
-    if (!otp) {
+    const enteredOtp = otp.join('');
+    if (!enteredOtp) {
       setError('Please enter the OTP');
+      return;
+    }
+
+    // First check if the entered OTP matches the expected OTP
+    if (enteredOtp === expectedOtp) {
+      // Navigate to the next screen specified in params
+      const nextScreen = params.nextScreen as string;
+      if (nextScreen === 'plan-selection') {
+        router.push({
+          pathname: '/(auth)/plan-selection',
+          params: {
+            userData: params.userData
+          }
+        });
+      } else {
+        // Default navigation if no next screen specified
+        router.push('/(tabs)');
+      }
       return;
     }
 
@@ -70,7 +89,7 @@ export default function OTPScreen() {
         },
         body: JSON.stringify({
           phoneNumber: userData.phoneNumber,
-          otp,
+          otp: enteredOtp,
         }),
       });
 

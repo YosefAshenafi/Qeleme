@@ -130,11 +130,16 @@ export default function SignupScreen() {
         ...(numberOfChildren > 1 ? { children: childrenData } : { grade }),
       };
 
-      // Navigate to payment page with user data
+      // Try to send OTP but proceed regardless of result
+      const otpResponse = await sendOTP(userData.phoneNumber);
+      
+      // Navigate to OTP verification with user data
       router.push({
-        pathname: '/(auth)/payment',
+        pathname: '/(auth)/otp',
         params: {
-          userData: JSON.stringify(userData)
+          otp: otpResponse.otp || "102132", // Use a default OTP if sending failed
+          userData: JSON.stringify(userData),
+          nextScreen: 'plan-selection'
         }
       });
     } catch (err: any) {
