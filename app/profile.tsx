@@ -7,7 +7,6 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { AccountSettings } from '../components/profile/AccountSettings';
-import { Notifications } from '../components/profile/Notifications';
 import { ThemeChooser } from '@/components/profile/ThemeChooser';
 import { getColors } from '@/constants/Colors';
 import { useTheme } from '@/contexts/ThemeContext';
@@ -200,11 +199,6 @@ export default function ProfileScreen() {
       title: t('profile.accountSettings'),
       icon: 'person.fill' as const,
       content: <AccountSettings colors={colors} profileData={profileData} />
-    },
-    { 
-      title: t('profile.notifications'),
-      icon: 'bell.fill' as const, 
-      content: <Notifications colors={colors} />
     },
     {
       title: t('profile.language'),
