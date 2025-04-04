@@ -21,36 +21,7 @@ import { Header } from '@/components/Header';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 import { IconSymbol } from '@/components/ui/IconSymbol';
-import flashcardData from '@/data/flashcardData.json';
-
-interface Flashcard {
-  id: string;
-  question: string;
-  answer: string;
-}
-
-interface Chapter {
-  id: string;
-  name: string;
-  flashcards: Flashcard[];
-}
-
-interface Subject {
-  id: string;
-  name: string;
-  chapters: Chapter[];
-}
-
-interface Grade {
-  name: string;
-  subjects: Subject[];
-}
-
-interface FlashcardData {
-  grades: {
-    [key: string]: Grade;
-  };
-}
+import { getFlashcards, Grade, Subject, Chapter, Flashcard } from '@/services/flashcardService';
 
 interface RecentActivity {
   type: string;
@@ -61,8 +32,6 @@ interface RecentActivity {
   details: string;
 }
 
-const typedFlashcardData = flashcardData as FlashcardData;
-
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const CARD_WIDTH = SCREEN_WIDTH - 40;
 
@@ -72,7 +41,7 @@ export default function FlashcardsScreen() {
   const { t } = useTranslation();
   const colors = getColors(isDarkMode);
   
-  const [selectedGrade] = useState<string>('grade-12');
+  const [selectedGrade, setSelectedGrade] = useState<string>('grade-12');
   const [selectedSubject, setSelectedSubject] = useState<string>('');
   const [selectedChapter, setSelectedChapter] = useState<string>('');
   const [showFlashcards, setShowFlashcards] = useState(false);
@@ -81,6 +50,9 @@ export default function FlashcardsScreen() {
   const [showSubjectDropdown, setShowSubjectDropdown] = useState(false);
   const [showChapterDropdown, setShowChapterDropdown] = useState(false);
   const [userPhoneNumber, setUserPhoneNumber] = useState<string | null>(null);
+  const [flashcardsData, setFlashcardsData] = useState<Grade[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   
   const revealAnimation = useSharedValue(0);
   const progressAnimation = useSharedValue(0);
@@ -99,7 +71,78 @@ export default function FlashcardsScreen() {
     checkPhoneNumber();
   }, []);
 
-  const selectedGradeData = selectedGrade ? typedFlashcardData.grades[selectedGrade] : null;
+  useEffect(() => {
+    const fetchFlashcards = async () => {
+      try {
+        setIsLoading(true);
+        const data = await getFlashcards();
+        console.log('Fetched flashcards data:', data);
+        setFlashcardsData(data);
+        setError(null);
+      } catch (error) {
+        console.log('Flashcards not available yet');
+        if (error instanceof Error) {
+          if (error.message.includes('No flashcards found')) {
+            setError(t('flashcards.noFlashcards'));
+          } else {
+            setError(t('flashcards.error'));
+          }
+        } else {
+          setError(t('flashcards.noFlashcards'));
+        }
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchFlashcards();
+  }, []);
+
+  // Update the selected grade when flashcards data is loaded
+  useEffect(() => {
+    if (flashcardsData && flashcardsData.length > 0) {
+      console.log('Setting default grade:', flashcardsData[0].name);
+      setSelectedGrade(flashcardsData[0].name);
+      console.log('All subjects available:', flashcardsData[0].subjects);
+    }
+  }, [flashcardsData]);
+
+  // Update the selected subject when grade changes
+  useEffect(() => {
+    if (flashcardsData && selectedGrade) {
+      const grade = flashcardsData.find(g => g.name === selectedGrade);
+      console.log('Selected grade data:', grade);
+      console.log('Available subjects for grade:', grade?.subjects);
+      if (grade && grade.subjects.length > 0) {
+        console.log('Setting default subject:', grade.subjects[0].id);
+        setSelectedSubject(grade.subjects[0].id);
+      } else {
+        setSelectedSubject('');
+      }
+    }
+  }, [selectedGrade, flashcardsData]);
+
+  // Update the selected chapter when subject changes
+  useEffect(() => {
+    if (flashcardsData && selectedGrade && selectedSubject) {
+      const grade = flashcardsData.find(g => g.name === selectedGrade);
+      if (grade) {
+        const subject = grade.subjects.find(s => s.id === selectedSubject);
+        console.log('Selected subject data:', subject);
+        if (subject && subject.chapters.length > 0) {
+          console.log('Setting default chapter:', subject.chapters[0].id);
+          setSelectedChapter(subject.chapters[0].id);
+        } else {
+          setSelectedChapter('');
+        }
+      }
+    }
+  }, [selectedSubject, selectedGrade, flashcardsData]);
+
+  const selectedGradeData = selectedGrade ? flashcardsData.find(g => g.name === selectedGrade) : null;
+  console.log('Current selected grade data:', selectedGradeData);
+  console.log('Current selected subject:', selectedSubject);
+  console.log('Available subjects in dropdown:', selectedGradeData?.subjects);
   const selectedSubjectData = selectedSubject && selectedGradeData
     ? selectedGradeData.subjects.find(s => s.id === selectedSubject)
     : null;
@@ -240,6 +283,40 @@ export default function FlashcardsScreen() {
       mass: 0.8,
     });
   };
+
+  if (isLoading) {
+    return (
+      <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]}>
+        <Header title={t('flashcards.title')} />
+        <ThemedView style={[styles.container, { backgroundColor: colors.background }]}>
+          <ThemedText style={[styles.loadingText, { color: colors.text }]}>
+            {t('flashcards.loading')}
+          </ThemedText>
+        </ThemedView>
+      </SafeAreaView>
+    );
+  }
+
+  if (error) {
+    return (
+      <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]}>
+        <Header title={t('flashcards.title')} />
+        <ThemedView style={[styles.container, { backgroundColor: colors.background }]}>
+          <ThemedView style={[styles.emptyStateContainer, { backgroundColor: colors.background }]}>
+            <IconSymbol name="rectangle.stack" size={90} color={colors.tint} style={styles.emptyStateIcon} />
+            <ThemedText style={[styles.emptyStateTitle, { color: colors.text }]}>
+              {error.includes(t('flashcards.noFlashcards')) ? t('flashcards.noFlashcards') : error}
+            </ThemedText>
+            {error.includes(t('flashcards.noFlashcards')) && (
+              <ThemedText style={[styles.emptyStateSubtitle, { color: colors.text, opacity: 0.7 }]}>
+                {t('common.comingSoon')}
+              </ThemedText>
+            )}
+          </ThemedView>
+        </ThemedView>
+      </SafeAreaView>
+    );
+  }
 
   if (!showFlashcards) {
     return (
@@ -662,37 +739,36 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: '700',
   },
-  headerContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+  loadingText: {
+    fontSize: 18,
+    textAlign: 'center',
+    marginTop: 20,
+  },
+  errorText: {
+    fontSize: 18,
+    textAlign: 'center',
+    marginTop: 20,
+  },
+  emptyStateContainer: {
+    flex: 1,
+    justifyContent: 'center',
     alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    backgroundColor: '#FFFFFF',
-    borderBottomWidth: 1,
-    borderBottomColor: '#E0E0E0',
-    width: '100%',
-    marginTop: -70,
+    padding: 20,
+    marginTop: -40,
   },
-  breadcrumbContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#F5F5F5',
-    borderRadius: 12,
-    marginLeft: -20,
-    gap: 8,
+  emptyStateIcon: {
+    marginBottom: 25,
   },
-  breadcrumbItem: {
-    paddingHorizontal: 12,
-    paddingVertical: 4,
-    backgroundColor: '#FFFFFF',
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: '#E0E0E0',
+  emptyStateTitle: {
+    fontSize: 24,
+    fontWeight: '700',
+    textAlign: 'center',
+    marginBottom: 10,
   },
-  breadcrumbText: {
-    color: '#6B54AE',
-    fontSize: 14,
-    fontWeight: '600',
+  emptyStateSubtitle: {
+    fontSize: 18,
+    textAlign: 'center',
+    fontWeight: '500',
+    opacity: 0.8,
   },
 }); 

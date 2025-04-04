@@ -8,6 +8,7 @@ export default {
     delete: 'ሰርዝ',
     edit: 'አስተካክል',
     back: 'ተመለስ',
+    comingSoon: 'በቅርብ ጊዜ ተጨማሪ ይገኛል! ይጠብቁን።',
   },
   navigation: {
     tabs: {
@@ -311,6 +312,9 @@ export default {
     previous: "የቀድሞ",
     next: "ቀጣይ",
     finish: "ጨርስ",
+    loading: "ፍላሽ ካርዶች እየጫኑ ነው...",
+    error: "ፍላሽ ካርዶች ለመጫን አልተቻለም። እባክዎ በኋላ ይሞክሩ።",
+    noFlashcards: "ለዚህ ክፍል ገና ፍላሽ ካርዶች አልተጨረሱም።",
     grades: {
       "grade-9": "9ኛ ክፍል",
       "grade-10": "10ኛ ክፍል",

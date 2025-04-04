@@ -8,6 +8,7 @@ export default {
     delete: 'Delete',
     edit: 'Edit',
     back: 'Back',
+    comingSoon: 'More content is coming soon! Stay tuned.',
   },
   onboarding: {
     language: {
@@ -323,17 +324,20 @@ export default {
     }
   },
   flashcards: {
-    title: "Flash Cards",
+    title: "Flashcards",
     selectSubjectAndChapter: "Select Subject and Chapter",
     subject: "Subject",
-    selectSubject: "Select a subject",
+    selectSubject: "Select Subject",
     chapter: "Chapter",
-    selectChapter: "Select a chapter",
+    selectChapter: "Select Chapter",
     startFlashcards: "Start Flashcards",
     cardProgress: "Card {{current}} of {{total}}",
     previous: "Previous",
     next: "Next",
     finish: "Finish",
+    loading: "Loading flashcards...",
+    error: "Failed to load flashcards. Please try again later.",
+    noFlashcards: "No flashcards available for this grade yet.",
     grades: {
       "grade-9": "Grade 9",
       "grade-10": "Grade 10",
