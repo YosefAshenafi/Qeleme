@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { StyleSheet, TouchableOpacity, ScrollView, View, Dimensions, Animated, Modal, Platform } from 'react-native';
+import { StyleSheet, TouchableOpacity, ScrollView, View, Dimensions, Animated, Modal, Platform, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
@@ -14,44 +14,9 @@ import { Header } from '@/components/Header';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 import { IconSymbol } from '@/components/ui/IconSymbol';
-import mcqData from '@/data/mcqData.json';
+import { getMCQData, MCQData, Grade, Subject, Chapter, Question, Option } from '@/services/mcqService';
 import PictureMCQScreen from '../screens/PictureMCQScreen';
 import PictureMCQInstructionScreen from '../screens/PictureMCQInstructionScreen';
-
-interface Option {
-  id: string;
-  text: string;
-  isCorrect: boolean;
-}
-
-interface Question {
-  id: number;
-  question: string;
-  options: Option[];
-  explanation: string;
-}
-
-interface Chapter {
-  id: string;
-  name: string;
-  questions: Question[];
-}
-
-interface Subject {
-  id: string;
-  name: string;
-  chapters: Chapter[];
-}
-
-interface Grade {
-  id: string;
-  name: string;
-  subjects: Subject[];
-}
-
-interface MCQData {
-  grades: Grade[];
-}
 
 interface RecentActivity {
   type: string;
@@ -62,15 +27,16 @@ interface RecentActivity {
   details: string;
 }
 
-const typedMcqData = mcqData as MCQData;
-
 export default function MCQScreen() {
   const { isDarkMode } = useTheme();
   const { user } = useAuth();
   const colors = getColors(isDarkMode);
   const params = useLocalSearchParams();
   const { t } = useTranslation();
-  const [selectedGrade, setSelectedGrade] = useState<string>('grade-12'); // Default to grade 12
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [mcqData, setMcqData] = useState<MCQData | null>(null);
+  const [selectedGrade, setSelectedGrade] = useState<string>(''); // Will be set based on user's grade
   const [selectedSubject, setSelectedSubject] = useState('');
   const [selectedChapter, setSelectedChapter] = useState('');
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
@@ -106,7 +72,8 @@ export default function MCQScreen() {
     rotate: new Animated.Value(0),
   }))).current;
 
-  const selectedGradeData = typedMcqData.grades.find((grade: Grade) => grade.id === selectedGrade);
+  // Derived state based on selections
+  const selectedGradeData = mcqData?.grades.find((grade: Grade) => grade.id === selectedGrade);
   const selectedSubjectData = selectedGradeData?.subjects.find((subject: Subject) => subject.id === selectedSubject);
   const selectedChapterData = selectedSubjectData?.chapters.find((chapter: Chapter) => chapter.id === selectedChapter);
   const currentQuestion = selectedChapterData?.questions[currentQuestionIndex];
@@ -114,7 +81,7 @@ export default function MCQScreen() {
   const isFirstQuestion = currentQuestionIndex === 0;
   const percentage = Math.round((score / (selectedChapterData?.questions.length || 0)) * 100);
 
-  // Timer functions
+  // Timer functions (were accidentally removed)
   const startTimer = () => {
     setIsTimerRunning(true);
     timerRef.current = setInterval(() => {
@@ -135,27 +102,54 @@ export default function MCQScreen() {
     return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
   };
 
-  useFocusEffect(
-    React.useCallback(() => {
-      // Reset states when tab is focused
-      setSelectedGrade('grade-12');
+  // Fetch MCQ data from API
+  const fetchMCQData = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      console.log('🚀 Starting MCQ data fetch...');
+      const data = await getMCQData();
+      
+      // Reset selections first
       setSelectedSubject('');
       setSelectedChapter('');
-      setCurrentQuestionIndex(0);
-      setSelectedAnswer(null);
-      setShowExplanation(false);
-      setAnsweredQuestions({});
-      setShowAnswerMessage(false);
-      setScore(0);
-      setShowResult(false);
-      setShowTest(false);
-      setShowSubjectDropdown(false);
-      setShowChapterDropdown(false);
-      setTime(0);
-      setIsTimerRunning(false);
-      if (timerRef.current) {
-        clearInterval(timerRef.current);
+      
+      // Log the first grade's structure
+      if (data.grades.length > 0) {
+        const firstGrade = data.grades[0];
+        console.log(`📊 MCQ Data fetched successfully:
+- Grade: ${firstGrade.name} (${firstGrade.id})
+- Subjects: ${firstGrade.subjects?.length || 0}
+${firstGrade.subjects?.map(s => `  - ${s.name}: ${s.chapters?.length || 0} chapters`).join('\n') || '  (No subjects found)'}`);
+        
+        // Auto-select the first grade from API data
+        console.log(`🔄 Setting grade to ${firstGrade.id} (${firstGrade.name})`);
+        setSelectedGrade(firstGrade.id);
+      } else {
+        console.log('⚠️ No grades found in API response');
       }
+      
+      // Set MCQ data after setting the grade to ensure they're in sync
+      setMcqData(data);
+    } catch (error) {
+      console.error('❌ Error fetching MCQ data:', error);
+      setError(error instanceof Error ? error.message : 'Failed to load MCQ data');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useFocusEffect(
+    React.useCallback(() => {
+      // Fetch data and reset states when tab is focused
+      fetchMCQData();
+      
+      return () => {
+        // Clean up the timer when the screen loses focus
+        if (timerRef.current) {
+          clearInterval(timerRef.current);
+        }
+      };
     }, [])
   );
 
@@ -164,11 +158,6 @@ export default function MCQScreen() {
     const checkPhoneNumber = async () => {
       const phoneNumber = await AsyncStorage.getItem('userPhoneNumber');
       setUserPhoneNumber(phoneNumber);
-      
-      // If phone number starts with 911, set grade to 9
-      if (phoneNumber?.startsWith('+251911')) {
-        setSelectedGrade('grade-9');
-      }
       
       // If user is a KG student, show picture questions
       if (user?.grade === 'KG') {
@@ -416,7 +405,33 @@ export default function MCQScreen() {
   };
 
   const handleStartTest = () => {
-    if (!selectedGrade || !selectedSubject || !selectedChapter) return;
+    if (!selectedGrade || !selectedSubject || !selectedChapter) {
+      console.log('❌ Cannot start test: Missing selections', {
+        grade: selectedGrade,
+        subject: selectedSubject,
+        chapter: selectedChapter
+      });
+      return;
+    }
+    
+    // Verify that we have questions for this chapter
+    if (!selectedChapterData || !selectedChapterData.questions || selectedChapterData.questions.length === 0) {
+      console.log('❌ Cannot start test: No questions found for this chapter', {
+        chapterId: selectedChapter,
+        chapterName: selectedChapterData?.name,
+        hasQuestions: !!selectedChapterData?.questions,
+        questionCount: selectedChapterData?.questions?.length || 0
+      });
+      
+      // Show an error message instead of starting the test
+      setError('No questions found for this chapter. Please try another chapter or contact support.');
+      return;
+    }
+    
+    console.log(`✅ Starting test: ${selectedGradeData?.name} > ${selectedSubjectData?.name} > ${selectedChapterData?.name}`);
+    console.log(`📚 Found ${selectedChapterData.questions.length} questions for this chapter`);
+    
+    // Start the test
     setShowTest(true);
     setCurrentQuestionIndex(0);
     setSelectedAnswer(null);
@@ -477,6 +492,111 @@ export default function MCQScreen() {
   // If user has clicked start, show picture MCQ screen
   if (showPictureMCQ) {
     return <PictureMCQScreen onBackToInstructions={handleBackToInstructions} />;
+  }
+
+  // Loading state rendering
+  if (loading) {
+    return (
+      <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]}>
+        <Header title={t('mcq.title')} />
+        <ThemedView style={[styles.container, { backgroundColor: colors.background, justifyContent: 'center', alignItems: 'center' }]}>
+          <ActivityIndicator size="large" color={colors.tint} />
+          <ThemedText style={{ marginTop: 20, color: colors.text }}>
+            {t('common.loading')}
+          </ThemedText>
+        </ThemedView>
+      </SafeAreaView>
+    );
+  }
+
+  // Error state rendering
+  if (error) {
+    return (
+      <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]}>
+        <Header title={t('mcq.title')} />
+        <ThemedView style={[styles.container, { backgroundColor: colors.background, justifyContent: 'center', alignItems: 'center', padding: 20 }]}>
+          <Ionicons name="alert-circle-outline" size={48} color={colors.error} />
+          <ThemedText style={{ marginTop: 20, color: colors.error, fontWeight: 'bold', fontSize: 18, textAlign: 'center' }}>
+            {error}
+          </ThemedText>
+          <TouchableOpacity 
+            style={[styles.button, { backgroundColor: colors.tint, marginTop: 20 }]}
+            onPress={fetchMCQData}
+          >
+            <ThemedText style={{ color: '#FFFFFF', fontWeight: 'bold' }}>
+              {t('common.tryAgain')}
+            </ThemedText>
+          </TouchableOpacity>
+        </ThemedView>
+      </SafeAreaView>
+    );
+  }
+  
+  // Debug state for empty subjects
+  if (mcqData && mcqData.grades.length > 0 && (!selectedGradeData?.subjects || selectedGradeData.subjects.length === 0)) {
+    return (
+      <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]}>
+        <Header title={t('mcq.title')} />
+        <ScrollView style={{ flex: 1, padding: 20 }}>
+          <View style={{ alignItems: 'center', marginBottom: 20 }}>
+            <Ionicons name="warning-outline" size={60} color={colors.warning} />
+            <ThemedText style={{ color: colors.error, fontWeight: 'bold', fontSize: 18, marginTop: 10, textAlign: 'center' }}>
+              No subjects found for your grade
+            </ThemedText>
+          </View>
+          
+          <ThemedText style={{ color: colors.text, marginBottom: 20, textAlign: 'center', lineHeight: 22 }}>
+            We couldn't find any subjects for grade {selectedGradeData?.name}. This could be because:
+          </ThemedText>
+          
+          <View style={{ marginBottom: 20, paddingHorizontal: 10 }}>
+            <View style={{ flexDirection: 'row', marginBottom: 10 }}>
+              <ThemedText style={{ color: colors.text, marginRight: 5 }}>•</ThemedText>
+              <ThemedText style={{ color: colors.text, flex: 1 }}>Your account might need to be updated with the correct grade</ThemedText>
+            </View>
+            <View style={{ flexDirection: 'row', marginBottom: 10 }}>
+              <ThemedText style={{ color: colors.text, marginRight: 5 }}>•</ThemedText>
+              <ThemedText style={{ color: colors.text, flex: 1 }}>The server is temporarily unavailable</ThemedText>
+            </View>
+            <View style={{ flexDirection: 'row', marginBottom: 10 }}>
+              <ThemedText style={{ color: colors.text, marginRight: 5 }}>•</ThemedText>
+              <ThemedText style={{ color: colors.text, flex: 1 }}>Content for your grade is still being added</ThemedText>
+            </View>
+          </View>
+          
+          <View style={{ marginTop: 20 }}>
+            <TouchableOpacity 
+              style={[styles.button, { backgroundColor: colors.tint, marginBottom: 15 }]}
+              onPress={fetchMCQData}
+            >
+              <Ionicons name="refresh" size={20} color="#FFFFFF" />
+              <ThemedText style={{ color: '#FFFFFF', fontWeight: 'bold', marginLeft: 10 }}>
+                Try Again
+              </ThemedText>
+            </TouchableOpacity>
+            
+            <TouchableOpacity 
+              style={[styles.button, { backgroundColor: colors.cardAlt, borderWidth: 1, borderColor: colors.border }]}
+              onPress={() => router.replace('/(tabs)')}
+            >
+              <Ionicons name="home" size={20} color={colors.text} />
+              <ThemedText style={{ color: colors.text, fontWeight: 'bold', marginLeft: 10 }}>
+                Go to Home Screen
+              </ThemedText>
+            </TouchableOpacity>
+          </View>
+          
+          <TouchableOpacity 
+            style={{ marginTop: 30, padding: 10 }}
+            onPress={() => console.log('Debug info:', JSON.stringify(mcqData, null, 2))}
+          >
+            <ThemedText style={{ color: colors.tint, fontSize: 14, textAlign: 'center' }}>
+              Show Debug Information
+            </ThemedText>
+          </TouchableOpacity>
+        </ScrollView>
+      </SafeAreaView>
+    );
   }
 
   if (showResult) {
@@ -571,9 +691,9 @@ export default function MCQScreen() {
               onPress={() => {
                 setShowResult(false);
                 setShowTest(false);
-                setSelectedGrade('grade-12');
                 setSelectedSubject('');
                 setSelectedChapter('');
+                fetchMCQData();
               }}
             >
               <ThemedText style={[styles.homeButtonText, { color: colors.text }]}>Choose Another Subject</ThemedText>
@@ -598,14 +718,22 @@ export default function MCQScreen() {
                 <ThemedText style={[styles.formLabel, { color: colors.tint }]}>Subject</ThemedText>
                 <TouchableOpacity
                   style={[styles.formInput, { backgroundColor: colors.cardAlt, borderColor: colors.border }]}
-                  onPress={() => setShowSubjectDropdown(!showSubjectDropdown)}
+                  onPress={() => {
+                    if (selectedGradeData?.subjects && selectedGradeData.subjects.length > 0) {
+                      setShowSubjectDropdown(!showSubjectDropdown);
+                    } else {
+                      console.log('No subjects available to show in dropdown');
+                    }
+                  }}
                 >
                   <ThemedText style={[styles.formInputText, { color: colors.text }]}>
-                    {selectedSubject ? selectedGradeData?.subjects.find((s: Subject) => s.id === selectedSubject)?.name : 'Select a subject'}
+                    {selectedSubject && selectedGradeData?.subjects 
+                      ? selectedGradeData.subjects.find((s) => s.id === selectedSubject)?.name || 'Select a subject' 
+                      : 'Select a subject'}
                   </ThemedText>
                   <IconSymbol name="chevron.right" size={20} color={colors.tint} />
                 </TouchableOpacity>
-                {showSubjectDropdown && (
+                {showSubjectDropdown && selectedGradeData?.subjects && selectedGradeData.subjects.length > 0 && (
                   <Modal
                     visible={showSubjectDropdown}
                     transparent={true}
@@ -619,11 +747,12 @@ export default function MCQScreen() {
                     >
                       <ThemedView style={[styles.modalContent, { backgroundColor: colors.background }]}>
                         <ScrollView>
-                          {selectedGradeData?.subjects.map((subject: Subject) => (
+                          {selectedGradeData.subjects.map((subject) => (
                             <TouchableOpacity
                               key={subject.id}
                               style={[styles.modalItem, { backgroundColor: colors.background, borderBottomColor: colors.border }]}
                               onPress={() => {
+                                console.log(`Selected subject: ${subject.id} (${subject.name})`);
                                 setSelectedSubject(subject.id);
                                 setSelectedChapter('');
                                 setShowSubjectDropdown(false);
@@ -652,8 +781,20 @@ export default function MCQScreen() {
                       borderColor: isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'
                     }
                   ]}
-                  onPress={() => selectedSubject && setShowChapterDropdown(!showChapterDropdown)}
-                  disabled={!selectedSubject}
+                  onPress={() => {
+                    if (selectedSubject && selectedSubjectData?.chapters && selectedSubjectData.chapters.length > 0) {
+                      console.log(`Opening chapter dropdown for subject ${selectedSubject}`);
+                      console.log(`Available chapters: ${JSON.stringify(selectedSubjectData.chapters.map(c => ({ id: c.id, name: c.name })))}`);
+                      setShowChapterDropdown(!showChapterDropdown);
+                    } else {
+                      console.log('Cannot open chapter dropdown:', { 
+                        hasSelectedSubject: !!selectedSubject,
+                        hasSubjectData: !!selectedSubjectData,
+                        chaptersCount: selectedSubjectData?.chapters?.length || 0
+                      });
+                    }
+                  }}
+                  disabled={!selectedSubject || !selectedSubjectData?.chapters || selectedSubjectData.chapters.length === 0}
                 >
                   <ThemedText 
                     style={[
@@ -664,7 +805,9 @@ export default function MCQScreen() {
                       }
                     ]}
                   >
-                    {selectedChapter ? selectedSubjectData?.chapters.find((c: Chapter) => c.id === selectedChapter)?.name : 'Select a chapter'}
+                    {selectedChapter && selectedSubjectData?.chapters 
+                      ? selectedSubjectData.chapters.find((c) => c.id === selectedChapter)?.name || 'Select a chapter' 
+                      : 'Select a chapter'}
                   </ThemedText>
                   <IconSymbol 
                     name="chevron.right" 
@@ -672,7 +815,7 @@ export default function MCQScreen() {
                     color={!selectedSubject ? (isDarkMode ? 'rgba(255, 255, 255, 0.3)' : 'rgba(0, 0, 0, 0.3)') : colors.tint} 
                   />
                 </TouchableOpacity>
-                {showChapterDropdown && selectedSubject && (
+                {showChapterDropdown && selectedSubject && selectedSubjectData?.chapters && selectedSubjectData.chapters.length > 0 && (
                   <Modal
                     visible={showChapterDropdown}
                     transparent={true}
@@ -686,11 +829,12 @@ export default function MCQScreen() {
                     >
                       <ThemedView style={[styles.modalContent, { backgroundColor: colors.background }]}>
                         <ScrollView>
-                          {selectedSubjectData?.chapters.map((chapter: Chapter) => (
+                          {selectedSubjectData.chapters.map((chapter) => (
                             <TouchableOpacity
                               key={chapter.id}
                               style={[styles.modalItem, { backgroundColor: colors.background, borderBottomColor: colors.border }]}
                               onPress={() => {
+                                console.log(`Selected chapter: ${chapter.id} (${chapter.name})`);
                                 setSelectedChapter(chapter.id);
                                 setShowChapterDropdown(false);
                               }}
@@ -734,7 +878,7 @@ export default function MCQScreen() {
                 <View style={[styles.breadcrumbContainer, { backgroundColor: colors.cardAlt }]}>
                   <View style={[styles.breadcrumbItem, { backgroundColor: colors.background, borderColor: colors.border }]}>
                     <ThemedText style={[styles.breadcrumbText, { color: colors.tint }]}>
-                      {selectedGrade ? typedMcqData.grades.find((g: Grade) => g.id === selectedGrade)?.name : 'Select Grade'}
+                      {selectedGrade ? mcqData?.grades.find((g: Grade) => g.id === selectedGrade)?.name : 'Select Grade'}
                     </ThemedText>
                   </View>
                   {selectedGrade && (
@@ -893,9 +1037,9 @@ export default function MCQScreen() {
                   onPress={() => {
                     setShowResult(false);
                     setShowTest(false);
-                    setSelectedGrade('grade-12');
                     setSelectedSubject('');
                     setSelectedChapter('');
+                    fetchMCQData();
                   }}
                 >
                   <ThemedText style={[styles.homeButtonText, { color: colors.text }]}>Choose Another Subject</ThemedText>
