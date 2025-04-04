@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, Animated, RefreshControl } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, Animated, RefreshControl, Alert } from 'react-native';
 import { useColorScheme } from '@/hooks/useColorScheme';
 import { Colors } from '@/constants/Colors';
 import { IconSymbol, IconSymbolName } from '@/components/ui/IconSymbol';
@@ -291,7 +291,23 @@ export default function ProfileScreen() {
     { 
       title: t('profile.resetApp'),
       icon: 'house.fill' as const, 
-      action: () => router.replace('/(auth)/onboarding')
+      action: () => {
+        Alert.alert(
+          t('common.confirmation', { defaultValue: 'Confirmation' }),
+          t('profile.resetConfirmation', { defaultValue: 'Are you sure you want to reset the app? This will take you back to the onboarding screen.' }),
+          [
+            {
+              text: t('common.cancel', { defaultValue: 'Cancel' }),
+              style: 'cancel'
+            },
+            {
+              text: t('common.confirm', { defaultValue: 'Confirm' }),
+              onPress: () => router.replace('/(auth)/onboarding'),
+              style: 'destructive'
+            }
+          ]
+        );
+      }
     },
     { 
       title: t('profile.logout'),

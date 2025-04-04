@@ -9,6 +9,8 @@ export default {
     edit: 'አስተካክል',
     back: 'ተመለስ',
     comingSoon: 'በቅርብ ጊዜ ተጨማሪ ይገኛል! ይጠብቁን።',
+    confirmation: 'ማረጋገጫ',
+    confirm: 'አረጋግጥ',
   },
   navigation: {
     tabs: {
@@ -206,6 +208,7 @@ export default {
     language: 'ቋንቋ',
     theme: 'ገጽታ',
     resetApp: 'አፕሊኬሽኑን ዳግም አስጀምር',
+    resetConfirmation: 'አፕሊኬሽኑን ዳግም ማስጀመር እንደሚፈልጉ እርግጠኛ ነዎት? ይህ ወደ መጀመሪያው ገጽ ይወስድዎታል።',
     logout: 'ውጣ',
     role: 'ተማሪ',
     grade: '12ኛ ክፍል',

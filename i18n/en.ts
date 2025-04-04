@@ -9,6 +9,8 @@ export default {
     edit: 'Edit',
     back: 'Back',
     comingSoon: 'More content is coming soon! Stay tuned.',
+    confirmation: 'Confirmation',
+    confirm: 'Confirm',
   },
   onboarding: {
     language: {
@@ -235,6 +237,7 @@ export default {
     language: 'Language',
     theme: 'Theme',
     resetApp: 'Reset App',
+    resetConfirmation: 'Are you sure you want to reset the app? This will take you back to the onboarding screen.',
     logout: 'Logout',
     role: 'Student',
     grade: '12th Grade',
