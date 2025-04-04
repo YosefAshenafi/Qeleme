@@ -74,7 +74,7 @@ const AccordionItem: React.FC<AccordionItemProps> = ({ title, icon, children, is
 
 export default function ProfileScreen() {
   const { isDarkMode, toggleTheme } = useTheme();
-  const { logout } = useAuth();
+  const { logout, user } = useAuth();
   const { t, i18n } = useTranslation();
   const [openAccordion, setOpenAccordion] = useState<string | null>(null);
   const [profileImage, setProfileImage] = useState<string | null>(null);
@@ -185,14 +185,73 @@ export default function ProfileScreen() {
     }
   };
 
+  const getBilingualDate = (date: Date) => {
+    const monthNames: Record<string, Record<string, string>> = {
+      en: {
+        '1': 'January',
+        '2': 'February',
+        '3': 'March',
+        '4': 'April',
+        '5': 'May',
+        '6': 'June',
+        '7': 'July',
+        '8': 'August',
+        '9': 'September',
+        '10': 'October',
+        '11': 'November',
+        '12': 'December'
+      },
+      am: {
+        '1': 'ጥር',
+        '2': 'የካቲት',
+        '3': 'መጋቢት',
+        '4': 'ሚያዝያ',
+        '5': 'ግንቦት',
+        '6': 'ሰኔ',
+        '7': 'ሐምሌ',
+        '8': 'ነሐሴ',
+        '9': 'መስከረም',
+        '10': 'ጥቅምት',
+        '11': 'ህዳር',
+        '12': 'ታህሳስ'
+      }
+    };
+
+    const month = date.getMonth() + 1;
+    const day = date.getDate();
+    const year = date.getFullYear();
+    const lang = i18n.language === 'am' ? 'am' : 'en';
+    
+    return `${day} ${monthNames[lang][month.toString()]} ${year}`;
+  };
+
+  const getPaymentPlanWithMonth = (plan: string) => {
+    const lang = i18n.language === 'am' ? 'am' : 'en';
+    const monthText = lang === 'am' ? 'ወራት' : 'months';
+    
+    // Extract the number of months from the plan (e.g., "Premium 3" -> 3)
+    const monthCount = parseInt(plan.match(/\d+/)?.[0] || '0');
+    
+    if (monthCount > 0 && user?.lastPaymentDate) {
+      const lastPayment = new Date(user.lastPaymentDate);
+      const nextPayment = new Date(lastPayment);
+      nextPayment.setMonth(nextPayment.getMonth() + monthCount);
+      
+      const nextPaymentDate = getBilingualDate(nextPayment);
+      return `${plan} (${monthCount} ${monthText}) - ${t('profile.nextPayment', { defaultValue: 'Next payment' })}: ${nextPaymentDate}`;
+    }
+    
+    return `${plan} (${monthText})`;
+  };
+
   const profileData = React.useMemo(() => ({
-    englishName: t('profile.englishName', { defaultValue: 'Yosef Ashenafi' }),
-    email: t('profile.email', { defaultValue: 'yosefashenafi7@gmail.com' }),
+    englishName: user?.fullName || t('profile.englishName', { defaultValue: 'Yosef Ashenafi' }),
+    username: user?.username ? `@${user.username}` : t('profile.username', { defaultValue: '@username' }),
+    grade: user?.grade || t('profile.grade', { defaultValue: 'Grade 12' }),
     role: t('profile.role'),
-    grade: t('profile.grade'),
-    school: t('profile.school'),
-    joinDate: t('profile.joinDate', { date: t('profile.joinDateValue', { defaultValue: 'January 2024' }) }),
-  }), [t, i18n.language]);
+    joinDate: user?.joinDate ? getBilingualDate(new Date(user.joinDate)) : getBilingualDate(new Date()),
+    paymentPlan: user?.paymentPlan ? getPaymentPlanWithMonth(user.paymentPlan) : getPaymentPlanWithMonth(t('profile.paymentPlan', { defaultValue: 'Free Plan' })),
+  }), [t, i18n.language, user]);
 
   const menuItems: MenuItem[] = React.useMemo(() => [
     { 
@@ -269,7 +328,7 @@ export default function ProfileScreen() {
             </TouchableOpacity>
           </View>
           <Text style={[styles.englishName, { color: colors.background }]}>{profileData.englishName}</Text>
-          <Text style={[styles.email, { color: colors.background }]}>{profileData.email}</Text>
+          <Text style={[styles.email, { color: colors.background }]}>{profileData.username}</Text>
           <View style={styles.roleContainer}>
             <Text style={[styles.role, { color: colors.background }]}>{profileData.role}</Text>
             <Text style={[styles.grade, { color: colors.background }]}>{profileData.grade}</Text>

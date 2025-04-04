@@ -7,10 +7,11 @@ interface AccountSettingsProps {
   colors: ReturnType<typeof getColors>;
   profileData: {
     englishName: string;
-    email: string;
+    username: string;
     role: string;
     grade: string;
-    school: string;
+    joinDate: string;
+    paymentPlan: string;
   };
 }
 
@@ -26,8 +27,8 @@ export function AccountSettings({ colors, profileData }: AccountSettingsProps) {
         </View>
         <View style={[styles.separator, { backgroundColor: isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)' }]} />
         <View style={styles.settingItem}>
-          <Text style={[styles.settingLabel, { color: colors.text }]}>Email</Text>
-          <Text style={[styles.settingValue, { color: colors.text }]}>{profileData.email}</Text>
+          <Text style={[styles.settingLabel, { color: colors.text }]}>Username</Text>
+          <Text style={[styles.settingValue, { color: colors.text }]}>{profileData.username}</Text>
         </View>
         <View style={[styles.separator, { backgroundColor: isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)' }]} />
         <View style={styles.settingItem}>
@@ -41,8 +42,13 @@ export function AccountSettings({ colors, profileData }: AccountSettingsProps) {
         </View>
         <View style={[styles.separator, { backgroundColor: isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)' }]} />
         <View style={styles.settingItem}>
-          <Text style={[styles.settingLabel, { color: colors.text }]}>School</Text>
-          <Text style={[styles.settingValue, { color: colors.text }]}>{profileData.school}</Text>
+          <Text style={[styles.settingLabel, { color: colors.text }]}>Joined</Text>
+          <Text style={[styles.settingValue, { color: colors.text }]}>{profileData.joinDate}</Text>
+        </View>
+        <View style={[styles.separator, { backgroundColor: isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)' }]} />
+        <View style={styles.settingItem}>
+          <Text style={[styles.settingLabel, { color: colors.text }]}>Payment Plan</Text>
+          <Text style={[styles.settingValue, { color: colors.text }]}>{profileData.paymentPlan}</Text>
         </View>
       </View>
       <TouchableOpacity style={[styles.editButton, { backgroundColor: colors.tint }]}>

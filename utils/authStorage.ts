@@ -9,6 +9,10 @@ export interface UserData {
   username: string;
   type: string;
   isSelfStudent: boolean;
+  grade?: string;
+  joinDate?: string; // ISO date string format (e.g., "2024-01-01T00:00:00.000Z")
+  paymentPlan?: string;
+  lastPaymentDate?: string; // ISO date string format (e.g., "2024-01-01T00:00:00.000Z")
 }
 
 export interface AuthResponse {
