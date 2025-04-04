@@ -170,13 +170,13 @@ export default function MCQScreen() {
         setSelectedGrade('grade-9');
       }
       
-      // If phone number starts with 911, show picture questions
-      if (phoneNumber?.startsWith('+251911')) {
+      // If user is a KG student, show picture questions
+      if (user?.grade === 'KG') {
         setIsPictureQuestions(true);
       }
     };
     checkPhoneNumber();
-  }, []);
+  }, [user?.grade]);
 
   useEffect(() => {
     // Handle reset parameters
