@@ -16,11 +16,14 @@ export default function ChildrenSelectionScreen() {
   const colors = getColors(isDarkMode);
   const [inputValue, setInputValue] = useState('1');
   const [numberOfChildren, setNumberOfChildren] = useState(1);
+  const [error, setError] = useState('');
 
   const handleIncrement = () => {
     const newValue = numberOfChildren + 1;
-    setNumberOfChildren(newValue);
-    setInputValue(newValue.toString());
+    if (newValue <= 5) { // Maximum 5 children
+      setNumberOfChildren(newValue);
+      setInputValue(newValue.toString());
+    }
   };
 
   const handleDecrement = () => {
@@ -35,22 +38,24 @@ export default function ChildrenSelectionScreen() {
     setInputValue(text); // Always update the input value
     
     if (text === '') {
-      // Allow empty input for deletion
       return;
     }
 
     const number = parseInt(text);
     if (!isNaN(number)) {
-      if (number >= 1) {
+      if (number >= 1 && number <= 5) {
         setNumberOfChildren(number);
+      } else if (number > 5) {
+        setNumberOfChildren(5);
+        setInputValue('5');
       } else {
         setNumberOfChildren(1);
+        setInputValue('1');
       }
     }
   };
 
   const handleInputBlur = () => {
-    // When input loses focus, ensure we have a valid number
     if (inputValue === '' || parseInt(inputValue) < 1) {
       setInputValue('1');
       setNumberOfChildren(1);
@@ -58,13 +63,27 @@ export default function ChildrenSelectionScreen() {
   };
 
   const handleContinue = () => {
-    // Calculate plan based on number of children
-    const plan = numberOfChildren === 1 ? 'basic' : numberOfChildren <= 3 ? 'family' : 'premium';
+    if (numberOfChildren < 1) {
+      setError(t('signup.errors.minimumOneChild'));
+      return;
+    }
+
+    // Initialize children data structure
+    const initialChildrenData = Array(numberOfChildren).fill(null).map(() => ({
+      fullName: '',
+      username: '',
+      grade: '',
+      password: '',
+      confirmPassword: '',
+      plan: '3' // Default to free plan
+    }));
+
     router.push({
       pathname: '/(auth)/signup',
       params: { 
-        numberOfChildren,
-        plan
+        numberOfChildren: numberOfChildren.toString(),
+        childrenData: JSON.stringify(initialChildrenData),
+        role: 'parent'
       }
     });
   };
@@ -115,13 +134,14 @@ export default function ChildrenSelectionScreen() {
                   onChangeText={handleNumberChange}
                   onBlur={handleInputBlur}
                   keyboardType="number-pad"
-                  maxLength={2}
+                  maxLength={1}
                   selectTextOnFocus
                 />
               </View>
               <TouchableOpacity 
                 onPress={handleIncrement}
-                style={styles.button}
+                style={[styles.button, { opacity: numberOfChildren === 5 ? 0.5 : 1 }]}
+                disabled={numberOfChildren === 5}
               >
                 <Ionicons name="add" size={24} color="#4F46E5" />
               </TouchableOpacity>
@@ -129,6 +149,11 @@ export default function ChildrenSelectionScreen() {
             <ThemedText style={[styles.hint, { color: colors.text + '80' }]}>
               {t('signup.childrenSelection.enterNumberGreaterThanOne')}
             </ThemedText>
+            {error ? (
+              <ThemedText style={[styles.error, { color: '#EF4444' }]}>
+                {error}
+              </ThemedText>
+            ) : null}
           </View>
 
           <TouchableOpacity
@@ -219,5 +244,10 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     fontSize: 16,
     fontWeight: '600',
+  },
+  error: {
+    fontSize: 12,
+    marginTop: 8,
+    textAlign: 'center',
   },
 }); 

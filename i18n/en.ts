@@ -72,18 +72,23 @@ export default {
     planSelection: {
       title: 'Choose Your Plan',
       subtitleSingle: 'Select your preferred plan',
-      subtitleMultiple: 'Select plans for each child',
+      subtitleMultiple: 'Select a plan for all children',
       total: 'Total',
       continue: 'Continue',
       free: 'Free',
+      calculation: '{{planPrice}} ETB × {{numberOfChildren}} children = {{total}} ETB',
+      pricePerChild: 'Price per child: {{price}} ETB',
       success: {
         title: 'Registration Successful!',
         message: 'Your account has been created successfully. Please login to continue your learning journey.',
+        parentMessage: 'Your family account has been created successfully. You and your children can now login using your password.',
         button: 'Go to Login'
       },
       error: {
         title: 'Registration Failed',
         message: 'We couldn\'t complete your registration. Please try again.',
+        parentMessage: 'We couldn\'t complete your family registration. Please try again.',
+        childrenMessage: 'Some children accounts could not be created. Please try again.',
         network: 'Unable to connect to the server. Please check your internet connection and try again.',
         button: 'Try Again'
       },

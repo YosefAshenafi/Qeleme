@@ -14,12 +14,24 @@ import { useTranslation } from 'react-i18next';
 
 import { ThemedText } from '@/components/ThemedText';
 
+interface ChildData {
+  fullName: string;
+  username: string;
+  grade: Grade | '';
+  password: string;
+  confirmPassword: string;
+  plan?: string;
+}
+
 export default function SignupScreen() {
   const { t } = useTranslation();
   const { isDarkMode } = useTheme();
   const colors = getColors(isDarkMode);
   const params = useLocalSearchParams();
   const numberOfChildren = params.numberOfChildren ? parseInt(params.numberOfChildren as string) : 1;
+  const initialChildrenData = params.childrenData ? JSON.parse(params.childrenData as string) : 
+    Array(numberOfChildren).fill({ fullName: '', username: '', grade: '' as Grade, password: '', confirmPassword: '' });
+  
   const [fullName, setFullName] = useState('');
   const [username, setUsername] = useState('');
   const [phoneNumber, setPhoneNumber] = useState('');
@@ -29,9 +41,7 @@ export default function SignupScreen() {
   const [acceptTerms, setAcceptTerms] = useState(false);
   const [showGradeModal, setShowGradeModal] = useState(false);
   const [showTermsModal, setShowTermsModal] = useState(false);
-  const [childrenData, setChildrenData] = useState(
-    Array(numberOfChildren).fill({ fullName: '', username: '', grade: '' as Grade, plan: 'basic' })
-  );
+  const [childrenData, setChildrenData] = useState<ChildData[]>(initialChildrenData);
   const [selectedChildIndex, setSelectedChildIndex] = useState<number | null>(null);
   const [showPlanModal, setShowPlanModal] = useState(false);
   const [error, setError] = useState('');
@@ -59,10 +69,22 @@ export default function SignupScreen() {
   };
 
   const handleChildUsernameChange = (text: string, index: number) => {
-    // Remove spaces and special characters, convert to lowercase
-    const formattedUsername = text.toLowerCase().replace(/[^a-z0-9]/g, '');
+    // Only convert to lowercase, don't remove special characters
+    const formattedUsername = text.toLowerCase();
     const newChildrenData = [...childrenData];
     newChildrenData[index] = { ...newChildrenData[index], username: formattedUsername };
+    setChildrenData(newChildrenData);
+  };
+
+  const handleChildPasswordChange = (text: string, index: number) => {
+    const newChildrenData = [...childrenData];
+    newChildrenData[index] = { ...newChildrenData[index], password: text };
+    setChildrenData(newChildrenData);
+  };
+
+  const handleChildConfirmPasswordChange = (text: string, index: number) => {
+    const newChildrenData = [...childrenData];
+    newChildrenData[index] = { ...newChildrenData[index], confirmPassword: text };
     setChildrenData(newChildrenData);
   };
 
@@ -109,8 +131,15 @@ export default function SignupScreen() {
     }
 
     // Validate children data if parent registration
-    if (numberOfChildren > 1) {
-      const invalidChildren = childrenData.some(child => !child.fullName || !child.username || !child.grade);
+    if (numberOfChildren > 0) {
+      const invalidChildren = childrenData.some(child => 
+        !child.fullName || 
+        !child.username || 
+        !child.grade || 
+        !child.password || 
+        !child.confirmPassword ||
+        child.password !== child.confirmPassword
+      );
       if (invalidChildren) {
         setError(t('signup.errors.incompleteChildrenData'));
         return;
@@ -126,8 +155,10 @@ export default function SignupScreen() {
         username,
         phoneNumber: `+251${phoneNumber}`,
         password,
-        role: numberOfChildren > 1 ? 'parent' : 'student',
-        ...(numberOfChildren > 1 ? { children: childrenData } : { grade }),
+        role: numberOfChildren > 0 ? 'parent' : 'student',
+        numberOfChildren,
+        childrenData: numberOfChildren > 0 ? childrenData : undefined,
+        grade: numberOfChildren === 0 ? grade : undefined
       };
 
       // Try to send OTP but proceed regardless of result
@@ -212,7 +243,7 @@ export default function SignupScreen() {
                       placeholder={t('signup.username')}
                       placeholderTextColor={isDarkMode ? '#A0A0A5' : '#9CA3AF'}
                       value={username}
-                      onChangeText={(text) => setUsername(text.toLowerCase().replace(/[^a-z0-9]/g, ''))}
+                      onChangeText={setUsername}
                       autoCapitalize="none"
                       autoCorrect={false}
                     />
@@ -323,6 +354,34 @@ export default function SignupScreen() {
                             onChangeText={(text) => handleChildUsernameChange(text, index)}
                             autoCapitalize="none"
                             autoCorrect={false}
+                          />
+                        </View>
+                        <View style={[styles.inputContainer, {
+                          backgroundColor: isDarkMode ? '#2C2C2E' : '#F9FAFB',
+                          borderColor: isDarkMode ? '#3C3C3E' : '#E5E7EB',
+                        }]}>
+                          <Ionicons name="lock-closed-outline" size={20} color={isDarkMode ? '#A0A0A5' : '#6B7280'} style={styles.inputIcon} />
+                          <TextInput
+                            style={[styles.input, { color: colors.text }]}
+                            placeholder={t('signup.password')}
+                            placeholderTextColor={isDarkMode ? '#A0A0A5' : '#9CA3AF'}
+                            value={child.password}
+                            onChangeText={(text) => handleChildPasswordChange(text, index)}
+                            secureTextEntry
+                          />
+                        </View>
+                        <View style={[styles.inputContainer, {
+                          backgroundColor: isDarkMode ? '#2C2C2E' : '#F9FAFB',
+                          borderColor: isDarkMode ? '#3C3C3E' : '#E5E7EB',
+                        }]}>
+                          <Ionicons name="lock-closed-outline" size={20} color={isDarkMode ? '#A0A0A5' : '#6B7280'} style={styles.inputIcon} />
+                          <TextInput
+                            style={[styles.input, { color: colors.text }]}
+                            placeholder={t('signup.confirmPassword')}
+                            placeholderTextColor={isDarkMode ? '#A0A0A5' : '#9CA3AF'}
+                            value={child.confirmPassword}
+                            onChangeText={(text) => handleChildConfirmPasswordChange(text, index)}
+                            secureTextEntry
                           />
                         </View>
                         <View style={[styles.inputContainer, {

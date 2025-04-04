@@ -43,18 +43,23 @@ export default {
     planSelection: {
       title: 'የእርስዎን እቅድ ይምረጡ',
       subtitleSingle: 'የሚፈልጉትን እቅድ ይምረጡ',
-      subtitleMultiple: 'ለእያንዳንዱ ልጅ እቅድ ይምረጡ',
+      subtitleMultiple: 'ለሁሉም ልጆች አንድ እቅድ ይምረጡ',
       total: 'ጠቅላላ',
       continue: 'ቀጥል',
-      free: 'ነፃ',
+      free: 'ነጻ',
+      calculation: '{{planPrice}} ብር × {{numberOfChildren}} ልጆች = {{total}} ብር',
+      pricePerChild: 'ለእያንዳንዱ ልጅ: {{price}} ብር',
       success: {
         title: 'ምዝገባ ተሳክቷል!',
         message: 'መለያዎ በተሳካ ሁኔታ ተፈጥሯል። የመማሪያ ጉዞዎን ለመቀጠል እባክዎ ይግቡ።',
+        parentMessage: 'የቤተሰብ መለያዎ በተሳካ ሁኔታ ተፈጥሯል። እርስዎ እና ልጆችዎ በእርስዎ የይለፍ ቃል መግባት ይችላሉ።',
         button: 'ወደ መግቢያ ይሂዱ'
       },
       error: {
         title: 'ምዝገባ አልተሳካም',
         message: 'ምዝገባዎን ማጠናቀቅ አልቻልንም። እባክዎ እንደገና ይሞክሩ።',
+        parentMessage: 'የቤተሰብ ምዝገባዎን ማጠናቀቅ አልቻልንም። እባክዎ እንደገና ይሞክሩ።',
+        childrenMessage: 'አንዳንድ የልጆች መለያዎችን መፍጠር አልተቻለም። እባክዎ እንደገና ይሞክሩ።',
         network: 'ወደ አገልግሎት መገናኘት አልተቻለም። የበይነመረብ ግንኙነትዎን ያረጋግጡ እና እንደገና ይሞክሩ።',
         button: 'እንደገና ይሞክሩ'
       },
