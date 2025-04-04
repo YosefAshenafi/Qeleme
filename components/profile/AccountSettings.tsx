@@ -1,5 +1,5 @@
-import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import React, { useState } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, TextInput } from 'react-native';
 import { getColors } from '@/constants/Colors';
 import { useTheme } from '@/contexts/ThemeContext';
 
@@ -17,13 +17,43 @@ interface AccountSettingsProps {
 
 export function AccountSettings({ colors, profileData }: AccountSettingsProps) {
   const { isDarkMode } = useTheme();
+  const [isEditing, setIsEditing] = useState(false);
+  const [editedName, setEditedName] = useState(profileData.englishName);
+
+  const handleNameChange = (text: string) => {
+    setEditedName(text);
+  };
+
+  const handleSave = () => {
+    // Here you would typically call an API to update the name
+    setIsEditing(false);
+  };
 
   return (
     <View style={[styles.accountSettingsContent, isDarkMode ? { backgroundColor: colors.card } : { backgroundColor: '#ffffff' }]}>
       <View style={[styles.settingsList, { backgroundColor: colors.card }]}>
         <View style={styles.settingItem}>
           <Text style={[styles.settingLabel, { color: colors.text }]}>Full Name</Text>
-          <Text style={[styles.settingValue, { color: colors.text }]}>{profileData.englishName}</Text>
+          {isEditing ? (
+            <View style={styles.editContainer}>
+              <TextInput
+                style={[styles.input, { color: colors.text, borderColor: colors.tint }]}
+                value={editedName}
+                onChangeText={handleNameChange}
+                autoFocus
+              />
+              <TouchableOpacity 
+                style={[styles.saveButton, { backgroundColor: colors.tint }]}
+                onPress={handleSave}
+              >
+                <Text style={[styles.saveButtonText, { color: colors.background }]}>Save</Text>
+              </TouchableOpacity>
+            </View>
+          ) : (
+            <TouchableOpacity onPress={() => setIsEditing(true)}>
+              <Text style={[styles.settingValue, { color: colors.text }]}>{profileData.englishName}</Text>
+            </TouchableOpacity>
+          )}
         </View>
         <View style={[styles.separator, { backgroundColor: isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)' }]} />
         <View style={styles.settingItem}>
@@ -51,9 +81,6 @@ export function AccountSettings({ colors, profileData }: AccountSettingsProps) {
           <Text style={[styles.settingValue, { color: colors.text }]}>{profileData.paymentPlan}</Text>
         </View>
       </View>
-      <TouchableOpacity style={[styles.editButton, { backgroundColor: colors.tint }]}>
-        <Text style={[styles.editButtonText, { color: colors.background }]}>Edit Profile</Text>
-      </TouchableOpacity>
     </View>
   );
 }
@@ -92,14 +119,26 @@ const styles = StyleSheet.create({
     height: 1,
     marginHorizontal: 20,
   },
-  editButton: {
-    marginTop: 20,
-    padding: 16,
-    borderRadius: 12,
+  editContainer: {
+    flexDirection: 'row',
     alignItems: 'center',
+    gap: 10,
   },
-  editButtonText: {
-    fontSize: 16,
+  input: {
+    borderWidth: 1,
+    borderRadius: 8,
+    padding: 8,
+    minWidth: 100,
+    maxWidth: 140,
+    fontSize: 17,
+  },
+  saveButton: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 8,
+  },
+  saveButtonText: {
+    fontSize: 14,
     fontWeight: '600',
   },
 }); 
