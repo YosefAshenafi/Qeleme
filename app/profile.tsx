@@ -74,7 +74,7 @@ const AccordionItem: React.FC<AccordionItemProps> = ({ title, icon, children, is
 
 export default function ProfileScreen() {
   const { isDarkMode, toggleTheme } = useTheme();
-  const { logout, user } = useAuth();
+  const { logout, user, login } = useAuth();
   const { t, i18n } = useTranslation();
   const [openAccordion, setOpenAccordion] = useState<string | null>(null);
   const [profileImage, setProfileImage] = useState<string | null>(null);
@@ -99,10 +99,26 @@ export default function ProfileScreen() {
 
   const onRefresh = React.useCallback(async () => {
     setRefreshing(true);
-    await Promise.all([
-      loadProfileImage(),
-      loadStats()
-    ]);
+    try {
+      // Fetch updated user data
+      const response = await fetch('http://localhost:5001/api/auth/student/profile', {
+        headers: {
+          'Authorization': `Bearer ${await AsyncStorage.getItem('@auth_token')}`
+        }
+      });
+      
+      if (response.ok) {
+        const updatedUserData = await response.json();
+        await login(updatedUserData);
+      }
+
+      await Promise.all([
+        loadProfileImage(),
+        loadStats()
+      ]);
+    } catch (error) {
+      console.error('Error refreshing data:', error);
+    }
     setRefreshing(false);
   }, []);
 

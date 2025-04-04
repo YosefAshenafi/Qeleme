@@ -65,7 +65,7 @@ type RecentActivity = {
 export default function HomeScreen() {
   const { t } = useTranslation();
   const { isDarkMode } = useTheme();
-  const { user } = useAuth();
+  const { user, login } = useAuth();
   const colors = getColors(isDarkMode);
   const [activeIndex, setActiveIndex] = useState(0);
   const [quoteIndex, setQuoteIndex] = useState(0);
@@ -110,7 +110,34 @@ export default function HomeScreen() {
 
   const onRefresh = React.useCallback(async () => {
     setRefreshing(true);
-    await Promise.all([loadRecentActivities(), loadReportData()]);
+    try {
+      // Get stored credentials
+      const storedUsername = await AsyncStorage.getItem('@username');
+      const storedPassword = await AsyncStorage.getItem('@password');
+      
+      if (storedUsername && storedPassword) {
+        // Login to get fresh user data
+        const response = await fetch('http://localhost:5001/api/auth/student/login', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            username: storedUsername,
+            password: storedPassword,
+          }),
+        });
+        
+        if (response.ok) {
+          const data = await response.json();
+          await login(data);
+        }
+      }
+
+      await Promise.all([loadRecentActivities(), loadReportData()]);
+    } catch (error) {
+      console.error('Error refreshing data:', error);
+    }
     setRefreshing(false);
   }, []);
 

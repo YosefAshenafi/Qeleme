@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, TextInput } from 'react-native';
 import { getColors } from '@/constants/Colors';
 import { useTheme } from '@/contexts/ThemeContext';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface AccountSettingsProps {
   colors: ReturnType<typeof getColors>;
@@ -17,6 +18,7 @@ interface AccountSettingsProps {
 
 export function AccountSettings({ colors, profileData }: AccountSettingsProps) {
   const { isDarkMode } = useTheme();
+  const { user, login } = useAuth();
   const [isEditing, setIsEditing] = useState(false);
   const [editedName, setEditedName] = useState(profileData.englishName);
 
@@ -24,9 +26,39 @@ export function AccountSettings({ colors, profileData }: AccountSettingsProps) {
     setEditedName(text);
   };
 
-  const handleSave = () => {
-    // Here you would typically call an API to update the name
-    setIsEditing(false);
+  const handleSave = async () => {
+    try {
+      const response = await fetch('http://localhost:5001/api/auth/student/update-fullname', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          username: profileData.username.replace('@', ''), // Remove @ symbol from username
+          newFullName: editedName
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to update full name');
+      }
+
+      // Update the user data in auth context
+      if (user) {
+        const updatedUser = {
+          ...user,
+          fullName: editedName
+        };
+        await login(updatedUser);
+      }
+
+      // Update the profile data with the new name
+      profileData.englishName = editedName;
+      setIsEditing(false);
+    } catch (error) {
+      console.error('Error updating full name:', error);
+      // You might want to show an error message to the user here
+    }
   };
 
   return (
