@@ -224,10 +224,10 @@ export default function ReportsScreen() {
                 <View style={styles.progressStats}>
                   <View style={styles.statItem}>
                     <ThemedText style={styles.statValue}>
-                      {`${reportData.overallProgress.completedTopics}/${reportData.overallProgress.totalTopics} ${t('reports.overallProgress.topicsCompleted').split(' ')[2]}`}
+                      {`${reportData.overallProgress.completedTopics}/${reportData.overallProgress.totalTopics} ${t('reports.overallProgress.topicsCompleted')}`}
                     </ThemedText>
                     <ThemedText style={styles.statLabel}>
-                      {`${reportData.overallProgress.studyHours}${t('home.activityDetails.duration', { hours: '' }).slice(-1)} ${t('reports.overallProgress.studyHours').split(' ').slice(1).join(' ')}`}
+                      {`${reportData.overallProgress.studyHours} ${t('reports.overallProgress.studyHours')}`}
                     </ThemedText>
                   </View>
                 </View>
@@ -256,15 +256,18 @@ export default function ReportsScreen() {
                 <View style={styles.progressStats}>
                   <View style={styles.statItem}>
                     <ThemedText style={styles.statValue}>
-                      {`${reportData.performance.quizzesTaken} ${t('reports.performance.quizzesTaken').split(' ')[1]} ${t('reports.performance.quizzesTaken').split(' ')[2]}`}
+                      {`${reportData.performance.quizzesTaken} ${t('reports.performance.quizzesTaken')}`}
                     </ThemedText>
                     <ThemedText style={styles.statLabel}>
-                      {`${reportData.performance.successRate}% ${t('reports.performance.successRate').split(' ')[2]} ${t('reports.performance.successRate').split(' ')[3]}`}
+                      {`${reportData.performance.successRate}% ${t('reports.performance.successRate')}`}
                     </ThemedText>
                   </View>
                   <View style={styles.statItem}>
                     <ThemedText style={styles.statValue}>
                       {reportData.performance.improvement}
+                    </ThemedText>
+                    <ThemedText style={styles.statLabel}>
+                      {t('reports.performance.improvement')}
                     </ThemedText>
                   </View>
                 </View>
@@ -288,15 +291,15 @@ export default function ReportsScreen() {
               </View>
               <View style={styles.progressContent}>
                 <ThemedText style={styles.progressPercentage}>
-                  {`${reportData.learningStreak.currentStreak} ${t('reports.learningStreak.currentStreak').split(' ')[1]}`}
+                  {`${reportData.learningStreak.currentStreak} ${t('reports.learningStreak.currentStreak')}`}
                 </ThemedText>
                 <View style={styles.progressStats}>
                   <View style={styles.statItem}>
                     <ThemedText style={styles.statValue}>
-                      {`${reportData.learningStreak.bestStreak}${t('reports.learningStreak.bestStreak').split(' ')[0].slice(-1)} ${t('reports.learningStreak.bestStreak').split(' ').slice(1).join(' ')}`}
+                      {`${reportData.learningStreak.bestStreak} ${t('reports.learningStreak.bestStreak')}`}
                     </ThemedText>
                     <ThemedText style={styles.statLabel}>
-                      {`${reportData.learningStreak.totalDaysActive}${t('reports.learningStreak.totalActive').split(' ')[0].slice(-1)} ${t('reports.learningStreak.totalActive').split(' ').slice(1).join(' ')}`}
+                      {`${reportData.learningStreak.totalDaysActive} ${t('reports.learningStreak.totalDaysActive')}`}
                     </ThemedText>
                   </View>
                 </View>
@@ -323,7 +326,7 @@ export default function ReportsScreen() {
                     {subject.subject}
                   </ThemedText>
                   <ThemedText style={[styles.subjectScore, { color: colors.tint }]}>
-                    {t('reports.progressFormat', { progress: subject.progress })}
+                    {`${subject.progress}% ${t('reports.subjectBreakdown.progress')}`}
                   </ThemedText>
                 </View>
                 <View style={[styles.progressBar, { backgroundColor: isDarkMode ? 'rgba(255, 255, 255, 0.1)' : '#E0E0E0' }]}>
@@ -362,7 +365,7 @@ export default function ReportsScreen() {
                 </View>
                 <View style={styles.activityContent}>
                   <ThemedText style={[styles.activityTitle, { color: colors.text }]}>
-                    {activity.subject} - {t(`reports.activityTypes.${activity.type}`)}
+                    {activity.subject} - {t(`reports.recentActivity.${activity.type}`)}
                   </ThemedText>
                   <ThemedText style={[styles.activitySubtitle, { color: colors.text }]}>
                     {activity.score ? 
@@ -370,7 +373,7 @@ export default function ReportsScreen() {
                      activity.duration ? 
                       activity.duration :
                      activity.status ? 
-                      activity.status : ''}
+                      t('reports.recentActivity.completed') : ''}
                   </ThemedText>
                 </View>
               </ThemedView>
@@ -435,11 +438,7 @@ export default function ReportsScreen() {
                     </ThemedText>
                   </View>
                   <ThemedText style={[styles.infoText, { color: colors.text }]}>
-                    {t('reports.howCalculated.overallProgress.description').split('\n').map((line, i) => (
-                      <React.Fragment key={i}>
-                        {line}{'\n'}
-                      </React.Fragment>
-                    ))}
+                    {t('reports.howCalculated.overallProgress.description')}
                   </ThemedText>
                 </View>
 
@@ -451,11 +450,7 @@ export default function ReportsScreen() {
                     </ThemedText>
                   </View>
                   <ThemedText style={[styles.infoText, { color: colors.text }]}>
-                    {t('reports.howCalculated.performance.description').split('\n').map((line, i) => (
-                      <React.Fragment key={i}>
-                        {line}{'\n'}
-                      </React.Fragment>
-                    ))}
+                    {t('reports.howCalculated.performance.description')}
                   </ThemedText>
                 </View>
 
@@ -467,11 +462,7 @@ export default function ReportsScreen() {
                     </ThemedText>
                   </View>
                   <ThemedText style={[styles.infoText, { color: colors.text }]}>
-                    {t('reports.howCalculated.studyHours.description').split('\n').map((line, i) => (
-                      <React.Fragment key={i}>
-                        {line}{'\n'}
-                      </React.Fragment>
-                    ))}
+                    {t('reports.howCalculated.studyHours.description')}
                   </ThemedText>
                 </View>
               </ThemedView>

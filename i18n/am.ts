@@ -344,7 +344,53 @@ export default {
     }
   },
   reports: {
-    title: 'የትምህርት ሪፖርቶች',
+    title: 'ሪፖርቶች',
+    overallProgress: {
+      title: 'አጠቃላይ እድገት',
+      topicsCompleted: 'የተጠናቀቁ ርዕሶች',
+      studyHours: 'የትምህርት ሰዓታት'
+    },
+    performance: {
+      title: 'አፈጻጸም',
+      averageScore: 'አማካይ ነጥብ',
+      quizzesTaken: 'የተወሰዱ ፈተናዎች',
+      successRate: 'የስኬት መጠን',
+      improvement: 'ማሻሻያ'
+    },
+    learningStreak: {
+      title: 'የትምህርት ተከታታይነት',
+      currentStreak: 'የአሁኑ ተከታታይነት',
+      bestStreak: 'ምርጥ ተከታታይነት',
+      totalDaysActive: 'ጠቅላላ ንቁ ቀናት'
+    },
+    subjectBreakdown: {
+      title: 'የርዕሶች ትንታኔ',
+      progress: 'እድገት',
+      score: 'ነጥብ'
+    },
+    recentActivity: {
+      title: 'የቅርብ ጊዜ እንቅስቃሴ',
+      quiz: 'ፈተና',
+      study: 'ትምህርት',
+      homework: 'የቤት ስራ',
+      completed: 'ተጠናቅቋል',
+      duration: '{hours} ሰዓታት'
+    },
+    howCalculated: {
+      title: 'ሪፖርቶች እንዴት ይሰላሉ',
+      overallProgress: {
+        title: 'አጠቃላይ እድገት',
+        description: 'በተጠናቀቁ ርዕሶች እና የትምህርት ሰዓታት ላይ የተመሰረተ'
+      },
+      performance: {
+        title: 'አፈጻጸም',
+        description: 'በፈተና ነጥቦች እና የስኬት መጠን ላይ የተመሰረተ'
+      },
+      studyHours: {
+        title: 'የትምህርት ሰዓታት',
+        description: 'ከንቁ የትምህርት ክፍለ ጊዜዎች የተመዘገበ'
+      }
+    },
     activityTypes: {
       quiz: 'ፈተና',
       study: 'ጥናት',

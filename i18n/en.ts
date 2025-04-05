@@ -367,65 +367,51 @@ export default {
     }
   },
   reports: {
-    title: 'Learning Reports',
+    title: 'Reports',
     overallProgress: {
       title: 'Overall Progress',
-      percentage: '{percentage}%',
-      topicsCompleted: '{completed}/{total} Topics Completed',
-      studyHours: '{hours}h Study Hours'
+      topicsCompleted: 'Topics Completed',
+      studyHours: 'Study Hours'
     },
     performance: {
       title: 'Performance',
-      averageScore: '{score}%',
-      quizzesTaken: '{count} Quizzes Taken',
-      successRate: '{rate}% Success Rate',
-      improvement: '{value} Improvement'
+      averageScore: 'Average Score',
+      quizzesTaken: 'Quizzes Taken',
+      successRate: 'Success Rate',
+      improvement: 'Improvement'
     },
     learningStreak: {
       title: 'Learning Streak',
-      currentStreak: '{days} days',
-      bestStreak: '{days}d Best Streak',
-      totalActive: '{days}d Total Active'
+      currentStreak: 'Current Streak',
+      bestStreak: 'Best Streak',
+      totalDaysActive: 'Total Days Active'
     },
     subjectBreakdown: {
       title: 'Subject Breakdown',
-      progress: '{progress}% Complete'
+      progress: 'Progress',
+      score: 'Score'
     },
     recentActivity: {
       title: 'Recent Activity',
-      quiz: '{subject} - Quiz',
-      study: '{subject} - Study',
-      homework: '{subject} - Homework',
-      score: 'Score: {score}%',
-      duration: 'Duration: {duration}',
-      status: 'Status: {status}'
+      quiz: 'Quiz',
+      study: 'Study',
+      homework: 'Homework',
+      completed: 'Completed',
+      duration: '{hours} hours'
     },
     howCalculated: {
       title: 'How Reports are Calculated',
       overallProgress: {
         title: 'Overall Progress',
-        description: [
-          '• Each unique subject counts as a topic',
-          '• A topic is considered completed when:',
-          '  - You\'ve taken at least 5 MCQ quizzes',
-          '  - Your average score is 70% or higher',
-          '• Progress = (Completed Topics / Total Topics) × 100'
-        ]
+        description: 'Calculated based on completed topics and study hours'
       },
       performance: {
-        title: 'Performance Metrics',
-        description: [
-          '• Average Score: Total of all MCQ scores ÷ Number of quizzes',
-          '• Success Rate: Same as average score',
-          '• Quizzes Taken: Total number of MCQ quizzes completed'
-        ]
+        title: 'Performance',
+        description: 'Based on quiz scores and success rates'
       },
       studyHours: {
         title: 'Study Hours',
-        description: [
-          '• Calculated from all study sessions',
-          '• Each study activity\'s duration is added to the total'
-        ]
+        description: 'Tracked from active study sessions'
       }
     },
     activityTypes: {
