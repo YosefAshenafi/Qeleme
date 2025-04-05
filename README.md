@@ -1,50 +1,169 @@
-# Welcome to your Expo app 👋
+# Qelem - Educational Platform
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+Qelem is a comprehensive educational platform that provides interactive learning experiences through various features including MCQs, flashcards, and more.
 
-## Get started
+## Features
 
-1. Install dependencies
+- **MCQ System**: Interactive multiple-choice questions for different grades and subjects
+- **Flashcards**: Digital flashcards for effective learning
+- **User Authentication**: Secure login and registration system
+- **Profile Management**: User profile with statistics and settings
+- **Payment Integration**: Secure payment processing for premium features
 
-   ```bash
-   npm install
-   ```
+## API Endpoints
 
-2. Start the app
+### Authentication
 
-   ```bash
-    npx expo start
-   ```
-
-In the output, you'll find options to open the app in a
-
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
-
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
-
-## Get a fresh project
-
-When you're ready, run:
-
-```bash
-npm run reset-project
+#### Register Student
+```http
+POST /api/auth/register/student
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+**Request Body:**
+```json
+{
+  "fullName": "John Doe",
+  "username": "johndoe",
+  "password": "securepassword",
+  "grade": "Grade 5",
+  "parentId": "0",
+  "paymentPlan": "premium",
+  "amountPaid": 100
+}
+```
 
-## Learn more
+**Response:**
+```json
+{
+  "success": true,
+  "message": "User registered successfully",
+  "data": {
+    "id": "user123",
+    "username": "johndoe",
+    "grade": "Grade 5"
+  }
+}
+```
 
-To learn more about developing your project with Expo, look at the following resources:
+#### Verify OTP
+```http
+POST /api/auth/verify
+```
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+**Request Body:**
+```json
+{
+  "phoneNumber": "+251910810689",
+  "otp": "123456"
+}
+```
 
-## Join the community
+**Response:**
+```json
+{
+  "success": true,
+  "message": "OTP verified successfully"
+}
+```
 
-Join our community of developers creating universal apps.
+### Student Profile
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+#### Get Student Profile
+```http
+GET /api/auth/student/profile
+```
+
+**Headers:**
+```
+Authorization: Bearer <token>
+```
+
+**Response:**
+```json
+{
+  "id": "user123",
+  "fullName": "John Doe",
+  "username": "johndoe",
+  "grade": "Grade 5",
+  "stats": {
+    "totalQuestions": 100,
+    "correctAnswers": 75,
+    "accuracy": 75
+  }
+}
+```
+
+### Learning Content
+
+#### Get MCQ Data
+```http
+GET /api/mcq
+```
+
+**Headers:**
+```
+Authorization: Bearer <token>
+```
+
+**Response:**
+```json
+{
+  "grade": "Grade 5",
+  "subjects": [
+    {
+      "id": "math",
+      "name": "Mathematics",
+      "topics": [
+        {
+          "id": "algebra",
+          "name": "Algebra",
+          "questions": [
+            {
+              "id": "q1",
+              "text": "What is 2 + 2?",
+              "options": [
+                {"id": "1", "text": "3", "isCorrect": false},
+                {"id": "2", "text": "4", "isCorrect": true},
+                {"id": "3", "text": "5", "isCorrect": false}
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
+```
+
+## Getting Started
+
+1. Install dependencies:
+```bash
+npm install
+```
+
+2. Start the development server:
+```bash
+npx expo start
+```
+
+3. Run on your preferred platform:
+- iOS Simulator: Press `i`
+- Android Emulator: Press `a`
+- Expo Go: Scan the QR code with your mobile device
+
+## Environment Variables
+
+Create a `.env` file in the root directory with the following variables:
+```
+EXPO_PUBLIC_API_URL=http://localhost:5001
+EXPO_PUBLIC_OPENAI_API_KEY=your_openai_api_key
+```
+
+## Contributing
+
+We welcome contributions! Please feel free to submit a Pull Request.
+
+## License
+
+This project is licensed under the MIT License - see the LICENSE file for details.
