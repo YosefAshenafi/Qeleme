@@ -249,10 +249,10 @@ export default {
     title: 'ምርጫ ለመለማመድ',
     correct: 'ትክክል ነው!',
     incorrect: 'ስህተት ነው!',
-    selectSubject: 'ጽሑፍ እና ምዕራፍ ይምረጡ',
-    subject: 'ጽሑፍ',
+    selectSubject: 'መጽሐፍ እና ምዕራፍ ይምረጡ',
+    subject: 'መጽሐፍ',
     chapter: 'ምዕራፍ',
-    selectSubjectPlaceholder: 'ጽሑፍ ይምረጡ',
+    selectSubjectPlaceholder: 'መጽሐፍ ይምረጡ',
     selectChapterPlaceholder: 'ምዕራፍ ይምረጡ',
     startQuiz: 'ፈተና ይጀምሩ',
     question: 'ጥያቄ',
@@ -263,7 +263,7 @@ export default {
     next: 'ቀጣይ',
     finish: 'ጨርስ',
     tryAgain: 'እንደገና ይሞክሩ',
-    chooseAnotherSubject: 'ሌላ ጽሑፍ ይምረጡ',
+    chooseAnotherSubject: 'ሌላ መጽሐፍ ይምረጡ',
     selectAnswerMessage: 'እባክዎ መልስ ይምረጡ እና ይቀጥሉ',
     results: {
       title: 'የፈተና ውጤት',
@@ -344,7 +344,7 @@ export default {
     }
   },
   reports: {
-    title: 'የመማር ሪፖርቶች',
+    title: 'የትምህርት ሪፖርቶች',
     overallProgress: {
       title: 'ጠቅላላ እድገት',
       percentage: '{percentage}%',

@@ -5,16 +5,16 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useTheme } from '@/contexts/ThemeContext';
-import { getColors } from '@/constants/Colors';
-import { useAuth } from '@/contexts/AuthContext';
+import { useTheme } from '../../contexts/ThemeContext';
+import { getColors } from '../../constants/Colors';
+import { useAuth } from '../../contexts/AuthContext';
 import { useTranslation } from 'react-i18next';
 
-import { Header } from '@/components/Header';
-import { ThemedText } from '@/components/ThemedText';
-import { ThemedView } from '@/components/ThemedView';
-import { IconSymbol } from '@/components/ui/IconSymbol';
-import { getMCQData, MCQData, Grade, Subject, Chapter, Question, Option } from '@/services/mcqService';
+import { Header } from '../../components/Header';
+import { ThemedText } from '../../components/ThemedText';
+import { ThemedView } from '../../components/ThemedView';
+import { IconSymbol } from '../../components/ui/IconSymbol';
+import { getMCQData, MCQData, Grade, Subject, Chapter, Question, Option } from '../../services/mcqService';
 import PictureMCQScreen from '../screens/PictureMCQScreen';
 import PictureMCQInstructionScreen from '../screens/PictureMCQInstructionScreen';
 
@@ -715,7 +715,7 @@ ${firstGrade.subjects?.map(s => `  - ${s.name}: ${s.chapters?.length || 0} chapt
             <ThemedView style={[styles.formContent, { backgroundColor: colors.background }]}>
               {/* Subject Selection */}
               <ThemedView style={[styles.formGroup, { backgroundColor: colors.background }]}>
-                <ThemedText style={[styles.formLabel, { color: colors.tint }]}>Subject</ThemedText>
+                <ThemedText style={[styles.formLabel, { color: colors.tint }]}>{t('mcq.subject')}</ThemedText>
                 <TouchableOpacity
                   style={[styles.formInput, { backgroundColor: colors.cardAlt, borderColor: colors.border }]}
                   onPress={() => {
@@ -728,8 +728,8 @@ ${firstGrade.subjects?.map(s => `  - ${s.name}: ${s.chapters?.length || 0} chapt
                 >
                   <ThemedText style={[styles.formInputText, { color: colors.text }]}>
                     {selectedSubject && selectedGradeData?.subjects 
-                      ? selectedGradeData.subjects.find((s) => s.id === selectedSubject)?.name || 'Select a subject' 
-                      : 'Select a subject'}
+                      ? selectedGradeData.subjects.find((s) => s.id === selectedSubject)?.name || t('mcq.selectSubjectPlaceholder')
+                      : t('mcq.selectSubjectPlaceholder')}
                   </ThemedText>
                   <IconSymbol name="chevron.right" size={20} color={colors.tint} />
                 </TouchableOpacity>
@@ -771,7 +771,7 @@ ${firstGrade.subjects?.map(s => `  - ${s.name}: ${s.chapters?.length || 0} chapt
 
               {/* Chapter Selection */}
               <ThemedView style={[styles.formGroup, { backgroundColor: colors.background }]}>
-                <ThemedText style={[styles.formLabel, { color: colors.tint }]}>Chapter</ThemedText>
+                <ThemedText style={[styles.formLabel, { color: colors.tint }]}>{t('mcq.chapter')}</ThemedText>
                 <TouchableOpacity
                   style={[
                     styles.formInput,
@@ -806,8 +806,8 @@ ${firstGrade.subjects?.map(s => `  - ${s.name}: ${s.chapters?.length || 0} chapt
                     ]}
                   >
                     {selectedChapter && selectedSubjectData?.chapters 
-                      ? selectedSubjectData.chapters.find((c) => c.id === selectedChapter)?.name || 'Select a chapter' 
-                      : 'Select a chapter'}
+                      ? selectedSubjectData.chapters.find((c) => c.id === selectedChapter)?.name || t('mcq.selectChapterPlaceholder')
+                      : t('mcq.selectChapterPlaceholder')}
                   </ThemedText>
                   <IconSymbol 
                     name="chevron.right" 
@@ -859,7 +859,7 @@ ${firstGrade.subjects?.map(s => `  - ${s.name}: ${s.chapters?.length || 0} chapt
                 onPress={handleStartTest}
                 disabled={!selectedSubject || !selectedChapter}
               >
-                <ThemedText style={[styles.startButtonText, { color: '#fff' }]}>Start Quiz</ThemedText>
+                <ThemedText style={[styles.startButtonText, { color: '#fff' }]}>{t('mcq.startQuiz')}</ThemedText>
               </TouchableOpacity>
             </ThemedView>
           </ThemedView>

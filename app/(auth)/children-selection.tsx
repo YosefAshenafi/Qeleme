@@ -1,14 +1,15 @@
+import React, { useState, useEffect } from 'react';
 import { StyleSheet, TouchableOpacity, View, ScrollView, TextInput } from 'react-native';
 import { router } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
-import { useState } from 'react';
-import { useTheme } from '@/contexts/ThemeContext';
-import { getColors } from '@/constants/Colors';
+import { useAuth } from '../../contexts/AuthContext';
+import { useTheme } from '../../contexts/ThemeContext';
+import { getColors } from '../../constants/Colors';
 import { useTranslation } from 'react-i18next';
 
-import { ThemedText } from '@/components/ThemedText';
+import { ThemedText } from '../../components/ThemedText';
 
 export default function ChildrenSelectionScreen() {
   const { t } = useTranslation();
