@@ -427,7 +427,18 @@ export default {
           '• Each study activity\'s duration is added to the total'
         ]
       }
-    }
+    },
+    activityTypes: {
+      quiz: 'Quiz',
+      study: 'Study',
+      homework: 'Homework'
+    },
+    status: {
+      completed: 'Completed'
+    },
+    duration: '{{hours}}h',
+    scoreFormat: '{{score}}%',
+    progressFormat: '{{progress}}% Completed'
   },
   subjects: {
     mathematics: 'Mathematics',

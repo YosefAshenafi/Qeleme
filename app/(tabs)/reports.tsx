@@ -22,24 +22,60 @@ export default function ReportsScreen() {
   const [refreshing, setRefreshing] = useState(false);
   const [reportData, setReportData] = useState({
     overallProgress: {
-      percentage: 0,
-      totalTopics: 0,
-      completedTopics: 0,
-      studyHours: 0,
+      percentage: 75,
+      totalTopics: 20,
+      completedTopics: 15,
+      studyHours: 48,
     },
     performance: {
-      averageScore: 0,
-      quizzesTaken: 0,
-      successRate: 0,
-      improvement: '0%',
+      averageScore: 85,
+      quizzesTaken: 60,
+      successRate: 88,
+      improvement: '+15%',
     },
     learningStreak: {
-      currentStreak: 0,
-      bestStreak: 0,
-      totalDaysActive: 0,
+      currentStreak: 12,
+      bestStreak: 25,
+      totalDaysActive: 90,
     },
-    subjectBreakdown: [] as Array<{ subject: string; progress: number; score: number }>,
-    recentActivity: [] as Array<{ type: string; subject: string; score?: number; duration?: string; status?: string; date: string }>,
+    subjectBreakdown: [
+      { subject: t('subjects.mathematics'), progress: 90, score: 95 },
+      { subject: t('subjects.physics'), progress: 85, score: 88 },
+      { subject: t('subjects.chemistry'), progress: 75, score: 80 },
+      { subject: t('subjects.biology'), progress: 70, score: 75 },
+    ],
+    recentActivity: [
+      {
+        type: 'quiz',
+        subject: t('subjects.mathematics'),
+        score: 95,
+        date: new Date().toLocaleDateString(i18n.language === 'am' ? 'am-ET' : 'en-US')
+      },
+      {
+        type: 'study',
+        subject: t('subjects.physics'),
+        duration: t('reports.duration', { hours: '2.5' }),
+        date: new Date(Date.now() - 86400000).toLocaleDateString(i18n.language === 'am' ? 'am-ET' : 'en-US')
+      },
+      {
+        type: 'homework',
+        subject: t('subjects.chemistry'),
+        status: t('reports.status.completed'),
+        date: new Date(Date.now() - 172800000).toLocaleDateString(i18n.language === 'am' ? 'am-ET' : 'en-US')
+      },
+      {
+        type: 'quiz',
+        subject: t('subjects.biology'),
+        score: 85,
+        date: new Date(Date.now() - 259200000).toLocaleDateString(i18n.language === 'am' ? 'am-ET' : 'en-US')
+      },
+      {
+        type: 'study',
+        subject: t('subjects.mathematics'),
+        duration: t('reports.duration', { hours: '3' }),
+        date: new Date(Date.now() - 345600000).toLocaleDateString(i18n.language === 'am' ? 'am-ET' : 'en-US')
+      }
+    ]
   });
   const [isInfoExpanded, setIsInfoExpanded] = useState(false);
   const animatedHeight = useRef(new Animated.Value(0)).current;
@@ -47,82 +83,67 @@ export default function ReportsScreen() {
 
   useEffect(() => {
     loadReportData();
-  }, [i18n.language]);
+  }, [i18n.language, t]);
 
-  const loadReportData = async () => {
-    try {
-      // Sample data for demonstration
-      const sampleData = {
-        overallProgress: {
-          percentage: 75,
-          totalTopics: 20,
-          completedTopics: 15,
-          studyHours: 48,
+  const loadReportData = () => {
+    const sampleData = {
+      overallProgress: {
+        percentage: 75,
+        totalTopics: 20,
+        completedTopics: 15,
+        studyHours: 48,
+      },
+      performance: {
+        averageScore: 85,
+        quizzesTaken: 60,
+        successRate: 88,
+        improvement: '+15%',
+      },
+      learningStreak: {
+        currentStreak: 12,
+        bestStreak: 25,
+        totalDaysActive: 90,
+      },
+      subjectBreakdown: [
+        { subject: t('subjects.mathematics'), progress: 90, score: 95 },
+        { subject: t('subjects.physics'), progress: 85, score: 88 },
+        { subject: t('subjects.chemistry'), progress: 75, score: 80 },
+        { subject: t('subjects.biology'), progress: 70, score: 75 },
+      ],
+      recentActivity: [
+        {
+          type: 'quiz',
+          subject: t('subjects.mathematics'),
+          score: 95,
+          date: new Date().toLocaleDateString(i18n.language === 'am' ? 'am-ET' : 'en-US')
         },
-        performance: {
-          averageScore: 85,
-          quizzesTaken: 60,
-          successRate: 88,
-          improvement: '+15%',
+        {
+          type: 'study',
+          subject: t('subjects.physics'),
+          duration: t('reports.duration', { hours: '2.5' }),
+          date: new Date(Date.now() - 86400000).toLocaleDateString(i18n.language === 'am' ? 'am-ET' : 'en-US')
         },
-        learningStreak: {
-          currentStreak: 12,
-          bestStreak: 25,
-          totalDaysActive: 90,
+        {
+          type: 'homework',
+          subject: t('subjects.chemistry'),
+          status: t('reports.status.completed'),
+          date: new Date(Date.now() - 172800000).toLocaleDateString(i18n.language === 'am' ? 'am-ET' : 'en-US')
         },
-        subjectBreakdown: [
-          { subject: t('subjects.mathematics'), progress: 90, score: 95 },
-          { subject: t('subjects.physics'), progress: 85, score: 88 },
-          { subject: t('subjects.chemistry'), progress: 75, score: 80 },
-          { subject: t('subjects.biology'), progress: 70, score: 75 },
-        ],
-        recentActivity: [
-          {
-            type: 'quiz',
-            subject: t('subjects.mathematics'),
-            score: 95,
-            date: new Date().toLocaleDateString(i18n.language === 'am' ? 'am-ET' : 'en-US')
-          },
-          {
-            type: 'study',
-            subject: t('subjects.physics'),
-            duration: t('home.activityDetails.duration', { hours: '2.5' }),
-            date: new Date(Date.now() - 86400000).toLocaleDateString(i18n.language === 'am' ? 'am-ET' : 'en-US')
-          },
-          {
-            type: 'homework',
-            subject: t('subjects.chemistry'),
-            status: t('home.activityDetails.completed'),
-            date: new Date(Date.now() - 172800000).toLocaleDateString(i18n.language === 'am' ? 'am-ET' : 'en-US')
-          },
-          {
-            type: 'quiz',
-            subject: t('subjects.biology'),
-            score: 85,
-            date: new Date(Date.now() - 259200000).toLocaleDateString(i18n.language === 'am' ? 'am-ET' : 'en-US')
-          },
-          {
-            type: 'study',
-            subject: t('subjects.mathematics'),
-            duration: t('home.activityDetails.duration', { hours: '3' }),
-            date: new Date(Date.now() - 345600000).toLocaleDateString(i18n.language === 'am' ? 'am-ET' : 'en-US')
-          }
-        ]
-      };
-
-      // Set the sample data
-      setReportData(sampleData);
-
-      // In a real app, you would load this from AsyncStorage or an API
-      // const activitiesJson = await AsyncStorage.getItem('recentActivities');
-      // let activities: any[] = [];
-      // if (activitiesJson) {
-      //   activities = JSON.parse(activitiesJson);
-      //   // ... rest of the data processing logic
-      // }
-    } catch (error) {
-      console.error('Error loading report data:', error);
-    }
+        {
+          type: 'quiz',
+          subject: t('subjects.biology'),
+          score: 85,
+          date: new Date(Date.now() - 259200000).toLocaleDateString(i18n.language === 'am' ? 'am-ET' : 'en-US')
+        },
+        {
+          type: 'study',
+          subject: t('subjects.mathematics'),
+          duration: t('reports.duration', { hours: '3' }),
+          date: new Date(Date.now() - 345600000).toLocaleDateString(i18n.language === 'am' ? 'am-ET' : 'en-US')
+        }
+      ]
+    };
+    setReportData(sampleData);
   };
 
   const onRefresh = React.useCallback(async () => {
@@ -302,7 +323,7 @@ export default function ReportsScreen() {
                     {subject.subject}
                   </ThemedText>
                   <ThemedText style={[styles.subjectScore, { color: colors.tint }]}>
-                    {t('reports.subjectBreakdown.progress', { progress: subject.progress })}
+                    {t('reports.progressFormat', { progress: subject.progress })}
                   </ThemedText>
                 </View>
                 <View style={[styles.progressBar, { backgroundColor: isDarkMode ? 'rgba(255, 255, 255, 0.1)' : '#E0E0E0' }]}>
@@ -341,12 +362,15 @@ export default function ReportsScreen() {
                 </View>
                 <View style={styles.activityContent}>
                   <ThemedText style={[styles.activityTitle, { color: colors.text }]}>
-                    {t(`reports.recentActivity.${activity.type}`, { subject: activity.subject })}
+                    {activity.subject} - {t(`reports.activityTypes.${activity.type}`)}
                   </ThemedText>
                   <ThemedText style={[styles.activitySubtitle, { color: colors.text }]}>
-                    {activity.score ? t('reports.recentActivity.score', { score: activity.score }) :
-                     activity.duration ? t('reports.recentActivity.duration', { duration: activity.duration }) :
-                     activity.status ? t('reports.recentActivity.status', { status: activity.status }) : ''}
+                    {activity.score ? 
+                      `${activity.score}%` :
+                     activity.duration ? 
+                      activity.duration :
+                     activity.status ? 
+                      activity.status : ''}
                   </ThemedText>
                 </View>
               </ThemedView>
