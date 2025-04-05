@@ -5,6 +5,7 @@ import { getUserData, isAuthenticated as checkAuthState, clearAuthData, UserData
 interface AuthContextType {
   isAuthenticated: boolean;
   user: UserData | null;
+  isLoading: boolean;
   login: (userData: UserData) => Promise<void>;
   logout: () => Promise<void>;
 }
@@ -14,6 +15,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [user, setUser] = useState<UserData | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     // Check for stored authentication data on app start
@@ -32,6 +34,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
     } catch (error) {
       console.error('Error checking auth state:', error);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -56,7 +60,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   return (
-    <AuthContext.Provider value={{ isAuthenticated, user, login, logout }}>
+    <AuthContext.Provider value={{ isAuthenticated, user, isLoading, login, logout }}>
       {children}
     </AuthContext.Provider>
   );

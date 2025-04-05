@@ -1,8 +1,21 @@
 import { Redirect } from 'expo-router';
 import { useAuth } from '@/contexts/AuthContext';
+import { ActivityIndicator, View } from 'react-native';
+import { useTheme } from '@/contexts/ThemeContext';
+import { getColors } from '@/constants/Colors';
 
 export default function Index() {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, isLoading } = useAuth();
+  const { isDarkMode } = useTheme();
+  const colors = getColors(isDarkMode);
+
+  if (isLoading) {
+    return (
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: colors.background }}>
+        <ActivityIndicator size="large" color={colors.tint} />
+      </View>
+    );
+  }
 
   if (isAuthenticated) {
     return <Redirect href="/(tabs)" />;
