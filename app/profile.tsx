@@ -1,20 +1,21 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, Animated, RefreshControl, Alert } from 'react-native';
-import { useColorScheme } from '@/hooks/useColorScheme';
-import { Colors } from '@/constants/Colors';
-import { IconSymbol, IconSymbolName } from '@/components/ui/IconSymbol';
+import { useColorScheme } from '../hooks/useColorScheme';
+import { Colors } from '../constants/Colors';
+import { IconSymbol, IconSymbolName } from '../components/ui/IconSymbol';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { AccountSettings } from '../components/profile/AccountSettings';
-import { ThemeChooser } from '@/components/profile/ThemeChooser';
-import { getColors } from '@/constants/Colors';
-import { useTheme } from '@/contexts/ThemeContext';
-import { useAuth } from '@/contexts/AuthContext';
-import { LanguageSelector } from '@/components/LanguageSelector';
+import { ThemeChooser } from '../components/profile/ThemeChooser';
+import { getColors } from '../constants/Colors';
+import { useTheme } from '../contexts/ThemeContext';
+import { useAuth } from '../contexts/AuthContext';
+import { LanguageSelector } from '../components/LanguageSelector';
 import { useTranslation } from 'react-i18next';
 import * as ImagePicker from 'expo-image-picker';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { LanguageToggle } from '../components/ui/LanguageToggle';
 
 interface AccordionItemProps {
   title: string;
@@ -275,11 +276,6 @@ export default function ProfileScreen() {
       icon: 'person.fill' as const,
       content: <AccountSettings colors={colors} profileData={profileData} />
     },
-    {
-      title: t('profile.language'),
-      icon: 'globe' as const,
-      content: <LanguageSelector colors={colors} />
-    },
     { 
       title: t('profile.theme'),
       icon: isDarkMode ? 'moon.fill' : 'sun.max.fill' as const,
@@ -327,6 +323,9 @@ export default function ProfileScreen() {
         <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
           <IconSymbol name="chevron.right" size={24} color={colors.background} style={{ transform: [{ rotate: '180deg' }] }} />
         </TouchableOpacity>
+        <View style={styles.headerRight}>
+          <LanguageToggle colors={{ card: colors.background, text: colors.tint }} />
+        </View>
       </View>
       <ScrollView 
         style={styles.scrollView}
@@ -432,6 +431,7 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'space-between',
     padding: 15,
     paddingTop: 50,
   },
@@ -634,5 +634,9 @@ const styles = StyleSheet.create({
     borderColor: 'white',
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  headerRight: {
+    flexDirection: 'row',
+    alignItems: 'center',
   },
 }); 

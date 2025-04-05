@@ -5,10 +5,11 @@ import { router } from 'expo-router';
 import { BlurView } from 'expo-blur';
 import { useTranslation } from 'react-i18next';
 
-import { HapticTab } from '@/components/HapticTab';
-import { IconSymbol } from '@/components/ui/IconSymbol';
-import { useTheme } from '@/contexts/ThemeContext';
-import { getColors } from '@/constants/Colors';
+import { HapticTab } from '../../components/HapticTab';
+import { IconSymbol } from '../../components/ui/IconSymbol';
+import { useTheme } from '../../contexts/ThemeContext';
+import { getColors } from '../../constants/Colors';
+import { LanguageToggle } from '../../components/ui/LanguageToggle';
 
 export default function TabLayout() {
   const { isDarkMode } = useTheme();
@@ -27,18 +28,20 @@ export default function TabLayout() {
           backgroundColor: colors.background,
         },
         headerRight: () => (
-          <TouchableOpacity 
-            onPress={() => router.push('/profile')}
-            style={{ marginRight: 15, marginTop: 35 }}
-          >
-            <View style={[styles.profileIconContainer, { backgroundColor: colors.tint + '20' }]}>
-              <IconSymbol 
-                name="person.fill" 
-                size={24} 
-                color={colors.tint} 
-              />
-            </View>
-          </TouchableOpacity>
+          <View style={[styles.headerRight, { marginTop: 10 }]}>
+            <LanguageToggle colors={colors} />
+            <TouchableOpacity 
+              onPress={() => router.push('/profile')}
+            >
+              <View style={[styles.profileIconContainer, { backgroundColor: colors.tint + '20' }]}>
+                <IconSymbol 
+                  name="person.fill" 
+                  size={24} 
+                  color={colors.tint} 
+                />
+              </View>
+            </TouchableOpacity>
+          </View>
         ),
         tabBarButton: HapticTab,
         tabBarBackground: () => (
@@ -128,6 +131,11 @@ export default function TabLayout() {
 }
 
 const styles = StyleSheet.create({
+  headerRight: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginRight: 15,
+  },
   profileIconContainer: {
     width: 40,
     height: 40,
