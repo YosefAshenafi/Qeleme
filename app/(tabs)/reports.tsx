@@ -86,6 +86,7 @@ export default function ReportsScreen() {
   }, [i18n.language, t]);
 
   const loadReportData = () => {
+    // Initialize with zeros for all data
     const sampleData = {
       overallProgress: {
         percentage: 0,

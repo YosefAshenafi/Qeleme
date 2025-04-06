@@ -379,28 +379,8 @@ export default function PictureMCQScreen({ onBackToInstructions }: PictureMCQScr
         <SafeAreaView style={[styles.safeArea, { backgroundColor: isDarkMode ? '#000000' : '#FFFFFF' }]}>
           <Header title={t('mcq.results.title')} />
           <ThemedView style={[styles.container, { backgroundColor: isDarkMode ? '#000000' : '#FFFFFF' }]}>
-            <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent}>
-              <Animated.View 
-                style={[
-                  styles.resultCard,
-                  { backgroundColor: colors.card }
-                ]}
-              >
-                <LinearGradient
-                  colors={[colors.cardGradientStart, colors.cardGradientEnd]}
-                  style={StyleSheet.absoluteFill}
-                  start={{ x: 0, y: 0 }}
-                  end={{ x: 1, y: 1 }}
-                />
-
-                <View style={styles.trophyContainer}>
-                  <IconSymbol 
-                    name="trophy.fill" 
-                    size={80} 
-                    color={percentage >= 90 ? '#FFD700' : colors.tint} 
-                  />
-                </View>
-
+            <ScrollView style={styles.scrollView}>
+              <Animated.View style={[styles.resultContainer, { backgroundColor: colors.card }]}>
                 <View style={styles.resultContent}>
                   <View style={styles.scoreContainer}>
                     <ThemedText style={[styles.scoreLabel, { color: colors.text }]}>
@@ -437,7 +417,7 @@ export default function PictureMCQScreen({ onBackToInstructions }: PictureMCQScr
                   style={[styles.button, styles.retryButton, { backgroundColor: colors.tint }]}
                   onPress={handleRetry}
                 >
-                  <ThemedText style={[styles.retryButtonText, { color: '#fff' }]}>{t('mcq.tryAgain')}</ThemedText>
+                  <ThemedText style={[styles.retryButtonText, { color: '#fff' }]}>{t('mcq.results.tryAgain')}</ThemedText>
                   <Ionicons name="refresh" size={24} color="#fff" />
                 </TouchableOpacity>
                 
@@ -519,19 +499,9 @@ export default function PictureMCQScreen({ onBackToInstructions }: PictureMCQScr
                     <View
                       key={option.id}
                       style={[
-                        styles.optionWrapper,
-                        {
-                          backgroundColor: isDarkMode ? '#1C1C1E' : '#FFFFFF',
-                          borderColor: isDarkMode ? '#3C3C3E' : '#E0E0E0',
-                        },
-                        selectedAnswer === option.id && option.isCorrect && styles.correctOption,
-                        selectedAnswer === option.id && !option.isCorrect && styles.incorrectOption,
-                        hoveredOption === option.id && !selectedAnswer && [
-                          styles.dropZone,
-                          { borderColor: '#6B54AE', backgroundColor: isDarkMode ? 'rgba(107, 84, 174, 0.2)' : 'rgba(107, 84, 174, 0.1)' }
-                        ],
-                        droppedOption === option.id && option.isCorrect && styles.correctOption,
-                        droppedOption === option.id && !option.isCorrect && styles.incorrectOption,
+                        styles.optionContainer,
+                        hoveredOption === option.id && styles.optionHovered,
+                        droppedOption === option.id && styles.optionDropped,
                       ]}
                       onLayout={(event) => {
                         const { x, y, width, height } = event.nativeEvent.layout;
@@ -673,7 +643,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     gap: 16,
   },
-  optionWrapper: {
+  optionContainer: {
     width: '48%',
     minHeight: 80,
     borderRadius: 12,
@@ -687,11 +657,16 @@ const styles = StyleSheet.create({
     borderColor: '#E0E0E0',
     backgroundColor: '#FFFFFF',
   },
-  dropZone: {
-    borderWidth: 3,
+  optionHovered: {
     borderColor: '#6B54AE',
-    borderStyle: 'dashed',
+    borderWidth: 3,
     backgroundColor: 'rgba(107, 84, 174, 0.1)',
+    transform: [{ scale: 1.05 }],
+  },
+  optionDropped: {
+    borderColor: '#4CAF50',
+    borderWidth: 3,
+    backgroundColor: 'rgba(76, 175, 80, 0.1)',
     transform: [{ scale: 1.05 }],
   },
   optionContent: {
@@ -705,18 +680,6 @@ const styles = StyleSheet.create({
     color: '#333333',
     textAlign: 'center',
     flexWrap: 'wrap',
-  },
-  correctOption: {
-    borderColor: '#4CAF50',
-    borderWidth: 3,
-    backgroundColor: 'rgba(76, 175, 80, 0.1)',
-    transform: [{ scale: 1.05 }],
-  },
-  incorrectOption: {
-    borderColor: '#FF9800',
-    borderWidth: 3,
-    backgroundColor: 'rgba(255, 152, 0, 0.1)',
-    transform: [{ scale: 1.05 }],
   },
   correctText: {
     color: '#2E7D32',
@@ -777,7 +740,7 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontWeight: '600',
   },
-  resultCard: {
+  resultContainer: {
     width: '90%',
     alignSelf: 'center',
     borderRadius: 24,
@@ -791,11 +754,6 @@ const styles = StyleSheet.create({
     marginTop: 16,
     borderWidth: 2,
     borderColor: '#6B54AE',
-  },
-  trophyContainer: {
-    alignItems: 'center',
-    paddingVertical: 16,
-    backgroundColor: 'transparent',
   },
   resultContent: {
     gap: 16,
@@ -873,10 +831,6 @@ const styles = StyleSheet.create({
   buttonText: {
     fontSize: 18,
     fontWeight: '600',
-  },
-  scrollContent: {
-    flexGrow: 1,
-    paddingVertical: 20,
   },
   celebrationContainer: {
     position: 'absolute',

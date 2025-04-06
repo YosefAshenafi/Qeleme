@@ -79,17 +79,26 @@ export default function HomeScreen() {
 
   const loadRecentActivities = async () => {
     try {
-      const activities = await AsyncStorage.getItem('recentActivities');
-      if (activities) {
-        const parsedActivities = JSON.parse(activities);
-        // Sort by timestamp and take top 5
-        const sortedActivities = parsedActivities
-          .sort((a: RecentActivity, b: RecentActivity) => b.timestamp - a.timestamp)
-          .slice(0, 5);
-        setRecentActivities(sortedActivities);
+      const activitiesJson = await AsyncStorage.getItem('recentActivities');
+      if (!activitiesJson) {
+        setRecentActivities([]);
+        return;
       }
+
+      const activities = JSON.parse(activitiesJson);
+      
+      // Filter activities for the current user
+      const userActivities = activities.filter((activity: any) => activity.username === user?.username);
+      
+      // Sort by timestamp and take top 5
+      const sortedActivities = userActivities
+        .sort((a: RecentActivity, b: RecentActivity) => b.timestamp - a.timestamp)
+        .slice(0, 5);
+      
+      setRecentActivities(sortedActivities);
     } catch (error) {
       console.error('Error loading recent activities:', error);
+      setRecentActivities([]);
     }
   };
 

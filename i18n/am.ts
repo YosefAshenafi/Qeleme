@@ -264,6 +264,7 @@ export default {
     logout: 'ውጣ',
   },
   mcq: {
+    question: 'ጥያቄ',
     title: 'ምርጫ',
     selectSubject: 'ትምህርት ይምረጡ',
     subject: 'ትምህርት',
@@ -274,6 +275,33 @@ export default {
     previous: 'ቀዳሚ',
     next: 'ቀጣይ',
     finish: 'ጨርስ',
+    correct: 'ትክክል!',
+    incorrect: 'ስህተት!',
+    explanation: 'ማብራሪያ',
+    of: 'ከ',
+    pictureQuiz: {
+      title: 'የምስል ፈተና',
+      subtitle: 'በምስሎች እውቀትዎን ይፈትሹ',
+      startQuiz: 'ፈተና ይጀምሩ',
+      goToRegularQuestions: 'ወደ መደበኛ ጥያቄዎች ይሂዱ',
+      goToInstructions: 'ወደ መመሪያዎች ይሂዱ',
+      unauthorizedText: 'ይህን ባህሪ ለመጠቀም ፈቃድ ያስፈልግዎታል።',
+      noQuestionsAvailable: 'ለዚህ ክፍል ገና ምንም ጥያቄዎች አልተዘጋጁም።',
+      instructions: {
+        look: {
+          title: 'ምስሉን ይመልከቱ',
+          description: 'በጥያቄው ውስጥ የሚታየውን ምስል በጥንቃቄ ይመልከቱ።'
+        },
+        drag: {
+          title: 'ጎትት እና አስቀምጥ',
+          description: 'ምስሉን ወደ ትክክለኛው መልስ አማራጭ ጎትት።'
+        },
+        next: {
+          title: 'ወደ ቀጣይ ይሂዱ',
+          description: 'ወደ ቀጣይ ጥያቄ ለመሄድ ቀጣይ ይጫኑ።'
+        }
+      }
+    },
     results: {
       title: 'የፈተና ውጤት',
       timeTaken: 'የተወሰደ ጊዜ: {{time}}',

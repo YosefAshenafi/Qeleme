@@ -287,6 +287,7 @@ export default {
     logout: 'Logout',
   },
   mcq: {
+    question: 'Question',
     title: 'MCQ',
     selectSubject: 'Select Subject',
     subject: 'Subject',
@@ -297,6 +298,33 @@ export default {
     previous: 'Previous',
     next: 'Next',
     finish: 'Finish',
+    correct: 'Correct!',
+    incorrect: 'Incorrect!',
+    explanation: 'Explanation',
+    of: 'of',
+    pictureQuiz: {
+      title: 'Picture Quiz',
+      subtitle: 'Test your knowledge with images',
+      startQuiz: 'Start Quiz',
+      goToRegularQuestions: 'Go to Regular Questions',
+      goToInstructions: 'Go to Instructions',
+      unauthorizedText: 'You need to be authorized to access this feature.',
+      noQuestionsAvailable: 'No questions available for this grade yet.',
+      instructions: {
+        look: {
+          title: 'Look at the Image',
+          description: 'Carefully observe the image shown in the question.'
+        },
+        drag: {
+          title: 'Drag and Drop',
+          description: 'Drag the image to the correct answer option.'
+        },
+        next: {
+          title: 'Move to Next',
+          description: 'Click next to proceed to the next question.'
+        }
+      }
+    },
     results: {
       title: 'Quiz Results',
       timeTaken: 'Time Taken: {{time}}',
