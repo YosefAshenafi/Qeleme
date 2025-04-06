@@ -37,6 +37,8 @@ export default {
     }
   },
   kg: {
+    welcome: 'Welcome {{name}}!',
+    subtitle: "Let's learn something new today!",
     categories: {
       'Animals': 'Animals',
       'Colors': 'Colors',

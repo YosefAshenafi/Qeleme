@@ -37,6 +37,8 @@ export default {
     }
   },
   kg: {
+    welcome: 'እንኳን ደህና መጡ {{name}}!',
+    subtitle: 'ዛሬ አዲስ ነገር እንማር!',
     categories: {
       'Animals': 'እንስሳት',
       'Colors': 'ቀለሞች',

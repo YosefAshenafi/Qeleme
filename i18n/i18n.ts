@@ -2,8 +2,8 @@ import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-import en from './en';
-import am from './am';
+import en from '../src/i18n/locales/en';
+import am from '../src/i18n/locales/am';
 
 const LANGUAGES = {
   en: { name: 'English', dir: 'ltr' },

@@ -8,6 +8,7 @@ import { getColors } from '@/constants/Colors';
 import { useTranslation } from 'react-i18next';
 import { LanguageToggle } from '@/components/ui/LanguageToggle';
 import { IconSymbol } from '@/components/ui/IconSymbol';
+import { useAuth } from '@/contexts/AuthContext';
 
 const categories = [
   { name: 'Animals', icon: 'paw' },
@@ -32,6 +33,7 @@ export default function KGDashboard() {
   const { isDarkMode } = useTheme();
   const colors = getColors(isDarkMode);
   const { t } = useTranslation();
+  const { user } = useAuth();
 
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
@@ -53,8 +55,12 @@ export default function KGDashboard() {
       </View>
 
       <View style={[styles.contentHeader, { backgroundColor: colors.background }]}>
-        <Text style={[styles.welcomeText, { color: colors.text }]}>{t('kg.welcome', 'Welcome to Kindergarten!')}</Text>
-        <Text style={[styles.subText, { color: colors.text + '80' }]}>{t('kg.subtitle', "Let's learn something new today!")}</Text>
+        <Text style={[styles.welcomeText, { color: colors.text }]}>
+          {t('kg.welcome', { name: user?.fullName || '' })}
+        </Text>
+        <Text style={[styles.subText, { color: colors.text + '80' }]}>
+          {t('kg.subtitle')}
+        </Text>
       </View>
 
       <ScrollView 
@@ -70,7 +76,9 @@ export default function KGDashboard() {
             }}
           >
             <Ionicons name={category.icon as any} size={32} color={isDarkMode ? '#4F46E5' : '#4A90E2'} />
-            <Text style={[styles.cardText, { color: colors.text }]}>{category.name}</Text>
+            <Text style={[styles.cardText, { color: colors.text }]}>
+              {t(`kg.categories.${category.name}`)}
+            </Text>
           </TouchableOpacity>
         ))}
       </ScrollView>
