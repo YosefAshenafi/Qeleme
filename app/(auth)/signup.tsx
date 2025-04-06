@@ -70,6 +70,10 @@ export default function SignupScreen() {
     setShowGradeModal(true);
   };
 
+  const handleFullNameChange = (text: string) => {
+    setFullName(text);
+  };
+
   const handleChildNameChange = (text: string, index: number) => {
     const newChildrenData = [...childrenData];
     newChildrenData[index] = { ...newChildrenData[index], fullName: text };
@@ -307,7 +311,7 @@ export default function SignupScreen() {
                       placeholder={t('signup.fullName')}
                       placeholderTextColor={isDarkMode ? '#A0A0A5' : '#9CA3AF'}
                       value={fullName}
-                      onChangeText={(text) => handleChildNameChange(text, selectedChildIndex ?? 0)}
+                      onChangeText={handleFullNameChange}
                     />
                   </View>
 
