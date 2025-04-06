@@ -501,7 +501,9 @@ export default {
       child5: 'Child 5',
       child: 'Child',
       childNumber: 'Child {number}',
-      continue: 'Continue'
+      continue: 'Continue',
+      howManyChildren: 'How many children do you have?',
+      enterNumberGreaterThanOne: 'Enter a number greater than 1'
     },
     fullName: 'Full Name',
     username: 'Username',
