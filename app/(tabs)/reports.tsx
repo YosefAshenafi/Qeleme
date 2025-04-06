@@ -311,9 +311,6 @@ export default function ReportsScreen() {
 
           {/* Recent Activity */}
           <ThemedView style={[styles.section, { backgroundColor: colors.background }]}>
-            <ThemedText style={[styles.sectionTitle, { color: colors.text }]}>
-              {t('reports.recentActivity.title')}
-            </ThemedText>
             {reportData.recentActivity.map((activity, index) => (
               <ThemedView 
                 key={index} 
