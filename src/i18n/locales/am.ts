@@ -63,7 +63,7 @@ export default {
       completed: 'ተጠናቅቋል',
       inProgress: 'በሂደት ላይ',
       grade: 'ደረጃ',
-      subject: 'ርዕሰ ጉዳይ',
+      subject: 'መጽሀፍ',
       chapter: 'ምዕራፍ',
       duration: '{hours}ሰ',
       questions: {
@@ -208,6 +208,42 @@ export default {
       timeout: 'ጥያቄው ጊዜው አብቅቷል። እባክዎ እንደገና ይሞክሩ።',
     },
   },
+  kg: {
+    welcome: 'እንኳን ደህና መጣህ {{name}}!',
+    subtitle: 'ዛሬ አዲስ ነገር እንማር!',
+    categories: {
+      'Animals': 'እንስሳት',
+      'Colors': 'ቀለሞች',
+      'Numbers': 'ቁጥሮች',
+      'Shapes': 'ምስሎች',
+      'Fruits': 'ፍራፍሬዎች',
+      'Vegetables': 'አትክልቶች',
+      'Family': 'ቤተሰብ',
+      'Body Parts': 'የሰውነት ክፍሎች',
+      'Clothes': 'ልብሶች',
+      'Weather': 'አየር ሁኔታ',
+      'Transport': 'መጓጓዣ',
+      'Food': 'ምግብ',
+      'School': 'ትምህርት ቤት',
+      'Toys': 'መጫወቻዎች'
+    },
+    instructions: {
+      subtitle: 'አዲስ ነገር እንማር!',
+      look: {
+        title: 'በጥንቃቄ ተመልከት',
+        description: 'ለምስሎቹ ጊዜ ይውሰዱ እና ምን እንደሚያሳዩ ይረዱ።'
+      },
+      choose: {
+        title: 'በጥንቃቄ ይምረጡ',
+        description: 'ከተሰጡት አማራጮች ትክክለኛውን መልስ ይምረጡ።'
+      },
+      haveFun: {
+        title: 'ይደሰቱ!',
+        description: 'መማር አስደሳች ነው! ሂደቱን ይደሰቱ እና እድገትዎን ያክብሩ።'
+      },
+      start: 'መማር ይጀምሩ'
+    }
+  },
   reports: {
     title: 'ሪፖርቶች',
     overallProgress: {
@@ -232,7 +268,7 @@ export default {
       totalDaysActive: 'ጠቅላላ ንቁ ቀናት'
     },
     subjectBreakdown: {
-      title: 'የርዕሰ ጉዳይ ትንታኔ',
+      title: 'የመጽሀፍ ትንታኔ',
       progress: 'እድገት',
       score: 'ነጥብ'
     },
@@ -272,59 +308,87 @@ export default {
     progressFormat: '{{progress}}% ተጠናቅቋል'
   },
   mcq: {
-    title: 'ምርጫ ፈተና',
-    instructions: {
-      title: 'መመሪያዎች',
-      description: 'እባክዎን የሚከተሉትን መመሪያዎች ይከተሉ',
-      timeLimit: 'ጊዜ ውስን',
-      questions: 'ጥያቄዎች',
-      passingScore: 'የማለፊያ ነጥብ'
+    question: 'ጥያቄ',
+    title: 'ምርጫ',
+    selectSubject: 'መጽሀፍ እና ምዕራፍ ይምረጡ',
+    subject: 'መጽሀፍ',
+    chapter: 'ምዕራፍ',
+    selectSubjectPlaceholder: 'መጽሀፍ ይምረጡ',
+    selectChapterPlaceholder: 'ምዕራፍ ይምረጡ',
+    startQuiz: 'ፈተና ይጀምሩ',
+    previous: 'ቀዳሚ',
+    next: 'ቀጣይ',
+    finish: 'ጨርስ',
+    correct: 'ትክክል!',
+    incorrect: 'ስህተት!',
+    explanation: 'ማብራሪያ',
+    of: 'ከ',
+    pictureQuiz: {
+      title: 'የምስል ፈተና',
+      subtitle: 'በምስሎች ዕውቀትዎን ይፈትሹ',
+      startQuiz: 'ፈተና ይጀምሩ',
+      goToRegularQuestions: 'ወደ መደበኛ ጥያቄዎች ይሂዱ',
+      goToInstructions: 'ወደ መመሪያዎች ይሂዱ',
+      unauthorizedText: 'ይህን ባህሪ ለመጠቀም ፈቃድ ያስፈልግዎታል።',
+      noQuestionsAvailable: 'ለዚህ ክፍል ጥያቄዎች አልተዘጋጁም።',
+      instructions: {
+        look: {
+          title: 'ምስሉን ተመልከት',
+          description: 'በጥንቃቄ የቀረበውን ምስል ይመልከቱ።'
+        },
+        drag: {
+          title: 'ጎትት እና አስቀምጥ',
+          description: 'ምስሉን ወደ ትክክለኛው መልስ አማራጭ ይጎትቱ።'
+        },
+        next: {
+          title: 'ወደ ቀጣይ ይሂዱ',
+          description: 'ወደ ቀጣይ ጥያቄ ለመሄድ ቀጣይ ይጫኑ።'
+        }
+      }
     },
-    question: {
-      current: 'ጥያቄ {current} ከ {total}',
-      timeRemaining: 'ቀሪ ጊዜ: {time}',
-      submit: 'ላክ',
-      next: 'ቀጣይ',
-      previous: 'ቀዳሚ'
+    results: {
+      title: 'የፈተና ውጤት',
+      timeTaken: 'የተወሰደ ጊዜ: {{time}}',
+      score: 'ነጥብ: {{score}}/{{total}}',
+      percentage: '{{percentage}}%',
+      messages: {
+        outstanding: 'በጣም ጥሩ! እርስዎ ኮከብ ነዎት!',
+        great: 'በጣም ጥሩ! ይቀጥሉ!',
+        good: 'ጥሩ ጥረት! የበለጠ ማድረግ ይችላሉ!',
+        keepLearning: 'ይለማመዱ! ይሻሻሉ!'
+      },
+      tryAgain: 'እንደገና ይሞክሩ',
+      chooseAnotherSubject: 'ሌላ መጽሀፍ ይምረጡ'
     },
-    result: {
-      title: 'ውጤት',
-      score: 'ነጥብ: {score}%',
-      correct: 'ትክክል: {correct}',
-      wrong: 'ስህተት: {wrong}',
-      timeSpent: 'የተወሰደ ጊዜ: {time}',
-      retry: 'ዳግም ሞክር',
-      review: 'ይገምግሙ',
-      finish: 'ጨርስ'
-    }
+    selectAnswer: 'እባክዎ ከመቀጠልዎ በፊት መልስ ይምረጡ',
   },
   flashcards: {
-    title: 'ፍላሽ ካርዶች',
-    instructions: {
-      title: 'መመሪያዎች',
-      description: 'እባክዎን የሚከተሉትን መመሪያዎች ይከተሉ',
-      flip: 'ካርዱን ይገልብጡ',
-      swipe: 'ለሚቀጥለው ካርድ ይሳቡ'
-    },
-    card: {
-      front: 'ፊት',
-      back: 'ጀርባ',
-      flip: 'ይገልብጡ',
-      next: 'ቀጣይ',
-      previous: 'ቀዳሚ'
-    },
-    progress: {
-      title: 'እድገት',
-      cardsReviewed: 'የተገመገሙ ካርዶች: {reviewed}',
-      remaining: 'ቀሪ: {remaining}',
-      finish: 'ጨርስ'
+    title: "ፍላሽ ካርዶች",
+    selectSubjectAndChapter: "መጽሐፍ እና ምዕራፍ ይምረጡ",
+    subject: "መጽሀፍ",
+    selectSubject: "መጽሀፍ ይምረጡ",
+    chapter: "ምዕራፍ",
+    selectChapter: "ምዕራፍ ይምረጡ",
+    startFlashcards: "ፍላሽ ካርዶች ይጀምሩ",
+    cardProgress: "ካርድ {{current}} ከ {{total}}",
+    previous: "ቀዳሚ",
+    next: "ቀጣይ",
+    finish: "ጨርስ",
+    loading: "ፍላሽ ካርዶች በመጫን ላይ...",
+    error: "ፍላሽ ካርዶች ለመጫን አልተቻለም። እባክዎ የኢንተርኔት ግንኙነትዎን ያረጋግጡ እና እንደገና ይሞክሩ።",
+    noFlashcards: "ለዚህ ክፍል ፍላሽ ካርዶች አልተዘጋጁም።",
+    grades: {
+      "grade-9": "9ኛ ክፍል",
+      "grade-10": "10ኛ ክፍል",
+      "grade-11": "11ኛ ክፍል",
+      "grade-12": "12ኛ ክፍል"
     }
   },
   homework: {
     title: 'የቤት ስራ',
     emptyState: 'ስለ የቤት ስራዎ ማንኛውንም ነገር ጠይቁኝ!',
     inputPlaceholder: 'የቤት ስራ ጥያቄዎን ያስገቡ...',
-    thinking: 'ያስባለሁ',
+    thinking: 'በማሰብ ላይ',
     error: 'ይቅርታ፣ ስህተት ተፈጥሯል። እባክዎ እንደገና ይሞክሩ።',
     imageButton: 'ምስል ያክሉ',
     sendButton: 'መልእክት ይላኩ',
