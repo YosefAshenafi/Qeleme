@@ -36,8 +36,17 @@ export default function KGDashboard() {
   const { user } = useAuth();
 
   return (
-    <View style={[styles.container, { paddingTop: insets.top }]}>
-      <View style={[styles.header, { backgroundColor: colors.background }]}>
+    <View style={[
+      styles.container, 
+      { 
+        paddingTop: insets.top,
+        backgroundColor: isDarkMode ? '#000000' : colors.background
+      }
+    ]}>
+      <View style={[
+        styles.header, 
+        { backgroundColor: isDarkMode ? '#000000' : colors.background }
+      ]}>
         <View style={styles.headerRight}>
           <LanguageToggle colors={colors} />
           <TouchableOpacity 
@@ -54,7 +63,10 @@ export default function KGDashboard() {
         </View>
       </View>
 
-      <View style={[styles.contentHeader, { backgroundColor: colors.background }]}>
+      <View style={[
+        styles.contentHeader, 
+        { backgroundColor: isDarkMode ? '#000000' : colors.background }
+      ]}>
         <Text style={[styles.welcomeText, { color: colors.text }]}>
           {t('kg.welcome', { name: user?.fullName || '' })}
         </Text>
@@ -95,7 +107,6 @@ export default function KGDashboard() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F5F5F5',
   },
   header: {
     height: 60,
@@ -103,8 +114,6 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-end',
     alignItems: 'center',
     paddingHorizontal: 15,
-    borderBottomWidth: 1,
-    borderBottomColor: '#E5E5E5',
   },
   headerRight: {
     flexDirection: 'row',
@@ -122,13 +131,6 @@ const styles = StyleSheet.create({
   contentHeader: {
     padding: 20,
     alignItems: 'center',
-    borderBottomLeftRadius: 20,
-    borderBottomRightRadius: 20,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
   },
   logoImage: {
     width: 120,
