@@ -607,10 +607,12 @@ ${firstGrade.subjects?.map(s => `  - ${s.name}: ${s.chapters?.length || 0} chapt
           showsVerticalScrollIndicator={false}
         >
           <ThemedText type="title" style={[styles.title, { color: colors.text }]}>
-            Quiz Results
+            {t('mcq.results.title')}
           </ThemedText>
           <View style={[styles.timerContainer, { backgroundColor: colors.tint }]}>
-            <ThemedText style={[styles.timerText, { color: '#fff' }]}>Time Taken: {formatTime(time)}</ThemedText>
+            <ThemedText style={[styles.timerText, { color: '#fff' }]}>
+              {t('mcq.results.timeTaken', { time: formatTime(time) })}
+            </ThemedText>
           </View>
           {percentage >= 90 && (
             <View style={styles.fireworkContainer}>
@@ -660,18 +662,21 @@ ${firstGrade.subjects?.map(s => `  - ${s.name}: ${s.chapters?.length || 0} chapt
             
             <View style={styles.resultContent}>
               <ThemedText style={[styles.scoreText, { color: colors.text }]}>
-                {score}/{totalQuestions}
+                {t('mcq.results.score', { score: score, total: totalQuestions })}
               </ThemedText>
               
               <View style={[styles.percentageContainer, { backgroundColor: colors.cardAlt, borderColor: colors.border }]}>
                 <ThemedText style={[styles.percentageText, { color: colors.text }]}>
-                  {percentage}%
+                  {t('mcq.results.percentage', { percentage: percentage })}
                 </ThemedText>
               </View>
               
               <View style={[styles.messageContainer, { backgroundColor: colors.cardAlt, borderColor: colors.border }]}>
                 <ThemedText style={[styles.messageText, { color: colors.text }]}>
-                  {getMessage()}
+                  {percentage >= 90 ? t('mcq.results.messages.outstanding') :
+                   percentage >= 70 ? t('mcq.results.messages.great') :
+                   percentage >= 50 ? t('mcq.results.messages.good') :
+                   t('mcq.results.messages.keepLearning')}
                 </ThemedText>
               </View>
             </View>
@@ -682,7 +687,9 @@ ${firstGrade.subjects?.map(s => `  - ${s.name}: ${s.chapters?.length || 0} chapt
               style={[styles.button, styles.retryButton, { backgroundColor: colors.tint }]}
               onPress={handleRetry}
             >
-              <ThemedText style={[styles.retryButtonText, { color: '#fff' }]}>Try Again</ThemedText>
+              <ThemedText style={[styles.retryButtonText, { color: '#fff' }]}>
+                {t('mcq.results.tryAgain')}
+              </ThemedText>
               <Ionicons name="refresh" size={24} color="#fff" />
             </TouchableOpacity>
             
@@ -696,7 +703,9 @@ ${firstGrade.subjects?.map(s => `  - ${s.name}: ${s.chapters?.length || 0} chapt
                 fetchMCQData();
               }}
             >
-              <ThemedText style={[styles.homeButtonText, { color: colors.text }]}>Choose Another Subject</ThemedText>
+              <ThemedText style={[styles.homeButtonText, { color: colors.text }]}>
+                {t('mcq.results.chooseAnotherSubject')}
+              </ThemedText>
             </TouchableOpacity>
           </ThemedView>
         </ScrollView>
@@ -996,8 +1005,6 @@ ${firstGrade.subjects?.map(s => `  - ${s.name}: ${s.chapters?.length || 0} chapt
                 <LinearGradient
                   colors={[colors.cardGradientStart, colors.cardGradientEnd]}
                   style={StyleSheet.absoluteFill}
-                  start={{ x: 0, y: 0 }}
-                  end={{ x: 1, y: 1 }}
                 />
                 
                 <View style={styles.trophyContainer}>
@@ -1128,12 +1135,11 @@ const styles = StyleSheet.create({
     marginTop: 24,
   },
   button: {
-    flexDirection: 'row',
+    flex: 1,
+    padding: 15,
+    borderRadius: 8,
     alignItems: 'center',
-    justifyContent: 'center',
-    padding: 16,
-    borderRadius: 16,
-    gap: 12,
+    borderWidth: 1,
   },
   retryButton: {
     backgroundColor: '#4CAF50',
@@ -1434,5 +1440,15 @@ const styles = StyleSheet.create({
     top: 0,
     left: 0,
     transform: [{ translateX: -20 }, { translateY: -20 }],
+  },
+  buttonContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    marginTop: 20,
+    gap: 10,
+  },
+  buttonText: {
+    fontSize: 16,
+    fontWeight: 'bold',
   },
 }); 
