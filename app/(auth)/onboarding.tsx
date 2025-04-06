@@ -19,11 +19,13 @@ import Animated, {
 } from 'react-native-reanimated';
 import { PanGestureHandler, GestureHandlerRootView, State } from 'react-native-gesture-handler';
 import { useTranslation } from 'react-i18next';
+import { useTheme } from '@/contexts/ThemeContext';
+import { getColors } from '@/constants/Colors';
 
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 import { IconSymbol } from '@/components/ui/IconSymbol';
-import { LanguageSelector } from '@/components/LanguageSelector';
+import { LanguageToggle } from '@/components/ui/LanguageToggle';
 import { useLanguage } from '@/contexts/LanguageContext';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
@@ -37,15 +39,10 @@ export default function OnboardingScreen() {
   const translateX = useSharedValue(0);
   const { t } = useTranslation();
   const { currentLanguage } = useLanguage();
+  const { isDarkMode } = useTheme();
+  const colors = getColors(isDarkMode);
 
   const onboardingSteps = [
-    {
-      title: t('onboarding.language.title'),
-      subtitle: t('onboarding.language.subtitle'),
-      icon: 'globe',
-      image: require('@/assets/images/logo/logo-icon-white.png'),
-      isLanguageStep: true,
-    },
     {
       title: t('onboarding.welcome.title'),
       subtitle: t('onboarding.welcome.subtitle'),
@@ -133,6 +130,9 @@ export default function OnboardingScreen() {
     <GestureHandlerRootView style={{ flex: 1 }}>
       <SafeAreaView style={styles.safeArea}>
         <View style={styles.container}>
+          <View style={styles.languageToggleContainer}>
+            <LanguageToggle colors={colors} />
+          </View>
           {/* Content */}
           <PanGestureHandler
             onGestureEvent={handleGestureEvent}
@@ -145,33 +145,18 @@ export default function OnboardingScreen() {
               entering={direction === 'right' ? SlideInRight : SlideInLeft}
               exiting={direction === 'right' ? SlideOutLeft : SlideOutRight}
             >
-              <View style={currentStep === 0 ? styles.logoContainer : currentStep === 1 ? styles.logoContainer : styles.imageContainer}>
-                {currentStepData.isLanguageStep ? (
-                  <IconSymbol 
-                    name="globe" 
-                    size={120} 
-                    color="#6B54AE" 
-                    style={styles.languageIcon}
-                  />
-                ) : (
-                  <Image 
-                    source={currentStepData.image}
-                    style={currentStep === 1 ? styles.logoImage : styles.image}
-                    resizeMode="contain"
-                  />
-                )}
+              <View style={currentStep === 0 ? styles.logoContainer : styles.imageContainer}>
+                <Image 
+                  source={currentStepData.image}
+                  style={currentStep === 0 ? styles.logoImage : styles.image}
+                  resizeMode="contain"
+                />
               </View>
               
               <ThemedText style={styles.title}>{currentStepData.title}</ThemedText>
               <ThemedText style={styles.subtitle}>{currentStepData.subtitle}</ThemedText>
               {currentStepData.description && (
                 <ThemedText style={styles.description}>{currentStepData.description}</ThemedText>
-              )}
-              
-              {currentStepData.isLanguageStep && (
-                <View style={styles.languageSelectorContainer}>
-                  <LanguageSelector colors={{ text: '#6B54AE', border: '#E5E5EA', tint: '#6B54AE' }} />
-                </View>
               )}
             </Animated.View>
           </PanGestureHandler>
@@ -229,6 +214,12 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 20,
   },
+  languageToggleContainer: {
+    position: 'absolute',
+    top: 20,
+    right: 20,
+    zIndex: 1,
+  },
   content: {
     flex: 1,
     alignItems: 'center',
@@ -285,22 +276,6 @@ const styles = StyleSheet.create({
     opacity: 0.7,
     lineHeight: 24,
   },
-  languageSelectorContainer: {
-    width: '100%',
-    maxWidth: 300,
-    marginTop: 20,
-    backgroundColor: '#fff',
-    borderRadius: 12,
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.1,
-    shadowRadius: 3.84,
-    elevation: 5,
-    paddingHorizontal: 20,
-  },
   bottomContainer: {
     paddingVertical: 20,
   },
@@ -344,8 +319,5 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#fff',
     marginRight: 8,
-  },
-  languageIcon: {
-    marginBottom: 20,
   },
 }); 
