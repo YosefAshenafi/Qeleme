@@ -81,22 +81,34 @@ export default function ProfileScreen() {
   const [openAccordion, setOpenAccordion] = useState<string | null>(null);
   const [profileImage, setProfileImage] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
+  const colors = getColors(isDarkMode);
   const [stats, setStats] = useState([
     { label: t('profile.stats.mcqsCompleted'), value: '0', icon: 'questionmark.circle.fill' as const },
     { label: t('profile.stats.flashcardsClicked'), value: '0', icon: 'rectangle.stack.fill' as const },
     { label: t('profile.stats.homeworkQuestions'), value: '0', icon: 'message.fill' as const },
     { label: t('profile.stats.studyHours'), value: '0', icon: 'clock.fill' as const },
   ]);
-  const colors = getColors(isDarkMode);
+
+  const [kgStats, setKgStats] = useState([
+    { label: t('profile.stats.pictureQuestions'), value: '0', icon: 'photo' as const },
+    { label: t('profile.stats.cardGroups'), value: '0', icon: 'rectangle.stack.fill' as const },
+  ]);
 
   // Update stats when language changes
   useEffect(() => {
-    setStats([
-      { label: t('profile.stats.mcqsCompleted'), value: stats[0].value, icon: 'questionmark.circle.fill' as const },
-      { label: t('profile.stats.flashcardsClicked'), value: stats[1].value, icon: 'rectangle.stack.fill' as const },
-      { label: t('profile.stats.homeworkQuestions'), value: stats[2].value, icon: 'message.fill' as const },
-      { label: t('profile.stats.studyHours'), value: stats[3].value, icon: 'clock.fill' as const },
-    ]);
+    if (user?.grade?.toLowerCase().includes('kg')) {
+      setKgStats([
+        { label: t('profile.stats.pictureQuestions'), value: '0', icon: 'photo' as const },
+        { label: t('profile.stats.cardGroups'), value: '0', icon: 'rectangle.stack.fill' as const },
+      ]);
+    } else {
+      setStats([
+        { label: t('profile.stats.mcqsCompleted'), value: stats[0].value, icon: 'questionmark.circle.fill' as const },
+        { label: t('profile.stats.flashcardsClicked'), value: stats[1].value, icon: 'rectangle.stack.fill' as const },
+        { label: t('profile.stats.homeworkQuestions'), value: stats[2].value, icon: 'message.fill' as const },
+        { label: t('profile.stats.studyHours'), value: stats[3].value, icon: 'clock.fill' as const },
+      ]);
+    }
   }, [t, i18n.language]);
 
   const onRefresh = React.useCallback(async () => {
@@ -353,15 +365,25 @@ export default function ProfileScreen() {
           </View>
         </View>
 
-        {/* Stats Section */}
+        {/* Stats Section - Show different stats for KG students */}
         <View style={styles.statsContainer}>
-          {stats.map((stat, index) => (
-            <View key={index} style={[styles.statCard, { backgroundColor: colors.card }]}>
-              <IconSymbol name={stat.icon} size={24} color={colors.tint} />
-              <Text style={[styles.statValue, { color: colors.text }]}>{stat.value}</Text>
-              <Text style={[styles.statLabel, { color: colors.text }]}>{stat.label}</Text>
-            </View>
-          ))}
+          {user?.grade?.toLowerCase().includes('kg') ? (
+            kgStats.map((stat, index) => (
+              <View key={index} style={[styles.statCard, { backgroundColor: colors.card }]}>
+                <IconSymbol name={stat.icon} size={24} color={colors.tint} />
+                <Text style={[styles.statValue, { color: colors.text }]}>{stat.value}</Text>
+                <Text style={[styles.statLabel, { color: colors.text }]}>{stat.label}</Text>
+              </View>
+            ))
+          ) : (
+            stats.map((stat, index) => (
+              <View key={index} style={[styles.statCard, { backgroundColor: colors.card }]}>
+                <IconSymbol name={stat.icon} size={24} color={colors.tint} />
+                <Text style={[styles.statValue, { color: colors.text }]}>{stat.value}</Text>
+                <Text style={[styles.statLabel, { color: colors.text }]}>{stat.label}</Text>
+              </View>
+            ))
+          )}
         </View>
 
         {/* Menu Items */}

@@ -413,6 +413,15 @@ export default {
     }
   },
   profile: {
+    title: 'መገለጫ',
+    stats: {
+      mcqsCompleted: 'የተጠናቀቁ ምርጫዎች',
+      flashcardsClicked: 'የተጫኑ ፍላሽ ካርዶች',
+      homeworkQuestions: 'የቤት ስራ ጥያቄዎች',
+      studyHours: 'የትምህርት ሰዓታት',
+      pictureQuestions: 'የምስል ጥያቄዎች',
+      cardGroups: 'የካርድ ቡድኖች'
+    },
     myProfile: 'የእኔ መገለጫ',
     editProfile: 'መገለጫ ያርትዑ',
     myQuestions: 'የእኔ ጥያቄዎች',
@@ -432,12 +441,6 @@ export default {
     joinDateValue: 'ጥር 2024',
     englishName: 'ዮሴፍ አሸናፊ',
     email: 'yosefashenafi7@gmail.com',
-    stats: {
-      mcqsCompleted: 'የተጠናቀቁ ምርጫዎች',
-      flashcardsClicked: 'የተጫኑ ፍላሽ ካርዶች',
-      homeworkQuestions: 'የቤት ስራ ጥያቄዎች',
-      studyHours: 'የትምህርት ሰዓታት'
-    }
   },
   auth: {
     signIn: 'ግባ',
