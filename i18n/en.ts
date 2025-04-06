@@ -11,6 +11,13 @@ export default {
     comingSoon: 'More content is coming soon! Stay tuned.',
     confirmation: 'Confirmation',
     confirm: 'Confirm',
+    tryAgain: 'Try Again'
+  },
+  errors: {
+    network: {
+      title: 'Network Error',
+      message: 'Please check your internet connection and try again.'
+    }
   },
   onboarding: {
     language: {
@@ -354,7 +361,7 @@ export default {
     next: "Next",
     finish: "Finish",
     loading: "Loading flashcards...",
-    error: "Failed to load flashcards. Please try again later.",
+    error: "Failed to load flashcards. Please check your internet connection and try again.",
     noFlashcards: "No flashcards available for this grade yet.",
     grades: {
       "grade-9": "Grade 9",

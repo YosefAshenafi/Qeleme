@@ -11,6 +11,13 @@ export default {
     comingSoon: 'በቅርብ ጊዜ ተጨማሪ ይገኛል! ይጠብቁን።',
     confirmation: 'ማረጋገጫ',
     confirm: 'አረጋግጥ',
+    tryAgain: 'እንደገና ይሞክሩ'
+  },
+  errors: {
+    network: {
+      title: 'የድረ-ገጽ ስህተት',
+      message: 'እባክዎ የኢንተርኔት ግንኙነትዎን ያረጋግጡ እና እንደገና ይሞክሩ።'
+    }
   },
   navigation: {
     tabs: {
@@ -331,7 +338,7 @@ export default {
     next: "ቀጣይ",
     finish: "ጨርስ",
     loading: "ፍላሽ ካርዶች እየጫኑ ነው...",
-    error: "ፍላሽ ካርዶች ለመጫን አልተቻለም። እባክዎ በኋላ ይሞክሩ።",
+    error: "ፍላሽ ካርዶች ለመጫን አልተቻለም። እባክዎ የኢንተርኔት ግንኙነትዎን ያረጋግጡ እና እንደገና ይሞክሩ።",
     noFlashcards: "ለዚህ ክፍል ገና ፍላሽ ካርዶች አልተጨረሱም።",
     grades: {
       "grade-9": "9ኛ ክፍል",

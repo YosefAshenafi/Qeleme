@@ -57,6 +57,24 @@ export default function FlashcardsScreen() {
   const revealAnimation = useSharedValue(0);
   const progressAnimation = useSharedValue(0);
 
+  const fetchFlashcards = async () => {
+    try {
+      setIsLoading(true);
+      const data = await getFlashcards();
+      setFlashcardsData(data);
+      setError(null);
+    } catch (error) {
+      // Ignore specific error messages and show network error
+      setError(t('errors.network.message'));
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchFlashcards();
+  }, []);
+
   useEffect(() => {
     // Check phone number when component mounts
     const checkPhoneNumber = async () => {
@@ -69,33 +87,6 @@ export default function FlashcardsScreen() {
       }
     };
     checkPhoneNumber();
-  }, []);
-
-  useEffect(() => {
-    const fetchFlashcards = async () => {
-      try {
-        setIsLoading(true);
-        const data = await getFlashcards();
-        console.log('Fetched flashcards data:', data);
-        setFlashcardsData(data);
-        setError(null);
-      } catch (error) {
-        console.log('Flashcards not available yet');
-        if (error instanceof Error) {
-          if (error.message.includes('No flashcards found')) {
-            setError(t('flashcards.noFlashcards'));
-          } else {
-            setError(t('flashcards.error'));
-          }
-        } else {
-          setError(t('flashcards.noFlashcards'));
-        }
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchFlashcards();
   }, []);
 
   // Update the selected grade when flashcards data is loaded
@@ -303,15 +294,25 @@ export default function FlashcardsScreen() {
         <Header title={t('flashcards.title')} />
         <ThemedView style={[styles.container, { backgroundColor: colors.background }]}>
           <ThemedView style={[styles.emptyStateContainer, { backgroundColor: colors.background }]}>
-            <IconSymbol name="rectangle.stack" size={90} color={colors.tint} style={styles.emptyStateIcon} />
+            <IconSymbol name="globe" size={90} color={colors.warning} style={styles.emptyStateIcon} />
             <ThemedText style={[styles.emptyStateTitle, { color: colors.text }]}>
-              {error.includes(t('flashcards.noFlashcards')) ? t('flashcards.noFlashcards') : error}
+              {t('errors.network.title')}
             </ThemedText>
-            {error.includes(t('flashcards.noFlashcards')) && (
-              <ThemedText style={[styles.emptyStateSubtitle, { color: colors.text, opacity: 0.7 }]}>
-                {t('common.comingSoon')}
+            <ThemedText style={[styles.emptyStateSubtitle, { color: colors.text, opacity: 0.7 }]}>
+              {t('errors.network.message')}
+            </ThemedText>
+            <TouchableOpacity 
+              style={[styles.retryButton, { backgroundColor: colors.tint, marginTop: 20 }]}
+              onPress={() => {
+                setError(null);
+                setIsLoading(true);
+                fetchFlashcards();
+              }}
+            >
+              <ThemedText style={[styles.retryButtonText, { color: '#FFFFFF' }]}>
+                {t('common.tryAgain')}
               </ThemedText>
-            )}
+            </TouchableOpacity>
           </ThemedView>
         </ThemedView>
       </SafeAreaView>
@@ -604,16 +605,16 @@ const styles = StyleSheet.create({
   card: {
     width: '100%',
     height: '100%',
-    borderRadius: 20,
+    borderRadius: 12,
     padding: 20,
     justifyContent: 'center',
     alignItems: 'center',
     backfaceVisibility: 'hidden',
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.3,
-    shadowRadius: 16,
-    elevation: 12,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 3,
+    elevation: 2,
     position: 'absolute',
     top: 0,
     left: 0,
@@ -623,9 +624,9 @@ const styles = StyleSheet.create({
     transform: [{ rotateY: '180deg' }],
   },
   cardText: {
-    fontSize: 24,
+    fontSize: 20,
     textAlign: 'center',
-    lineHeight: 32,
+    lineHeight: 28,
   },
   navigationContainer: {
     flexDirection: 'row',
@@ -654,9 +655,11 @@ const styles = StyleSheet.create({
     opacity: 0.5,
   },
   prevButtonText: {
+    fontSize: 16,
     fontWeight: '700',
   },
   nextButtonText: {
+    fontSize: 16,
     fontWeight: '700',
     color: '#fff',
   },
@@ -766,9 +769,22 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   emptyStateSubtitle: {
-    fontSize: 18,
+    fontSize: 16,
+    lineHeight: 24,
     textAlign: 'center',
     fontWeight: '500',
     opacity: 0.8,
+  },
+  retryButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 16,
+    borderRadius: 12,
+    marginTop: 20,
+  },
+  retryButtonText: {
+    fontSize: 18,
+    fontWeight: '700',
   },
 }); 

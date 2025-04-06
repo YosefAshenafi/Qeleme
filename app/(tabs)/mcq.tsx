@@ -132,7 +132,7 @@ ${firstGrade.subjects?.map(s => `  - ${s.name}: ${s.chapters?.length || 0} chapt
       // Set MCQ data after setting the grade to ensure they're in sync
       setMcqData(data);
     } catch (error) {
-      console.error('❌ Error fetching MCQ data:', error);
+      // console.error('❌ Error fetching MCQ data:', error);
       setError(error instanceof Error ? error.message : 'Failed to load MCQ data');
     } finally {
       setLoading(false);
@@ -512,23 +512,28 @@ ${firstGrade.subjects?.map(s => `  - ${s.name}: ${s.chapters?.length || 0} chapt
   // Error state rendering
   if (error) {
     return (
-      <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]}>
+      <ThemedView style={[styles.container, { backgroundColor: colors.background }]}>
         <Header title={t('mcq.title')} />
-        <ThemedView style={[styles.container, { backgroundColor: colors.background, justifyContent: 'center', alignItems: 'center', padding: 20 }]}>
-          <Ionicons name="alert-circle-outline" size={48} color={colors.error} />
-          <ThemedText style={{ marginTop: 20, color: colors.error, fontWeight: 'bold', fontSize: 18, textAlign: 'center' }}>
-            {error}
-          </ThemedText>
-          <TouchableOpacity 
-            style={[styles.button, { backgroundColor: colors.tint, marginTop: 20 }]}
-            onPress={fetchMCQData}
-          >
-            <ThemedText style={{ color: '#FFFFFF', fontWeight: 'bold' }}>
-              {t('common.tryAgain')}
+        <ThemedView style={[styles.mainContainer, { backgroundColor: colors.background, justifyContent: 'center', alignItems: 'center', padding: 20 }]}>
+          <ThemedView style={[styles.emptyStateContainer, { backgroundColor: colors.background }]}>
+            <IconSymbol name="globe" size={90} color={colors.warning} style={styles.emptyStateIcon} />
+            <ThemedText style={[styles.emptyStateTitle, { color: colors.text }]}>
+              {t('errors.network.title')}
             </ThemedText>
-          </TouchableOpacity>
+            <ThemedText style={[styles.emptyStateSubtitle, { color: colors.text, opacity: 0.7 }]}>
+              {t('errors.network.message')}
+            </ThemedText>
+            <TouchableOpacity 
+              style={[styles.retryButton, { backgroundColor: colors.tint, marginTop: 20 }]}
+              onPress={fetchMCQData}
+            >
+              <ThemedText style={[styles.retryButtonText, { color: '#FFFFFF' }]}>
+                {t('common.tryAgain')}
+              </ThemedText>
+            </TouchableOpacity>
+          </ThemedView>
         </ThemedView>
-      </SafeAreaView>
+      </ThemedView>
     );
   }
   
@@ -571,7 +576,7 @@ ${firstGrade.subjects?.map(s => `  - ${s.name}: ${s.chapters?.length || 0} chapt
             >
               <Ionicons name="refresh" size={20} color="#FFFFFF" />
               <ThemedText style={{ color: '#FFFFFF', fontWeight: 'bold', marginLeft: 10 }}>
-                Try Again
+                {t('common.tryAgain')}
               </ThemedText>
             </TouchableOpacity>
             
@@ -1072,6 +1077,10 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 16,
   },
+  mainContainer: {
+    flex: 1,
+    width: '100%',
+  },
   title: {
     fontSize: 28,
     fontWeight: 'bold',
@@ -1142,14 +1151,18 @@ const styles = StyleSheet.create({
     borderWidth: 1,
   },
   retryButton: {
-    backgroundColor: '#4CAF50',
+    paddingHorizontal: 24,
+    paddingVertical: 12,
+    borderRadius: 8,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
   },
   homeButton: {
     borderWidth: 2,
   },
   retryButtonText: {
-    color: '#fff',
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: '600',
   },
   homeButtonText: {
@@ -1450,5 +1463,39 @@ const styles = StyleSheet.create({
   buttonText: {
     fontSize: 16,
     fontWeight: 'bold',
+  },
+  emptyStateContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+    marginTop: -40,
+  },
+  emptyStateIcon: {
+    marginBottom: 25,
+  },
+  emptyStateTitle: {
+    fontSize: 24,
+    fontWeight: '700',
+    textAlign: 'center',
+    marginBottom: 10,
+  },
+  emptyStateSubtitle: {
+    fontSize: 16,
+    lineHeight: 24,
+    textAlign: 'center',
+    fontWeight: '500',
+    opacity: 0.8,
+  },
+  retryButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 16,
+    borderRadius: 12,
+  },
+  retryButtonText: {
+    fontSize: 18,
+    fontWeight: '700',
   },
 }); 
