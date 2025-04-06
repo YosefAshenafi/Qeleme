@@ -975,7 +975,7 @@ ${firstGrade.subjects?.map(s => `  - ${s.name}: ${s.chapters?.length || 0} chapt
                     disabled={isFirstQuestion}
                   >
                     <IconSymbol name="chevron.left.forwardslash.chevron.right" size={24} color={colors.tint} />
-                    <ThemedText style={[styles.prevButtonText, { color: colors.tint }]}>Previous</ThemedText>
+                    <ThemedText style={[styles.prevButtonText, { color: colors.tint }]}>{t('mcq.previous')}</ThemedText>
                   </TouchableOpacity>
 
                   <TouchableOpacity
@@ -983,7 +983,7 @@ ${firstGrade.subjects?.map(s => `  - ${s.name}: ${s.chapters?.length || 0} chapt
                     onPress={isLastQuestion ? handleResult : handleNextQuestion}
                   >
                     <ThemedText style={[styles.nextButtonText, { color: '#fff' }]}>
-                      {isLastQuestion ? 'Finish' : 'Next'}
+                      {isLastQuestion ? t('mcq.finish') : t('mcq.next')}
                     </ThemedText>
                     <IconSymbol name="chevron.right" size={24} color="#fff" />
                   </TouchableOpacity>
