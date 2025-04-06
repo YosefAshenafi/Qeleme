@@ -305,23 +305,7 @@ export default function SignupScreen() {
                     />
                   </View>
 
-                  {role === 'parent' && numberOfChildren === 1 ? (
-                    <View style={[styles.inputContainer, {
-                      backgroundColor: isDarkMode ? '#2C2C2E' : '#F9FAFB',
-                      borderColor: isDarkMode ? '#3C3C3E' : '#E5E7EB',
-                    }]}>
-                      <Ionicons name="school-outline" size={20} color={isDarkMode ? '#A0A0A5' : '#6B7280'} style={styles.inputIcon} />
-                      <TouchableOpacity 
-                        style={styles.dropdownButton}
-                        onPress={() => openGradeModal()}
-                      >
-                        <ThemedText style={[styles.input, { color: grade ? colors.text : (isDarkMode ? '#A0A0A5' : '#9CA3AF') }]}>
-                          {grade ? grades.find(g => g.value === grade)?.label || t('signup.grade.label') : t('signup.grade.label')}
-                        </ThemedText>
-                        <Ionicons name="chevron-down" size={20} color={isDarkMode ? '#A0A0A5' : '#6B7280'} />
-                      </TouchableOpacity>
-                    </View>
-                  ) : role === 'parent' && numberOfChildren > 0 ? (
+                  {role === 'parent' && numberOfChildren >= 1 ? (
                     childrenData.map((child, index) => (
                       <View key={index} style={styles.childSection}>
                         <ThemedText style={[styles.childTitle, { color: colors.text }]}>
