@@ -338,7 +338,8 @@ export default {
       },
       tryAgain: 'Try Again',
       chooseAnotherSubject: 'Choose Another Subject'
-    }
+    },
+    selectAnswer: 'Please select an answer before proceeding',
   },
   flashcards: {
     title: "Flashcards",

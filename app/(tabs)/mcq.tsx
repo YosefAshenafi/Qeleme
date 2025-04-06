@@ -963,7 +963,7 @@ ${firstGrade.subjects?.map(s => `  - ${s.name}: ${s.chapters?.length || 0} chapt
                 {showAnswerMessage && (
                   <View style={[styles.answerMessageContainer, { backgroundColor: colors.cardAlt }]}>
                     <ThemedText style={[styles.answerMessageText, { color: colors.warning }]}>
-                      Please select an answer before proceeding
+                      {t('mcq.selectAnswer')}
                     </ThemedText>
                   </View>
                 )}

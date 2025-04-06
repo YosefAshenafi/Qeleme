@@ -315,7 +315,8 @@ export default {
       },
       tryAgain: 'እንደገና ይሞክሩ',
       chooseAnotherSubject: 'ሌላ ትምህርት ይምረጡ'
-    }
+    },
+    selectAnswer: 'እባክዎ ከመቀጠልዎ በፊት መልስ ይምረጡ'
   },
   flashcards: {
     title: "ፍላሽ ካርዶች",
