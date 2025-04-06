@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, TouchableOpacity, TextInput } from 'react-nativ
 import { getColors } from '@/constants/Colors';
 import { useTheme } from '@/contexts/ThemeContext';
 import { useAuth } from '@/contexts/AuthContext';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 interface AccountSettingsProps {
   colors: ReturnType<typeof getColors>;
@@ -32,9 +33,10 @@ export function AccountSettings({ colors, profileData }: AccountSettingsProps) {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${await AsyncStorage.getItem('@auth_token')}`
         },
         body: JSON.stringify({
-          username: profileData.username.replace('@', ''), // Remove @ symbol from username
+          username: profileData.username.replace('@', ''),
           newFullName: editedName
         }),
       });
@@ -55,6 +57,18 @@ export function AccountSettings({ colors, profileData }: AccountSettingsProps) {
       // Update the profile data with the new name
       profileData.englishName = editedName;
       setIsEditing(false);
+
+      // Force a refresh of the profile data
+      const profileResponse = await fetch('http://localhost:5001/api/auth/student/profile', {
+        headers: {
+          'Authorization': `Bearer ${await AsyncStorage.getItem('@auth_token')}`
+        }
+      });
+      
+      if (profileResponse.ok) {
+        const updatedProfileData = await profileResponse.json();
+        await login(updatedProfileData);
+      }
     } catch (error) {
       console.error('Error updating full name:', error);
       // You might want to show an error message to the user here

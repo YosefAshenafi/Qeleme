@@ -13,7 +13,6 @@ const LanguageContext = createContext<LanguageContextType | undefined>(undefined
 export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { i18n } = useTranslation();
   const [currentLanguage, setCurrentLanguage] = useState(i18n.language);
-  const [updateKey, setUpdateKey] = useState(0);
 
   useEffect(() => {
     const initLanguage = async () => {
@@ -30,7 +29,6 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       await i18n.changeLanguage(lang);
       setCurrentLanguage(lang);
       await saveLanguage(lang);
-      setUpdateKey(prev => prev + 1);
     } catch (error) {
       console.error('Failed to change language:', error);
     }
@@ -43,7 +41,6 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         changeLanguage,
         languages: LANGUAGES,
       }}
-      key={updateKey}
     >
       {children}
     </LanguageContext.Provider>

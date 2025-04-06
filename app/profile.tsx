@@ -262,7 +262,7 @@ export default function ProfileScreen() {
   };
 
   const profileData = React.useMemo(() => ({
-    englishName: user?.fullName || t('profile.englishName', { defaultValue: 'Yosef Ashenafi' }),
+    englishName: user?.fullName || '',
     username: user?.username ? `@${user.username}` : t('profile.username', { defaultValue: '@username' }),
     grade: user?.grade || t('profile.grade', { defaultValue: 'Grade 12' }),
     role: t('profile.role'),
