@@ -567,7 +567,7 @@ export default function HomeScreen() {
           {/* Recent Activity Section */}
           <ThemedView style={[styles.recentActivitySection, { backgroundColor: colors.background }]}>
             <ThemedText style={[styles.sectionTitle, { color: colors.text }]}>
-              {t('home.recentActivity')}
+              {t('home.recentActivity.title')}
             </ThemedText>
             {recentActivities.length > 0 ? (
               recentActivities.map((activity, index) => (

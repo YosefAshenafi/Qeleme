@@ -1,5 +1,26 @@
 export default {
   home: {
+    welcome: 'Welcome {{name}}!',
+    subtitle: 'Ready to learn something new today?',
+    noActivity: 'No recent activity. Start learning!',
+    quickActions: {
+      mcq: {
+        title: 'Practice MCQ',
+        subtitle: 'Test your knowledge'
+      },
+      flashcards: {
+        title: 'Flashcards',
+        subtitle: 'Review key concepts'
+      },
+      homework: {
+        title: 'Homework Help',
+        subtitle: 'Get expert assistance'
+      },
+      reports: {
+        title: 'Progress Report',
+        subtitle: 'Track your learning'
+      }
+    },
     reportCards: {
       performance: {
         title: "Performance",
@@ -32,8 +53,135 @@ export default {
       completed: "Completed",
       inProgress: "In Progress"
     },
-    motivationalQuotes: {
-      title: "Daily Motivation"
+    activityTypes: {
+      mcq: 'MCQ Quiz',
+      flashcard: 'Flashcards',
+      homework: 'Homework',
+      study: 'Study Session'
+    },
+    activityDetails: {
+      completed: 'Completed',
+      inProgress: 'In Progress',
+      grade: 'Grade',
+      subject: 'Subject',
+      chapter: 'Chapter',
+      duration: '{hours}h',
+      questions: {
+        completed: 'Completed 5 questions',
+        reviewed: 'Reviewed 3 questions'
+      },
+      flashcards: {
+        reviewed: 'Reviewed 10 flashcards'
+      },
+      homework: {
+        submitted: 'Submitted homework',
+        working: 'Working on homework'
+      },
+      study: {
+        session: 'Study session - {duration}'
+      }
+    },
+    motivationalQuotes: [
+      {
+        quote: "The only way to do great work is to love what you do.",
+        author: "Steve Jobs"
+      },
+      {
+        quote: "Education is not preparation for life; education is life itself.",
+        author: "John Dewey"
+      },
+      {
+        quote: "The beautiful thing about learning is that no one can take it away from you.",
+        author: "B.B. King"
+      }
+    ]
+  },
+  reports: {
+    title: 'Reports',
+    overallProgress: {
+      title: 'Overall Progress',
+      topicsCompleted: 'Topics Completed',
+      studyHours: 'Study Hours'
+    },
+    performance: {
+      title: 'Performance',
+      averageScore: 'Average Score',
+      quizzesTaken: 'Quizzes Taken',
+      successRate: 'Success Rate',
+      improvement: 'Improvement'
+    },
+    learningStreak: {
+      title: 'Learning Streak',
+      currentStreak: 'Current Streak',
+      bestStreak: 'Best Streak',
+      totalDaysActive: 'Total Days Active'
+    },
+    subjectBreakdown: {
+      title: 'Subject Breakdown',
+      progress: 'Progress',
+      score: 'Score'
+    },
+    recentActivity: {
+      title: 'Recent Activity',
+      quiz: 'Quiz',
+      study: 'Study',
+      homework: 'Homework',
+      completed: 'Completed',
+      duration: '{hours} hours'
+    },
+    howCalculated: {
+      title: 'How Reports are Calculated',
+      overallProgress: {
+        title: 'Overall Progress',
+        description: 'Calculated based on completed topics and study hours'
+      },
+      performance: {
+        title: 'Performance',
+        description: 'Based on quiz scores and success rates'
+      },
+      studyHours: {
+        title: 'Study Hours',
+        description: 'Tracked from active study sessions'
+      }
+    },
+    activityTypes: {
+      quiz: 'Quiz',
+      study: 'Study',
+      homework: 'Homework'
+    },
+    status: {
+      completed: 'Completed'
+    },
+    duration: '{{hours}}h',
+    scoreFormat: '{{score}}%',
+    progressFormat: '{{progress}}% Completed'
+  },
+  homework: {
+    title: 'Homework Help',
+    emptyState: 'Ask me anything about your homework!',
+    inputPlaceholder: 'Ask your homework question...',
+    thinking: 'Thinking',
+    error: 'Sorry, I encountered an error. Please try again.',
+    imageButton: 'Add Image',
+    sendButton: 'Send Message',
+    removeImage: 'Remove Image',
+    activity: {
+      type: 'homework',
+      grade: 'grade-12',
+      subject: 'General',
+      chapter: 'Homework Help',
+      details: 'Asked a homework question',
+      status: 'Completed'
+    }
+  },
+  navigation: {
+    tabs: {
+      home: 'Home',
+      mcq: 'MCQ',
+      flashcards: 'Flashcards',
+      homework: 'Homework',
+      profile: 'Profile',
+      reports: 'Reports'
     }
   },
   profile: {
@@ -62,6 +210,176 @@ export default {
       homeworkQuestions: 'Homework Questions',
       studyHours: 'Study Hours',
     },
+  },
+  auth: {
+    signIn: 'Sign In',
+    signUp: 'Sign Up',
+    email: 'Email',
+    password: 'Password',
+    forgotPassword: 'Forgot Password?',
+    createAccount: 'Create Account',
+    alreadyHaveAccount: 'Already have an account?',
+    otp: {
+      title: 'Verify Your Phone',
+      subtitle: 'Enter the 6-digit code sent to your phone',
+      error: {
+        invalid: 'Invalid verification code',
+        incomplete: 'Please enter all digits'
+      },
+      resend: {
+        text: "Didn't receive the code?",
+        button: 'Resend'
+      },
+      verify: 'Verify'
+    },
+    planSelection: {
+      title: 'Choose Your Plan',
+      subtitleSingle: 'Select your preferred plan',
+      subtitleMultiple: 'Select a plan for all children',
+      total: 'Total',
+      continue: 'Continue',
+      free: 'Free',
+      calculation: '{{planPrice}} ETB × {{numberOfChildren}} children = {{total}} ETB',
+      pricePerChild: 'Price per child: {{price}} ETB',
+      success: {
+        title: 'Registration Successful!',
+        message: 'Your account has been created successfully. Please login to continue your learning journey.',
+        parentMessage: 'Your family account has been created successfully. You and your children can now login using your password.',
+        button: 'Go to Login'
+      },
+      error: {
+        title: 'Registration Failed',
+        message: 'We couldn\'t complete your registration. Please try again.',
+        parentMessage: 'We couldn\'t complete your family registration. Please try again.',
+        childrenMessage: 'Some children accounts could not be created. Please try again.',
+        network: 'Unable to connect to the server. Please check your internet connection and try again.',
+        button: 'Try Again'
+      },
+      plans: {
+        '0': {
+          name: 'Free',
+          features: [
+            'Basic access to learning materials',
+            'Limited practice questions',
+            'Basic progress tracking',
+            'Community support'
+          ]
+        },
+        '1': {
+          name: '1 Month',
+          features: [
+            'Access to all learning materials',
+            'Practice questions',
+            'Progress tracking',
+            'Basic support'
+          ]
+        },
+        '3': {
+          name: '3 Months',
+          features: [
+            'Access to all learning materials',
+            'Practice questions',
+            'Progress tracking',
+            'Basic support'
+          ]
+        },
+        '6': {
+          name: '6 Months',
+          features: [
+            'Access to all learning materials',
+            'Practice questions',
+            'Progress tracking',
+            'Basic support'
+          ]
+        },
+        '12': {
+          name: '12 Months',
+          features: [
+            'Everything in 6 Months plan',
+            'Priority support',
+            'Advanced analytics',
+            'Exclusive content'
+          ]
+        }
+      }
+    }
+  },
+  mcq: {
+    question: 'Question',
+    title: 'MCQ',
+    selectSubject: 'Select Subject',
+    subject: 'Subject',
+    chapter: 'Chapter',
+    selectSubjectPlaceholder: 'Select a subject',
+    selectChapterPlaceholder: 'Select a chapter',
+    startQuiz: 'Start Quiz',
+    previous: 'Previous',
+    next: 'Next',
+    finish: 'Finish',
+    correct: 'Correct!',
+    incorrect: 'Incorrect!',
+    explanation: 'Explanation',
+    of: 'of',
+    pictureQuiz: {
+      title: 'Picture Quiz',
+      subtitle: 'Test your knowledge with images',
+      startQuiz: 'Start Quiz',
+      goToRegularQuestions: 'Go to Regular Questions',
+      goToInstructions: 'Go to Instructions',
+      unauthorizedText: 'You need to be authorized to access this feature.',
+      noQuestionsAvailable: 'No questions available for this grade yet.',
+      instructions: {
+        look: {
+          title: 'Look at the Image',
+          description: 'Carefully observe the image shown in the question.'
+        },
+        drag: {
+          title: 'Drag and Drop',
+          description: 'Drag the image to the correct answer option.'
+        },
+        next: {
+          title: 'Move to Next',
+          description: 'Click next to proceed to the next question.'
+        }
+      }
+    },
+    results: {
+      title: 'Quiz Results',
+      timeTaken: 'Time Taken: {{time}}',
+      score: 'Score: {{score}}/{{total}}',
+      percentage: '{{percentage}}%',
+      messages: {
+        outstanding: 'Outstanding! You are a star!',
+        great: 'Great job! Keep it up!',
+        good: 'Good effort! You can do even better!',
+        keepLearning: 'Keep practicing! You will improve!'
+      },
+      tryAgain: 'Try Again',
+      chooseAnotherSubject: 'Choose Another Subject'
+    },
+    selectAnswer: 'Please select an answer before proceeding',
+  },
+  flashcards: {
+    title: "Flashcards",
+    selectSubjectAndChapter: "Select Subject and Chapter",
+    subject: "Subject",
+    selectSubject: "Select Subject",
+    chapter: "Chapter",
+    selectChapter: "Select Chapter",
+    startFlashcards: "Start Flashcards",
+    cardProgress: "Card {{current}} of {{total}}",
+    previous: "Previous",
+    next: "Next",
+    finish: "Finish",
+    loading: "Loading flashcards...",
+    error: "Failed to load flashcards. Please check your internet connection and try again.",
+    noFlashcards: "No flashcards available for this grade yet.",
+    grades: {
+      "grade-9": "Grade 9",
+      "grade-10": "Grade 10",
+      "grade-11": "Grade 11",
+      "grade-12": "Grade 12"
+    }
   },
   login: {
     welcome: 'Welcome to Qelem',
