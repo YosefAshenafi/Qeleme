@@ -5,7 +5,7 @@ import { useTheme } from '@/contexts/ThemeContext';
 import { getColors } from '@/constants/Colors';
 
 export default function Index() {
-  const { isAuthenticated, isLoading } = useAuth();
+  const { isAuthenticated, isLoading, user } = useAuth();
   const { isDarkMode } = useTheme();
   const colors = getColors(isDarkMode);
 
@@ -18,6 +18,10 @@ export default function Index() {
   }
 
   if (isAuthenticated) {
+    // Redirect KG users to KG dashboard, others to tabs
+    if (user?.grade === 'KG') {
+      return <Redirect href="/kg-dashboard" />;
+    }
     return <Redirect href="/(tabs)" />;
   }
 

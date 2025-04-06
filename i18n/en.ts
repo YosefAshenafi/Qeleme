@@ -338,10 +338,10 @@ export default {
       score: 'Score: {{score}}/{{total}}',
       percentage: '{{percentage}}%',
       messages: {
-        outstanding: "Outstanding! You're a genius!",
-        great: "Great job! You're doing well!",
-        good: "Not bad! Keep practicing!",
-        keepLearning: "Keep learning! You can do better!"
+        outstanding: 'Outstanding! You are a star!',
+        great: 'Great job! Keep it up!',
+        good: 'Good effort! You can do even better!',
+        keepLearning: 'Keep practicing! You will improve!'
       },
       tryAgain: 'Try Again',
       chooseAnotherSubject: 'Choose Another Subject'

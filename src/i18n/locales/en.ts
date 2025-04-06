@@ -35,5 +35,39 @@ export default {
     motivationalQuotes: {
       title: "Daily Motivation"
     }
+  },
+  kg: {
+    categories: {
+      'Animals': 'Animals',
+      'Colors': 'Colors',
+      'Numbers': 'Numbers',
+      'Shapes': 'Shapes',
+      'Fruits': 'Fruits',
+      'Vegetables': 'Vegetables',
+      'Family': 'Family',
+      'Body Parts': 'Body Parts',
+      'Clothes': 'Clothes',
+      'Weather': 'Weather',
+      'Transport': 'Transport',
+      'Food': 'Food',
+      'School': 'School',
+      'Toys': 'Toys'
+    },
+    instructions: {
+      subtitle: "Let's learn something new!",
+      look: {
+        title: 'Look Carefully',
+        description: 'Take your time to look at the pictures and understand what they show.'
+      },
+      choose: {
+        title: 'Choose Wisely',
+        description: 'Select the correct answer from the options given.'
+      },
+      haveFun: {
+        title: 'Have Fun!',
+        description: 'Learning is fun! Enjoy the process and celebrate your progress.'
+      },
+      start: 'Start Learning'
+    }
   }
 }; 

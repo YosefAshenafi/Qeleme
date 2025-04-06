@@ -114,8 +114,12 @@ export default function LoginScreen() {
         // Update the auth context
         await login(data.user);
         
-        // Navigate to the main app
-        router.replace('/(tabs)');
+        // Navigate based on user type
+        if (data.user.type === 'student' && data.user.grade === 'KG') {
+          router.replace('/kg-dashboard');
+        } else {
+          router.replace('/(tabs)');
+        }
       } catch (error) {
         if (error instanceof Error) {
           // Check if the error message is a translation key

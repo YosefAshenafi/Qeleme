@@ -35,5 +35,39 @@ export default {
     motivationalQuotes: {
       title: "የዕለቱ ተነሳሽነት"
     }
+  },
+  kg: {
+    categories: {
+      'Animals': 'እንስሳት',
+      'Colors': 'ቀለሞች',
+      'Numbers': 'ቁጥሮች',
+      'Shapes': 'ስዕሎች',
+      'Fruits': 'ፍራፍሬዎች',
+      'Vegetables': 'አትክልቶች',
+      'Family': 'ቤተሰብ',
+      'Body Parts': 'የሰውነት ክፍሎች',
+      'Clothes': 'ልብሶች',
+      'Weather': 'የአየር ሁኔታ',
+      'Transport': 'መጓጓዣ',
+      'Food': 'ምግብ',
+      'School': 'ትምህርት ቤት',
+      'Toys': 'መጫወቻዎች'
+    },
+    instructions: {
+      subtitle: 'አዲስ ነገር እንማር!',
+      look: {
+        title: 'በጥንቃቄ ተመልከት',
+        description: 'ለስዕሎቹ በትኩረት ተመልከት እና የሚያሳዩትን ነገር ይረዱ።'
+      },
+      choose: {
+        title: 'በጥንቃቄ ይምረጡ',
+        description: 'ከተሰጡት አማራጮች ትክክለኛውን መልስ ይምረጡ።'
+      },
+      haveFun: {
+        title: 'ይደሰቱ!',
+        description: 'መማር አስደሳች ነው! ሂደቱን ይደሰቱ እና እድገትዎን ያክብሩ።'
+      },
+      start: 'መማር ይጀምሩ'
+    }
   }
 }; 

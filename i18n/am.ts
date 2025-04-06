@@ -314,11 +314,11 @@ export default {
       timeTaken: 'የተወሰደ ጊዜ: {{time}}',
       score: 'ውጤት: {{score}}/{{total}}',
       percentage: '{{percentage}}%',
-      messages: {
-        outstanding: 'በጣም ጥሩ! የልብ ልጅ ነዎት!',
-        great: 'በጣም ጥሩ! በደንብ እያለሁ ነው!',
-        good: 'በጣም አይደለም! መለማመድ ይቀጥሉ!',
-        keepLearning: 'መማር ይቀጥሉ! የተሻለ ሊሆኑ ይችላሉ!'
+      message: {
+        outstanding: 'እጅግ በጣም ጥሩ! ኮኮብ ነህ!',
+        great: 'በጣም ጥሩ! ቀጥልበት!',
+        good: 'ጥሩ ጥረት! ተጨማሪ ማሻሻል ትችላለህ!',
+        keepLearning: 'ልምምድ ቀጥል! ታሻሽላለህ!'
       },
       tryAgain: 'እንደገና ይሞክሩ',
       chooseAnotherSubject: 'ሌላ ትምህርት ይምረጡ'

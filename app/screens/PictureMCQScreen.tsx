@@ -25,6 +25,7 @@ import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 import { IconSymbol } from '@/components/ui/IconSymbol';
 import pictureQuestionsData from '@/data/pictureMCQData.json';
+import { LanguageToggle } from '@/components/ui/LanguageToggle';
 
 // Image mapping object
 const imageMapping: { [key: string]: any } = {
@@ -302,14 +303,14 @@ export default function PictureMCQScreen({ onBackToInstructions }: PictureMCQScr
   };
 
   const handleGoToInstructions = () => {
-    // Reset states and go back to instruction screen
+    // Reset states and go back to KG dashboard
     setCurrentQuestionIndex(0);
     setSelectedAnswer(null);
     setShowExplanation(false);
     setShowResult(false);
     setScore(0);
     setDroppedOption(null);
-    onBackToInstructions();
+    router.push('/(tabs)');
   };
 
   const getMessage = () => {
@@ -376,61 +377,101 @@ export default function PictureMCQScreen({ onBackToInstructions }: PictureMCQScr
   if (showResult) {
     return (
       <GestureHandlerRootView style={{ flex: 1 }}>
-        <SafeAreaView style={[styles.safeArea, { backgroundColor: isDarkMode ? '#000000' : '#FFFFFF' }]}>
-          <Header title={t('mcq.results.title')} />
-          <ThemedView style={[styles.container, { backgroundColor: isDarkMode ? '#000000' : '#FFFFFF' }]}>
+        <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]}>
+          <View style={[styles.header, { backgroundColor: colors.background }]}>
+            <TouchableOpacity 
+              style={styles.backButton}
+              onPress={handleGoToInstructions}
+            >
+              <IconSymbol name="house.fill" size={24} color={colors.text} />
+            </TouchableOpacity>
+            <ThemedText style={styles.headerTitle}>
+              {t('mcq.results.title')}
+            </ThemedText>
+            <View style={styles.headerRight}>
+              <LanguageToggle colors={colors} />
+              <TouchableOpacity 
+                onPress={() => router.push('/profile')}
+                style={[styles.profileIconContainer, { backgroundColor: colors.tint + '20' }]}
+              >
+                <IconSymbol name="person.fill" size={24} color={colors.tint} />
+              </TouchableOpacity>
+            </View>
+          </View>
+          <LinearGradient
+            colors={['#6B54AE', '#4CAF50']}
+            style={styles.resultGradientContainer}
+          >
             <ScrollView style={styles.scrollView}>
-              <Animated.View style={[styles.resultContainer, { backgroundColor: colors.card }]}>
+              <Animated.View style={[styles.resultContainer]}>
                 <View style={styles.resultContent}>
-                  <View style={styles.scoreContainer}>
-                    <ThemedText style={[styles.scoreLabel, { color: colors.text }]}>
-                      {t('mcq.results.score')}
-                    </ThemedText>
-                    <ThemedText style={[styles.scoreText, { color: colors.text }]}>
-                      {score}/{questions.length}
-                    </ThemedText>
+                  {/* Trophy Icon */}
+                  <View style={styles.trophyContainer}>
+                    <IconSymbol 
+                      name="trophy.fill" 
+                      size={80} 
+                      color="#FFD700" 
+                    />
                   </View>
 
-                  <View style={[styles.percentageContainer, { 
-                    backgroundColor: colors.cardAlt,
-                    borderColor: colors.border 
-                  }]}>
-                    <ThemedText style={[styles.percentageText, { color: colors.text }]}>
+                  {/* Score Display */}
+                  <View style={styles.scoreContainer}>
+                    <View style={styles.scoreCircle}>
+                      <ThemedText style={[styles.scoreText, { color: '#FFFFFF' }]}>
+                        {score}/{questions.length}
+                      </ThemedText>
+                    </View>
+                  </View>
+
+                  {/* Percentage Badge */}
+                  <View style={styles.percentageContainer}>
+                    <ThemedText style={styles.percentageText}>
                       {percentage}%
                     </ThemedText>
                   </View>
                   
-                  <View style={[styles.messageContainer, { 
-                    backgroundColor: colors.cardAlt,
-                    borderColor: colors.border 
-                  }]}>
-                    <ThemedText style={[styles.messageText, { color: colors.text }]}>
+                  {/* Encouraging Message */}
+                  <View style={styles.messageContainer}>
+                    <ThemedText style={styles.messageText}>
                       {getMessage()}
                     </ThemedText>
+                  </View>
+
+                  {/* Stars Animation */}
+                  <View style={styles.starsContainer}>
+                    {[...Array(5)].map((_, index) => (
+                      <IconSymbol 
+                        key={index}
+                        name="trophy.fill" 
+                        size={30} 
+                        color={index < Math.ceil(percentage/20) ? "#FFD700" : "#E0E0E0"}
+                        style={styles.star}
+                      />
+                    ))}
                   </View>
                 </View>
               </Animated.View>
 
               {/* Action Buttons */}
-              <ThemedView style={[styles.actionButtons, { backgroundColor: colors.background }]}>
+              <View style={styles.actionButtons}>
                 <TouchableOpacity
-                  style={[styles.button, styles.retryButton, { backgroundColor: colors.tint }]}
+                  style={[styles.button, styles.retryButton]}
                   onPress={handleRetry}
                 >
-                  <ThemedText style={[styles.retryButtonText, { color: '#fff' }]}>{t('mcq.results.tryAgain')}</ThemedText>
-                  <Ionicons name="refresh" size={24} color="#fff" />
+                  <IconSymbol name="chevron.right" size={24} color="#FFFFFF" />
+                  <ThemedText style={styles.retryButtonText}>{t('mcq.results.tryAgain')}</ThemedText>
                 </TouchableOpacity>
                 
                 <TouchableOpacity
-                  style={[styles.button, { backgroundColor: colors.cardAlt, borderColor: colors.tint, borderWidth: 2 }]}
+                  style={[styles.button, styles.homeButton]}
                   onPress={handleGoToInstructions}
                 >
-                  <ThemedText style={[styles.buttonText, { color: colors.tint }]}>{t('mcq.pictureQuiz.goToInstructions')}</ThemedText>
-                  <IconSymbol name="questionmark.circle" size={24} color={colors.tint} />
+                  <IconSymbol name="house.fill" size={24} color="#FFFFFF" />
+                  <ThemedText style={styles.buttonText}>{t('mcq.pictureQuiz.goToInstructions')}</ThemedText>
                 </TouchableOpacity>
-              </ThemedView>
+              </View>
             </ScrollView>
-          </ThemedView>
+          </LinearGradient>
         </SafeAreaView>
       </GestureHandlerRootView>
     );
@@ -439,6 +480,26 @@ export default function PictureMCQScreen({ onBackToInstructions }: PictureMCQScr
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <SafeAreaView style={[styles.safeArea, { backgroundColor: isDarkMode ? '#000000' : '#FFFFFF' }]}>
+        <View style={[styles.header, { backgroundColor: colors.background }]}>
+          <TouchableOpacity 
+            style={styles.backButton}
+            onPress={handleGoToInstructions}
+          >
+            <IconSymbol name="house.fill" size={24} color={colors.text} />
+          </TouchableOpacity>
+          <ThemedText style={styles.headerTitle}>
+            {t('mcq.pictureQuiz.title')}
+          </ThemedText>
+          <View style={styles.headerRight}>
+            <LanguageToggle colors={colors} />
+            <TouchableOpacity 
+              onPress={() => router.push('/profile')}
+              style={[styles.profileIconContainer, { backgroundColor: colors.tint + '20' }]}
+            >
+              <IconSymbol name="person.fill" size={24} color={colors.tint} />
+            </TouchableOpacity>
+          </View>
+        </View>
         <ThemedView style={[styles.container, { backgroundColor: isDarkMode ? '#000000' : '#FFFFFF' }]}>
           <ScrollView style={styles.scrollView}>
             <View style={styles.progressContainer}>
@@ -740,97 +801,128 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontWeight: '600',
   },
+  resultGradientContainer: {
+    flex: 1,
+    width: '100%',
+  },
   resultContainer: {
-    width: '90%',
-    alignSelf: 'center',
-    borderRadius: 24,
-    padding: 24,
-    elevation: 8,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.2,
-    shadowRadius: 12,
-    overflow: 'hidden',
-    marginTop: 16,
-    borderWidth: 2,
-    borderColor: '#6B54AE',
+    padding: 20,
   },
   resultContent: {
-    gap: 16,
+    alignItems: 'center',
+    backgroundColor: 'rgba(255, 255, 255, 0.15)',
+    borderRadius: 30,
+    padding: 20,
+    marginTop: 20,
+  },
+  trophyContainer: {
+    width: 120,
+    height: 120,
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    borderRadius: 60,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 20,
+    borderWidth: 3,
+    borderColor: '#FFD700',
   },
   scoreContainer: {
     alignItems: 'center',
+    marginBottom: 20,
   },
-  scoreLabel: {
-    fontSize: 24,
-    marginBottom: 16,
-    fontWeight: '600',
+  scoreCircle: {
+    width: 120,
+    height: 120,
+    borderRadius: 60,
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 3,
+    borderColor: '#FFFFFF',
   },
   scoreText: {
-    paddingTop: 30,
-    fontSize: 48,
-    fontWeight: '700',
-    textAlign: 'center',
-    marginBottom: 16,
+    paddingTop: 15,
+    fontSize: 36,
+    fontWeight: 'bold',
+    color: '#FFFFFF',
   },
   percentageContainer: {
-    alignSelf: 'center',
-    paddingHorizontal: 24,
-    paddingVertical: 12,
-    borderRadius: 30,
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    paddingHorizontal: 30,
+    paddingVertical: 15,
+    borderRadius: 25,
+    marginBottom: 20,
     borderWidth: 2,
-    marginBottom: 16,
-    borderColor: '#6B54AE',
-    backgroundColor: 'rgba(107, 84, 174, 0.1)',
+    borderColor: '#FFFFFF',
   },
   percentageText: {
-    fontSize: 24,
-    fontWeight: '600',
-    textAlign: 'center',
-    color: '#6B54AE',
+    paddingTop: 10,
+    fontSize: 32,
+    fontWeight: 'bold',
+    color: '#FFFFFF',
   },
   messageContainer: {
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
     padding: 20,
     borderRadius: 20,
+    marginBottom: 20,
     borderWidth: 2,
-    borderColor: '#6B54AE',
-    backgroundColor: 'rgba(107, 84, 174, 0.05)',
+    borderColor: '#FFFFFF',
+    width: '100%',
   },
   messageText: {
-    fontSize: 20,
+    fontSize: 24,
     textAlign: 'center',
-    lineHeight: 32,
-    fontWeight: '600',
-    color: '#6B54AE',
+    color: '#FFFFFF',
+    fontWeight: 'bold',
+  },
+  starsContainer: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    gap: 10,
+    marginTop: 10,
+  },
+  star: {
+    marginHorizontal: 5,
   },
   actionButtons: {
-    width: '100%',
-    gap: 12,
-    marginTop: 24,
-    marginBottom: 40,
     paddingHorizontal: 20,
+    paddingVertical: 30,
+    gap: 15,
   },
   button: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    padding: 16,
-    borderRadius: 16,
+    padding: 18,
+    borderRadius: 25,
     gap: 12,
-    width: '100%',
   },
   retryButton: {
-    backgroundColor: 'transparent',
-    borderWidth: 2,
-    borderColor: '#6B54AE',
+    backgroundColor: '#4CAF50',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
+  },
+  homeButton: {
+    backgroundColor: '#6B54AE',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
   },
   retryButtonText: {
-    fontSize: 18,
-    fontWeight: '600',
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#FFFFFF',
   },
   buttonText: {
-    fontSize: 18,
-    fontWeight: '600',
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#FFFFFF',
   },
   celebrationContainer: {
     position: 'absolute',
@@ -976,5 +1068,32 @@ const styles = StyleSheet.create({
     color: '#FFA000',
     fontSize: 24,
     fontWeight: '600',
+  },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 10,
+  },
+  backButton: {
+    padding: 10,
+  },
+  headerTitle: {
+    flex: 1,
+    textAlign: 'center',
+    fontSize: 24,
+    fontWeight: 'bold',
+  },
+  headerRight: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+  },
+  profileIconContainer: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginLeft: 10,
   },
 }); 
