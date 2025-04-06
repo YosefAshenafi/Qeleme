@@ -1,7 +1,7 @@
 import { StyleSheet, TextInput, TouchableOpacity, View, Image, KeyboardAvoidingView, Platform, ScrollView, Modal, Pressable } from 'react-native';
 import { Link, router, useLocalSearchParams } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Picker } from '@react-native-picker/picker';
 import Checkbox from 'expo-checkbox';
@@ -11,6 +11,7 @@ import { getColors } from '@/constants/Colors';
 import { sendOTP } from '@/utils/otpService';
 import { grades, Grade } from '@/constants/Grades';
 import { useTranslation } from 'react-i18next';
+import { BASE_URL } from '@/config/constants';
 
 import { ThemedText } from '@/components/ThemedText';
 import { LanguageToggle } from '@/components/ui/LanguageToggle';
@@ -22,6 +23,8 @@ interface ChildData {
   password: string;
   confirmPassword: string;
   plan?: string;
+  usernameValid?: boolean | null;
+  usernameChecking?: boolean;
 }
 
 export default function SignupScreen() {
@@ -47,6 +50,9 @@ export default function SignupScreen() {
   const [selectedChildIndex, setSelectedChildIndex] = useState<number | null>(null);
   const [showPlanModal, setShowPlanModal] = useState(false);
   const [error, setError] = useState('');
+  const [usernameValid, setUsernameValid] = useState<boolean | null>(null);
+  const [usernameChecking, setUsernameChecking] = useState(false);
+  const [usernameError, setUsernameError] = useState('');
 
   const handleGradeSelect = (value: string, childIndex?: number) => {
     if (childIndex !== undefined) {
@@ -70,12 +76,78 @@ export default function SignupScreen() {
     setChildrenData(newChildrenData);
   };
 
+  const checkUsernameAvailability = async (username: string) => {
+    if (username.length < 5) {
+      setUsernameValid(null);
+      setUsernameError('');
+      return;
+    }
+
+    setUsernameChecking(true);
+    try {
+      const response = await fetch(`${BASE_URL}/api/auth/check-username?username=${encodeURIComponent(username)}`);
+      const data = await response.json();
+      setUsernameValid(!data.exists);
+      setUsernameError(data.exists ? 'Username is already taken' : '');
+    } catch (error) {
+      console.error('Error checking username:', error);
+      setUsernameError('Error checking username availability');
+    } finally {
+      setUsernameChecking(false);
+    }
+  };
+
+  const handleUsernameChange = (text: string) => {
+    setUsername(text);
+    if (text.length >= 5) {
+      checkUsernameAvailability(text);
+    } else {
+      setUsernameValid(null);
+      setUsernameError(text.length > 0 ? 'Username must be at least 5 characters' : '');
+    }
+  };
+
   const handleChildUsernameChange = (text: string, index: number) => {
-    // Only convert to lowercase, don't remove special characters
     const formattedUsername = text.toLowerCase();
     const newChildrenData = [...childrenData];
-    newChildrenData[index] = { ...newChildrenData[index], username: formattedUsername };
+    newChildrenData[index] = { 
+      ...newChildrenData[index], 
+      username: formattedUsername,
+      usernameValid: null,
+      usernameChecking: false
+    };
     setChildrenData(newChildrenData);
+
+    if (formattedUsername.length >= 5) {
+      checkChildUsernameAvailability(formattedUsername, index);
+    }
+  };
+
+  const checkChildUsernameAvailability = async (username: string, index: number) => {
+    const newChildrenData = [...childrenData];
+    newChildrenData[index] = { 
+      ...newChildrenData[index], 
+      usernameChecking: true 
+    };
+    setChildrenData(newChildrenData);
+
+    try {
+      const response = await fetch(`${BASE_URL}/api/auth/check-username?username=${encodeURIComponent(username)}`);
+      const data = await response.json();
+      newChildrenData[index] = { 
+        ...newChildrenData[index], 
+        usernameValid: !data.exists,
+        usernameChecking: false
+      };
+      setChildrenData(newChildrenData);
+    } catch (error) {
+      console.error('Error checking username:', error);
+      newChildrenData[index] = { 
+        ...newChildrenData[index], 
+        usernameChecking: false 
+      };
+      setChildrenData(newChildrenData);
+    }
   };
 
   const handleChildPasswordChange = (text: string, index: number) => {
@@ -126,6 +198,12 @@ export default function SignupScreen() {
       return;
     }
 
+    // Validate username availability
+    if (usernameValid === false) {
+      setError('Username is already taken');
+      return;
+    }
+
     // Validate children data if parent registration
     if (role === 'parent' && numberOfChildren > 0) {
       const invalidChildren = childrenData.some(child => 
@@ -134,7 +212,8 @@ export default function SignupScreen() {
         !child.grade || 
         !child.password || 
         !child.confirmPassword ||
-        child.password !== child.confirmPassword
+        child.password !== child.confirmPassword ||
+        child.usernameValid === false
       );
       if (invalidChildren) {
         setError(t('signup.errors.incompleteChildrenData'));
@@ -228,7 +307,7 @@ export default function SignupScreen() {
                       placeholder={t('signup.fullName')}
                       placeholderTextColor={isDarkMode ? '#A0A0A5' : '#9CA3AF'}
                       value={fullName}
-                      onChangeText={setFullName}
+                      onChangeText={(text) => handleChildNameChange(text, selectedChildIndex ?? 0)}
                     />
                   </View>
 
@@ -242,11 +321,24 @@ export default function SignupScreen() {
                       placeholder={t('signup.username')}
                       placeholderTextColor={isDarkMode ? '#A0A0A5' : '#9CA3AF'}
                       value={username}
-                      onChangeText={setUsername}
+                      onChangeText={handleUsernameChange}
                       autoCapitalize="none"
                       autoCorrect={false}
                     />
+                    {usernameChecking && (
+                      <Ionicons name="time-outline" size={20} color={isDarkMode ? '#A0A0A5' : '#6B7280'} style={styles.inputIcon} />
+                    )}
+                    {usernameValid === true && (
+                      <Ionicons name="checkmark-circle" size={20} color="#4CAF50" style={styles.inputIcon} />
+                    )}
+                    {usernameValid === false && (
+                      <Ionicons name="close-circle" size={20} color="#F44336" style={styles.inputIcon} />
+                    )}
                   </View>
+
+                  {usernameError ? (
+                    <ThemedText style={[styles.errorText, { color: '#F44336' }]}>{usernameError}</ThemedText>
+                  ) : null}
 
                   <View style={[styles.inputContainer, {
                     backgroundColor: isDarkMode ? '#2C2C2E' : '#F9FAFB',
@@ -338,6 +430,15 @@ export default function SignupScreen() {
                             autoCapitalize="none"
                             autoCorrect={false}
                           />
+                          {child.usernameChecking && (
+                            <Ionicons name="time-outline" size={20} color={isDarkMode ? '#A0A0A5' : '#6B7280'} style={styles.inputIcon} />
+                          )}
+                          {child.usernameValid === true && (
+                            <Ionicons name="checkmark-circle" size={20} color="#4CAF50" style={styles.inputIcon} />
+                          )}
+                          {child.usernameValid === false && (
+                            <Ionicons name="close-circle" size={20} color="#F44336" style={styles.inputIcon} />
+                          )}
                         </View>
                         <View style={[styles.inputContainer, {
                           backgroundColor: isDarkMode ? '#2C2C2E' : '#F9FAFB',
