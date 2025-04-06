@@ -9,6 +9,7 @@ import { getColors } from '@/constants/Colors';
 import { useTranslation } from 'react-i18next';
 
 import { ThemedText } from '@/components/ThemedText';
+import { LanguageToggle } from '@/components/ui/LanguageToggle';
 
 export default function RoleSelectionScreen() {
   const { t } = useTranslation();
@@ -70,6 +71,9 @@ export default function RoleSelectionScreen() {
             >
               <Ionicons name="arrow-back" size={24} color={isDarkMode ? '#A0A0A5' : '#1F2937'} />
             </TouchableOpacity>
+            <View style={styles.languageToggleContainer}>
+              <LanguageToggle colors={colors} />
+            </View>
             <View style={styles.titleContainer}>
               <ThemedText style={[styles.title, { color: colors.text }]}>
                 {t('signup.roleSelection.title')}
@@ -292,5 +296,12 @@ const styles = StyleSheet.create({
   featureText: {
     fontSize: 15,
     lineHeight: 20,
+  },
+  languageToggleContainer: {
+    position: 'absolute',
+    top: 0,
+    right: 0,
+    marginTop: 8,
+    marginRight: 16,
   },
 }); 

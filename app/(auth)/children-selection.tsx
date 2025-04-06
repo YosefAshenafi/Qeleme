@@ -10,6 +10,7 @@ import { getColors } from '../../constants/Colors';
 import { useTranslation } from 'react-i18next';
 
 import { ThemedText } from '../../components/ThemedText';
+import { LanguageToggle } from '@/components/ui/LanguageToggle';
 
 export default function ChildrenSelectionScreen() {
   const { t } = useTranslation();
@@ -103,12 +104,17 @@ export default function ChildrenSelectionScreen() {
             >
               <Ionicons name="arrow-back" size={24} color={isDarkMode ? '#A0A0A5' : '#1F2937'} />
             </TouchableOpacity>
-            <ThemedText style={[styles.title, { color: colors.text }]}>
-              {t('signup.childrenSelection.title')}
-            </ThemedText>
-            <ThemedText style={[styles.subtitle, { color: colors.text + '80' }]}>
-              {t('signup.childrenSelection.subtitle')}
-            </ThemedText>
+            <View style={styles.languageToggleContainer}>
+              <LanguageToggle colors={colors} />
+            </View>
+            <View style={styles.titleContainer}>
+              <ThemedText style={[styles.title, { color: colors.text }]}>
+                {t('signup.childrenSelection.title')}
+              </ThemedText>
+              <ThemedText style={[styles.subtitle, { color: colors.text + '80' }]}>
+                {t('signup.childrenSelection.subtitle')}
+              </ThemedText>
+            </View>
           </View>
 
           <View style={styles.inputContainer}>
@@ -188,6 +194,9 @@ const styles = StyleSheet.create({
   backButton: {
     marginBottom: 16,
   },
+  titleContainer: {
+    marginBottom: 8,
+  },
   title: {
     fontSize: 32,
     fontWeight: '700',
@@ -250,5 +259,12 @@ const styles = StyleSheet.create({
     fontSize: 12,
     marginTop: 8,
     textAlign: 'center',
+  },
+  languageToggleContainer: {
+    position: 'absolute',
+    top: 0,
+    right: 0,
+    marginTop: 8,
+    marginRight: 16,
   },
 }); 

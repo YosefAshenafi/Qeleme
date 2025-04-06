@@ -12,6 +12,7 @@ import { storeAuthData } from '@/utils/authStorage';
 
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
+import { LanguageToggle } from '@/components/ui/LanguageToggle';
 
 const { width, height } = Dimensions.get('window');
 
@@ -150,6 +151,9 @@ export default function LoginScreen() {
             ]}
           >
             <View style={styles.header}>
+              <View style={styles.languageToggleContainer}>
+                <LanguageToggle colors={colors} />
+              </View>
               <Image 
                 source={require('@/assets/images/logo.png')}
                 style={styles.logoImage}
@@ -406,5 +410,11 @@ const styles = StyleSheet.create({
   },
   loginButtonDisabled: {
     opacity: 0.7,
+  },
+  languageToggleContainer: {
+    position: 'absolute',
+    top: -20,
+    right: -20,
+    zIndex: 1,
   },
 }); 

@@ -9,6 +9,7 @@ import { useTheme } from '@/contexts/ThemeContext';
 import { getColors } from '@/constants/Colors';
 
 import { ThemedText } from '@/components/ThemedText';
+import { LanguageToggle } from '@/components/ui/LanguageToggle';
 
 const { width, height } = Dimensions.get('window');
 
@@ -171,6 +172,9 @@ export default function ForgotPasswordScreen() {
       style={styles.gradient}
     >
       <SafeAreaView style={styles.safeArea}>
+        <View style={styles.languageToggleContainer}>
+          <LanguageToggle colors={colors} />
+        </View>
         <KeyboardAvoidingView 
           behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
           style={styles.keyboardView}
@@ -327,5 +331,12 @@ const styles = StyleSheet.create({
   backButtonText: {
     color: '#6B7280',
     fontSize: 16,
+  },
+  languageToggleContainer: {
+    position: 'absolute',
+    top: 80,
+    right: 0,
+    padding: 16,
+    zIndex: 1,
   },
 }); 
