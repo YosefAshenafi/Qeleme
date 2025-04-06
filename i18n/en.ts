@@ -152,7 +152,7 @@ export default {
     }
   },
   home: {
-    welcome: 'Welcome back, {{name}}!',
+    welcome: 'Welcome {{name}}!',
     subtitle: 'Ready to learn something new today?',
     recentActivity: 'Recent Activity',
     noActivity: 'No recent activity. Start learning!',
