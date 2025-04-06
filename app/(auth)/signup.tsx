@@ -106,33 +106,25 @@ export default function SignupScreen() {
     // Reset error state
     setError('');
 
-    // Validate required fields
-    if (!fullName) {
-      setError(t('signup.errors.fullNameRequired'));
+    // Validate required fields and collect missing fields
+    const missingFields = [];
+    if (!fullName) missingFields.push('full name');
+    if (!username) missingFields.push('username');
+    if (!phoneNumber) missingFields.push('phone number');
+    if (!password) missingFields.push('password');
+    if (!confirmPassword) missingFields.push('confirm password');
+    if (!acceptTerms) missingFields.push('terms and conditions acceptance');
+
+    // If there are missing fields, show error with specific fields
+    if (missingFields.length > 0) {
+      setError(`Please fill in the following required fields: ${missingFields.join(', ')}`);
       return;
     }
-    if (!username) {
-      setError(t('signup.errors.usernameRequired'));
-      return;
-    }
-    if (!phoneNumber) {
-      setError(t('signup.errors.phoneRequired'));
-      return;
-    }
-    if (!password) {
-      setError(t('signup.errors.passwordRequired'));
-      return;
-    }
+
     if (password !== confirmPassword) {
       setError(t('signup.errors.passwordMismatch'));
       return;
     }
-    if (!acceptTerms) {
-      setError(t('signup.errors.acceptTerms'));
-      return;
-    }
-
-    console.log('role', role);
 
     // Validate children data if parent registration
     if (role === 'parent' && numberOfChildren > 0) {
@@ -160,9 +152,9 @@ export default function SignupScreen() {
         phoneNumber: `+251${phoneNumber}`,
         password,
         role,
+        grade: role === 'student' ? grade : undefined,
         numberOfChildren,
-        childrenData: role === 'parent' && numberOfChildren > 0 ? childrenData : undefined,
-        grade: role === 'parent' && numberOfChildren === 0 ? grade : undefined
+        childrenData: role === 'parent' && numberOfChildren > 0 ? childrenData : undefined
       };
 
       // Try to send OTP but proceed regardless of result
