@@ -21,7 +21,7 @@ interface ChildData {
 
 const plans = [
   {
-    id: '3',
+    id: '0',
     name: 'Free',
     price: 0,
     features: [
@@ -29,6 +29,28 @@ const plans = [
       'Limited practice questions',
       'Basic progress tracking',
       'Community support'
+    ]
+  },
+  {
+    id: '1',
+    name: '1 Month',
+    price: 199,
+    features: [
+      'Access to all learning materials',
+      'Practice questions',
+      'Progress tracking',
+      'Basic support'
+    ]
+  },
+  {
+    id: '3',
+    name: '3 Months',
+    price: 299,
+    features: [
+      'Access to all learning materials',
+      'Practice questions',
+      'Progress tracking',
+      'Basic support'
     ]
   },
   {
@@ -62,9 +84,9 @@ export default function PlanSelectionScreen() {
   const params = useLocalSearchParams();
   const userData = JSON.parse(params.userData as string);
   const [selectedPlans, setSelectedPlans] = useState<ChildData[]>(
-    userData.numberOfChildren > 0 
-      ? userData.childrenData.map((child: ChildData) => ({ ...child, plan: child.plan || '3' }))
-      : [{ plan: '3', fullName: '', username: '', grade: '', password: '', confirmPassword: '' }]
+    userData.role === 'parent' && userData.numberOfChildren > 0 
+      ? userData.childrenData.map((child: ChildData) => ({ ...child, plan: child.plan || '0' }))
+      : [{ plan: '0', fullName: '', username: '', grade: '', password: '', confirmPassword: '' }]
   );
 
 const styles = StyleSheet.create({
@@ -109,6 +131,8 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     padding: 24,
     borderWidth: 2,
+    backgroundColor: isDarkMode ? '#2C2C2E' : '#FFFFFF',
+    marginBottom: 16,
   },
   planHeader: {
     flexDirection: 'row',
@@ -176,7 +200,7 @@ const styles = StyleSheet.create({
   });
 
   const getTotalCost = () => {
-    if (userData.numberOfChildren > 0) {
+    if (userData.role === 'parent' && userData.numberOfChildren > 0) {
       // For parent registration, multiply the selected plan price by number of children
       const plan = plans.find(p => p.id === selectedPlans[0].plan);
       return (plan?.price || 0) * userData.numberOfChildren;
@@ -203,13 +227,13 @@ const styles = StyleSheet.create({
       // Update userData with selected plans
       const updatedUserData = {
         ...userData,
-        childrenData: userData.numberOfChildren > 0 ? selectedPlans : undefined,
-        plan: userData.numberOfChildren === 0 ? selectedPlans[0].plan : undefined
+        childrenData: userData.role === 'parent' && userData.numberOfChildren > 0 ? selectedPlans : undefined,
+        plan: selectedPlans[0].plan
       };
 
       if (updatedUserData.role === 'parent') {
         // Prepare children data with their selected plans and passwords
-        const children = updatedUserData.childrenData?.map(child => ({
+        const children = updatedUserData.childrenData?.map((child: ChildData) => ({
           fullName: child.fullName,
           username: child.username,
           password: child.password,
@@ -267,7 +291,7 @@ const styles = StyleSheet.create({
             password: updatedUserData.password,
             grade: updatedUserData.grade,
             parentId: "0", // Default value for now
-            paymentPlan: updatedUserData.plan || "3",
+            paymentPlan: selectedPlans[0].plan,
             amountPaid: getTotalCost()
           }),
         });
@@ -334,7 +358,7 @@ const styles = StyleSheet.create({
                 {t('auth.planSelection.title')}
               </ThemedText>
               <ThemedText style={[styles.subtitle, { color: colors.text + '80' }]}>
-                {userData.numberOfChildren > 1 
+                {userData.role === 'parent' && userData.numberOfChildren > 1 
                   ? t('auth.planSelection.subtitleMultiple')
                   : t('auth.planSelection.subtitleSingle')}
               </ThemedText>
@@ -347,7 +371,7 @@ const styles = StyleSheet.create({
                   style={[
                     styles.planCard,
                     {
-                      backgroundColor: plan.id === '6' 
+                      backgroundColor: plan.id === '6' || plan.id === '1'
                         ? isDarkMode ? '#4F46E5' : '#4F46E5' 
                         : isDarkMode ? '#2C2C2E' : '#FFFFFF',
                       borderColor: selectedPlans[0].plan === plan.id ? '#4F46E5' : (isDarkMode ? '#3C3C3E' : '#E5E7EB'),
@@ -359,8 +383,8 @@ const styles = StyleSheet.create({
                     <ThemedText style={[
                       styles.planName, 
                       { 
-                        color: plan.id === '6' ? '#FFFFFF' : colors.text,
-                        fontWeight: plan.id === '6' ? 'bold' : 'normal'
+                        color: plan.id === '6' || plan.id === '1' ? '#FFFFFF' : colors.text,
+                        fontWeight: plan.id === '6' || plan.id === '1' ? 'bold' : 'normal'
                       }
                     ]}>
                       {t(`auth.planSelection.plans.${plan.id}.name`)}
@@ -368,8 +392,8 @@ const styles = StyleSheet.create({
                     <ThemedText style={[
                       styles.planPrice, 
                       { 
-                        color: plan.id === '6' ? '#FFFFFF' : colors.text,
-                        fontWeight: plan.id === '6' ? 'bold' : 'normal'
+                        color: plan.id === '6' || plan.id === '1' ? '#FFFFFF' : colors.text,
+                        fontWeight: plan.id === '6' || plan.id === '1' ? 'bold' : 'normal'
                       }
                     ]}>
                       ETB {plan.price}
@@ -381,12 +405,12 @@ const styles = StyleSheet.create({
                         <Ionicons 
                           name="checkmark-circle" 
                           size={20} 
-                          color={plan.id === '6' ? '#FFFFFF' : '#4F46E5'} 
+                          color={plan.id === '6' || plan.id === '1' ? '#FFFFFF' : '#4F46E5'} 
                         />
                         <ThemedText style={[
                           styles.featureText, 
                           { 
-                            color: plan.id === '6' ? '#FFFFFF' : colors.text + '80',
+                            color: plan.id === '6' || plan.id === '1' ? '#FFFFFF' : colors.text + '80',
                             flex: 1
                           }
                         ]}>
@@ -399,7 +423,7 @@ const styles = StyleSheet.create({
               ))}
             </View>
 
-            {userData.numberOfChildren > 1 && (
+            {userData.role === 'parent' && userData.numberOfChildren > 1 && (
               <View style={styles.calculationContainer}>
                 <ThemedText style={[styles.calculationText, { color: colors.text }]}>
                   {t('auth.planSelection.calculation', {

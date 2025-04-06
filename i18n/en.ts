@@ -96,13 +96,31 @@ export default {
         button: 'Try Again'
       },
       plans: {
-        '3': {
+        '0': {
           name: 'Free',
           features: [
             'Basic access to learning materials',
             'Limited practice questions',
             'Basic progress tracking',
             'Community support'
+          ]
+        },
+        '1': {
+          name: '1 Month',
+          features: [
+            'Access to all learning materials',
+            'Practice questions',
+            'Progress tracking',
+            'Basic support'
+          ]
+        },
+        '3': {
+          name: '3 Months',
+          features: [
+            'Access to all learning materials',
+            'Practice questions',
+            'Progress tracking',
+            'Basic support'
           ]
         },
         '6': {
@@ -561,6 +579,28 @@ export default {
           homework: '20 Homework Helps'
         },
         price: 'ETB 0',
+        getStarted: 'Get Started'
+      },
+      oneMonth: {
+        title: '1 Month Plan',
+        features: {
+          questions: 'Unlimited Questions',
+          flashcards: 'Unlimited Flashcards',
+          homework: 'Unlimited Homework Helps'
+        },
+        price: 'ETB 199',
+        period: '/1 month',
+        getStarted: 'Get Started'
+      },
+      threeMonth: {
+        title: '3 Month Plan',
+        features: {
+          questions: 'Unlimited Questions',
+          flashcards: 'Unlimited Flashcards',
+          homework: 'Unlimited Homework Helps'
+        },
+        price: 'ETB 299',
+        period: '/3 months',
         getStarted: 'Get Started'
       },
       sixMonth: {

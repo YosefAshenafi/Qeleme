@@ -67,13 +67,31 @@ export default {
         button: 'እንደገና ይሞክሩ'
       },
       plans: {
-        '3': {
+        '0': {
           name: 'ነፃ',
           features: [
             'መሰረታዊ የመማሪያ ቁሳቁሶች',
             'የተወሰኑ የልምምድ ጥያቄዎች',
             'መሰረታዊ የእድገት ክትትል',
             'የማህበረሰብ ድጋፍ'
+          ]
+        },
+        '1': {
+          name: '1 ወር',
+          features: [
+            'ሁሉንም የትምህርት ቁሳቁሶች ማግኘት',
+            'የልምምድ ጥያቄዎች',
+            'የእድገት ክትትል',
+            'መሰረታዊ ድጋፍ'
+          ]
+        },
+        '3': {
+          name: '3 ወራት',
+          features: [
+            'ሁሉንም የትምህርት ቁሳቁሶች ማግኘት',
+            'የልምምድ ጥያቄዎች',
+            'የእድገት ክትትል',
+            'መሰረታዊ ድጋፍ'
           ]
         },
         '6': {
@@ -568,6 +586,28 @@ export default {
           homework: '20 የቤት ስራ እርዳታዎች'
         },
         price: 'ብር 0',
+        getStarted: 'ጀምር'
+      },
+      oneMonth: {
+        title: 'የ1 ወር እቅድ',
+        features: {
+          questions: 'ያለገደብ ጥያቄዎች',
+          flashcards: 'ያለገደብ ፍላሽ ካርዶች',
+          homework: 'ያለገደብ የቤት ስራ እርዳታዎች'
+        },
+        price: 'ብር 199',
+        period: '/1 ወር',
+        getStarted: 'ጀምር'
+      },
+      threeMonth: {
+        title: 'የ3 ወር እቅድ',
+        features: {
+          questions: 'ያለገደብ ጥያቄዎች',
+          flashcards: 'ያለገደብ ፍላሽ ካርዶች',
+          homework: 'ያለገደብ የቤት ስራ እርዳታዎች'
+        },
+        price: 'ብር 299',
+        period: '/3 ወራት',
         getStarted: 'ጀምር'
       },
       sixMonth: {

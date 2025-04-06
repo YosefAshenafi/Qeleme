@@ -115,9 +115,6 @@ export default function PaymentScreen() {
                   >
                     <View style={styles.paymentOptionHeader}>
                       <ThemedText style={[styles.paymentOptionTitle, { color: isDarkMode ? '#A78BFA' : '#7C3AED' }]}>{t('payment.plans.freeTrial.title')}</ThemedText>
-                      {/* <View style={[styles.badge, { backgroundColor: isDarkMode ? '#6D28D9' : '#EDE9FE' }]}>
-                        <ThemedText style={[styles.badgeText, { color: isDarkMode ? '#A78BFA' : '#7C3AED' }]}>Starter</ThemedText>
-                      </View> */}
                     </View>
                     <View style={styles.featuresContainer}>
                       <View style={styles.featureItem}>
@@ -145,6 +142,80 @@ export default function PaymentScreen() {
                     </TouchableOpacity>
                   </LinearGradient>
                 </TouchableOpacity>
+
+                {/* 1 Month Plan */}
+                <PaymentButton
+                  amount={199}
+                  onSuccess={() => handlePaymentSuccess(199, '1')}
+                  onFailure={handlePaymentFailure}
+                >
+                  <LinearGradient
+                    colors={[isDarkMode ? '#4B3A7A' : '#6B54AE', isDarkMode ? '#4B3A7A' : '#6B54AE']}
+                    style={styles.paymentOptionGradient}
+                  >
+                    <View style={styles.paymentOptionHeader}>
+                      <ThemedText style={[styles.paymentOptionTitle, { color: '#FFFFFF' }]}>{t('payment.plans.oneMonth.title')}</ThemedText>
+                    </View>
+                    <View style={styles.featuresContainer}>
+                      <View style={styles.featureItem}>
+                        <Ionicons name="infinite" size={20} color="#FFFFFF" />
+                        <ThemedText style={[styles.featureText, { color: '#FFFFFF' }]}>{t('payment.plans.oneMonth.features.questions')}</ThemedText>
+                      </View>
+                      <View style={styles.featureItem}>
+                        <Ionicons name="infinite" size={20} color="#FFFFFF" />
+                        <ThemedText style={[styles.featureText, { color: '#FFFFFF' }]}>{t('payment.plans.oneMonth.features.flashcards')}</ThemedText>
+                      </View>
+                      <View style={styles.featureItem}>
+                        <Ionicons name="infinite" size={20} color="#FFFFFF" />
+                        <ThemedText style={[styles.featureText, { color: '#FFFFFF' }]}>{t('payment.plans.oneMonth.features.homework')}</ThemedText>
+                      </View>
+                    </View>
+                    <View style={styles.priceContainer}>
+                      <ThemedText style={[styles.paymentOptionPrice, { color: '#FFFFFF' }]}>{t('payment.plans.oneMonth.price')}</ThemedText>
+                      <ThemedText style={[styles.paymentOptionPeriod, { color: '#FFFFFF' }]}>{t('payment.plans.oneMonth.period')}</ThemedText>
+                    </View>
+                    <View style={[styles.getStartedButton, { backgroundColor: 'rgba(255, 255, 255, 0.15)' }]}>
+                      <ThemedText style={styles.getStartedButtonText}>{t('payment.plans.oneMonth.getStarted')}</ThemedText>
+                    </View>
+                  </LinearGradient>
+                </PaymentButton>
+
+                {/* 3 Month Plan */}
+                <PaymentButton
+                  amount={299}
+                  onSuccess={() => handlePaymentSuccess(299, '3')}
+                  onFailure={handlePaymentFailure}
+                >
+                  <LinearGradient
+                    colors={[isDarkMode ? '#4B3A7A' : '#6B54AE', isDarkMode ? '#4B3A7A' : '#6B54AE']}
+                    style={styles.paymentOptionGradient}
+                  >
+                    <View style={styles.paymentOptionHeader}>
+                      <ThemedText style={[styles.paymentOptionTitle, { color: '#FFFFFF' }]}>{t('payment.plans.threeMonth.title')}</ThemedText>
+                    </View>
+                    <View style={styles.featuresContainer}>
+                      <View style={styles.featureItem}>
+                        <Ionicons name="infinite" size={20} color="#FFFFFF" />
+                        <ThemedText style={[styles.featureText, { color: '#FFFFFF' }]}>{t('payment.plans.threeMonth.features.questions')}</ThemedText>
+                      </View>
+                      <View style={styles.featureItem}>
+                        <Ionicons name="infinite" size={20} color="#FFFFFF" />
+                        <ThemedText style={[styles.featureText, { color: '#FFFFFF' }]}>{t('payment.plans.threeMonth.features.flashcards')}</ThemedText>
+                      </View>
+                      <View style={styles.featureItem}>
+                        <Ionicons name="infinite" size={20} color="#FFFFFF" />
+                        <ThemedText style={[styles.featureText, { color: '#FFFFFF' }]}>{t('payment.plans.threeMonth.features.homework')}</ThemedText>
+                      </View>
+                    </View>
+                    <View style={styles.priceContainer}>
+                      <ThemedText style={[styles.paymentOptionPrice, { color: '#FFFFFF' }]}>{t('payment.plans.threeMonth.price')}</ThemedText>
+                      <ThemedText style={[styles.paymentOptionPeriod, { color: '#FFFFFF' }]}>{t('payment.plans.threeMonth.period')}</ThemedText>
+                    </View>
+                    <View style={[styles.getStartedButton, { backgroundColor: 'rgba(255, 255, 255, 0.15)' }]}>
+                      <ThemedText style={styles.getStartedButtonText}>{t('payment.plans.threeMonth.getStarted')}</ThemedText>
+                    </View>
+                  </LinearGradient>
+                </PaymentButton>
 
                 {/* 6 Month Plan */}
                 <PaymentButton

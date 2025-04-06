@@ -29,6 +29,7 @@ export default function SignupScreen() {
   const colors = getColors(isDarkMode);
   const params = useLocalSearchParams();
   const numberOfChildren = params.numberOfChildren ? parseInt(params.numberOfChildren as string) : 1;
+  const role = params.role as string || 'student';
   const initialChildrenData = params.childrenData ? JSON.parse(params.childrenData as string) : 
     Array(numberOfChildren).fill({ fullName: '', username: '', grade: '' as Grade, password: '', confirmPassword: '' });
   
@@ -130,8 +131,10 @@ export default function SignupScreen() {
       return;
     }
 
+    console.log('role', role);
+
     // Validate children data if parent registration
-    if (numberOfChildren > 0) {
+    if (role === 'parent' && numberOfChildren > 0) {
       const invalidChildren = childrenData.some(child => 
         !child.fullName || 
         !child.username || 
@@ -155,10 +158,10 @@ export default function SignupScreen() {
         username,
         phoneNumber: `+251${phoneNumber}`,
         password,
-        role: numberOfChildren > 0 ? 'parent' : 'student',
+        role,
         numberOfChildren,
-        childrenData: numberOfChildren > 0 ? childrenData : undefined,
-        grade: numberOfChildren === 0 ? grade : undefined
+        childrenData: role === 'parent' && numberOfChildren > 0 ? childrenData : undefined,
+        grade: role === 'parent' && numberOfChildren === 0 ? grade : undefined
       };
 
       // Try to send OTP but proceed regardless of result
@@ -306,7 +309,7 @@ export default function SignupScreen() {
                     />
                   </View>
 
-                  {numberOfChildren === 1 ? (
+                  {role === 'parent' && numberOfChildren === 1 ? (
                     <View style={[styles.inputContainer, {
                       backgroundColor: isDarkMode ? '#2C2C2E' : '#F9FAFB',
                       borderColor: isDarkMode ? '#3C3C3E' : '#E5E7EB',
@@ -322,7 +325,7 @@ export default function SignupScreen() {
                         <Ionicons name="chevron-down" size={20} color={isDarkMode ? '#A0A0A5' : '#6B7280'} />
                       </TouchableOpacity>
                     </View>
-                  ) : (
+                  ) : role === 'parent' && numberOfChildren > 0 ? (
                     childrenData.map((child, index) => (
                       <View key={index} style={styles.childSection}>
                         <ThemedText style={[styles.childTitle, { color: colors.text }]}>
@@ -401,7 +404,23 @@ export default function SignupScreen() {
                         </View>
                       </View>
                     ))
-                  )}
+                  ) : role === 'student' ? (
+                    <View style={[styles.inputContainer, {
+                      backgroundColor: isDarkMode ? '#2C2C2E' : '#F9FAFB',
+                      borderColor: isDarkMode ? '#3C3C3E' : '#E5E7EB',
+                    }]}>
+                      <Ionicons name="school-outline" size={20} color={isDarkMode ? '#A0A0A5' : '#6B7280'} style={styles.inputIcon} />
+                      <TouchableOpacity 
+                        style={styles.dropdownButton}
+                        onPress={() => openGradeModal()}
+                      >
+                        <ThemedText style={[styles.input, { color: grade ? colors.text : (isDarkMode ? '#A0A0A5' : '#9CA3AF') }]}>
+                          {grade ? grades.find(g => g.value === grade)?.label || t('signup.grade.label') : t('signup.grade.label')}
+                        </ThemedText>
+                        <Ionicons name="chevron-down" size={20} color={isDarkMode ? '#A0A0A5' : '#6B7280'} />
+                      </TouchableOpacity>
+                    </View>
+                  ) : null}
                 </View>
 
                 {error ? (
