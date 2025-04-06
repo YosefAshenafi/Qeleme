@@ -191,6 +191,58 @@ export default function HomeScreen() {
         activities = JSON.parse(activitiesJson);
       }
 
+      // Initialize with zeros if no activities
+      if (activities.length === 0) {
+        const cards: ReportCard[] = [
+          {
+            title: t('home.reportCards.performance.title'),
+            number: '0%',
+            subtitle: t('home.reportCards.performance.subtitle'),
+            gradient: 'purple',
+            icon: 'chart.bar',
+            stats: [
+              { label: t('home.reportCards.performance.stats.quizzesTaken'), value: '0' },
+              { label: t('home.reportCards.performance.stats.successRate'), value: '0%' }
+            ]
+          },
+          {
+            title: t('home.reportCards.studyProgress.title'),
+            number: '0h',
+            subtitle: t('home.reportCards.studyProgress.subtitle'),
+            gradient: 'blue',
+            icon: 'clock.fill',
+            stats: [
+              { label: t('home.reportCards.studyProgress.stats.dailyGoal'), value: '0h' },
+              { label: t('home.reportCards.studyProgress.stats.weeklyGoal'), value: '0h' }
+            ]
+          },
+          {
+            title: t('home.reportCards.learningStreak.title'),
+            number: '0d',
+            subtitle: t('home.reportCards.learningStreak.subtitle'),
+            gradient: 'green',
+            icon: 'trophy.fill',
+            stats: [
+              { label: t('home.reportCards.learningStreak.stats.currentStreak'), value: '0d' },
+              { label: t('home.reportCards.learningStreak.stats.bestStreak'), value: '0d' }
+            ]
+          },
+          {
+            title: t('home.reportCards.studyFocus.title'),
+            number: '0',
+            subtitle: t('home.reportCards.studyFocus.subtitle'),
+            gradient: 'orange',
+            icon: 'chart.bar',
+            stats: [
+              { label: t('home.reportCards.studyFocus.stats.topSubject'), value: '-' },
+              { label: t('home.reportCards.studyFocus.stats.hoursPerSubject'), value: '0h' }
+            ]
+          }
+        ];
+        setReportCards(cards);
+        return;
+      }
+
       // Calculate study hours from activities
       const studyHours = activities
         .filter((activity: any) => activity.type === 'study')

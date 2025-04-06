@@ -141,36 +141,22 @@ export default function ProfileScreen() {
 
   const loadStats = async () => {
     try {
-      const activitiesJson = await AsyncStorage.getItem('recentActivities');
-      if (activitiesJson) {
-        const activities = JSON.parse(activitiesJson);
-        
-        // Calculate MCQs completed
-        const mcqCount = activities.filter((activity: any) => activity.type === 'mcq').length;
-        
-        // Calculate flashcards clicked
-        const flashcardCount = activities.filter((activity: any) => activity.type === 'flashcard').length;
-        
-        // Calculate homework questions
-        const homeworkCount = activities.filter((activity: any) => activity.type === 'homework').length;
-        
-        // Calculate study hours
-        const studyHours = activities
-          .filter((activity: any) => activity.type === 'study')
-          .reduce((total: number, activity: any) => {
-            const hours = parseInt(activity.duration?.replace('h', '') || '0');
-            return total + hours;
-          }, 0);
-
-        setStats([
-          { label: t('profile.stats.mcqsCompleted'), value: mcqCount.toString(), icon: 'questionmark.circle.fill' as const },
-          { label: t('profile.stats.flashcardsClicked'), value: flashcardCount.toString(), icon: 'rectangle.stack.fill' as const },
-          { label: t('profile.stats.homeworkQuestions'), value: homeworkCount.toString(), icon: 'message.fill' as const },
-          { label: t('profile.stats.studyHours'), value: studyHours.toString(), icon: 'clock.fill' as const },
-        ]);
-      }
+      // Always set zeros for all stats
+      setStats([
+        { label: t('profile.stats.mcqsCompleted'), value: '0', icon: 'questionmark.circle.fill' as const },
+        { label: t('profile.stats.flashcardsClicked'), value: '0', icon: 'rectangle.stack.fill' as const },
+        { label: t('profile.stats.homeworkQuestions'), value: '0', icon: 'message.fill' as const },
+        { label: t('profile.stats.studyHours'), value: '0', icon: 'clock.fill' as const },
+      ]);
     } catch (error) {
       console.error(t('profile.errors.loadingStats'), error);
+      // Set zeros for all stats on error
+      setStats([
+        { label: t('profile.stats.mcqsCompleted'), value: '0', icon: 'questionmark.circle.fill' as const },
+        { label: t('profile.stats.flashcardsClicked'), value: '0', icon: 'rectangle.stack.fill' as const },
+        { label: t('profile.stats.homeworkQuestions'), value: '0', icon: 'message.fill' as const },
+        { label: t('profile.stats.studyHours'), value: '0', icon: 'clock.fill' as const },
+      ]);
     }
   };
 

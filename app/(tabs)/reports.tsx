@@ -88,60 +88,29 @@ export default function ReportsScreen() {
   const loadReportData = () => {
     const sampleData = {
       overallProgress: {
-        percentage: 75,
-        totalTopics: 20,
-        completedTopics: 15,
-        studyHours: 48,
+        percentage: 0,
+        totalTopics: 0,
+        completedTopics: 0,
+        studyHours: 0,
       },
       performance: {
-        averageScore: 85,
-        quizzesTaken: 60,
-        successRate: 88,
-        improvement: '+15%',
+        averageScore: 0,
+        quizzesTaken: 0,
+        successRate: 0,
+        improvement: '0%',
       },
       learningStreak: {
-        currentStreak: 12,
-        bestStreak: 25,
-        totalDaysActive: 90,
+        currentStreak: 0,
+        bestStreak: 0,
+        totalDaysActive: 0,
       },
       subjectBreakdown: [
-        { subject: t('subjects.mathematics'), progress: 90, score: 95 },
-        { subject: t('subjects.physics'), progress: 85, score: 88 },
-        { subject: t('subjects.chemistry'), progress: 75, score: 80 },
-        { subject: t('subjects.biology'), progress: 70, score: 75 },
+        { subject: t('subjects.mathematics'), progress: 0, score: 0 },
+        { subject: t('subjects.physics'), progress: 0, score: 0 },
+        { subject: t('subjects.chemistry'), progress: 0, score: 0 },
+        { subject: t('subjects.biology'), progress: 0, score: 0 },
       ],
-      recentActivity: [
-        {
-          type: 'quiz',
-          subject: t('subjects.mathematics'),
-          score: 95,
-          date: new Date().toLocaleDateString(i18n.language === 'am' ? 'am-ET' : 'en-US')
-        },
-        {
-          type: 'study',
-          subject: t('subjects.physics'),
-          duration: t('reports.duration', { hours: '2.5' }),
-          date: new Date(Date.now() - 86400000).toLocaleDateString(i18n.language === 'am' ? 'am-ET' : 'en-US')
-        },
-        {
-          type: 'homework',
-          subject: t('subjects.chemistry'),
-          status: t('reports.status.completed'),
-          date: new Date(Date.now() - 172800000).toLocaleDateString(i18n.language === 'am' ? 'am-ET' : 'en-US')
-        },
-        {
-          type: 'quiz',
-          subject: t('subjects.biology'),
-          score: 85,
-          date: new Date(Date.now() - 259200000).toLocaleDateString(i18n.language === 'am' ? 'am-ET' : 'en-US')
-        },
-        {
-          type: 'study',
-          subject: t('subjects.mathematics'),
-          duration: t('reports.duration', { hours: '3' }),
-          date: new Date(Date.now() - 345600000).toLocaleDateString(i18n.language === 'am' ? 'am-ET' : 'en-US')
-        }
-      ]
+      recentActivity: []
     };
     setReportData(sampleData);
   };
