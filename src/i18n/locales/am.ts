@@ -1,5 +1,26 @@
 export default {
   home: {
+    welcome: 'እንኳን ደህና መጡ {{name}}!',
+    subtitle: 'ዛሬ አዲስ ነገር እንማር!',
+    noActivity: 'ምንም የቅርብ እንቅስቃሴ የለም። መማር ይጀምሩ!',
+    quickActions: {
+      mcq: {
+        title: 'ምርጫ ልምምድ',
+        subtitle: 'ዕውቀትዎን ይፈትሹ'
+      },
+      flashcards: {
+        title: 'ፍላሽ ካርዶች',
+        subtitle: 'ዋና ጽንሰ-ሐሳቦችን ይገምግሙ'
+      },
+      homework: {
+        title: 'የቤት ስራ እርዳታ',
+        subtitle: 'የባለሙያ እርዳታ ያግኙ'
+      },
+      reports: {
+        title: 'የእድገት ሪፖርት',
+        subtitle: 'የትምህርትዎን እድገት ይከታተሉ'
+      }
+    },
     reportCards: {
       performance: {
         title: "አፈፃፀም",
@@ -32,44 +53,651 @@ export default {
       completed: "ተጠናቅቋል",
       inProgress: "በሂደት ላይ"
     },
-    motivationalQuotes: {
-      title: "የዕለቱ ተነሳሽነት"
+    activityTypes: {
+      mcq: 'ምርጫ ፈተና',
+      flashcard: 'ፍላሽ ካርዶች',
+      homework: 'የቤት ስራ',
+      study: 'የትምህርት ክፍለ ጊዜ'
+    },
+    activityDetails: {
+      completed: 'ተጠናቅቋል',
+      inProgress: 'በሂደት ላይ',
+      grade: 'ደረጃ',
+      subject: 'ርዕሰ ጉዳይ',
+      chapter: 'ምዕራፍ',
+      duration: '{hours}ሰ',
+      questions: {
+        completed: '5 ጥያቄዎች ተጠናቅቋል',
+        reviewed: '3 ጥያቄዎች ተገመግመዋል'
+      },
+      flashcards: {
+        reviewed: '10 ፍላሽ ካርዶች ተገመግመዋል'
+      },
+      homework: {
+        submitted: 'የቤት ስራ ቀርቧል',
+        working: 'በየቤት ስራ ላይ እየሰራ'
+      },
+      study: {
+        session: 'የትምህርት ክፍለ ጊዜ - {duration}'
+      }
+    },
+    motivationalQuotes: [
+      {
+        quote: "ታላቅ ሥራ ለማድረግ ብቸኛው መንገድ የሚወዱትን ማድረግ ነው።",
+        author: "ስቲቭ ጆብስ"
+      },
+      {
+        quote: "ትምህርት ለህይወት ዝግጅት አይደለም፤ ትምህርት ራሱ ህይወት ነው።",
+        author: "ጆን ዱይ"
+      },
+      {
+        quote: "ስለ ትምህርት ያለው ውብ ነገር ማንም ሰው ከእርስዎ ሊወስደው አይችልም።",
+        author: "ቢ.ቢ. ኪንግ"
+      }
+    ]
+  },
+  resetPassword: {
+    title: 'የይለፍ ቃል ዳግም ያዘጋጁ',
+    phoneNumber: 'ስልክ ቁጥር',
+    verificationCode: 'የማረጋገጫ ኮድ ያስገቡ',
+    newPassword: 'አዲስ የይለፍ ቃል',
+    confirmPassword: 'አዲሱን የይለፍ ቃል ያረጋግጡ',
+    sendCode: 'የማረጋገጫ ኮድ ይላኩ',
+    verifyCode: 'ኮዱን ያረጋግጡ',
+    resetPassword: 'የይለፍ ቃል ዳግም ያዘጋጁ',
+    phoneSubtitle: 'የማረጋገጫ ኮድ ለማግኘት ስልክ ቁጥርዎን ያስገቡ',
+    verifySubtitle: 'ወደ ስልክዎ የተላከውን የማረጋገጫ ኮድ ያስገቡ',
+    resetSubtitle: 'አዲስ የይለፍ ቃል ይፍጠሩ',
+    backToLogin: 'ወደ መግቢያ ይመለሱ',
+  },
+  login: {
+    welcome: 'እንኳን በደህና መጡ',
+    subtitle: 'አእምሮዎን በእያንዳንዱ ትምህርት ያጠናክሩ',
+    username: {
+      label: 'መለያ ስም',
+      placeholder: 'መለያ ስምዎን ያስገቡ',
+      error: {
+        required: 'መለያ ስም ያስፈልጋል',
+        invalid: 'የሚፈልጉትን መለያ ስም ያስገቡ'
+      }
+    },
+    password: {
+      label: 'የይለፍ ቃል',
+      placeholder: 'የይለፍ ቃል',
+      error: {
+        required: 'የይለፍ ቃል ያስፈልጋል'
+      }
+    },
+    error: {
+      invalidCredentials: 'የሚፈልጉትን መለያ ስም ያስገቡ',
+      serverError: 'ትክክለኛ መለያ አላስገቡም'
+    },
+    signIn: 'ግባ',
+    forgotPassword: 'የይለፍ ቃልዎን ረስተዋል?',
+    noAccount: 'መለያ የሎትም?',
+    signUp: 'ይመዝገቡ'
+  },
+  signup: {
+    title: 'አካውንት ይፍጠሩ',
+    subtitle: 'የእኛን ማህበረሰብ ይቀላቀሉ',
+    roleSelection: {
+      title: 'እርሶ ማንዎት?',
+      subtitle: 'በቀለም እንዴት መጠቀም እንደሚፈልጉ ይምረጡ',
+      student: {
+        title: 'ተማሪ',
+        description: 'መማር እና መለማመድ እፈልጋለሁ',
+        features: {
+          materials: 'የጥናት ቁሳቁሶችን ይድረሱ',
+          practice: 'ጥያቄዎችን ይለማመዱ',
+          progress: 'የጥናት እድገት ይከታተሉ'
+        }
+      },
+      parent: {
+        title: 'ወላጅ',
+        description: 'የልጆቼን መማር መከታተል እፈልጋለሁ',
+        features: {
+          monitor: 'የጥናት እድገት ይከታተሉ',
+          manage: 'ልጆችን ይመራሉ',
+          updates: 'የዛሬ ዜና ያግኙ'
+        }
+      }
+    },
+    childrenSelection: {
+      title: 'ልጆችዎን ይጨምሩ',
+      subtitle: 'ስንት ልጆች መመዝገብ ይፈልጋሉ?',
+      addChild: 'ልጅ ይጨምሩ',
+      child1: 'ልጅ 1',
+      child2: 'ልጅ 2',
+      child3: 'ልጅ 3',
+      child4: 'ልጅ 4',
+      child5: 'ልጅ 5',
+      child: 'ልጅ',
+      continue: 'ይቀጥሉ',
+      howManyChildren: 'ስንት ልጆች አሉዎት?',
+      enterNumberGreaterThanOne: '1 እና ከ1 በላይ የሆነ ቁጥር ያስገቡ'
+    },
+    fullName: 'ሙሉ ስም',
+    username: 'መለያ ስም',
+    phoneNumber: '9 አሃዝ ቁጥር',
+    password: 'የይለፍ ቃል',
+    confirmPassword: 'የይለፍ ቃል ያረጋግጡ',
+    grade: {
+      label: 'ክፍልዎን ይምረጡ',
+      title: 'ክፍል ይምረጡ'
+    },
+    terms: {
+      prefix: 'የሚከተሉትን ይቀበላሉ ',
+      link: 'የአገልግሎት ውሎች እና ሁኔታዎች',
+      title: 'የአገልግሎት ውሎች እና ሁኔታዎች',
+      content: `1. የውሎች ተቀባይነት\n\nበቀለም አፕሊኬሽን በመጠቀም እና በመጠቀም እነዚህን የአገልግሎት ውሎች እና ሁኔታዎች መገዛትዎ ይስማማሉ።\n\n2. የተጠቃሚ መመዝገቢያ\n\nተጠቃሚዎች በመመዝገቢያ ጊዜ ትክክለኛ እና ሙሉ መረጃ መስጠት አለባቸው። ተጠቃሚዎች የመለያ ማረጋጊያዎቻቸውን ሚስጥራዊነት መጠበቅ ተጠያቂ ናቸው።\n\n3. የግል የግል መረጃ ፖሊሲ\n\nየአፕሊኬሽኑ አጠቃቀምዎ በግል መረጃዎ እንዴት እንደምንሰበስብ፣ እንደምንጠቀም እና እንደምንጠብቅ የሚገልጽ የግል መረጃ ፖሊሲያችን ይጠብቃል።\n\n4. የተጠቃሚ ባህሪ\n\nተጠቃሚዎች ይስማማሉ:\n- አፕሊኬሽኑን ለህጋዊ ዓላማዎች ብቻ ይጠቀሙ\n- የሌሎች ተጠቃሚዎች ግል መረጃ እና መብቶች ያክብሩ\n- ተስማሚ ያልሆነ ወይም ጎጂ ይዘት አያጋሩ\n- የአፕሊኬሽኑ አገልግሎት አይበጥሱ\n\n5. ይዘት\n\nተጠቃሚዎች የይዘታቸው ባለቤትነት ይይዛሉ ነገር ግን አፕሊኬሽኑ አገልግሎት ለመጠቀም ፍቃድ ይሰጡናል።\n\n6. መቋረጥ\n\nእነዚህን ውሎች የሚያልፉ መለያዎችን መቋረጥ ወይም መቆየት መብታችን እንደሚጠብቅ እንደምንወስን እንገልጻለን።\n\n7. ውሎች ላይ የሚደረጉ ለውጦች\n\nእነዚህን ውሎች በየጊዜው ማዘምን እንችላለን። አፕሊኬሽኑን መጠቀም መቀጠል አዲስ ውሎችን መቀበል ነው።`
+    },
+    createAccount: 'አካውንት ይፍጠሩ',
+    alreadyHaveAccount: 'አካውንት አለዎት?',
+    signIn: 'ይግቡ',
+    errors: {
+      fullNameRequired: 'እባክዎ ሙሉ ስምዎን ያስገቡ',
+      phoneRequired: 'እባክዎ የስልክ ቁጥርዎን ያስገቡ',
+      passwordRequired: 'እባክዎ የይለፍ ቃል ያስገቡ',
+      passwordMismatch: 'የይለፍ ቃላት አይመጣጠኑም',
+      acceptTerms: 'እባክዎ ውሎችን እና ሁኔታዎችን ይቀበሉ',
+      gradeRequired: 'እባክዎ ክፍልዎን ይምረጡ',
+      incompleteChildrenData: 'እባክዎ የልጆች መረጃ ሁሉን ይጨምሩ',
+      generic: 'በተመዝገበ ጊዜ ስህተት ተከስቷል',
+      network: 'የድረ-ገጽ ስህተት። እባክዎ እንደገና ይሞክሩ።',
+      networkConnection: 'ወደ አገልግሎት መገናኘት አልተቻለም። የበይነመረብ ግንኙነትዎን ይፈትሹ።',
+      timeout: 'ጥያቄው ጊዜው አብቅቷል። እባክዎ እንደገና ይሞክሩ።',
+    },
+  },
+  reports: {
+    title: 'ሪፖርቶች',
+    overallProgress: {
+      title: 'ጠቅላላ እድገት',
+      topicsCompleted: 'የተጠናቀቁ ርዕሰ ጉዳዮች',
+      studyHours: 'የትምህርት ሰዓታት'
+    },
+    performance: {
+      title: 'አፈፃፀም',
+      subtitle: 'የትምህርት እድገትዎን ይመልከቱ',
+      stats: {
+        quizzesTaken: 'የተወሰዱ ፈተናዎች',
+        successRate: 'የስኬት መጠን',
+        averageScore: 'አማካይ ነጥብ',
+        timeSpent: 'የተወሰደ ጊዜ'
+      }
+    },
+    learningStreak: {
+      title: 'የትምህርት ተከታታይነት',
+      currentStreak: 'የአሁኑ ተከታታይነት',
+      bestStreak: 'ምርጥ ተከታታይነት',
+      totalDaysActive: 'ጠቅላላ ንቁ ቀናት'
+    },
+    subjectBreakdown: {
+      title: 'የርዕሰ ጉዳይ ትንታኔ',
+      progress: 'እድገት',
+      score: 'ነጥብ'
+    },
+    recentActivity: {
+      title: 'የቅርብ እንቅስቃሴ',
+      quiz: 'ፈተና',
+      study: 'ትምህርት',
+      homework: 'የቤት ስራ',
+      completed: 'ተጠናቅቋል',
+      duration: '{hours} ሰዓታት'
+    },
+    howCalculated: {
+      title: 'ሪፖርቶች እንዴት እንደሚሰሉ',
+      overallProgress: {
+        title: 'ጠቅላላ እድገት',
+        description: 'በተጠናቀቁ ርዕሰ ጉዳዮች እና የትምህርት ሰዓታት ላይ የተመሰረተ'
+      },
+      performance: {
+        title: 'አፈፃፀም',
+        description: 'በፈተና ነጥቦች እና የስኬት መጠን ላይ የተመሰረተ'
+      },
+      studyHours: {
+        title: 'የትምህርት ሰዓታት',
+        description: 'ከንቁ የትምህርት ክፍለ ጊዜዎች የተመዘገበ'
+      }
+    },
+    activityTypes: {
+      quiz: 'ፈተና',
+      study: 'ትምህርት',
+      homework: 'የቤት ስራ'
+    },
+    status: {
+      completed: 'ተጠናቅቋል'
+    },
+    duration: '{{hours}}ሰ',
+    scoreFormat: '{{score}}%',
+    progressFormat: '{{progress}}% ተጠናቅቋል'
+  },
+  mcq: {
+    title: 'ምርጫ ፈተና',
+    instructions: {
+      title: 'መመሪያዎች',
+      description: 'እባክዎን የሚከተሉትን መመሪያዎች ይከተሉ',
+      timeLimit: 'ጊዜ ውስን',
+      questions: 'ጥያቄዎች',
+      passingScore: 'የማለፊያ ነጥብ'
+    },
+    question: {
+      current: 'ጥያቄ {current} ከ {total}',
+      timeRemaining: 'ቀሪ ጊዜ: {time}',
+      submit: 'ላክ',
+      next: 'ቀጣይ',
+      previous: 'ቀዳሚ'
+    },
+    result: {
+      title: 'ውጤት',
+      score: 'ነጥብ: {score}%',
+      correct: 'ትክክል: {correct}',
+      wrong: 'ስህተት: {wrong}',
+      timeSpent: 'የተወሰደ ጊዜ: {time}',
+      retry: 'ዳግም ሞክር',
+      review: 'ይገምግሙ',
+      finish: 'ጨርስ'
     }
   },
-  kg: {
-    welcome: 'እንኳን ደህና መጡ {{name}}!',
-    subtitle: 'ዛሬ አዲስ ነገር እንማር!',
-    categories: {
-      'Animals': 'እንስሳት',
-      'Colors': 'ቀለሞች',
-      'Numbers': 'ቁጥሮች',
-      'Shapes': 'ስዕሎች',
-      'Fruits': 'ፍራፍሬዎች',
-      'Vegetables': 'አትክልቶች',
-      'Family': 'ቤተሰብ',
-      'Body Parts': 'የሰውነት ክፍሎች',
-      'Clothes': 'ልብሶች',
-      'Weather': 'የአየር ሁኔታ',
-      'Transport': 'መጓጓዣ',
-      'Food': 'ምግብ',
-      'School': 'ትምህርት ቤት',
-      'Toys': 'መጫወቻዎች'
-    },
+  flashcards: {
+    title: 'ፍላሽ ካርዶች',
     instructions: {
-      subtitle: 'አዲስ ነገር እንማር!',
-      look: {
-        title: 'በጥንቃቄ ተመልከት',
-        description: 'ለስዕሎቹ በትኩረት ተመልከት እና የሚያሳዩትን ነገር ይረዱ።'
+      title: 'መመሪያዎች',
+      description: 'እባክዎን የሚከተሉትን መመሪያዎች ይከተሉ',
+      flip: 'ካርዱን ይገልብጡ',
+      swipe: 'ለሚቀጥለው ካርድ ይሳቡ'
+    },
+    card: {
+      front: 'ፊት',
+      back: 'ጀርባ',
+      flip: 'ይገልብጡ',
+      next: 'ቀጣይ',
+      previous: 'ቀዳሚ'
+    },
+    progress: {
+      title: 'እድገት',
+      cardsReviewed: 'የተገመገሙ ካርዶች: {reviewed}',
+      remaining: 'ቀሪ: {remaining}',
+      finish: 'ጨርስ'
+    }
+  },
+  homework: {
+    title: 'የቤት ስራ',
+    emptyState: 'ስለ የቤት ስራዎ ማንኛውንም ነገር ጠይቁኝ!',
+    inputPlaceholder: 'የቤት ስራ ጥያቄዎን ያስገቡ...',
+    thinking: 'ያስባለሁ',
+    error: 'ይቅርታ፣ ስህተት ተፈጥሯል። እባክዎ እንደገና ይሞክሩ።',
+    imageButton: 'ምስል ያክሉ',
+    sendButton: 'መልእክት ይላኩ',
+    removeImage: 'ምስል ያስወግዱ',
+    activity: {
+      type: 'የቤት ስራ',
+      grade: '12ኛ ክፍል',
+      subject: 'አጠቃላይ',
+      chapter: 'የቤት ስራ እርዳታ',
+      details: 'የቤት ስራ ጥያቄ ተጠይቋል',
+      status: 'ተጠናቅቋል'
+    }
+  },
+  navigation: {
+    tabs: {
+      home: 'ዋና ገጽ',
+      mcq: 'ምርጫ',
+      flashcards: 'ፍላሽ ካርዶች',
+      homework: 'የቤት ስራ',
+      profile: 'መገለጫ',
+      reports: 'ሪፖርቶች'
+    }
+  },
+  profile: {
+    myProfile: 'የእኔ መገለጫ',
+    editProfile: 'መገለጫ ያርትዑ',
+    myQuestions: 'የእኔ ጥያቄዎች',
+    myAnswers: 'የእኔ መልሶች',
+    settings: 'ቅንብሮች',
+    accountSettings: 'የመለያ ቅንብሮች',
+    notifications: 'ማሳወቂያዎች',
+    language: 'ቋንቋ',
+    theme: 'ገጽታ',
+    resetApp: 'መተግበሪያውን ዳግም ያስጀምሩ',
+    resetConfirmation: 'መተግበሪያውን ዳግም ለመጀመር እርግጠኛ ነዎት? ይህ ወደ የመጀመሪያ ገጽ ይመልሶዎታል።',
+    logout: 'ውጣ',
+    role: 'ተማሪ',
+    grade: '12ኛ ክፍል',
+    school: 'ምሳሌ ሁለተኛ ደረጃ ትምህርት ቤት',
+    joinDate: 'ተቀላቅለዋል {date}',
+    joinDateValue: 'ጥር 2024',
+    englishName: 'ዮሴፍ አሸናፊ',
+    email: 'yosefashenafi7@gmail.com',
+    stats: {
+      mcqsCompleted: 'የተጠናቀቁ ምርጫዎች',
+      flashcardsClicked: 'የተጫኑ ፍላሽ ካርዶች',
+      homeworkQuestions: 'የቤት ስራ ጥያቄዎች',
+      studyHours: 'የትምህርት ሰዓታት'
+    }
+  },
+  auth: {
+    signIn: 'ግባ',
+    signUp: 'ይመዝገቡ',
+    email: 'ኢሜይል',
+    password: 'የይለፍ ቃል',
+    forgotPassword: 'የይለፍ ቃልዎን ረሱ?',
+    createAccount: 'መለያ ይፍጠሩ',
+    alreadyHaveAccount: 'አስቀድመው መለያ አለዎት?',
+    otp: {
+      title: 'ስልክዎን ያረጋግጡ',
+      subtitle: 'ወደ ስልክዎ የተላከውን 6-አሃዝ ኮድ ያስገቡ',
+      error: {
+        invalid: 'ልክ ያልሆነ የማረጋገጫ ኮድ',
+        incomplete: 'እባክዎ ሁሉንም አሃዞች ያስገቡ'
       },
-      choose: {
-        title: 'በጥንቃቄ ይምረጡ',
-        description: 'ከተሰጡት አማራጮች ትክክለኛውን መልስ ይምረጡ።'
+      resend: {
+        text: 'ኮዱን አላገኙም?',
+        button: 'ዳግም ላክ'
       },
-      haveFun: {
-        title: 'ይደሰቱ!',
-        description: 'መማር አስደሳች ነው! ሂደቱን ይደሰቱ እና እድገትዎን ያክብሩ።'
+      verify: 'ያረጋግጡ'
+    },
+    planSelection: {
+      title: 'የእርስዎን እቅድ ይምረጡ',
+      subtitleSingle: 'የሚፈልጉትን እቅድ ይምረጡ',
+      subtitleMultiple: 'ለሁሉም ልጆች እቅድ ይምረጡ',
+      total: 'ጠቅላላ',
+      continue: 'ይቀጥሉ',
+      free: 'ነጻ',
+      calculation: '{{planPrice}} ብር × {{numberOfChildren}} ልጆች = {{total}} ብር',
+      pricePerChild: 'በአንድ ልጅ ዋጋ: {{price}} ብር',
+      success: {
+        title: 'ምዝገባ ተሳክቷል!',
+        message: 'መለያዎ በተሳካ ሁኔታ ተፈጥሯል። የትምህርት ጉዞዎን ለመቀጠል እባክዎ ይግቡ።',
+        parentMessage: 'የቤተሰብ መለያዎ በተሳካ ሁኔታ ተፈጥሯል። አሁን እርስዎ እና ልጆችዎ የይለፍ ቃልዎን በመጠቀም መግባት ይችላሉ።',
+        button: 'ወደ መግቢያ ይሂዱ'
       },
-      start: 'መማር ይጀምሩ'
+      error: {
+        title: 'ምዝገባ አልተሳካም',
+        message: 'ምዝገባዎን ማጠናቀቅ አልቻልንም። እባክዎ እንደገና ይሞክሩ።',
+        parentMessage: 'የቤተሰብ ምዝገባዎን ማጠናቀቅ አልቻልንም። እባክዎ እንደገና ይሞክሩ።',
+        childrenMessage: 'የአንዳንድ ልጆች መለያዎች መፍጠር አልቻልንም። እባክዎ እንደገና ይሞክሩ።',
+        network: 'ከሰርቨሩ ጋር መገናኘት አልቻልንም። እባክዎ የኢንተርኔት ግንኙነትዎን ያረጋግጡ እና እንደገና ይሞክሩ።',
+        button: 'እንደገና ይሞክሩ'
+      },
+      plans: {
+        '0': {
+          name: 'ነጻ',
+          features: [
+            'ወደ መማሪያ ቁሳቁሶች መሰረታዊ መዳረሻ',
+            'የተወሰኑ የልምምድ ጥያቄዎች',
+            'መሰረታዊ የእድገት ትንታኔ',
+            'የማህበረሰብ ድጋፍ'
+          ]
+        },
+        '1': {
+          name: '1 ወር',
+          features: [
+            'ወደ ሁሉም መማሪያ ቁሳቁሶች መዳረሻ',
+            'የልምምድ ጥያቄዎች',
+            'የእድገት ትንታኔ',
+            'መሰረታዊ ድጋፍ'
+          ]
+        },
+        '3': {
+          name: '3 ወራት',
+          features: [
+            'ወደ ሁሉም መማሪያ ቁሳቁሶች መዳረሻ',
+            'የልምምድ ጥያቄዎች',
+            'የእድገት ትንታኔ',
+            'መሰረታዊ ድጋፍ'
+          ]
+        },
+        '6': {
+          name: '6 ወራት',
+          features: [
+            'ወደ ሁሉም መማሪያ ቁሳቁሶች መዳረሻ',
+            'የልምምድ ጥያቄዎች',
+            'የእድገት ትንታኔ',
+            'መሰረታዊ ድጋፍ'
+          ]
+        },
+        '12': {
+          name: '12 ወራት',
+          features: [
+            'በ6 ወራት እቅድ ውስጥ ያለው ሁሉ',
+            'ቅድሚያ ድጋፍ',
+            'የላቀ ትንታኔ',
+            'ልዩ ይዘት'
+          ]
+        }
+      }
+    }
+  },
+  onboarding: {
+    language: {
+      title: 'ቋንቋዎን ይምረጡ',
+      subtitle: 'የሚፈልጉትን ቋንቋ ይምረጡ'
+    },
+    welcome: {
+      title: 'ወደ ቀለም እንኳን ደህና መጡ',
+      subtitle: 'የእርስዎ የግል የትምህርት ባልደረባ',
+      description: 'በተገለጸ የትምህርት ቁሳቁሶች እና በተግባራዊ ልምምዶች የትምህርት ጉዞዎን ይጀምሩ።'
+    },
+    mcq: {
+      title: 'በምርጫ ይለማመዱ',
+      subtitle: 'ዕውቀትዎን ይፈትሹ',
+      description: 'በጥያቄዎች እራስዎን ይፈትሹ እና እድገትዎን ይከታተሉ።'
+    },
+    flashcards: {
+      title: 'በፍላሽ ካርዶች ይማሩ',
+      subtitle: 'ዋና ጽንሰ-ሐሳቦችን ይገምግሙ',
+      description: 'በተግባራዊ ፍላሽ ካርዶች ትምህርትዎን ለማጠናከር ይገልብጡ እና ይማሩ።'
+    },
+    homework: {
+      title: 'የቤት ስራ እርዳታ ያግኙ',
+      subtitle: 'የባለሙያ እርዳታ',
+      description: 'ከአስተማሪዎች ጋር ይገናኙ እና በየቤት ስራ ጥያቄዎችዎ ላይ እርዳታ ያግኙ።'
+    },
+    skip: 'ዝለል',
+    next: 'ቀጣይ',
+    getStarted: 'ጀምር'
+  },
+  subjects: {
+    mathematics: {
+      title: 'ሒሳብ',
+      description: 'ቁጥሮችን፣ ቀመሮችን እና የሂሳብ ጽንሰ-ሐሳቦችን ይማሩ',
+      topics: {
+        algebra: {
+          title: 'አልጀብራ',
+          description: 'ተለዋዋጮችን፣ እኩልታዎችን እና እኩልነትን ይማሩ',
+          subtopics: {
+            linearEquations: 'መስመራዊ እኩልታዎች',
+            quadraticEquations: 'ኳድራቲክ እኩልታዎች',
+            polynomials: 'ፖሊኖሚያሎች',
+            inequalities: 'እኩልነቶች'
+          }
+        },
+        geometry: {
+          title: 'ጂኦሜትሪ',
+          description: 'ስዕሎችን፣ ማዕዘኖችን እና ቦታዎችን ይማሩ',
+          subtopics: {
+            triangles: 'ሶስት ማዕዘኖች',
+            circles: 'ክበቦች',
+            polygons: 'ብዙ ጎኖች',
+            coordinateGeometry: 'ኮርዲኔት ጂኦሜትሪ'
+          }
+        },
+        calculus: {
+          title: 'ካልኩለስ',
+          description: 'ለውጦችን እና አካባቢዎችን ይማሩ',
+          subtopics: {
+            limits: 'ገደቦች',
+            derivatives: 'የውጤት ተግባራት',
+            integrals: 'ውህደቶች',
+            differentialEquations: 'የውጤት እኩልታዎች'
+          }
+        },
+        statistics: {
+          title: 'ስታቲስቲክስ',
+          description: 'ውሂብን እና እድልን ይማሩ',
+          subtopics: {
+            probability: 'እድል',
+            dataAnalysis: 'የውሂብ ትንታኔ',
+            distributions: 'ስርጭቶች',
+            hypothesisTesting: 'ሃይፖቴሲስ ፈተና'
+          }
+        },
+        trigonometry: {
+          title: 'ትሪጎኖሜትሪ',
+          description: 'ሳይኖችን፣ ኮሳይኖችን እና ታንጀንቶችን ይማሩ',
+          subtopics: {
+            angles: 'ማዕዘኖች',
+            identities: 'ማንነቶች',
+            graphs: 'ግራፎች',
+            applications: 'ተግባራዊ አተገባበሮች'
+          }
+        }
+      },
+      difficultyLevels: {
+        basic: 'መሰረታዊ',
+        intermediate: 'መካከለኛ',
+        advanced: 'ላቀ'
+      },
+      practiceTypes: {
+        exercises: 'ልምምዶች',
+        problems: 'ችግሮች',
+        quizzes: 'ፈተናዎች',
+        tests: 'ፈተናዎች'
+      },
+      resources: {
+        formulas: 'ቀመሮች',
+        examples: 'ምሳሌዎች',
+        tutorials: 'ትምህርቶች',
+        worksheets: 'የሥራ ወረቀቶች'
+      }
+    },
+    physics: {
+      title: 'ፊዚክስ',
+      description: 'ቁስን፣ ኃይልን እና የእነሱን ተጽእኖዎች ይማሩ',
+      topics: {
+        mechanics: {
+          title: 'ሜካኒክስ',
+          description: 'እንቅስቃሴን እና ኃይሎችን ይማሩ',
+          subtopics: {
+            kinematics: 'ኪኔማቲክስ',
+            dynamics: 'ዲናሚክስ',
+            energy: 'ኃይል እና ስራ',
+            momentum: 'ሞመንተም'
+          }
+        },
+        waves: {
+          title: 'ሞገዶች',
+          description: 'የሞገድ ክስተቶችን እና ባህሪያትን ይማሩ',
+          subtopics: {
+            soundWaves: 'የድምጽ ሞገዶች',
+            lightWaves: 'የብርሃን ሞገዶች',
+            interference: 'ጣልቃ ገብነት',
+            diffraction: 'ዲፍራክሽን'
+          }
+        },
+        electricity: {
+          title: 'ኤሌክትሪክ',
+          description: 'የኤሌክትሪክ ክስተቶችን ይማሩ',
+          subtopics: {
+            charge: 'የኤሌክትሪክ ጭነት',
+            current: 'የኤሌክትሪክ ዝርያ',
+            circuits: 'የኤሌክትሪክ ሰርኪቶች',
+            magnetism: 'ማግኔቲዝም'
+          }
+        },
+        thermodynamics: {
+          title: 'ቴርሞዳይናሚክስ',
+          description: 'ሙቀትን እና ሙቀት መጠንን ይማሩ',
+          subtopics: {
+            temperature: 'የሙቀት መጠን',
+            heat: 'የሙቀት ሽግግር',
+            laws: 'የቴርሞዳይናሚክስ ህጎች',
+            entropy: 'ኢንትሮፒ'
+          }
+        }
+      }
+    },
+    chemistry: {
+      title: 'ኬሚስትሪ',
+      description: 'ቁስን እና የእሱን ለውጦች ይማሩ',
+      topics: {
+        inorganic: {
+          title: 'ኢኦርጋኒክ ኬሚስትሪ',
+          description: 'ካርቦን የሌላቸውን ውህዶች ይማሩ',
+          subtopics: {
+            periodicTable: 'ፔሪዮዲክ ሰንጠረዥ',
+            acids: 'አሲዶች እና በዞች',
+            salts: 'ጨዎች',
+            metals: 'ብረታ ብረቶች'
+          }
+        },
+        organic: {
+          title: 'ኦርጋኒክ ኬሚስትሪ',
+          description: 'የካርቦን ውህዶችን ይማሩ',
+          subtopics: {
+            hydrocarbons: 'ሃይድሮካርቦኖች',
+            alcohols: 'አልኮሎች',
+            acids: 'ኦርጋኒክ አሲዶች',
+            polymers: 'ፖሊመሮች'
+          }
+        },
+        physical: {
+          title: 'ፊዚካል ኬሚስትሪ',
+          description: 'የኬሚካል ስርዓቶችን ይማሩ',
+          subtopics: {
+            thermodynamics: 'ቴርሞዳይናሚክስ',
+            kinetics: 'የኬሚካል ኪኔቲክስ',
+            equilibrium: 'የኬሚካል ሚዛን',
+            electrochemistry: 'ኤሌክትሮኬሚስትሪ'
+          }
+        }
+      }
+    },
+    biology: {
+      title: 'ባዮሎጂ',
+      description: 'ህይወትን እና ህያዋን ነገሮችን ይማሩ',
+      topics: {
+        cellBiology: {
+          title: 'የሴል ባዮሎጂ',
+          description: 'የሴል መዋቅርን እና ተግባርን ይማሩ',
+          subtopics: {
+            cellStructure: 'የሴል መዋቅር',
+            cellDivision: 'የሴል መከፋፈል',
+            metabolism: 'ሜታቦሊዝም',
+            transport: 'የሴል ማጓጓዣ'
+          }
+        },
+        genetics: {
+          title: 'ጄኔቲክስ',
+          description: 'ውርስን እና ልዩነትን ይማሩ',
+          subtopics: {
+            inheritance: 'ውርስ',
+            dna: 'ዲ.ኤን.ኤ እና አር.ኤን.ኤ',
+            mutation: 'ሙዩቴሽን',
+            evolution: 'ኢቮሉሽን'
+          }
+        },
+        ecology: {
+          title: 'ኢኮሎጂ',
+          description: 'ህያዋን እና አካባቢያቸውን ይማሩ',
+          subtopics: {
+            ecosystems: 'ኢኮሲስተሞች',
+            populations: 'ህዝብ ብዛት',
+            biodiversity: 'የህይወት ብዝሃነት',
+            conservation: 'እንክብካቤ'
+          }
+        },
+        physiology: {
+          title: 'ፊዚዮሎጂ',
+          description: 'የሰውነት ስርዓቶችን ይማሩ',
+          subtopics: {
+            digestive: 'የምግብ መፍጫ ስርዓት',
+            respiratory: 'የመተንፈሻ ስርዓት',
+            circulatory: 'የደም ዝውውር ስርዓት',
+            nervous: 'የነርቭ ስርዓት'
+          }
+        }
+      }
     }
   }
 }; 

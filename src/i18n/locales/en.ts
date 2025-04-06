@@ -184,6 +184,20 @@ export default {
       reports: 'Reports'
     }
   },
+  resetPassword: {
+    title: 'Reset Password',
+    phoneNumber: 'Phone number',
+    verificationCode: 'Enter verification code',
+    newPassword: 'New password',
+    confirmPassword: 'Confirm new password',
+    sendCode: 'Send Verification Code',
+    verifyCode: 'Verify Code',
+    resetPassword: 'Reset Password',
+    phoneSubtitle: 'Enter your phone number to receive a verification code',
+    verifySubtitle: 'Enter the verification code sent to your phone',
+    resetSubtitle: 'Create a new password',
+    backToLogin: 'Back to Login',
+  },
   profile: {
     myProfile: 'My Profile',
     editProfile: 'Edit Profile',
@@ -543,6 +557,209 @@ export default {
         description: 'Learning is fun! Enjoy the process and celebrate your progress.'
       },
       start: 'Start Learning'
+    }
+  },
+  subjects: {
+    mathematics: {
+      title: 'Mathematics',
+      description: 'Learn numbers, formulas, and mathematical concepts',
+      topics: {
+        algebra: {
+          title: 'Algebra',
+          description: 'Learn about variables, equations, and inequalities',
+          subtopics: {
+            linearEquations: 'Linear Equations',
+            quadraticEquations: 'Quadratic Equations',
+            polynomials: 'Polynomials',
+            inequalities: 'Inequalities'
+          }
+        },
+        geometry: {
+          title: 'Geometry',
+          description: 'Study shapes, angles, and spaces',
+          subtopics: {
+            triangles: 'Triangles',
+            circles: 'Circles',
+            polygons: 'Polygons',
+            coordinateGeometry: 'Coordinate Geometry'
+          }
+        },
+        calculus: {
+          title: 'Calculus',
+          description: 'Study changes and areas',
+          subtopics: {
+            limits: 'Limits',
+            derivatives: 'Derivatives',
+            integrals: 'Integrals',
+            differentialEquations: 'Differential Equations'
+          }
+        },
+        statistics: {
+          title: 'Statistics',
+          description: 'Learn about data and probability',
+          subtopics: {
+            probability: 'Probability',
+            dataAnalysis: 'Data Analysis',
+            distributions: 'Distributions',
+            hypothesisTesting: 'Hypothesis Testing'
+          }
+        },
+        trigonometry: {
+          title: 'Trigonometry',
+          description: 'Study sines, cosines, and tangents',
+          subtopics: {
+            angles: 'Angles',
+            identities: 'Identities',
+            graphs: 'Graphs',
+            applications: 'Applications'
+          }
+        }
+      },
+      difficultyLevels: {
+        basic: 'Basic',
+        intermediate: 'Intermediate',
+        advanced: 'Advanced'
+      },
+      practiceTypes: {
+        exercises: 'Exercises',
+        problems: 'Problems',
+        quizzes: 'Quizzes',
+        tests: 'Tests'
+      },
+      resources: {
+        formulas: 'Formulas',
+        examples: 'Examples',
+        tutorials: 'Tutorials',
+        worksheets: 'Worksheets'
+      }
+    },
+    physics: {
+      title: 'Physics',
+      description: 'Study matter, energy, and their interactions',
+      topics: {
+        mechanics: {
+          title: 'Mechanics',
+          description: 'Study motion and forces',
+          subtopics: {
+            kinematics: 'Kinematics',
+            dynamics: 'Dynamics',
+            energy: 'Energy and Work',
+            momentum: 'Momentum'
+          }
+        },
+        waves: {
+          title: 'Waves',
+          description: 'Study wave phenomena and properties',
+          subtopics: {
+            soundWaves: 'Sound Waves',
+            lightWaves: 'Light Waves',
+            interference: 'Interference',
+            diffraction: 'Diffraction'
+          }
+        },
+        electricity: {
+          title: 'Electricity',
+          description: 'Study electrical phenomena',
+          subtopics: {
+            charge: 'Electric Charge',
+            current: 'Electric Current',
+            circuits: 'Electric Circuits',
+            magnetism: 'Magnetism'
+          }
+        },
+        thermodynamics: {
+          title: 'Thermodynamics',
+          description: 'Study heat and temperature',
+          subtopics: {
+            temperature: 'Temperature',
+            heat: 'Heat Transfer',
+            laws: 'Laws of Thermodynamics',
+            entropy: 'Entropy'
+          }
+        }
+      }
+    },
+    chemistry: {
+      title: 'Chemistry',
+      description: 'Study matter and its transformations',
+      topics: {
+        inorganic: {
+          title: 'Inorganic Chemistry',
+          description: 'Study non-carbon compounds',
+          subtopics: {
+            periodicTable: 'Periodic Table',
+            acids: 'Acids and Bases',
+            salts: 'Salts',
+            metals: 'Metals'
+          }
+        },
+        organic: {
+          title: 'Organic Chemistry',
+          description: 'Study carbon compounds',
+          subtopics: {
+            hydrocarbons: 'Hydrocarbons',
+            alcohols: 'Alcohols',
+            acids: 'Organic Acids',
+            polymers: 'Polymers'
+          }
+        },
+        physical: {
+          title: 'Physical Chemistry',
+          description: 'Study chemical systems',
+          subtopics: {
+            thermodynamics: 'Thermodynamics',
+            kinetics: 'Chemical Kinetics',
+            equilibrium: 'Chemical Equilibrium',
+            electrochemistry: 'Electrochemistry'
+          }
+        }
+      }
+    },
+    biology: {
+      title: 'Biology',
+      description: 'Study life and living organisms',
+      topics: {
+        cellBiology: {
+          title: 'Cell Biology',
+          description: 'Study cell structure and function',
+          subtopics: {
+            cellStructure: 'Cell Structure',
+            cellDivision: 'Cell Division',
+            metabolism: 'Metabolism',
+            transport: 'Cell Transport'
+          }
+        },
+        genetics: {
+          title: 'Genetics',
+          description: 'Study inheritance and variation',
+          subtopics: {
+            inheritance: 'Inheritance',
+            dna: 'DNA and RNA',
+            mutation: 'Mutation',
+            evolution: 'Evolution'
+          }
+        },
+        ecology: {
+          title: 'Ecology',
+          description: 'Study organisms and environment',
+          subtopics: {
+            ecosystems: 'Ecosystems',
+            populations: 'Populations',
+            biodiversity: 'Biodiversity',
+            conservation: 'Conservation'
+          }
+        },
+        physiology: {
+          title: 'Physiology',
+          description: 'Study body systems',
+          subtopics: {
+            digestive: 'Digestive System',
+            respiratory: 'Respiratory System',
+            circulatory: 'Circulatory System',
+            nervous: 'Nervous System'
+          }
+        }
+      }
     }
   }
 }; 

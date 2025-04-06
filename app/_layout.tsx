@@ -3,15 +3,15 @@ import { useFonts } from 'expo-font';
 import { Redirect, Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import 'react-native-reanimated';
-import { LogBox } from 'react-native';
+import { LogBox, View } from 'react-native';
 
 import { useColorScheme } from '@/hooks/useColorScheme';
 import { ThemeProvider, useTheme } from '@/contexts/ThemeContext';
 import { AuthProvider } from '@/contexts/AuthContext';
 import { LanguageProvider } from '@/contexts/LanguageContext';
-import '../i18n/i18n';
+import i18n, { initI18n } from '../i18n/i18n';
 
 // Ignore specific warnings
 LogBox.ignoreLogs([
@@ -55,6 +55,26 @@ function RootLayoutNav() {
 }
 
 export default function RootLayout() {
+  const [isI18nReady, setIsI18nReady] = useState(false);
+
+  useEffect(() => {
+    const initializeI18n = async () => {
+      try {
+        await initI18n();
+        setIsI18nReady(true);
+      } catch (error) {
+        console.error('Failed to initialize i18n:', error);
+        setIsI18nReady(true); // Still set to true to prevent app from being stuck
+      }
+    };
+
+    initializeI18n();
+  }, []);
+
+  if (!isI18nReady) {
+    return null; // Or a loading screen
+  }
+
   return (
     <LanguageProvider>
       <ThemeProvider>

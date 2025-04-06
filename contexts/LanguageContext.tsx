@@ -17,18 +17,30 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   useEffect(() => {
     const initLanguage = async () => {
       const savedLanguage = await loadLanguage();
-      if (savedLanguage) {
+      if (savedLanguage && savedLanguage !== currentLanguage) {
         await changeLanguage(savedLanguage);
       }
     };
     initLanguage();
   }, []);
 
+  useEffect(() => {
+    const handleLanguageChange = (lng: string) => {
+      setCurrentLanguage(lng);
+    };
+
+    i18n.on('languageChanged', handleLanguageChange);
+    return () => {
+      i18n.off('languageChanged', handleLanguageChange);
+    };
+  }, [i18n]);
+
   const changeLanguage = async (lang: string) => {
     try {
-      await i18n.changeLanguage(lang);
-      setCurrentLanguage(lang);
-      await saveLanguage(lang);
+      if (lang !== currentLanguage) {
+        await i18n.changeLanguage(lang);
+        await saveLanguage(lang);
+      }
     } catch (error) {
       console.error('Failed to change language:', error);
     }
