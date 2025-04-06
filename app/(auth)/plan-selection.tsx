@@ -7,6 +7,7 @@ import { useState } from 'react';
 import { useTheme } from '@/contexts/ThemeContext';
 import { getColors } from '@/constants/Colors';
 import { useTranslation } from 'react-i18next';
+import { BASE_URL } from '../../config/constants';
 
 import { ThemedText } from '@/components/ThemedText';
 import { LanguageToggle } from '@/components/ui/LanguageToggle';
@@ -252,7 +253,7 @@ const styles = StyleSheet.create({
         })) || [];
 
         // Register parent with children in a single API call
-        const response = await fetch('http://localhost:5001/api/auth/register/parent', {
+        const response = await fetch(`${BASE_URL}/api/auth/register/parent`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -289,7 +290,7 @@ const styles = StyleSheet.create({
         );
       } else {
         // Regular student registration
-        const response = await fetch('http://localhost:5001/api/auth/register/student', {
+        const response = await fetch(`${BASE_URL}/api/auth/register/student`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',

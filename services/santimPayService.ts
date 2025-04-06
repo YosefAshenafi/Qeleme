@@ -1,7 +1,8 @@
 // src/services/santimPayService.ts
 import { PaymentResponse, PaymentStatusResponse } from '../types/santimPay';
+import { SANTIM_PAY_BASE_URL } from '../config/constants';
 
-const BASE_URL = 'http://localhost:3000'; // Updated to use localhost:3000
+const BASE_URL = SANTIM_PAY_BASE_URL;
 
 export const initiatePayment = async (
   amount: number,

@@ -16,6 +16,7 @@ import { useTranslation } from 'react-i18next';
 import * as ImagePicker from 'expo-image-picker';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { LanguageToggle } from '../components/ui/LanguageToggle';
+import { BASE_URL } from '../config/constants';
 
 interface AccordionItemProps {
   title: string;
@@ -102,7 +103,7 @@ export default function ProfileScreen() {
     setRefreshing(true);
     try {
       // Fetch updated user data
-      const response = await fetch('http://localhost:5001/api/auth/student/profile', {
+      const response = await fetch(`${BASE_URL}/api/auth/student/profile`, {
         headers: {
           'Authorization': `Bearer ${await AsyncStorage.getItem('@auth_token')}`
         }

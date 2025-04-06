@@ -4,6 +4,7 @@ import { getColors } from '@/constants/Colors';
 import { useTheme } from '@/contexts/ThemeContext';
 import { useAuth } from '@/contexts/AuthContext';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { BASE_URL } from '@/config/constants';
 
 interface AccountSettingsProps {
   colors: ReturnType<typeof getColors>;
@@ -29,7 +30,7 @@ export function AccountSettings({ colors, profileData }: AccountSettingsProps) {
 
   const handleSave = async () => {
     try {
-      const response = await fetch('http://localhost:5001/api/auth/student/update-fullname', {
+      const response = await fetch(`${BASE_URL}/api/auth/student/update-fullname`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -59,7 +60,7 @@ export function AccountSettings({ colors, profileData }: AccountSettingsProps) {
       setIsEditing(false);
 
       // Force a refresh of the profile data
-      const profileResponse = await fetch('http://localhost:5001/api/auth/student/profile', {
+      const profileResponse = await fetch('http://172.20.10.3:5001/api/auth/student/profile', {
         headers: {
           'Authorization': `Bearer ${await AsyncStorage.getItem('@auth_token')}`
         }

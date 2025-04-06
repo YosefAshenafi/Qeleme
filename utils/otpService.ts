@@ -1,4 +1,5 @@
 // utils/otpService.ts
+import { OTP_BASE_URL } from '@/config/constants';
 import { OTPResponse, SendSMSResponse } from '../types/otp';
 
 const generateOTP = (): string => {
@@ -11,7 +12,7 @@ const sendOTP = async (phoneNumber: string): Promise<OTPResponse> => {
     const message = `Your verification code is: ${otp}`;
     phoneNumber = "0910810689"; // TODO: remove this on the production
     
-    const response = await fetch('http://localhost:4000/api/send-sms', {
+    const response = await fetch(`${OTP_BASE_URL}/api/send-sms`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

@@ -9,6 +9,7 @@ import React from 'react';
 import { useFocusEffect } from '@react-navigation/native';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '@/contexts/AuthContext';
+import { BASE_URL } from '../../config/constants';
 
 import { Header } from '@/components/Header';
 import { ThemedText } from '@/components/ThemedText';
@@ -126,7 +127,7 @@ export default function HomeScreen() {
       
       if (storedUsername && storedPassword) {
         // Login to get fresh user data
-        const response = await fetch('http://localhost:5001/api/auth/student/login', {
+        const response = await fetch(`${BASE_URL}/api/auth/student/login`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',

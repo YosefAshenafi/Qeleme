@@ -156,7 +156,7 @@ npx expo start
 
 Create a `.env` file in the root directory with the following variables:
 ```
-EXPO_PUBLIC_API_URL=http://localhost:5001
+EXPO_PUBLIC_API_URL=http://172.20.10.3:5001
 EXPO_PUBLIC_OPENAI_API_KEY=your_openai_api_key
 ```
 

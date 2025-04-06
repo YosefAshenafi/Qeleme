@@ -1,6 +1,7 @@
 import { getAuthToken } from '@/utils/authStorage';
+import { BASE_URL as BASE_URL_CONSTANT } from '@/config/constants';
 
-const BASE_URL = 'http://localhost:5001/api';
+const BASE_URL = `${BASE_URL_CONSTANT}/api`;
 
 export interface Option {
   id: string;

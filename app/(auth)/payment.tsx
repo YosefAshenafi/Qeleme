@@ -10,6 +10,7 @@ import { ThemedText } from '@/components/ThemedText';
 import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { useState } from 'react';
+import { BASE_URL } from '../../config/constants';
 
 export default function PaymentScreen() {
   const router = useRouter();
@@ -26,7 +27,7 @@ export default function PaymentScreen() {
         throw new Error('No user data available');
       }
 
-      const API_URL = process.env.EXPO_PUBLIC_API_URL || 'http://localhost:5001';
+      const API_URL = process.env.EXPO_PUBLIC_API_URL || BASE_URL;
       const endpoint = `${API_URL}/api/auth/register/student`;
 
       const requestBody = {
