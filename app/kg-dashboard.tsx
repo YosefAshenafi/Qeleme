@@ -11,20 +11,20 @@ import { IconSymbol } from '@/components/ui/IconSymbol';
 import { useAuth } from '@/contexts/AuthContext';
 
 const categories = [
-  { name: 'Animals', icon: 'paw' },
-  { name: 'Colors', icon: 'color-palette' },
-  { name: 'Numbers', icon: 'calculator' },
-  { name: 'Shapes', icon: 'apps' },
-  { name: 'Fruits', icon: 'nutrition' },
-  { name: 'Vegetables', icon: 'leaf' },
-  { name: 'Family', icon: 'people' },
-  { name: 'Body Parts', icon: 'body' },
-  { name: 'Clothes', icon: 'shirt' },
-  { name: 'Weather', icon: 'cloud' },
-  { name: 'Transport', icon: 'car' },
-  { name: 'Food', icon: 'fast-food' },
-  { name: 'School', icon: 'school' },
-  { name: 'Toys', icon: 'game-controller' },
+  { name: 'Animals', icon: 'paw', image: require('@/assets/images/categories/animals.png') },
+  { name: 'Colors', icon: 'color-palette', image: require('@/assets/images/categories/colors.png') },
+  { name: 'Numbers', icon: 'calculator', image: require('@/assets/images/categories/numbers.png') },
+  { name: 'Shapes', icon: 'apps', image: require('@/assets/images/categories/shapes.png') },
+  { name: 'Fruits', icon: 'nutrition', image: require('@/assets/images/categories/fruits.png') },
+  { name: 'Vegetables', icon: 'leaf', image: require('@/assets/images/categories/vegetables.png') },
+  { name: 'Family', icon: 'people', image: require('@/assets/images/categories/family.png') },
+  { name: 'Body Parts', icon: 'body', image: require('@/assets/images/categories/body-parts.png') },
+  { name: 'Clothes', icon: 'shirt', image: require('@/assets/images/categories/clothes.png') },
+  { name: 'Weather', icon: 'cloud', image: require('@/assets/images/categories/weather.png') },
+  { name: 'Transport', icon: 'car', image: require('@/assets/images/categories/transport.png') },
+  { name: 'Food', icon: 'fast-food', image: require('@/assets/images/categories/food.png') },
+  { name: 'School', icon: 'school', image: require('@/assets/images/categories/school.png') },
+  { name: 'Toys', icon: 'game-controller', image: require('@/assets/images/categories/toys.png') },
 ];
 
 export default function KGDashboard() {
@@ -75,10 +75,16 @@ export default function KGDashboard() {
               router.push(`/kg-category/instructions?category=${category.name}`);
             }}
           >
-            <Ionicons name={category.icon as any} size={32} color={isDarkMode ? '#4F46E5' : '#4A90E2'} />
-            <Text style={[styles.cardText, { color: colors.text }]}>
-              {t(`kg.categories.${category.name}`)}
-            </Text>
+            <Image
+              source={category.image}
+              style={styles.categoryImage}
+            />
+            <View style={styles.overlay}>
+              <Ionicons name={category.icon as any} size={24} color="#FFFFFF" />
+              <Text style={styles.cardText}>
+                {t(`kg.categories.${category.name}`)}
+              </Text>
+            </View>
           </TouchableOpacity>
         ))}
       </ScrollView>
@@ -149,19 +155,34 @@ const styles = StyleSheet.create({
     width: '48%',
     aspectRatio: 1,
     borderRadius: 12,
-    padding: 16,
+    overflow: 'hidden',
     marginBottom: 16,
-    alignItems: 'center',
-    justifyContent: 'center',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
     elevation: 3,
   },
+  categoryImage: {
+    width: '100%',
+    height: '100%',
+    resizeMode: 'cover',
+  },
+  overlay: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    padding: 12,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+  },
   cardText: {
-    marginTop: 8,
-    fontSize: 16,
+    color: '#FFFFFF',
+    fontSize: 14,
     fontWeight: '600',
     textAlign: 'center',
   },
