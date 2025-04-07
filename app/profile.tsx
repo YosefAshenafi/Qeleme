@@ -14,6 +14,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { LanguageSelector } from '../components/LanguageSelector';
 import { useTranslation } from 'react-i18next';
 import * as ImagePicker from 'expo-image-picker';
+import * as ImageManipulator from 'expo-image-manipulator';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { LanguageToggle } from '../components/ui/LanguageToggle';
 import { BASE_URL } from '../config/constants';
@@ -188,12 +189,40 @@ export default function ProfileScreen() {
         allowsEditing: true,
         aspect: [1, 1],
         quality: 0.8,
+        base64: true,
       });
 
       if (!result.canceled) {
-        // Save the image URI
-        await AsyncStorage.setItem('profileImage', result.assets[0].uri);
-        setProfileImage(result.assets[0].uri);
+        // Resize the image to 100x100
+        const resizedImage = await ImageManipulator.manipulateAsync(
+          result.assets[0].uri,
+          [{ resize: { width: 100, height: 100 } }],
+          { compress: 0.8, format: ImageManipulator.SaveFormat.JPEG, base64: true }
+        );
+
+        const base64Image = `data:image/jpeg;base64,${resizedImage.base64}`;
+        
+        // Log the base64 image data
+        console.log('Base64 Image Data:', base64Image);
+        
+        // Send to API
+        const response = await fetch(`${BASE_URL}/api/profile/${user?.id}/image`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${await AsyncStorage.getItem('@auth_token')}`
+          },
+          body: JSON.stringify({ image: base64Image })
+        });
+
+        if (response.ok) {
+          // Save the image URI locally
+          await AsyncStorage.setItem('profileImage', resizedImage.uri);
+          setProfileImage(resizedImage.uri);
+          Alert.alert(t('profile.success'), t('profile.imageUpdated'));
+        } else {
+          throw new Error('Failed to upload image');
+        }
       }
     } catch (error) {
       console.error('Error picking image:', error);
