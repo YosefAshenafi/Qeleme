@@ -219,6 +219,8 @@ export default {
     englishName: 'Yosef Ashenafi',
     email: 'yosefashenafi7@gmail.com',
     stats: {
+      pictureQuestions: 'Picture Questions',
+      cardGroups: 'Card Groups',
       mcqsCompleted: 'MCQs Completed',
       flashcardsClicked: 'Flashcards Clicked',
       homeworkQuestions: 'Homework Questions',
