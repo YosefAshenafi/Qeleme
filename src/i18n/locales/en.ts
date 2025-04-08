@@ -3,6 +3,7 @@ export default {
     welcome: 'Welcome {{name}}!',
     subtitle: 'Ready to learn something new today?',
     noActivity: 'No recent activity. Start learning!',
+    goto: 'Go to Home Screen',
     quickActions: {
       mcq: {
         title: 'Practice MCQ',
@@ -319,6 +320,9 @@ export default {
         }
       }
     }
+  },
+  common: {
+    tryAgain: 'Try Again',
   },
   mcq: {
     question: 'Question',

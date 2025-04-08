@@ -586,7 +586,7 @@ ${firstGrade.subjects?.map(s => `  - ${s.name}: ${s.chapters?.length || 0} chapt
             >
               <Ionicons name="home" size={20} color={colors.text} />
               <ThemedText style={{ color: colors.text, fontWeight: 'bold', marginLeft: 10 }}>
-                Go to Home Screen
+                {t('home.goto')}
               </ThemedText>
             </TouchableOpacity>
           </View>

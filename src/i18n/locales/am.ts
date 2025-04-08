@@ -3,6 +3,7 @@ export default {
     welcome: 'እንኳን ደህና መጡ {{name}}!',
     subtitle: 'ዛሬ አዲስ ነገር እንማር!',
     noActivity: 'ምንም የቅርብ እንቅስቃሴ የለም። መማር ይጀምሩ!',
+    goto: 'ወደ መግቢያ ይመለሱ',
     quickActions: {
       mcq: {
         title: 'ምርጫ ልምምድ',
@@ -306,6 +307,9 @@ export default {
     duration: '{{hours}}ሰ',
     scoreFormat: '{{score}}%',
     progressFormat: '{{progress}}% ተጠናቅቋል'
+  },
+  common: {
+    tryAgain: 'እንደገና ይሞክሩ',
   },
   mcq: {
     question: 'ጥያቄ',
