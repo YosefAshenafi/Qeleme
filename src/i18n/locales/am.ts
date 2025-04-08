@@ -210,7 +210,7 @@ export default {
     },
   },
   kg: {
-    welcome: 'እንኳን ደህና መጣህ {{name}}!',
+    welcome: 'እንኳን ደህና መጡ {{name}}!',
     subtitle: 'ዛሬ አዲስ ነገር እንማር!',
     categories: {
       'Animals': 'እንስሳት',
@@ -355,7 +355,7 @@ export default {
       timeTaken: 'የተወሰደ ጊዜ: {{time}}',
       score: 'ነጥብ: {{score}}/{{total}}',
       percentage: '{{percentage}}%',
-      messages: {
+      message: {
         outstanding: 'በጣም ጥሩ! እርስዎ ኮከብ ነዎት!',
         great: 'በጣም ጥሩ! ይቀጥሉ!',
         good: 'ጥሩ ጥረት! የበለጠ ማድረግ ይችላሉ!',

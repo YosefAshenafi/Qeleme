@@ -369,16 +369,16 @@ export default function ProfileScreen() {
         {/* Profile Header */}
         <View style={[styles.profileHeader, { backgroundColor: colors.tint }]}>
           <View style={styles.profileImageContainer}>
-            {profileImage ? (
+            {/* {profileImage ? (
               <Image
                 source={{ uri: profileImage }}
                 style={styles.profileImage}
               />
-            ) : (
-              <View style={[styles.profileImagePlaceholder, { backgroundColor: colors.background }]}>
-                <IconSymbol name="person" size={60} color={colors.tint} />
+            ) : ( */}
+              <View style={[styles.profileImagePlaceholder, { backgroundColor: colors.tint }]}>
+                <IconSymbol name="person" size={60} color={colors.background} />
               </View>
-            )}
+            {/* )} */}
             <TouchableOpacity 
               style={styles.profileEditButton}
               onPress={pickImage}

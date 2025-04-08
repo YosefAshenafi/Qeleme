@@ -368,7 +368,7 @@ export default {
       timeTaken: 'Time Taken: {{time}}',
       score: 'Score: {{score}}/{{total}}',
       percentage: '{{percentage}}%',
-      messages: {
+      message: {
         outstanding: 'Outstanding! You are a star!',
         great: 'Great job! Keep it up!',
         good: 'Good effort! You can do even better!',
