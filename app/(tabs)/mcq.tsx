@@ -9,12 +9,13 @@ import { useTheme } from '../../contexts/ThemeContext';
 import { getColors } from '../../constants/Colors';
 import { useAuth } from '../../contexts/AuthContext';
 import { useTranslation } from 'react-i18next';
+import { useNavigation } from '@react-navigation/native';
 
 import { Header } from '../../components/Header';
 import { ThemedText } from '../../components/ThemedText';
 import { ThemedView } from '../../components/ThemedView';
 import { IconSymbol } from '../../components/ui/IconSymbol';
-import { getMCQData, MCQData, Grade, Subject, Chapter, Question, Option } from '../../services/mcqService';
+import { getMCQData, MCQData, Grade, Subject, Chapter, Question, Option, ExamType } from '../../services/mcqService';
 import PictureMCQScreen from '../screens/PictureMCQScreen';
 import PictureMCQInstructionScreen from '../screens/PictureMCQInstructionScreen';
 
@@ -33,10 +34,12 @@ export default function MCQScreen() {
   const colors = getColors(isDarkMode);
   const params = useLocalSearchParams();
   const { t } = useTranslation();
+  const navigation = useNavigation();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [mcqData, setMcqData] = useState<MCQData | null>(null);
-  const [selectedGrade, setSelectedGrade] = useState<string>(''); // Will be set based on user's grade
+  const [selectedGrade, setSelectedGrade] = useState<Grade | null>(null);
+  const [selectedExamType, setSelectedExamType] = useState<string | null>(null);
   const [selectedSubject, setSelectedSubject] = useState('');
   const [selectedChapter, setSelectedChapter] = useState('');
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
@@ -73,7 +76,7 @@ export default function MCQScreen() {
   }))).current;
 
   // Derived state based on selections
-  const selectedGradeData = mcqData?.grades.find((grade: Grade) => grade.id === selectedGrade);
+  const selectedGradeData = mcqData?.grades.find((grade: Grade) => grade.id === selectedGrade?.id);
   const selectedSubjectData = selectedGradeData?.subjects.find((subject: Subject) => subject.id === selectedSubject);
   const selectedChapterData = selectedSubjectData?.chapters.find((chapter: Chapter) => chapter.id === selectedChapter);
   const currentQuestion = selectedChapterData?.questions[currentQuestionIndex];
@@ -107,24 +110,30 @@ export default function MCQScreen() {
     setLoading(true);
     setError(null);
     try {
-      console.log('🚀 Starting MCQ data fetch...');
-      const data = await getMCQData();
+      // If no grade is selected, use the user's grade or default to grade-6
+      const userGrade = user?.grade ? `grade-${user.grade}` : 'grade-6';
+      const gradeToFetch = selectedGrade?.id || userGrade;
+      console.log(`🚀 Starting MCQ data fetch for grade ${gradeToFetch}...`);
+      
+      const data = await getMCQData(gradeToFetch);
       
       // Reset selections first
       setSelectedSubject('');
       setSelectedChapter('');
       
-      // Log the first grade's structure
+      // Log the grade's structure
       if (data.grades.length > 0) {
-        const firstGrade = data.grades[0];
+        const grade = data.grades[0];
         console.log(`📊 MCQ Data fetched successfully:
-- Grade: ${firstGrade.name} (${firstGrade.id})
-- Subjects: ${firstGrade.subjects?.length || 0}
-${firstGrade.subjects?.map(s => `  - ${s.name}: ${s.chapters?.length || 0} chapters`).join('\n') || '  (No subjects found)'}`);
+- Grade: ${grade.name} (${grade.id})
+- Subjects: ${grade.subjects?.length || 0}
+${grade.subjects?.map(s => `  - ${s.name}: ${s.chapters?.length || 0} chapters`).join('\n') || '  (No subjects found)'}`);
         
-        // Auto-select the first grade from API data
-        console.log(`🔄 Setting grade to ${firstGrade.id} (${firstGrade.name})`);
-        setSelectedGrade(firstGrade.id);
+        // Set the grade if not already set
+        if (!selectedGrade) {
+          console.log(`🔄 Setting grade to ${grade.id} (${grade.name})`);
+          setSelectedGrade(grade);
+        }
       } else {
         console.log('⚠️ No grades found in API response');
       }
@@ -132,7 +141,7 @@ ${firstGrade.subjects?.map(s => `  - ${s.name}: ${s.chapters?.length || 0} chapt
       // Set MCQ data after setting the grade to ensure they're in sync
       setMcqData(data);
     } catch (error) {
-      // console.error('❌ Error fetching MCQ data:', error);
+      console.error('❌ Error fetching MCQ data:', error);
       setError(error instanceof Error ? error.message : 'Failed to load MCQ data');
     } finally {
       setLoading(false);
@@ -150,7 +159,7 @@ ${firstGrade.subjects?.map(s => `  - ${s.name}: ${s.chapters?.length || 0} chapt
           clearInterval(timerRef.current);
         }
       };
-    }, [])
+    }, [selectedGrade]) // Add selectedGrade as a dependency to refetch when grade changes
   );
 
   useEffect(() => {
@@ -360,7 +369,7 @@ ${firstGrade.subjects?.map(s => `  - ${s.name}: ${s.chapters?.length || 0} chapt
       try {
         const activity: RecentActivity = {
           type: 'mcq',
-          grade: selectedGrade,
+          grade: selectedGrade?.id || '',
           subject: selectedSubjectData?.name || '',
           chapter: selectedChapterData?.name || '',
           timestamp: Date.now(),
@@ -678,10 +687,10 @@ ${firstGrade.subjects?.map(s => `  - ${s.name}: ${s.chapters?.length || 0} chapt
               
               <View style={[styles.messageContainer, { backgroundColor: colors.cardAlt, borderColor: colors.border }]}>
                 <ThemedText style={[styles.messageText, { color: colors.text }]}>
-                  {percentage >= 90 ? t('mcq.results.messages.outstanding') :
-                   percentage >= 70 ? t('mcq.results.messages.great') :
-                   percentage >= 50 ? t('mcq.results.messages.good') :
-                   t('mcq.results.messages.keepLearning')}
+                  {percentage >= 90 ? t('mcq.results.message.outstanding') :
+                   percentage >= 70 ? t('mcq.results.message.great') :
+                   percentage >= 50 ? t('mcq.results.message.good') :
+                   t('mcq.results.message.keepLearning')}
                 </ThemedText>
               </View>
             </View>
@@ -724,68 +733,106 @@ ${firstGrade.subjects?.map(s => `  - ${s.name}: ${s.chapters?.length || 0} chapt
         <Header title={t('mcq.title')} />
         <ThemedView style={[styles.container, { backgroundColor: colors.background }]}>
           <ThemedView style={[styles.formContainer, { backgroundColor: colors.background }]}>
-            <ThemedText style={[styles.formTitle, { color: colors.tint }]}>{t('mcq.selectSubject')}</ThemedText>
+            <ThemedText style={[styles.formTitle, { color: colors.tint }]}>
+              {t('mcq.selectSubjectAndChapter')}
+            </ThemedText>
             
             <ThemedView style={[styles.formContent, { backgroundColor: colors.background }]}>
-              {/* Subject Selection */}
-              <ThemedView style={[styles.formGroup, { backgroundColor: colors.background }]}>
-                <ThemedText style={[styles.formLabel, { color: colors.tint }]}>{t('mcq.subject')}</ThemedText>
-                <TouchableOpacity
-                  style={[styles.formInput, { backgroundColor: colors.cardAlt, borderColor: colors.border }]}
-                  onPress={() => {
-                    if (selectedGradeData?.subjects && selectedGradeData.subjects.length > 0) {
-                      setShowSubjectDropdown(!showSubjectDropdown);
-                    } else {
-                      console.log('No subjects available to show in dropdown');
-                    }
-                  }}
-                >
-                  <ThemedText style={[styles.formInputText, { color: colors.text }]}>
-                    {selectedSubject && selectedGradeData?.subjects 
-                      ? selectedGradeData.subjects.find((s) => s.id === selectedSubject)?.name || t('mcq.selectSubjectPlaceholder')
-                      : t('mcq.selectSubjectPlaceholder')}
-                  </ThemedText>
-                  <IconSymbol name="chevron.right" size={20} color={colors.tint} />
-                </TouchableOpacity>
-                {showSubjectDropdown && selectedGradeData?.subjects && selectedGradeData.subjects.length > 0 && (
-                  <Modal
-                    visible={showSubjectDropdown}
-                    transparent={true}
-                    animationType="fade"
-                    onRequestClose={() => setShowSubjectDropdown(false)}
-                  >
+              {/* Exam Type Selection for grades 6, 8, and 12 */}
+              {selectedGrade && needsExamTypeSelection(selectedGrade) && !selectedExamType && (
+                <ThemedView style={[styles.formGroup, { backgroundColor: colors.background }]}>
+                  <View style={styles.headerContainer}>
+                    <ThemedText style={[styles.formLabel, { color: colors.tint }]}>
+                      {t('mcq.selectExamType')}
+                    </ThemedText>
+                  </View>
+                  <View style={styles.examTypeContainer}>
                     <TouchableOpacity
-                      style={[styles.modalOverlay, { backgroundColor: 'rgba(0, 0, 0, 0.5)' }]}
-                      activeOpacity={1}
-                      onPress={() => setShowSubjectDropdown(false)}
+                      style={[styles.examTypeButton, { backgroundColor: colors.cardAlt }]}
+                      onPress={() => setSelectedExamType('national')}
                     >
-                      <ThemedView style={[styles.modalContent, { backgroundColor: colors.background }]}>
-                        <ScrollView>
-                          {selectedGradeData.subjects.map((subject) => (
-                            <TouchableOpacity
-                              key={subject.id}
-                              style={[styles.modalItem, { backgroundColor: colors.background, borderBottomColor: colors.border }]}
-                              onPress={() => {
-                                console.log(`Selected subject: ${subject.id} (${subject.name})`);
-                                setSelectedSubject(subject.id);
-                                setSelectedChapter('');
-                                setShowSubjectDropdown(false);
-                              }}
-                            >
-                              <ThemedText style={[styles.modalItemText, { color: colors.text }]}>{subject.name}</ThemedText>
-                              <IconSymbol name="chevron.right" size={20} color={colors.tint} />
-                            </TouchableOpacity>
-                          ))}
-                        </ScrollView>
-                      </ThemedView>
+                      <ThemedText style={[styles.examTypeText, { color: colors.text }]}>
+                        {t('mcq.nationalExam')}
+                      </ThemedText>
                     </TouchableOpacity>
-                  </Modal>
-                )}
-              </ThemedView>
+                    <TouchableOpacity
+                      style={[styles.examTypeButton, { backgroundColor: colors.cardAlt }]}
+                      onPress={() => setSelectedExamType('mcq')}
+                    >
+                      <ThemedText style={[styles.examTypeText, { color: colors.text }]}>
+                        {t('mcq.mcqExam')}
+                      </ThemedText>
+                    </TouchableOpacity>
+                  </View>
+                </ThemedView>
+              )}
+
+              {/* Subject Selection - Only show if exam type is selected for grades 6, 8, and 12 */}
+              {(!needsExamTypeSelection(selectedGrade) || selectedExamType) && (
+                <ThemedView style={[styles.formGroup, { backgroundColor: colors.background }]}>
+                  <View style={styles.headerContainer}>
+                    <TouchableOpacity
+                      style={styles.backButton}
+                      onPress={() => {
+                        setSelectedExamType(null);
+                      }}
+                    >
+                      <IconSymbol name="chevron.left" size={24} color={colors.tint} />
+                    </TouchableOpacity>
+                    <ThemedText style={[styles.formLabel, { color: colors.tint }]}>
+                      {t('mcq.subject')}
+                    </ThemedText>
+                  </View>
+                  <TouchableOpacity
+                    style={[styles.formInput, { backgroundColor: colors.cardAlt, borderColor: colors.border }]}
+                    onPress={() => setShowSubjectDropdown(!showSubjectDropdown)}
+                  >
+                    <ThemedText style={[styles.formInputText, { color: colors.text }]}>
+                      {selectedSubject ? selectedGradeData?.subjects.find((s: Subject) => s.id === selectedSubject)?.name : t('mcq.selectSubject')}
+                    </ThemedText>
+                    <IconSymbol name="chevron.right" size={20} color={colors.tint} />
+                  </TouchableOpacity>
+                  {showSubjectDropdown && (
+                    <Modal
+                      visible={showSubjectDropdown}
+                      transparent={true}
+                      animationType="fade"
+                      onRequestClose={() => setShowSubjectDropdown(false)}
+                    >
+                      <TouchableOpacity
+                        style={[styles.modalOverlay, { backgroundColor: 'rgba(0, 0, 0, 0.5)' }]}
+                        activeOpacity={1}
+                        onPress={() => setShowSubjectDropdown(false)}
+                      >
+                        <ThemedView style={[styles.modalContent, { backgroundColor: colors.background }]}>
+                          <ScrollView>
+                            {selectedGradeData?.subjects.map((subject: Subject) => (
+                              <TouchableOpacity
+                                key={subject.id}
+                                style={[styles.modalItem, { backgroundColor: colors.background, borderBottomColor: colors.border }]}
+                                onPress={() => {
+                                  setSelectedSubject(subject.id);
+                                  setSelectedChapter('');
+                                  setShowSubjectDropdown(false);
+                                }}
+                              >
+                                <ThemedText style={[styles.modalItemText, { color: colors.text }]}>{subject.name}</ThemedText>
+                                <IconSymbol name="chevron.right" size={20} color={colors.tint} />
+                              </TouchableOpacity>
+                            ))}
+                          </ScrollView>
+                        </ThemedView>
+                      </TouchableOpacity>
+                    </Modal>
+                  )}
+                </ThemedView>
+              )}
 
               {/* Chapter Selection */}
               <ThemedView style={[styles.formGroup, { backgroundColor: colors.background }]}>
-                <ThemedText style={[styles.formLabel, { color: colors.tint }]}>{t('mcq.chapter')}</ThemedText>
+                <ThemedText style={[styles.formLabel, { color: colors.tint }]}>
+                  {t('mcq.chapter')}
+                </ThemedText>
                 <TouchableOpacity
                   style={[
                     styles.formInput,
@@ -795,20 +842,8 @@ ${firstGrade.subjects?.map(s => `  - ${s.name}: ${s.chapters?.length || 0} chapt
                       borderColor: isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'
                     }
                   ]}
-                  onPress={() => {
-                    if (selectedSubject && selectedSubjectData?.chapters && selectedSubjectData.chapters.length > 0) {
-                      console.log(`Opening chapter dropdown for subject ${selectedSubject}`);
-                      console.log(`Available chapters: ${JSON.stringify(selectedSubjectData.chapters.map(c => ({ id: c.id, name: c.name })))}`);
-                      setShowChapterDropdown(!showChapterDropdown);
-                    } else {
-                      console.log('Cannot open chapter dropdown:', { 
-                        hasSelectedSubject: !!selectedSubject,
-                        hasSubjectData: !!selectedSubjectData,
-                        chaptersCount: selectedSubjectData?.chapters?.length || 0
-                      });
-                    }
-                  }}
-                  disabled={!selectedSubject || !selectedSubjectData?.chapters || selectedSubjectData.chapters.length === 0}
+                  onPress={() => selectedSubject && setShowChapterDropdown(!showChapterDropdown)}
+                  disabled={!selectedSubject}
                 >
                   <ThemedText 
                     style={[
@@ -819,9 +854,7 @@ ${firstGrade.subjects?.map(s => `  - ${s.name}: ${s.chapters?.length || 0} chapt
                       }
                     ]}
                   >
-                    {selectedChapter && selectedSubjectData?.chapters 
-                      ? selectedSubjectData.chapters.find((c) => c.id === selectedChapter)?.name || t('mcq.selectChapterPlaceholder')
-                      : t('mcq.selectChapterPlaceholder')}
+                    {selectedChapter ? selectedSubjectData?.chapters.find((c: Chapter) => c.id === selectedChapter)?.name : t('mcq.selectChapter')}
                   </ThemedText>
                   <IconSymbol 
                     name="chevron.right" 
@@ -829,7 +862,7 @@ ${firstGrade.subjects?.map(s => `  - ${s.name}: ${s.chapters?.length || 0} chapt
                     color={!selectedSubject ? (isDarkMode ? 'rgba(255, 255, 255, 0.3)' : 'rgba(0, 0, 0, 0.3)') : colors.tint} 
                   />
                 </TouchableOpacity>
-                {showChapterDropdown && selectedSubject && selectedSubjectData?.chapters && selectedSubjectData.chapters.length > 0 && (
+                {showChapterDropdown && selectedSubject && (
                   <Modal
                     visible={showChapterDropdown}
                     transparent={true}
@@ -843,12 +876,11 @@ ${firstGrade.subjects?.map(s => `  - ${s.name}: ${s.chapters?.length || 0} chapt
                     >
                       <ThemedView style={[styles.modalContent, { backgroundColor: colors.background }]}>
                         <ScrollView>
-                          {selectedSubjectData.chapters.map((chapter) => (
+                          {selectedSubjectData?.chapters.map((chapter: Chapter) => (
                             <TouchableOpacity
                               key={chapter.id}
                               style={[styles.modalItem, { backgroundColor: colors.background, borderBottomColor: colors.border }]}
                               onPress={() => {
-                                console.log(`Selected chapter: ${chapter.id} (${chapter.name})`);
                                 setSelectedChapter(chapter.id);
                                 setShowChapterDropdown(false);
                               }}
@@ -873,7 +905,9 @@ ${firstGrade.subjects?.map(s => `  - ${s.name}: ${s.chapters?.length || 0} chapt
                 onPress={handleStartTest}
                 disabled={!selectedSubject || !selectedChapter}
               >
-                <ThemedText style={[styles.startButtonText, { color: '#fff' }]}>{t('mcq.startQuiz')}</ThemedText>
+                <ThemedText style={[styles.startButtonText, { color: '#fff' }]}>
+                  {t('mcq.startQuiz')}
+                </ThemedText>
               </TouchableOpacity>
             </ThemedView>
           </ThemedView>
@@ -892,7 +926,7 @@ ${firstGrade.subjects?.map(s => `  - ${s.name}: ${s.chapters?.length || 0} chapt
                 <View style={[styles.breadcrumbContainer, { backgroundColor: colors.cardAlt }]}>
                   <View style={[styles.breadcrumbItem, { backgroundColor: colors.background, borderColor: colors.border }]}>
                     <ThemedText style={[styles.breadcrumbText, { color: colors.tint }]}>
-                      {selectedGrade ? mcqData?.grades.find((g: Grade) => g.id === selectedGrade)?.name : 'Select Grade'}
+                      {selectedGrade ? mcqData?.grades.find((g: Grade) => g.id === selectedGrade.id)?.name : 'Select Grade'}
                     </ThemedText>
                   </View>
                   {selectedGrade && (
@@ -988,7 +1022,7 @@ ${firstGrade.subjects?.map(s => `  - ${s.name}: ${s.chapters?.length || 0} chapt
                     onPress={handlePreviousQuestion}
                     disabled={isFirstQuestion}
                   >
-                    <IconSymbol name="chevron.left.forwardslash.chevron.right" size={24} color={colors.tint} />
+                    <IconSymbol name="chevron.left" size={24} color={colors.tint} />
                     <ThemedText style={[styles.prevButtonText, { color: colors.tint }]}>{t('mcq.previous')}</ThemedText>
                   </TouchableOpacity>
 
@@ -1069,121 +1103,134 @@ const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
   },
-  scrollContent: {
-    flexGrow: 1,
-    paddingBottom: 20,
-  },
   container: {
     flex: 1,
     padding: 16,
   },
-  mainContainer: {
-    flex: 1,
-    width: '100%',
+  scrollContent: {
+    flexGrow: 1,
+    paddingBottom: 20,
   },
   title: {
-    fontSize: 28,
+    fontSize: 24,
     fontWeight: 'bold',
-    textAlign: 'center',
-    marginVertical: 16,
-  },
-  resultCard: {
-    width: '100%',
-    alignSelf: 'center',
-    borderRadius: 24,
-    padding: 20,
-    elevation: 8,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.2,
-    shadowRadius: 12,
-    overflow: 'hidden',
-    marginTop: 16,
-  },
-  resultContent: {
-    gap: 16,
-  },
-  trophyContainer: {
-    alignItems: 'center',
-    paddingVertical: 16,
-    backgroundColor: 'transparent',
-  },
-  scoreText: {
-    paddingTop: 30,
-    fontSize: 48,
-    fontWeight: '700',
-    textAlign: 'center',
-    backgroundColor: 'transparent',
-  },
-  percentageContainer: {
-    alignSelf: 'center',
-    paddingHorizontal: 20,
-    paddingVertical: 8,
-    borderRadius: 24,
-    borderWidth: 2,
-  },
-  percentageText: {
-    fontSize: 22,
-    fontWeight: '600',
+    marginBottom: 20,
     textAlign: 'center',
   },
-  messageContainer: {
-    padding: 16,
-    borderRadius: 16,
-    borderWidth: 2,
-  },
-  messageText: {
-    fontSize: 18,
-    textAlign: 'center',
-    lineHeight: 28,
-    fontWeight: '600',
-  },
-  actionButtons: {
-    width: '100%',
-    gap: 12,
-    marginTop: 24,
-  },
-  button: {
+  mainContainer: {
     flex: 1,
-    padding: 15,
-    borderRadius: 8,
+    justifyContent: 'center',
     alignItems: 'center',
-    borderWidth: 1,
+    padding: 16,
   },
-  retryButton: {
-    paddingHorizontal: 24,
-    paddingVertical: 12,
-    borderRadius: 8,
-    flexDirection: 'row',
+  emptyStateContainer: {
+    flex: 1,
+    justifyContent: 'center',
     alignItems: 'center',
+  },
+  formContainer: {
+    flex: 1,
+    padding: 20,
+    borderRadius: 20,
+    elevation: 4,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+  },
+  formContent: {
+    gap: 20,
+  },
+  formGroup: {
     gap: 8,
   },
-  homeButton: {
-    borderWidth: 2,
+  formTitle: {
+    fontSize: 24,
+    fontWeight: '700',
+    marginBottom: 30,
+    textAlign: 'center',
   },
-  retryButtonText: {
+  formLabel: {
     fontSize: 16,
     fontWeight: '600',
   },
-  homeButtonText: {
-    fontSize: 18,
-    fontWeight: '600',
+  formInput: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    padding: 16,
+    borderRadius: 12,
+    borderWidth: 1,
   },
-  timerContainer: {
-    alignSelf: 'center',
-    paddingHorizontal: 20,
-    paddingVertical: 8,
+  formInputText: {
+    fontSize: 16,
+  },
+  modalOverlay: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  modalContent: {
+    width: '80%',
+    maxHeight: '80%',
     borderRadius: 20,
-    marginTop: -8,
+    padding: 20,
+    elevation: 5,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
   },
-  timerText: {
+  modalItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    padding: 16,
+    borderBottomWidth: 1,
+  },
+  modalItemText: {
     fontSize: 16,
+  },
+  startButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    padding: 16,
+    borderRadius: 12,
+    marginTop: 20,
+  },
+  startButtonText: {
+    fontSize: 18,
+    fontWeight: '700',
+  },
+  content: {
+    flex: 1,
+    padding: 20,
+  },
+  headerContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 10,
+    borderBottomWidth: 1,
+  },
+  breadcrumbContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderRadius: 12,
+    marginLeft: -20,
+    gap: 8,
+  },
+  breadcrumbItem: {
+    padding: 8,
+    borderRadius: 8,
+    borderWidth: 1,
+  },
+  breadcrumbText: {
+    fontSize: 14,
     fontWeight: '600',
   },
   scrollView: {
-    flex: 1,
-  },
-  content: {
     flex: 1,
   },
   questionContainer: {
@@ -1327,118 +1374,67 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '500',
   },
-  headerContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
+  resultCard: {
     width: '100%',
-    marginTop: -70,
-    borderBottomWidth: 1,
-  },
-  breadcrumbContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    borderRadius: 12,
-    marginLeft: -20,
-    gap: 8,
-  },
-  breadcrumbItem: {
-    paddingHorizontal: 12,
-    paddingVertical: 4,
-    borderRadius: 8,
-    borderWidth: 1,
-  },
-  breadcrumbText: {
-    fontSize: 14,
-    fontWeight: '600',
-  },
-  formContainer: {
-    flex: 1,
+    alignSelf: 'center',
+    borderRadius: 24,
     padding: 20,
-    borderRadius: 20,
-    elevation: 4,
+    elevation: 8,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 12,
+    overflow: 'hidden',
+    marginTop: 16,
   },
-  formTitle: {
-    fontSize: 24,
+  resultContent: {
+    gap: 16,
+  },
+  trophyContainer: {
+    alignItems: 'center',
+    paddingVertical: 16,
+    backgroundColor: 'transparent',
+  },
+  scoreText: {
+    paddingTop: 30,
+    fontSize: 48,
     fontWeight: '700',
-    marginBottom: 30,
+    textAlign: 'center',
+    backgroundColor: 'transparent',
+  },
+  percentageContainer: {
+    alignSelf: 'center',
+    paddingHorizontal: 20,
+    paddingVertical: 8,
+    borderRadius: 24,
+    borderWidth: 2,
+  },
+  percentageText: {
+    fontSize: 22,
+    fontWeight: '600',
     textAlign: 'center',
   },
-  formContent: {
-    gap: 20,
+  messageContainer: {
+    padding: 16,
+    borderRadius: 16,
+    borderWidth: 2,
   },
-  formGroup: {
-    gap: 8,
-  },
-  formLabel: {
-    fontSize: 16,
+  messageText: {
+    fontSize: 18,
+    textAlign: 'center',
+    lineHeight: 28,
     fontWeight: '600',
   },
-  formInput: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    padding: 16,
-    borderRadius: 12,
-    borderWidth: 1,
-  },
-  formInputDisabled: {
-    opacity: 0.7,
-  },
-  formInputText: {
-    fontSize: 16,
-  },
-  formInputTextDisabled: {
-    opacity: 0.7,
-  },
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  modalContent: {
-    width: '80%',
-    maxHeight: '80%',
+  timerContainer: {
+    alignSelf: 'center',
+    paddingHorizontal: 20,
+    paddingVertical: 8,
     borderRadius: 20,
-    padding: 20,
-    elevation: 5,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
+    marginTop: -8,
   },
-  modalItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    padding: 16,
-    borderBottomWidth: 1,
-  },
-  modalItemText: {
+  timerText: {
     fontSize: 16,
-  },
-  startButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 8,
-    padding: 16,
-    borderRadius: 12,
-    marginTop: 20,
-  },
-  startButtonDisabled: {
-    opacity: 0.7,
-  },
-  startButtonText: {
-    fontSize: 18,
-    fontWeight: '700',
+    fontWeight: '600',
   },
   fireworkContainer: {
     position: 'absolute',
@@ -1463,13 +1459,6 @@ const styles = StyleSheet.create({
   buttonText: {
     fontSize: 16,
     fontWeight: 'bold',
-  },
-  emptyStateContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 20,
-    marginTop: -40,
   },
   emptyStateIcon: {
     marginBottom: 25,
@@ -1498,4 +1487,60 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: '700',
   },
-}); 
+  button: {
+    flex: 1,
+    padding: 15,
+    borderRadius: 8,
+    alignItems: 'center',
+    borderWidth: 1,
+  },
+  homeButton: {
+    borderWidth: 2,
+  },
+  homeButtonText: {
+    fontSize: 18,
+    fontWeight: '600',
+  },
+  examTypeContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: 8,
+  },
+  examTypeButton: {
+    flex: 1,
+    padding: 16,
+    borderRadius: 8,
+    marginHorizontal: 8,
+    alignItems: 'center',
+  },
+  examTypeText: {
+    fontSize: 16,
+    fontWeight: '500',
+  },
+  actionButtons: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    marginTop: 20,
+    paddingHorizontal: 16,
+  },
+  headerContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 10,
+    borderBottomWidth: 1,
+  },
+  backButton: {
+    marginRight: 10,
+    padding: 5,
+  },
+});
+
+const needsExamTypeSelection = (grade: Grade | null | undefined): boolean => {
+  if (!grade) return false;
+  return ['grade-6', 'grade-8', 'grade-12'].includes(grade.id);
+};
+
+const handleBackToGradeSelection = () => {
+  setSelectedGrade(null);
+  setSelectedExamType(null);
+}; 

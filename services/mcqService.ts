@@ -33,7 +33,10 @@ export interface Grade {
   id: string;
   name: string;
   subjects: Subject[];
+  isNationalExam?: boolean;
 }
+
+export type ExamType = 'national' | 'mcq';
 
 export interface MCQData {
   grades: Grade[];
@@ -41,20 +44,24 @@ export interface MCQData {
 
 // Interface that matches the exact API response format
 interface MCQAPIResponse {
-  grade: string;
+  _id: string;
+  id: string;
+  name: string;
   subjects: Subject[];
 }
 
-export const getMCQData = async (): Promise<MCQData> => {
+export const getMCQData = async (gradeId: string): Promise<MCQData> => {
   try {
     const token = await getAuthToken();
     if (!token) {
       throw new Error('No authentication token found. Please login again.');
     }
 
-    console.log('Fetching MCQ data...');
+    // Format the grade ID to match API expectations (e.g., "grade 6" -> "grade-6")
+    const formattedGradeId = gradeId.toLowerCase().replace(/\s+/g, '-');
+    console.log(`Fetching MCQ data for grade ${formattedGradeId}...`);
 
-    const response = await fetch(`${BASE_URL}/mcq`, {
+    const response = await fetch(`${BASE_URL}/mcqs/grade/${formattedGradeId}`, {
       method: 'GET',
       headers: {
         'Authorization': `Bearer ${token}`,
@@ -64,7 +71,7 @@ export const getMCQData = async (): Promise<MCQData> => {
 
     if (!response.ok) {
       if (response.status === 404) {
-        throw new Error('No MCQ data found for your grade.');
+        throw new Error(`No MCQ data found for grade ${formattedGradeId}.`);
       }
       
       const errorData = await response.json().catch(() => null);
@@ -75,36 +82,28 @@ export const getMCQData = async (): Promise<MCQData> => {
     }
 
     // Parse the API response
-    const data = await response.json();
+    const data: MCQAPIResponse = await response.json();
     
     // Validate the response data
     if (!data || typeof data !== 'object') {
       throw new Error('Invalid API response format: Data is missing or not an object');
     }
     
-    if (!data.grade) {
-      console.warn('API response missing grade. Using default "Grade 1"');
+    if (!data.id || !data.name) {
+      throw new Error('Invalid API response format: Missing required fields (id, name)');
     }
 
     if (!Array.isArray(data.subjects)) {
-      console.warn('API response missing subjects array or subjects is not an array');
+      throw new Error('Invalid API response format: Subjects must be an array');
     }
-    
-    // Ensure we have valid data before proceeding
-    const grade = data.grade || 'Grade 1';
-    const subjects = Array.isArray(data.subjects) ? data.subjects : [];
-    
-    // Extract grade number from the grade string (e.g., "Grade 5" -> "5")
-    const gradeMatch = grade.match(/\d+/);
-    const gradeNumber = gradeMatch ? gradeMatch[0] : '1';
     
     // Transform the API response to match the expected MCQData format
     const mcqData: MCQData = {
       grades: [
         {
-          id: `grade-${gradeNumber}`,
-          name: grade,
-          subjects: subjects
+          id: data.id,
+          name: data.name,
+          subjects: data.subjects
         }
       ]
     };
