@@ -45,10 +45,17 @@ export interface MCQData {
 
 // Interface that matches the exact API response format
 interface MCQAPIResponse {
-  _id: string;
-  id: string;
-  name: string;
-  subjects: Subject[];
+  id: number;
+  question: string;
+  options: {
+    id: number;
+    text: string;
+    isCorrect: boolean;
+  }[];
+  explanation: string;
+  subjectId: number;
+  chapterId: number;
+  gradeLevelId: number;
 }
 
 export const getMCQData = async (gradeId: string): Promise<MCQData> => {
@@ -69,7 +76,11 @@ export const getMCQData = async (gradeId: string): Promise<MCQData> => {
       throw new Error('No authentication token found. Please login again.');
     }
 
-    const response = await fetch(`${BASE_URL}/mcqs/grade/${formattedGradeId}`, {
+    // Extract just the number from the grade ID (e.g., "grade-5" -> "5")
+    const gradeNumber = formattedGradeId.split('-')[1];
+    
+    // Use the correct API endpoint format with gradeLevelId
+    const response = await fetch(`${BASE_URL}/mcq?gradeLevelId=${gradeNumber}`, {
       method: 'GET',
       headers: {
         'Authorization': `Bearer ${token}`,
@@ -77,58 +88,43 @@ export const getMCQData = async (gradeId: string): Promise<MCQData> => {
       },
     });
 
+    let rawData: any;
+    try {
+      rawData = await response.json();
+    } catch (jsonErr) {
+      // If response is not JSON, show a user-friendly error
+      throw new Error('Server returned invalid data. Please try again later.');
+    }
+
+    // Log the raw API response for debugging
+    console.log('Raw MCQ API response:', JSON.stringify(rawData, null, 2));
+    console.log('Response status:', response.status);
+    console.log('Response headers:', Object.fromEntries(response.headers.entries()));
+
     if (!response.ok) {
       if (response.status === 404) {
         throw new Error(`No MCQ data found for grade ${formattedGradeId}.`);
       }
-      
-      const errorData = await response.json().catch(() => null);
-      throw new Error(
-        errorData?.message || 
-        `Failed to fetch MCQ data. Status: ${response.status}`
-      );
+      // Use the already-read rawData for error message
+      const errorMsg = rawData?.message || rawData?.error || `Failed to fetch MCQ data. Status: ${response.status}`;
+      throw new Error(errorMsg);
     }
 
-    // Parse the API response
-    const data: MCQAPIResponse = await response.json();
-    
-    // Validate the response data
-    if (!data || typeof data !== 'object') {
-      throw new Error('Invalid API response format: Data is missing or not an object');
-    }
-    
-    if (!data.id || !data.name) {
-      throw new Error('Invalid API response format: Missing required fields (id, name)');
+    // If the response is not an object or doesn't have the expected structure
+    if (!rawData || !Array.isArray(rawData) || rawData.length === 0) {
+      console.error('Invalid response type:', typeof rawData);
+      throw new Error('Server returned invalid data type. Please try again later.');
     }
 
-    if (!Array.isArray(data.subjects)) {
-      throw new Error('Invalid API response format: Subjects must be an array');
+    // The server returns an array with a single object containing the grades
+    const mcqData = rawData[0];
+    if (!mcqData.grades) {
+      console.error('Missing grades in response:', mcqData);
+      throw new Error('Server response missing grades data. Please try again later.');
     }
-    
-    // Transform the API response to match the expected MCQData format
-    const mcqData: MCQData = {
-      grades: [
-        {
-          id: data.id,
-          name: data.name,
-          subjects: data.subjects
-        }
-      ]
-    };
-    
-    // Log the transformed data structure
-    console.log('Transformed MCQ data:', JSON.stringify({
-      gradeId: mcqData.grades[0].id,
-      gradeName: mcqData.grades[0].name,
-      subjectCount: mcqData.grades[0].subjects.length,
-      subjects: mcqData.grades[0].subjects.map(s => ({
-        id: s.id,
-        name: s.name,
-        chapterCount: s.chapters?.length || 0
-      }))
-    }, null, 2));
-    
-    return mcqData;
+
+    // The server response matches our MCQData format, so we can return it directly
+    return mcqData as MCQData;
   } catch (error) {
     console.log('MCQ data not available: ', error instanceof Error ? error.message : 'Unknown error');
     throw error;
