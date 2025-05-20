@@ -11,6 +11,7 @@ import { Header } from '@/components/Header';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 import { IconSymbol } from '@/components/ui/IconSymbol';
+import { ProfileAvatar } from '@/components/ui/ProfileAvatar';
 import { getChatCompletion, imageToBase64, type ChatMessage } from '@/utils/openai';
 
 type Message = {
@@ -197,7 +198,12 @@ export default function HomeworkScreen() {
 
   return (
     <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]}>
-      <Header title={t('homework.title')} />
+      <View style={[styles.header, { backgroundColor: colors.background }]}>
+        <ThemedText style={styles.headerTitle}>{t('homework.title')}</ThemedText>
+        <View style={styles.headerRight}>
+          <ProfileAvatar colors={colors} />
+        </View>
+      </View>
       <KeyboardAvoidingView 
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
         style={styles.keyboardAvoidingView}
@@ -482,5 +488,18 @@ const styles = StyleSheet.create({
   dot: {
     fontSize: 16,
     marginHorizontal: 1,
+  },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 16,
+  },
+  headerTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+  },
+  headerRight: {
+    flexDirection: 'row',
+    alignItems: 'center',
   },
 }); 

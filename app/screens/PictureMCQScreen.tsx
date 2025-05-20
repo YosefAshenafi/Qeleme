@@ -24,6 +24,7 @@ import { Header } from '@/components/Header';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 import { IconSymbol } from '@/components/ui/IconSymbol';
+import { ProfileAvatar } from '@/components/ui/ProfileAvatar';
 import pictureQuestionsData from '@/data/pictureMCQData.json';
 import { LanguageToggle } from '@/components/ui/LanguageToggle';
 
@@ -491,12 +492,7 @@ export default function PictureMCQScreen({ onBackToInstructions }: PictureMCQScr
           </ThemedText>
           <View style={styles.headerRight}>
             <LanguageToggle colors={colors} />
-            <TouchableOpacity 
-              onPress={() => router.push('/profile')}
-              style={[styles.profileIconContainer, { backgroundColor: colors.tint + '20' }]}
-            >
-              <IconSymbol name="person.fill" size={24} color={colors.tint} />
-            </TouchableOpacity>
+            <ProfileAvatar colors={colors} />
           </View>
         </View>
         <ThemedView style={[styles.container, { backgroundColor: isDarkMode ? '#000000' : '#FFFFFF' }]}>

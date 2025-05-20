@@ -18,6 +18,7 @@ import * as ImageManipulator from 'expo-image-manipulator';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { LanguageToggle } from '../components/ui/LanguageToggle';
 import { BASE_URL } from '../config/constants';
+import { ProfileAvatar } from '../components/ui/ProfileAvatar';
 
 interface AccordionItemProps {
   title: string;
@@ -369,22 +370,12 @@ export default function ProfileScreen() {
         {/* Profile Header */}
         <View style={[styles.profileHeader, { backgroundColor: colors.tint }]}>
           <View style={styles.profileImageContainer}>
-            {/* {profileImage ? (
-              <Image
-                source={{ uri: profileImage }}
-                style={styles.profileImage}
-              />
-            ) : ( */}
-              <View style={[styles.profileImagePlaceholder, { backgroundColor: colors.tint }]}>
-                <IconSymbol name="person" size={60} color={colors.background} />
-              </View>
-            {/* )} */}
-            <TouchableOpacity 
-              style={styles.profileEditButton}
+            <ProfileAvatar 
+              size={120}
+              showEditButton={true}
               onPress={pickImage}
-            >
-              <IconSymbol name="pencil.circle.fill" size={24} color={colors.tint} />
-            </TouchableOpacity>
+              colors={colors}
+            />
           </View>
           <Text style={[styles.englishName, { color: colors.background }]}>{profileData.englishName}</Text>
           <Text style={[styles.email, { color: colors.background }]}>{profileData.username}</Text>

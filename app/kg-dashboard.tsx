@@ -9,6 +9,7 @@ import { useTranslation } from 'react-i18next';
 import { LanguageToggle } from '@/components/ui/LanguageToggle';
 import { IconSymbol } from '@/components/ui/IconSymbol';
 import { useAuth } from '@/contexts/AuthContext';
+import { ProfileAvatar } from '@/components/ui/ProfileAvatar';
 
 const categories = [
   { name: 'Animals', icon: 'paw', image: require('@/assets/images/categories/animals.png') },
@@ -49,17 +50,7 @@ export default function KGDashboard() {
       ]}>
         <View style={styles.headerRight}>
           <LanguageToggle colors={colors} />
-          <TouchableOpacity 
-            onPress={() => router.push('/profile')}
-          >
-            <View style={[styles.profileIconContainer, { backgroundColor: colors.tint + '20' }]}>
-              <IconSymbol 
-                name="person.fill" 
-                size={24} 
-                color={colors.tint} 
-              />
-            </View>
-          </TouchableOpacity>
+          <ProfileAvatar colors={colors} />
         </View>
       </View>
 
