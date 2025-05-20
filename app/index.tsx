@@ -18,10 +18,11 @@ export default function Index() {
   }
 
   if (isAuthenticated) {
-    // Redirect KG users to KG dashboard, others to tabs
+    // Always redirect KG users to KG dashboard
     if (user?.grade === 'KG') {
       return <Redirect href="/kg-dashboard" />;
     }
+    // For other grades, go to tabs
     return <Redirect href="/(tabs)" />;
   }
 

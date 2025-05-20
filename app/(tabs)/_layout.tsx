@@ -1,9 +1,10 @@
-import { Tabs } from 'expo-router';
+import { Tabs, Redirect } from 'expo-router';
 import React from 'react';
 import { Platform, TouchableOpacity, View, StyleSheet } from 'react-native';
 import { router } from 'expo-router';
 import { BlurView } from 'expo-blur';
 import { useTranslation } from 'react-i18next';
+import { useAuth } from '@/contexts/AuthContext';
 
 import { HapticTab } from '../../components/HapticTab';
 import { IconSymbol } from '../../components/ui/IconSymbol';
@@ -15,6 +16,12 @@ export default function TabLayout() {
   const { isDarkMode } = useTheme();
   const colors = getColors(isDarkMode);
   const { t } = useTranslation();
+  const { user } = useAuth();
+
+  // Redirect KG students to KG dashboard
+  if (user?.grade === 'KG') {
+    return <Redirect href="/kg-dashboard" />;
+  }
 
   return (
     <Tabs

@@ -252,17 +252,14 @@ export default function PictureMCQScreen({ onBackToInstructions }: PictureMCQScr
       const phoneNumber = await AsyncStorage.getItem('userPhoneNumber');
       setUserPhoneNumber(phoneNumber);
       
-      // Only allow access if phone number starts with 911
-      if (phoneNumber?.startsWith('+251911')) {
+      // For KG students, always allow access
+      if (user?.grade === 'KG') {
         setIsAuthorized(true);
         
         // Check if we need to reset the state
         if (params?.reset === 'true') {
           handleRetry();
         }
-      } else {
-        // Redirect to regular MCQ if not authorized
-        router.push('/mcq');
       }
     };
     checkPhoneNumber();
@@ -300,17 +297,19 @@ export default function PictureMCQScreen({ onBackToInstructions }: PictureMCQScr
     setShowWrongAnswer(false);
     setScore(0);
     setShowResult(false);
+    setDroppedOption(null);
   };
 
   const handleGoToInstructions = () => {
-    // Reset states and go back to KG dashboard
+    // Reset states but stay in the picture questions interface
     setCurrentQuestionIndex(0);
     setSelectedAnswer(null);
     setShowExplanation(false);
     setShowResult(false);
     setScore(0);
     setDroppedOption(null);
-    router.push('/(tabs)');
+    // Navigate to the KG dashboard instead of regular MCQ
+    router.push('/kg-dashboard');
   };
 
   const getMessage = () => {

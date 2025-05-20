@@ -10,6 +10,7 @@ import { getColors } from '../../constants/Colors';
 import { useAuth } from '../../contexts/AuthContext';
 import { useTranslation } from 'react-i18next';
 import { useNavigation } from '@react-navigation/native';
+import { Redirect } from 'expo-router';
 
 import { Header } from '../../components/Header';
 import { ThemedText } from '../../components/ThemedText';
@@ -168,9 +169,9 @@ ${grade.subjects?.map(s => `  - ${s.name}: ${s.chapters?.length || 0} chapters`)
       const phoneNumber = await AsyncStorage.getItem('userPhoneNumber');
       setUserPhoneNumber(phoneNumber);
       
-      // If user is a KG student, show picture questions
+      // If user is a KG student, redirect to KG dashboard
       if (user?.grade === 'KG') {
-        setIsPictureQuestions(true);
+        router.replace('/kg-dashboard');
       }
     };
     checkPhoneNumber();
@@ -179,7 +180,7 @@ ${grade.subjects?.map(s => `  - ${s.name}: ${s.chapters?.length || 0} chapters`)
   useEffect(() => {
     // Handle reset parameters
     if (params.reset === 'true') {
-      setSelectedGrade('grade-12');
+      setSelectedGrade(null);
       setSelectedSubject('');
       setSelectedChapter('');
       setCurrentQuestionIndex(0);
@@ -490,7 +491,10 @@ ${grade.subjects?.map(s => `  - ${s.name}: ${s.chapters?.length || 0} chapters`)
 
   // Handle going back to instructions
   const handleBackToInstructions = () => {
-    setShowPictureMCQ(false);
+    // Only allow going back to instructions if we're not in the middle of a test
+    if (!currentQuestionIndex) {
+      setShowPictureMCQ(false);
+    }
   };
 
   // If showing picture questions, always show instruction screen first
@@ -501,6 +505,11 @@ ${grade.subjects?.map(s => `  - ${s.name}: ${s.chapters?.length || 0} chapters`)
   // If user has clicked start, show picture MCQ screen
   if (showPictureMCQ) {
     return <PictureMCQScreen onBackToInstructions={handleBackToInstructions} />;
+  }
+
+  // Redirect KG students to KG dashboard
+  if (user?.grade === 'KG') {
+    return <Redirect href="/kg-dashboard" />;
   }
 
   // Loading state rendering
@@ -1538,9 +1547,4 @@ const styles = StyleSheet.create({
 const needsExamTypeSelection = (grade: Grade | null | undefined): boolean => {
   if (!grade) return false;
   return ['grade-6', 'grade-8', 'grade-12'].includes(grade.id);
-};
-
-const handleBackToGradeSelection = () => {
-  setSelectedGrade(null);
-  setSelectedExamType(null);
 }; 

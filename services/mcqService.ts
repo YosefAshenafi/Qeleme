@@ -1,5 +1,6 @@
 import { getAuthToken } from '@/utils/authStorage';
 import { BASE_URL as BASE_URL_CONSTANT } from '@/config/constants';
+import pictureMCQData from '@/data/pictureMCQData.json';
 
 const BASE_URL = `${BASE_URL_CONSTANT}/api`;
 
@@ -52,14 +53,21 @@ interface MCQAPIResponse {
 
 export const getMCQData = async (gradeId: string): Promise<MCQData> => {
   try {
+    // Format the grade ID to match API expectations (e.g., "grade 6" -> "grade-6")
+    const formattedGradeId = gradeId.toLowerCase().replace(/\s+/g, '-');
+    console.log(`Fetching MCQ data for grade ${formattedGradeId}...`);
+
+    // For Kindergarten, use the local picture MCQ data without authentication
+    if (formattedGradeId === 'grade-kg') {
+      console.log('Using local picture MCQ data for Kindergarten');
+      return pictureMCQData;
+    }
+
+    // For other grades, require authentication
     const token = await getAuthToken();
     if (!token) {
       throw new Error('No authentication token found. Please login again.');
     }
-
-    // Format the grade ID to match API expectations (e.g., "grade 6" -> "grade-6")
-    const formattedGradeId = gradeId.toLowerCase().replace(/\s+/g, '-');
-    console.log(`Fetching MCQ data for grade ${formattedGradeId}...`);
 
     const response = await fetch(`${BASE_URL}/mcqs/grade/${formattedGradeId}`, {
       method: 'GET',
