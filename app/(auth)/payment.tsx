@@ -27,8 +27,7 @@ export default function PaymentScreen() {
         throw new Error('No user data available');
       }
 
-      const API_URL = process.env.EXPO_PUBLIC_API_URL || BASE_URL;
-      const endpoint = `${API_URL}/api/auth/register/student`;
+      const endpoint = `${BASE_URL}/api/auth/register/student`;
 
       const requestBody = {
         fullName: userData.fullName,

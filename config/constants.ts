@@ -1,6 +1,12 @@
-const IP_ADDRESS = 'localhost'; // TODO: Switch to localhost and 172.20.10.3 when testing on the emulator.
+// Use environment-specific configuration
+const getBaseUrl = () => {
+  if (__DEV__) {
+    return 'http://localhost:5001';
+  }
+  return 'https://api.qelem.com'; // Replace with your production API URL
+};
 
-export const BASE_URL = `http://${IP_ADDRESS}:5001`;
-export const SANTIM_PAY_BASE_URL = `http://${IP_ADDRESS}:3000`; 
-export const SANTIM_PAY_GATEWAY_URL = `http://${IP_ADDRESS}:16000/api/v1/gateway`;  
-export const OTP_BASE_URL = `http://${IP_ADDRESS}:4000`;  
+export const BASE_URL = getBaseUrl();
+export const SANTIM_PAY_BASE_URL = __DEV__ ? 'http://localhost:3000' : 'https://pay.qelem.com';
+export const SANTIM_PAY_GATEWAY_URL = __DEV__ ? 'http://localhost:16000/api/v1/gateway' : 'https://pay.qelem.com/api/v1/gateway';
+export const OTP_BASE_URL = __DEV__ ? 'http://localhost:4000' : 'https://otp.qelem.com';  

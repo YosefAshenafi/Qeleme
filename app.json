@@ -8,6 +8,9 @@
     "scheme": "myapp",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
+    "extra": {
+      "apiUrl": "https://api.qelem.com",
+    },
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.yosefashenafi.Qelem",
