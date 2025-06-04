@@ -324,6 +324,8 @@ export default {
     selectExamType: 'የፈተና አይነት ይምረጡ',
     nationalExam: 'የብሄራዊ ፈተና ጥያቄዎች',
     mcqExam: 'የምርጫ ፈተና ጥያቄዎች',
+    nationalExamDescription: 'የቀድሞ ብሔራዊ ፈተናዎች እውነተኛ ጥያቄዎችን ለማስተላለፍ ይረዳዎታል። ለፈተና አዘጋጅት እና ለራስ ግምገማ ተገቢ ነው።',
+    mcqExamDescription: 'ለእያንዳንዱ ምዕራፍ በርካታ የተመረጡ ብዙ ጥያቄዎችን ይሞክሩ። ለዕለታዊ ልምምድ እና ለድጋሚ እይታ ተገቢ ነው።',
     startQuiz: 'ፈተና ይጀምሩ',
     previous: 'ቀዳሚ',
     next: 'ቀጣይ',

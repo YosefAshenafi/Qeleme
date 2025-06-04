@@ -58,6 +58,21 @@ interface MCQAPIResponse {
   gradeLevelId: number;
 }
 
+// Interface for National Exam API response
+interface NationalExamAPIResponse {
+  id: number;
+  question: string;
+  options: {
+    id: number;
+    text: string;
+    isCorrect: boolean;
+  }[];
+  explanation: string;
+  subjectId: number;
+  yearId: number;
+  gradeLevelId: number;
+}
+
 export const getMCQData = async (gradeId: string): Promise<MCQData> => {
   try {
     // Format the grade ID to match API expectations (e.g., "grade 6" -> "grade-6")
@@ -127,6 +142,29 @@ export const getMCQData = async (gradeId: string): Promise<MCQData> => {
     return mcqData as MCQData;
   } catch (error) {
     console.log('MCQ data not available: ', error instanceof Error ? error.message : 'Unknown error');
+    throw error;
+  }
+};
+
+// Function to fetch National Exam questions
+export const getNationalExamQuestions = async (
+  gradeLevelId: number,
+  yearId: number,
+  subject: string
+): Promise<NationalExamAPIResponse[]> => {
+  try {
+    const response = await fetch(
+      `http://localhost:5001/api/nationalExams/grouped?gradeLevelId=${gradeLevelId}&yearId=${yearId}&subject=${subject}`
+    );
+    
+    if (!response.ok) {
+      throw new Error('Failed to fetch national exam questions');
+    }
+    
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error('Error fetching national exam questions:', error);
     throw error;
   }
 }; 

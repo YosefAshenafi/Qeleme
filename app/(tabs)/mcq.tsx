@@ -16,7 +16,7 @@ import { Header } from '../../components/Header';
 import { ThemedText } from '../../components/ThemedText';
 import { ThemedView } from '../../components/ThemedView';
 import { IconSymbol } from '../../components/ui/IconSymbol';
-import { getMCQData, MCQData, Grade, Subject, Chapter, Question, Option, ExamType } from '../../services/mcqService';
+import { getMCQData, MCQData, Grade, Subject, Chapter, Question, Option, ExamType, getNationalExamQuestions } from '../../services/mcqService';
 import PictureMCQScreen from '../screens/PictureMCQScreen';
 import PictureMCQInstructionScreen from '../screens/PictureMCQInstructionScreen';
 
@@ -43,6 +43,7 @@ export default function MCQScreen() {
   const [selectedExamType, setSelectedExamType] = useState<string | null>(null);
   const [selectedSubject, setSelectedSubject] = useState('');
   const [selectedChapter, setSelectedChapter] = useState('');
+  const [selectedYear, setSelectedYear] = useState<string | null>(null);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null);
   const [showExplanation, setShowExplanation] = useState(false);
@@ -55,6 +56,7 @@ export default function MCQScreen() {
   const [showTest, setShowTest] = useState(false);
   const [showSubjectDropdown, setShowSubjectDropdown] = useState(false);
   const [showChapterDropdown, setShowChapterDropdown] = useState(false);
+  const [showYearDropdown, setShowYearDropdown] = useState(false);
   const [userPhoneNumber, setUserPhoneNumber] = useState<string | null>(null);
   const [isPictureQuestions, setIsPictureQuestions] = useState(false);
   const [showPictureMCQ, setShowPictureMCQ] = useState(false);
@@ -106,6 +108,25 @@ export default function MCQScreen() {
     return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
   };
 
+  // Function to check if exam type selection is needed
+  const needsExamTypeSelection = (grade: Grade | null) => {
+    if (!grade) return false;
+    
+    // Get the grade number from the user's profile if available
+    const userGradeNumber = user?.grade ? parseInt(user.grade) : null;
+    
+    // If we have the user's grade, use that
+    if (userGradeNumber !== null) {
+      console.log('🔍 Checking exam type selection for user grade:', userGradeNumber);
+      return [6, 8, 12].includes(userGradeNumber);
+    }
+    
+    // Fallback to checking the UI grade if user grade is not available
+    const gradeNumber = parseInt(grade.id.replace('grade-', ''));
+    console.log('🔍 Checking exam type selection for UI grade:', gradeNumber);
+    return [6, 8, 12].includes(gradeNumber);
+  };
+
   // Fetch MCQ data from API
   const fetchMCQData = async () => {
     setLoading(true);
@@ -125,14 +146,8 @@ export default function MCQScreen() {
       // Log the grade's structure
       if (data.grades.length > 0) {
         const grade = data.grades[0];
-        console.log(`📊 MCQ Data fetched successfully:
-- Grade: ${grade.name} (${grade.id})
-- Subjects: ${grade.subjects?.length || 0}
-${grade.subjects?.map(s => `  - ${s.name}: ${s.chapters?.length || 0} chapters`).join('\n') || '  (No subjects found)'}`);
-        
         // Set the grade if not already set
         if (!selectedGrade) {
-          console.log(`🔄 Setting grade to ${grade.id} (${grade.name})`);
           setSelectedGrade(grade);
         }
       } else {
@@ -414,44 +429,85 @@ ${grade.subjects?.map(s => `  - ${s.name}: ${s.chapters?.length || 0} chapters`)
     startTimer();
   };
 
-  const handleStartTest = () => {
-    if (!selectedGrade || !selectedSubject || !selectedChapter) {
+  const handleStartTest = async () => {
+    if (!selectedGrade || !selectedSubject) {
       console.log('❌ Cannot start test: Missing selections', {
         grade: selectedGrade,
         subject: selectedSubject,
-        chapter: selectedChapter
+        examType: selectedExamType
       });
       return;
     }
-    
-    // Verify that we have questions for this chapter
-    if (!selectedChapterData || !selectedChapterData.questions || selectedChapterData.questions.length === 0) {
-      console.log('❌ Cannot start test: No questions found for this chapter', {
-        chapterId: selectedChapter,
-        chapterName: selectedChapterData?.name,
-        hasQuestions: !!selectedChapterData?.questions,
-        questionCount: selectedChapterData?.questions?.length || 0
-      });
+
+    if (selectedExamType === 'national') {
+      if (!selectedYear) {
+        console.log('❌ Cannot start national exam: Missing year selection');
+        return;
+      }
+
+      try {
+        const gradeNumber = parseInt(selectedGrade.id.replace('grade-', ''));
+        const questions = await getNationalExamQuestions(
+          gradeNumber,
+          parseInt(selectedYear),
+          selectedSubject
+        );
+
+        if (!questions || questions.length === 0) {
+          setError('No questions found for this exam. Please try another year or subject.');
+          return;
+        }
+
+        // Start the test with national exam questions
+        setShowTest(true);
+        setCurrentQuestionIndex(0);
+        setSelectedAnswer(null);
+        setShowExplanation(false);
+        setShowAnswerMessage(false);
+        setScore(0);
+        setShowResult(false);
+        setAnsweredQuestions({});
+        setTime(0);
+        startTimer();
+      } catch (error) {
+        console.error('Error starting national exam:', error);
+        setError('Failed to load national exam questions. Please try again.');
+      }
+    } else {
+      // Original MCQ logic
+      if (!selectedChapter) {
+        console.log('❌ Cannot start test: Missing chapter selection');
+        return;
+      }
+
+      // Verify that we have questions for this chapter
+      if (!selectedChapterData || !selectedChapterData.questions || selectedChapterData.questions.length === 0) {
+        console.log('❌ Cannot start test: No questions found for this chapter', {
+          chapterId: selectedChapter,
+          chapterName: selectedChapterData?.name,
+          hasQuestions: !!selectedChapterData?.questions,
+          questionCount: selectedChapterData?.questions?.length || 0
+        });
+        
+        setError('No questions found for this chapter. Please try another chapter or contact support.');
+        return;
+      }
       
-      // Show an error message instead of starting the test
-      setError('No questions found for this chapter. Please try another chapter or contact support.');
-      return;
+      console.log(`✅ Starting test: ${selectedGradeData?.name} > ${selectedSubjectData?.name} > ${selectedChapterData?.name}`);
+      console.log(`📚 Found ${selectedChapterData.questions.length} questions for this chapter`);
+      
+      // Start the test
+      setShowTest(true);
+      setCurrentQuestionIndex(0);
+      setSelectedAnswer(null);
+      setShowExplanation(false);
+      setShowAnswerMessage(false);
+      setScore(0);
+      setShowResult(false);
+      setAnsweredQuestions({});
+      setTime(0);
+      startTimer();
     }
-    
-    console.log(`✅ Starting test: ${selectedGradeData?.name} > ${selectedSubjectData?.name} > ${selectedChapterData?.name}`);
-    console.log(`📚 Found ${selectedChapterData.questions.length} questions for this chapter`);
-    
-    // Start the test
-    setShowTest(true);
-    setCurrentQuestionIndex(0);
-    setSelectedAnswer(null);
-    setShowExplanation(false);
-    setShowAnswerMessage(false);
-    setScore(0);
-    setShowResult(false);
-    setAnsweredQuestions({});
-    setTime(0);
-    startTimer();
   };
 
   const getOptionStyle = (optionId: string) => {
@@ -696,10 +752,7 @@ ${grade.subjects?.map(s => `  - ${s.name}: ${s.chapters?.length || 0} chapters`)
               
               <View style={[styles.messageContainer, { backgroundColor: colors.cardAlt, borderColor: colors.border }]}>
                 <ThemedText style={[styles.messageText, { color: colors.text }]}>
-                  {percentage >= 90 ? t('mcq.results.message.outstanding') :
-                   percentage >= 70 ? t('mcq.results.message.great') :
-                   percentage >= 50 ? t('mcq.results.message.good') :
-                   t('mcq.results.message.keepLearning')}
+                  {getMessage()}
                 </ThemedText>
               </View>
             </View>
@@ -739,185 +792,253 @@ ${grade.subjects?.map(s => `  - ${s.name}: ${s.chapters?.length || 0} chapters`)
   if (!showTest) {
     return (
       <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]}>
-        <Header title={t('mcq.title')} />
+        {/* Only show the MCQ header if NOT on the exam type selection page */}
+        {!(selectedGrade && needsExamTypeSelection(selectedGrade) && !selectedExamType) && (
+          <View style={[styles.headerContainer, { backgroundColor: colors.background, borderBottomColor: colors.border }]}>
+            <TouchableOpacity
+              style={styles.backButton}
+              onPress={() => {
+                setSelectedExamType(null);
+                setSelectedSubject('');
+                setSelectedChapter('');
+                setSelectedYear(null);
+              }}
+            >
+              <IconSymbol name="chevron.left" size={24} color={colors.tint} />
+            </TouchableOpacity>
+            <ThemedText style={[styles.headerTitle, { color: colors.text }]}>
+              {selectedExamType === 'national' ? t('mcq.nationalExam') : t('mcq.mcqExam')}
+            </ThemedText>
+          </View>
+        )}
         <ThemedView style={[styles.container, { backgroundColor: colors.background }]}>
           <ThemedView style={[styles.formContainer, { backgroundColor: colors.background }]}>
-            <ThemedText style={[styles.formTitle, { color: colors.tint }]}>
-              {t('mcq.selectSubjectAndChapter')}
+            <ThemedText style={[styles.formTitle, { color: colors.tint, marginTop: (selectedGrade && needsExamTypeSelection(selectedGrade) && !selectedExamType) ? 40 : 0 }]}>
+              {selectedGrade && needsExamTypeSelection(selectedGrade) && !selectedExamType 
+                ? t('mcq.selectExamType')
+                : selectedExamType === 'national'
+                ? t('mcq.nationalExam')
+                : t('mcq.mcqExam')}
             </ThemedText>
             
             <ThemedView style={[styles.formContent, { backgroundColor: colors.background }]}>
               {/* Exam Type Selection for grades 6, 8, and 12 */}
               {selectedGrade && needsExamTypeSelection(selectedGrade) && !selectedExamType && (
                 <ThemedView style={[styles.formGroup, { backgroundColor: colors.background }]}>
-                  <View style={styles.headerContainer}>
-                    <ThemedText style={[styles.formLabel, { color: colors.tint }]}>
-                      {t('mcq.selectExamType')}
-                    </ThemedText>
-                  </View>
                   <View style={styles.examTypeContainer}>
                     <TouchableOpacity
                       style={[styles.examTypeButton, { backgroundColor: colors.cardAlt }]}
                       onPress={() => setSelectedExamType('national')}
                     >
+                      <IconSymbol name="trophy.fill" size={32} color={colors.tint} style={styles.examTypeIcon} />
                       <ThemedText style={[styles.examTypeText, { color: colors.text }]}>
                         {t('mcq.nationalExam')}
+                      </ThemedText>
+                      <ThemedText style={[styles.examTypeDescription, { color: colors.text, opacity: 0.7 }]}>
+                        {t('mcq.nationalExamDescription')}
                       </ThemedText>
                     </TouchableOpacity>
                     <TouchableOpacity
                       style={[styles.examTypeButton, { backgroundColor: colors.cardAlt }]}
                       onPress={() => setSelectedExamType('mcq')}
                     >
+                      <IconSymbol name="questionmark.circle.fill" size={32} color={colors.tint} style={styles.examTypeIcon} />
                       <ThemedText style={[styles.examTypeText, { color: colors.text }]}>
                         {t('mcq.mcqExam')}
+                      </ThemedText>
+                      <ThemedText style={[styles.examTypeDescription, { color: colors.text, opacity: 0.7 }]}>
+                        {t('mcq.mcqExamDescription')}
                       </ThemedText>
                     </TouchableOpacity>
                   </View>
                 </ThemedView>
               )}
 
-              {/* Subject Selection - Only show if exam type is selected for grades 6, 8, and 12 */}
-              {(!needsExamTypeSelection(selectedGrade) || selectedExamType) && (
-                <ThemedView style={[styles.formGroup, { backgroundColor: colors.background }]}>
-                  <View style={styles.headerContainer}>
+              {/* Subject and Chapter Selection - Only show after exam type is selected */}
+              {selectedExamType && (
+                <>
+                  {/* Subject Selection */}
+                  <ThemedView style={[styles.formGroup, { backgroundColor: colors.background }]}>
                     <TouchableOpacity
-                      style={styles.backButton}
-                      onPress={() => {
-                        setSelectedExamType(null);
-                      }}
+                      style={[styles.formInput, { backgroundColor: colors.cardAlt, borderColor: colors.border }]}
+                      onPress={() => setShowSubjectDropdown(!showSubjectDropdown)}
                     >
-                      <IconSymbol name="chevron.left" size={24} color={colors.tint} />
+                      <ThemedText style={[styles.formInputText, { color: colors.text }]}>
+                        {selectedSubject ? selectedGradeData?.subjects.find((s: Subject) => s.id === selectedSubject)?.name : t('mcq.selectSubject')}
+                      </ThemedText>
+                      <IconSymbol name="chevron.right" size={20} color={colors.tint} />
                     </TouchableOpacity>
-                    <ThemedText style={[styles.formLabel, { color: colors.tint }]}>
-                      {t('mcq.subject')}
-                    </ThemedText>
-                  </View>
-                  <TouchableOpacity
-                    style={[styles.formInput, { backgroundColor: colors.cardAlt, borderColor: colors.border }]}
-                    onPress={() => setShowSubjectDropdown(!showSubjectDropdown)}
-                  >
-                    <ThemedText style={[styles.formInputText, { color: colors.text }]}>
-                      {selectedSubject ? selectedGradeData?.subjects.find((s: Subject) => s.id === selectedSubject)?.name : t('mcq.selectSubject')}
-                    </ThemedText>
-                    <IconSymbol name="chevron.right" size={20} color={colors.tint} />
-                  </TouchableOpacity>
-                  {showSubjectDropdown && (
-                    <Modal
-                      visible={showSubjectDropdown}
-                      transparent={true}
-                      animationType="fade"
-                      onRequestClose={() => setShowSubjectDropdown(false)}
-                    >
-                      <TouchableOpacity
-                        style={[styles.modalOverlay, { backgroundColor: 'rgba(0, 0, 0, 0.5)' }]}
-                        activeOpacity={1}
-                        onPress={() => setShowSubjectDropdown(false)}
+                    {showSubjectDropdown && (
+                      <Modal
+                        visible={showSubjectDropdown}
+                        transparent={true}
+                        animationType="fade"
+                        onRequestClose={() => setShowSubjectDropdown(false)}
                       >
-                        <ThemedView style={[styles.modalContent, { backgroundColor: colors.background }]}>
-                          <ScrollView>
-                            {selectedGradeData?.subjects.map((subject: Subject) => (
-                              <TouchableOpacity
-                                key={subject.id}
-                                style={[styles.modalItem, { backgroundColor: colors.background, borderBottomColor: colors.border }]}
-                                onPress={() => {
-                                  setSelectedSubject(subject.id);
-                                  setSelectedChapter('');
-                                  setShowSubjectDropdown(false);
-                                }}
-                              >
-                                <ThemedText style={[styles.modalItemText, { color: colors.text }]}>{subject.name}</ThemedText>
-                                <IconSymbol name="chevron.right" size={20} color={colors.tint} />
-                              </TouchableOpacity>
-                            ))}
-                          </ScrollView>
-                        </ThemedView>
+                        <TouchableOpacity
+                          style={[styles.modalOverlay, { backgroundColor: 'rgba(0, 0, 0, 0.5)' }]}
+                          activeOpacity={1}
+                          onPress={() => setShowSubjectDropdown(false)}
+                        >
+                          <ThemedView style={[styles.modalContent, { backgroundColor: colors.background }]}>
+                            <ScrollView>
+                              {selectedGradeData?.subjects.map((subject: Subject) => (
+                                <TouchableOpacity
+                                  key={subject.id}
+                                  style={[styles.modalItem, { backgroundColor: colors.background, borderBottomColor: colors.border }]}
+                                  onPress={() => {
+                                    setSelectedSubject(subject.id);
+                                    setSelectedChapter('');
+                                    setShowSubjectDropdown(false);
+                                  }}
+                                >
+                                  <ThemedText style={[styles.modalItemText, { color: colors.text }]}>{subject.name}</ThemedText>
+                                  <IconSymbol name="chevron.right" size={20} color={colors.tint} />
+                                </TouchableOpacity>
+                              ))}
+                            </ScrollView>
+                          </ThemedView>
+                        </TouchableOpacity>
+                      </Modal>
+                    )}
+                  </ThemedView>
+
+                  {/* Year Selection for National Exams */}
+                  {selectedExamType === 'national' && (
+                    <ThemedView style={[styles.formGroup, { backgroundColor: colors.background }]}>
+                      <ThemedText style={[styles.formLabel, { color: colors.tint }]}>
+                        {t('mcq.year')}
+                      </ThemedText>
+                      <TouchableOpacity
+                        style={[styles.formInput, { backgroundColor: colors.cardAlt, borderColor: colors.border }]}
+                        onPress={() => setShowYearDropdown(!showYearDropdown)}
+                      >
+                        <ThemedText style={[styles.formInputText, { color: colors.text }]}>
+                          {selectedYear || t('mcq.selectYear')}
+                        </ThemedText>
+                        <IconSymbol name="chevron.right" size={20} color={colors.tint} />
                       </TouchableOpacity>
-                    </Modal>
+                      {showYearDropdown && (
+                        <Modal
+                          visible={showYearDropdown}
+                          transparent={true}
+                          animationType="fade"
+                          onRequestClose={() => setShowYearDropdown(false)}
+                        >
+                          <TouchableOpacity
+                            style={[styles.modalOverlay, { backgroundColor: 'rgba(0, 0, 0, 0.5)' }]}
+                            activeOpacity={1}
+                            onPress={() => setShowYearDropdown(false)}
+                          >
+                            <ThemedView style={[styles.modalContent, { backgroundColor: colors.background }]}>
+                              <ScrollView>
+                                {[2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023].map((year) => (
+                                  <TouchableOpacity
+                                    key={year}
+                                    style={[styles.modalItem, { backgroundColor: colors.background, borderBottomColor: colors.border }]}
+                                    onPress={() => {
+                                      setSelectedYear(year.toString());
+                                      setShowYearDropdown(false);
+                                    }}
+                                  >
+                                    <ThemedText style={[styles.modalItemText, { color: colors.text }]}>{year}</ThemedText>
+                                    <IconSymbol name="chevron.right" size={20} color={colors.tint} />
+                                  </TouchableOpacity>
+                                ))}
+                              </ScrollView>
+                            </ThemedView>
+                          </TouchableOpacity>
+                        </Modal>
+                      )}
+                    </ThemedView>
                   )}
-                </ThemedView>
-              )}
 
-              {/* Chapter Selection */}
-              <ThemedView style={[styles.formGroup, { backgroundColor: colors.background }]}>
-                <ThemedText style={[styles.formLabel, { color: colors.tint }]}>
-                  {t('mcq.chapter')}
-                </ThemedText>
-                <TouchableOpacity
-                  style={[
-                    styles.formInput,
-                    { backgroundColor: colors.cardAlt, borderColor: colors.border },
-                    !selectedSubject && { 
-                      backgroundColor: isDarkMode ? 'rgba(0, 0, 0, 0.3)' : 'rgba(0, 0, 0, 0.05)',
-                      borderColor: isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'
-                    }
-                  ]}
-                  onPress={() => selectedSubject && setShowChapterDropdown(!showChapterDropdown)}
-                  disabled={!selectedSubject}
-                >
-                  <ThemedText 
+                  {/* Chapter Selection - Only show for MCQ exam type */}
+                  {selectedExamType === 'mcq' && (
+                    <ThemedView style={[styles.formGroup, { backgroundColor: colors.background }]}>
+                      <ThemedText style={[styles.formLabel, { color: colors.tint }]}>
+                        {t('mcq.chapter')}
+                      </ThemedText>
+                      <TouchableOpacity
+                        style={[
+                          styles.formInput,
+                          { backgroundColor: colors.cardAlt, borderColor: colors.border },
+                          !selectedSubject && { 
+                            backgroundColor: isDarkMode ? 'rgba(0, 0, 0, 0.3)' : 'rgba(0, 0, 0, 0.05)',
+                            borderColor: isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'
+                          }
+                        ]}
+                        onPress={() => selectedSubject && setShowChapterDropdown(!showChapterDropdown)}
+                        disabled={!selectedSubject}
+                      >
+                        <ThemedText 
+                          style={[
+                            styles.formInputText, 
+                            { color: colors.text }, 
+                            !selectedSubject && { 
+                              color: isDarkMode ? 'rgba(255, 255, 255, 0.3)' : 'rgba(0, 0, 0, 0.3)'
+                            }
+                          ]}
+                        >
+                          {selectedChapter ? selectedSubjectData?.chapters.find((c: Chapter) => c.id === selectedChapter)?.name : t('mcq.selectChapter')}
+                        </ThemedText>
+                        <IconSymbol 
+                          name="chevron.right" 
+                          size={20} 
+                          color={!selectedSubject ? (isDarkMode ? 'rgba(255, 255, 255, 0.3)' : 'rgba(0, 0, 0, 0.3)') : colors.tint} 
+                        />
+                      </TouchableOpacity>
+                      {showChapterDropdown && selectedSubject && (
+                        <Modal
+                          visible={showChapterDropdown}
+                          transparent={true}
+                          animationType="fade"
+                          onRequestClose={() => setShowChapterDropdown(false)}
+                        >
+                          <TouchableOpacity
+                            style={[styles.modalOverlay, { backgroundColor: 'rgba(0, 0, 0, 0.5)' }]}
+                            activeOpacity={1}
+                            onPress={() => setShowChapterDropdown(false)}
+                          >
+                            <ThemedView style={[styles.modalContent, { backgroundColor: colors.background }]}>
+                              <ScrollView>
+                                {selectedSubjectData?.chapters.map((chapter: Chapter) => (
+                                  <TouchableOpacity
+                                    key={chapter.id}
+                                    style={[styles.modalItem, { backgroundColor: colors.background, borderBottomColor: colors.border }]}
+                                    onPress={() => {
+                                      setSelectedChapter(chapter.id);
+                                      setShowChapterDropdown(false);
+                                    }}
+                                  >
+                                    <ThemedText style={[styles.modalItemText, { color: colors.text }]}>{chapter.name}</ThemedText>
+                                    <IconSymbol name="chevron.right" size={20} color={colors.tint} />
+                                  </TouchableOpacity>
+                                ))}
+                              </ScrollView>
+                            </ThemedView>
+                          </TouchableOpacity>
+                        </Modal>
+                      )}
+                    </ThemedView>
+                  )}
+
+                  {/* Start Quiz Button - Only show when all required selections are made */}
+                  <TouchableOpacity
                     style={[
-                      styles.formInputText, 
-                      { color: colors.text }, 
-                      !selectedSubject && { 
-                        color: isDarkMode ? 'rgba(255, 255, 255, 0.3)' : 'rgba(0, 0, 0, 0.3)'
-                      }
+                      styles.startButton,
+                      { backgroundColor: colors.tint },
+                      (!selectedSubject || (selectedExamType === 'mcq' && !selectedChapter) || (selectedExamType === 'national' && !selectedYear)) && { opacity: 0.5 }
                     ]}
+                    onPress={handleStartTest}
+                    disabled={!selectedSubject || (selectedExamType === 'mcq' && !selectedChapter) || (selectedExamType === 'national' && !selectedYear)}
                   >
-                    {selectedChapter ? selectedSubjectData?.chapters.find((c: Chapter) => c.id === selectedChapter)?.name : t('mcq.selectChapter')}
-                  </ThemedText>
-                  <IconSymbol 
-                    name="chevron.right" 
-                    size={20} 
-                    color={!selectedSubject ? (isDarkMode ? 'rgba(255, 255, 255, 0.3)' : 'rgba(0, 0, 0, 0.3)') : colors.tint} 
-                  />
-                </TouchableOpacity>
-                {showChapterDropdown && selectedSubject && (
-                  <Modal
-                    visible={showChapterDropdown}
-                    transparent={true}
-                    animationType="fade"
-                    onRequestClose={() => setShowChapterDropdown(false)}
-                  >
-                    <TouchableOpacity
-                      style={[styles.modalOverlay, { backgroundColor: 'rgba(0, 0, 0, 0.5)' }]}
-                      activeOpacity={1}
-                      onPress={() => setShowChapterDropdown(false)}
-                    >
-                      <ThemedView style={[styles.modalContent, { backgroundColor: colors.background }]}>
-                        <ScrollView>
-                          {selectedSubjectData?.chapters.map((chapter: Chapter) => (
-                            <TouchableOpacity
-                              key={chapter.id}
-                              style={[styles.modalItem, { backgroundColor: colors.background, borderBottomColor: colors.border }]}
-                              onPress={() => {
-                                setSelectedChapter(chapter.id);
-                                setShowChapterDropdown(false);
-                              }}
-                            >
-                              <ThemedText style={[styles.modalItemText, { color: colors.text }]}>{chapter.name}</ThemedText>
-                              <IconSymbol name="chevron.right" size={20} color={colors.tint} />
-                            </TouchableOpacity>
-                          ))}
-                        </ScrollView>
-                      </ThemedView>
-                    </TouchableOpacity>
-                  </Modal>
-                )}
-              </ThemedView>
-
-              <TouchableOpacity
-                style={[
-                  styles.startButton,
-                  { backgroundColor: colors.tint },
-                  (!selectedSubject || !selectedChapter) && { opacity: 0.5 }
-                ]}
-                onPress={handleStartTest}
-                disabled={!selectedSubject || !selectedChapter}
-              >
-                <ThemedText style={[styles.startButtonText, { color: '#fff' }]}>
-                  {t('mcq.startQuiz')}
-                </ThemedText>
-              </TouchableOpacity>
+                    <ThemedText style={[styles.startButtonText, { color: '#fff' }]}>
+                      {t('mcq.startQuiz')}
+                    </ThemedText>
+                  </TouchableOpacity>
+                </>
+              )}
             </ThemedView>
           </ThemedView>
         </ThemedView>
@@ -929,13 +1050,16 @@ ${grade.subjects?.map(s => `  - ${s.name}: ${s.chapters?.length || 0} chapters`)
     <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]}>
       <ThemedView style={[styles.container, { backgroundColor: colors.background }]}>
         <ThemedView style={[styles.content, { backgroundColor: colors.background }]}>
+          <ThemedText style={{ fontSize: 30, fontWeight: 'bold', color: colors.text, marginBottom: 16, marginTop: -20, paddingTop: 5 }}>
+            {selectedExamType === 'national' ? 'National Exam' : 'MCQ Test'}
+          </ThemedText>
           {!showResult ? (
             <>
               <View style={[styles.headerContainer, { backgroundColor: colors.background, borderBottomColor: colors.border }]}>
                 <View style={[styles.breadcrumbContainer, { backgroundColor: colors.cardAlt }]}>
                   <View style={[styles.breadcrumbItem, { backgroundColor: colors.background, borderColor: colors.border }]}>
                     <ThemedText style={[styles.breadcrumbText, { color: colors.tint }]}>
-                      {selectedGrade ? mcqData?.grades.find((g: Grade) => g.id === selectedGrade.id)?.name : 'Select Grade'}
+                      {user?.grade ? `Grade ${user.grade}` : 'Select Grade'}
                     </ThemedText>
                   </View>
                   {selectedGrade && (
@@ -1154,13 +1278,14 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   formTitle: {
-    fontSize: 24,
+    paddingTop: 5,
+    fontSize: 28,
     fontWeight: '700',
     marginBottom: 30,
     textAlign: 'center',
   },
   formLabel: {
-    fontSize: 16,
+    fontSize: 18,
     fontWeight: '600',
   },
   formInput: {
@@ -1170,6 +1295,7 @@ const styles = StyleSheet.create({
     padding: 16,
     borderRadius: 12,
     borderWidth: 1,
+    backgroundColor: 'rgba(0,0,0,0.05)',
   },
   formInputText: {
     fontSize: 16,
@@ -1207,7 +1333,15 @@ const styles = StyleSheet.create({
     gap: 8,
     padding: 16,
     borderRadius: 12,
-    marginTop: 20,
+    marginTop: 24,
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 3.84,
+    elevation: 5,
   },
   startButtonText: {
     fontSize: 18,
@@ -1220,7 +1354,8 @@ const styles = StyleSheet.create({
   headerContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 10,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
     borderBottomWidth: 1,
   },
   breadcrumbContainer: {
@@ -1514,17 +1649,37 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     marginTop: 8,
+    gap: 16,
   },
   examTypeButton: {
     flex: 1,
-    padding: 16,
-    borderRadius: 8,
-    marginHorizontal: 8,
+    padding: 24,
+    borderRadius: 16,
     alignItems: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(0,0,0,0.1)',
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 3.84,
+    elevation: 5,
+  },
+  examTypeIcon: {
+    marginBottom: 16,
   },
   examTypeText: {
-    fontSize: 16,
-    fontWeight: '500',
+    fontSize: 18,
+    fontWeight: '600',
+    marginBottom: 8,
+    textAlign: 'center',
+  },
+  examTypeDescription: {
+    fontSize: 14,
+    textAlign: 'center',
+    lineHeight: 20,
   },
   actionButtons: {
     flexDirection: 'row',
@@ -1532,19 +1687,12 @@ const styles = StyleSheet.create({
     marginTop: 20,
     paddingHorizontal: 16,
   },
-  headerContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: 10,
-    borderBottomWidth: 1,
-  },
   backButton: {
-    marginRight: 10,
-    padding: 5,
+    padding: 8,
+    marginRight: 8,
   },
-});
-
-const needsExamTypeSelection = (grade: Grade | null | undefined): boolean => {
-  if (!grade) return false;
-  return ['grade-6', 'grade-8', 'grade-12'].includes(grade.id);
-}; 
+  headerTitle: {
+    fontSize: 20,
+    fontWeight: '600',
+  },
+}); 
