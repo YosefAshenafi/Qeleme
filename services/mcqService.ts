@@ -5,7 +5,7 @@ import pictureMCQData from '@/data/pictureMCQData.json';
 const BASE_URL = `${BASE_URL_CONSTANT}/api`;
 
 export interface Option {
-  id: string;
+  id: string | number;
   text: string;
   isCorrect: boolean;
 }
@@ -59,7 +59,7 @@ interface MCQAPIResponse {
 }
 
 // Interface for National Exam API response
-interface NationalExamAPIResponse {
+export interface NationalExamAPIResponse {
   id: number;
   question: string;
   options: {
@@ -162,16 +162,63 @@ export const getNationalExamQuestions = async (
   subject: string
 ): Promise<NationalExamAPIResponse[]> => {
   try {
+    const token = await getAuthToken();
+    if (!token) {
+      throw new Error('No authentication token found. Please login again.');
+    }
+
+    console.log('🔍 Fetching national exam questions with params:', {
+      gradeLevelId,
+      yearId,
+      subject
+    });
+
     const response = await fetch(
-      `http://localhost:5001/api/nationalExams/grouped?gradeLevelId=${gradeLevelId}&yearId=${yearId}&subject=${subject}`
+      `${BASE_URL}/national-exams/grouped?gradeLevelId=${gradeLevelId}&yearId=${yearId}&subject=${encodeURIComponent(subject)}`,
+      {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      }
     );
     
     if (!response.ok) {
-      throw new Error('Failed to fetch national exam questions');
+      const errorData = await response.json().catch(() => null);
+      console.error('❌ API Error:', errorData);
+      throw new Error(errorData?.message || 'Failed to fetch national exam questions');
     }
     
     const data = await response.json();
-    return data;
+    console.log('✅ Received response:', data);
+    
+    if (!data.data || !Array.isArray(data.data) || data.data.length === 0) {
+      throw new Error('No questions found for this exam');
+    }
+
+    const examGroup = data.data[0];
+    if (!examGroup.questions || !Array.isArray(examGroup.questions)) {
+      throw new Error('Invalid questions format in response');
+    }
+
+    // Transform the questions to match the expected format
+    const transformedQuestions = examGroup.questions.map((q: any) => ({
+      id: q._id || q.id,
+      question: q.question,
+      options: q.options.map((opt: any) => ({
+        id: opt._id || opt.id,
+        text: opt.text,
+        isCorrect: opt.isCorrect
+      })),
+      explanation: q.explanation || '',
+      subjectId: examGroup.subject,
+      yearId: examGroup.year,
+      gradeLevelId: examGroup.gradeLevel
+    }));
+
+    console.log('📚 Transformed questions:', transformedQuestions.length);
+    return transformedQuestions;
   } catch (error) {
     console.error('Error fetching national exam questions:', error);
     throw error;

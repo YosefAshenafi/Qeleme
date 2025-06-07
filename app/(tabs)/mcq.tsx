@@ -16,7 +16,7 @@ import { Header } from '../../components/Header';
 import { ThemedText } from '../../components/ThemedText';
 import { ThemedView } from '../../components/ThemedView';
 import { IconSymbol } from '../../components/ui/IconSymbol';
-import { getMCQData, MCQData, Grade, Subject, Chapter, Question, Option, ExamType, getNationalExamQuestions, getNationalExamAvailable } from '../../services/mcqService';
+import { getMCQData, MCQData, Grade, Subject, Chapter, Question, Option, ExamType, getNationalExamQuestions, getNationalExamAvailable, NationalExamAPIResponse } from '../../services/mcqService';
 import PictureMCQScreen from '../screens/PictureMCQScreen';
 import PictureMCQInstructionScreen from '../screens/PictureMCQInstructionScreen';
 
@@ -62,6 +62,7 @@ export default function MCQScreen() {
   const [showPictureMCQ, setShowPictureMCQ] = useState(false);
   const [availableSubjects, setAvailableSubjects] = useState<string[]>([]);
   const [availableYears, setAvailableYears] = useState<number[]>([]);
+  const [nationalExamQuestions, setNationalExamQuestions] = useState<NationalExamAPIResponse[]>([]);
   
   // Timer states
   const [time, setTime] = useState(0);
@@ -84,10 +85,17 @@ export default function MCQScreen() {
   const selectedGradeData = mcqData?.grades.find((grade: Grade) => grade.id === selectedGrade?.id);
   const selectedSubjectData = selectedGradeData?.subjects.find((subject: Subject) => subject.id === selectedSubject);
   const selectedChapterData = selectedSubjectData?.chapters.find((chapter: Chapter) => chapter.id === selectedChapter);
-  const currentQuestion = selectedChapterData?.questions[currentQuestionIndex];
-  const isLastQuestion = currentQuestionIndex === (selectedChapterData?.questions.length || 0) - 1;
+  const currentQuestion = selectedExamType === 'national'
+    ? nationalExamQuestions[currentQuestionIndex]
+    : selectedChapterData?.questions[currentQuestionIndex];
+  const isLastQuestion = currentQuestionIndex === (selectedExamType === 'national' 
+    ? nationalExamQuestions.length - 1 
+    : (selectedChapterData?.questions.length || 0) - 1);
   const isFirstQuestion = currentQuestionIndex === 0;
-  const percentage = Math.round((score / (selectedChapterData?.questions.length || 0)) * 100);
+  const totalQuestions = selectedExamType === 'national' 
+    ? nationalExamQuestions.length 
+    : selectedChapterData?.questions.length || 0;
+  const percentage = Math.round((score / totalQuestions) * 100);
 
   // Timer functions (were accidentally removed)
   const startTimer = () => {
@@ -399,17 +407,32 @@ export default function MCQScreen() {
   };
 
   const handleNextQuestion = () => {
-    if (currentQuestionIndex < (selectedChapterData?.questions.length || 0) - 1) {
-      if (!selectedAnswer) {
-        setShowAnswerMessage(true);
-        return;
+    if (selectedExamType === 'national') {
+      if (currentQuestionIndex < nationalExamQuestions.length - 1) {
+        if (!selectedAnswer) {
+          setShowAnswerMessage(true);
+          return;
+        }
+        setCurrentQuestionIndex(prev => prev + 1);
+        setSelectedAnswer(null);
+        setShowExplanation(false);
+        setShowAnswerMessage(false);
+      } else {
+        setShowResult(true);
       }
-      setCurrentQuestionIndex(prev => prev + 1);
-      setSelectedAnswer(null);
-      setShowExplanation(false);
-      setShowAnswerMessage(false);
     } else {
-      setShowResult(true);
+      if (currentQuestionIndex < (selectedChapterData?.questions.length || 0) - 1) {
+        if (!selectedAnswer) {
+          setShowAnswerMessage(true);
+          return;
+        }
+        setCurrentQuestionIndex(prev => prev + 1);
+        setSelectedAnswer(null);
+        setShowExplanation(false);
+        setShowAnswerMessage(false);
+      } else {
+        setShowResult(true);
+      }
     }
   };
 
@@ -434,7 +457,7 @@ export default function MCQScreen() {
           subject: selectedSubjectData?.name || '',
           chapter: selectedChapterData?.name || '',
           timestamp: Date.now(),
-          details: `Completed ${score} out of ${selectedChapterData?.questions.length || 0} questions`
+          details: `Completed ${score} out of ${selectedExamType === 'national' ? nationalExamQuestions.length : (selectedChapterData?.questions.length || 0)} questions`
         };
         
         // Get existing activities
@@ -491,7 +514,10 @@ export default function MCQScreen() {
       }
 
       try {
-        const gradeNumber = parseInt(selectedGrade.id.replace('grade-', ''));
+        // Use the user's grade number directly since we've already validated it
+        const gradeNumber = parseInt(user?.grade || '');
+        console.log('🔍 Starting national exam with grade:', gradeNumber);
+        
         const questions = await getNationalExamQuestions(
           gradeNumber,
           parseInt(selectedYear),
@@ -502,6 +528,9 @@ export default function MCQScreen() {
           setError('No questions found for this exam. Please try another year or subject.');
           return;
         }
+
+        // Store the questions in state
+        setNationalExamQuestions(questions);
 
         // Start the test with national exam questions
         setShowTest(true);
@@ -582,7 +611,6 @@ export default function MCQScreen() {
     return [styles.optionContainer];
   };
 
-  const totalQuestions = selectedChapterData?.questions.length || 0;
   const progress = ((currentQuestionIndex + 1) / totalQuestions) * 100;
 
   // Handle starting the picture MCQ
@@ -1176,7 +1204,7 @@ export default function MCQScreen() {
                 </View>
 
                 <View style={styles.optionsContainer}>
-                  {currentQuestion?.options.map((option: Option) => (
+                  {currentQuestion?.options.map((option: Option, index: number) => (
                     <TouchableOpacity
                       key={option.id}
                       style={[
@@ -1189,7 +1217,9 @@ export default function MCQScreen() {
                     >
                       <View style={styles.optionContent}>
                         <View style={[styles.optionId, { backgroundColor: colors.cardAlt, borderColor: colors.border }]}>
-                          <ThemedText style={[styles.optionIdText, { color: colors.tint }]}>{option.id}</ThemedText>
+                          <ThemedText style={[styles.optionIdText, { color: colors.tint }]}>
+                            {selectedExamType === 'national' ? String.fromCharCode(65 + index) : option.id}
+                          </ThemedText>
                         </View>
                         <ThemedText style={[styles.optionText, { color: colors.text }]}>{option.text}</ThemedText>
                       </View>
