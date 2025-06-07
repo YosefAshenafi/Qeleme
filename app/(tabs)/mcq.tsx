@@ -831,14 +831,12 @@ export default function MCQScreen() {
             </View>
           </ThemedView>
 
-          <ThemedView style={[styles.actionButtons, { backgroundColor: colors.background }]}>
+          <ThemedView style={styles.actionButtons}>
             <TouchableOpacity
-              style={[styles.button, styles.retryButton, { backgroundColor: colors.tint }]}
+              style={[styles.button, styles.retryButton, { backgroundColor: colors.tint, marginBottom: 12 }]}
               onPress={handleRetry}
             >
-              <ThemedText style={[styles.retryButtonText, { color: '#fff' }]}>
-                {t('mcq.results.tryAgain')}
-              </ThemedText>
+              <ThemedText style={[styles.retryButtonText, { color: '#fff' }]}>Try Again</ThemedText>
               <Ionicons name="refresh" size={24} color="#fff" />
             </TouchableOpacity>
             
@@ -852,9 +850,7 @@ export default function MCQScreen() {
                 fetchMCQData();
               }}
             >
-              <ThemedText style={[styles.homeButtonText, { color: colors.text }]}>
-                {t('mcq.results.chooseAnotherSubject')}
-              </ThemedText>
+              <ThemedText style={[styles.homeButtonText, { color: colors.text }]}>Choose Another Subject</ThemedText>
             </TouchableOpacity>
           </ThemedView>
         </ScrollView>
@@ -1299,7 +1295,7 @@ export default function MCQScreen() {
 
               <ThemedView style={styles.actionButtons}>
                 <TouchableOpacity
-                  style={[styles.button, styles.retryButton, { backgroundColor: colors.tint }]}
+                  style={[styles.button, styles.retryButton, { backgroundColor: colors.tint, marginBottom: 12 }]}
                   onPress={handleRetry}
                 >
                   <ThemedText style={[styles.retryButtonText, { color: '#fff' }]}>Try Again</ThemedText>
@@ -1727,11 +1723,14 @@ const styles = StyleSheet.create({
     fontWeight: '700',
   },
   button: {
-    flex: 1,
+    width: '100%',
     padding: 15,
     borderRadius: 8,
     alignItems: 'center',
     borderWidth: 1,
+    flexDirection: 'row',
+    justifyContent: 'center',
+    gap: 8,
   },
   homeButton: {
     borderWidth: 2,
@@ -1777,8 +1776,6 @@ const styles = StyleSheet.create({
     lineHeight: 20,
   },
   actionButtons: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
     marginTop: 20,
     paddingHorizontal: 16,
   },
