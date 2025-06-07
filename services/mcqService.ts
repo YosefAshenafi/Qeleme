@@ -73,6 +73,15 @@ interface NationalExamAPIResponse {
   gradeLevelId: number;
 }
 
+// Interface for National Exam Available API response
+interface NationalExamAvailableResponse {
+  data: {
+    subjects: string[];
+    years: number[];
+  };
+  success: boolean;
+}
+
 export const getMCQData = async (gradeId: string): Promise<MCQData> => {
   try {
     // Format the grade ID to match API expectations (e.g., "grade 6" -> "grade-6")
@@ -165,6 +174,49 @@ export const getNationalExamQuestions = async (
     return data;
   } catch (error) {
     console.error('Error fetching national exam questions:', error);
+    throw error;
+  }
+};
+
+// Function to fetch available subjects and years for national exams
+export const getNationalExamAvailable = async (gradeNumber: number): Promise<NationalExamAvailableResponse> => {
+  try {
+    const token = await getAuthToken();
+    if (!token) {
+      throw new Error('No authentication token found. Please login again.');
+    }
+
+    // Ensure gradeNumber is a valid number
+    const validGrade = Number(gradeNumber);
+    if (![6, 8, 12].includes(validGrade)) {
+      throw new Error('Invalid grade level. Must be 6, 8, or 12');
+    }
+
+    console.log(`🔍 Fetching national exam data for grade ${validGrade}...`);
+    console.log(`🔗 API URL: ${BASE_URL}/national-exams/available/${validGrade}`);
+
+    const response = await fetch(`${BASE_URL}/national-exams/available/${validGrade}`, {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+    });
+
+    console.log('📡 Response status:', response.status);
+    console.log('📡 Response headers:', Object.fromEntries(response.headers.entries()));
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => null);
+      console.error('❌ API Error:', errorData);
+      throw new Error(errorData?.message || 'Failed to fetch available national exam data');
+    }
+
+    const data = await response.json();
+    console.log('✅ API Response:', data);
+    return data;
+  } catch (error) {
+    console.error('❌ Error fetching available national exam data:', error);
     throw error;
   }
 }; 

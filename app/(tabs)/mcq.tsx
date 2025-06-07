@@ -16,7 +16,7 @@ import { Header } from '../../components/Header';
 import { ThemedText } from '../../components/ThemedText';
 import { ThemedView } from '../../components/ThemedView';
 import { IconSymbol } from '../../components/ui/IconSymbol';
-import { getMCQData, MCQData, Grade, Subject, Chapter, Question, Option, ExamType, getNationalExamQuestions } from '../../services/mcqService';
+import { getMCQData, MCQData, Grade, Subject, Chapter, Question, Option, ExamType, getNationalExamQuestions, getNationalExamAvailable } from '../../services/mcqService';
 import PictureMCQScreen from '../screens/PictureMCQScreen';
 import PictureMCQInstructionScreen from '../screens/PictureMCQInstructionScreen';
 
@@ -60,6 +60,8 @@ export default function MCQScreen() {
   const [userPhoneNumber, setUserPhoneNumber] = useState<string | null>(null);
   const [isPictureQuestions, setIsPictureQuestions] = useState(false);
   const [showPictureMCQ, setShowPictureMCQ] = useState(false);
+  const [availableSubjects, setAvailableSubjects] = useState<string[]>([]);
+  const [availableYears, setAvailableYears] = useState<number[]>([]);
   
   // Timer states
   const [time, setTime] = useState(0);
@@ -163,6 +165,49 @@ export default function MCQScreen() {
       setLoading(false);
     }
   };
+
+  // Function to fetch available national exam data
+  const fetchNationalExamAvailable = async () => {
+    if (!user?.grade) {
+      console.log('❌ No user grade found, cannot fetch national exam data');
+      return;
+    }
+    
+    try {
+      const gradeNumber = parseInt(user.grade);
+      console.log(`🔍 Fetching national exam data for grade ${gradeNumber}...`);
+      
+      if (![6, 8, 12].includes(gradeNumber)) {
+        console.log('⚠️ Invalid grade for national exam:', gradeNumber);
+        setError('National exams are only available for grades 6, 8, and 12');
+        return;
+      }
+      
+      const response = await getNationalExamAvailable(gradeNumber);
+      console.log('✅ Received national exam data:', response);
+      
+      if (response.success) {
+        console.log('📚 Available subjects:', response.data.subjects);
+        console.log('📅 Available years:', response.data.years);
+        setAvailableSubjects(response.data.subjects);
+        setAvailableYears(response.data.years);
+      } else {
+        console.log('⚠️ API returned success: false');
+      }
+    } catch (error) {
+      console.error('❌ Error fetching available national exam data:', error);
+      setError(error instanceof Error ? error.message : 'Failed to load available national exam data');
+    }
+  };
+
+  // Add useEffect for fetching national exam data
+  useEffect(() => {
+    console.log('🔄 Exam type changed to:', selectedExamType);
+    if (selectedExamType === 'national') {
+      console.log('🎯 National exam selected, fetching available data...');
+      fetchNationalExamAvailable();
+    }
+  }, [selectedExamType]);
 
   useFocusEffect(
     React.useCallback(() => {
@@ -859,12 +904,15 @@ export default function MCQScreen() {
                 <>
                   {/* Subject Selection */}
                   <ThemedView style={[styles.formGroup, { backgroundColor: colors.background }]}>
+                    <ThemedText style={[styles.formLabel, { color: colors.tint }]}>
+                      {t('mcq.subject')}
+                    </ThemedText>
                     <TouchableOpacity
                       style={[styles.formInput, { backgroundColor: colors.cardAlt, borderColor: colors.border }]}
                       onPress={() => setShowSubjectDropdown(!showSubjectDropdown)}
                     >
                       <ThemedText style={[styles.formInputText, { color: colors.text }]}>
-                        {selectedSubject ? selectedGradeData?.subjects.find((s: Subject) => s.id === selectedSubject)?.name : t('mcq.selectSubject')}
+                        {selectedSubject ? toTitleCase(selectedSubject) : t('mcq.selectSubject')}
                       </ThemedText>
                       <IconSymbol name="chevron.right" size={20} color={colors.tint} />
                     </TouchableOpacity>
@@ -882,20 +930,37 @@ export default function MCQScreen() {
                         >
                           <ThemedView style={[styles.modalContent, { backgroundColor: colors.background }]}>
                             <ScrollView>
-                              {selectedGradeData?.subjects.map((subject: Subject) => (
-                                <TouchableOpacity
-                                  key={subject.id}
-                                  style={[styles.modalItem, { backgroundColor: colors.background, borderBottomColor: colors.border }]}
-                                  onPress={() => {
-                                    setSelectedSubject(subject.id);
-                                    setSelectedChapter('');
-                                    setShowSubjectDropdown(false);
-                                  }}
-                                >
-                                  <ThemedText style={[styles.modalItemText, { color: colors.text }]}>{subject.name}</ThemedText>
-                                  <IconSymbol name="chevron.right" size={20} color={colors.tint} />
-                                </TouchableOpacity>
-                              ))}
+                              {selectedExamType === 'national' ? (
+                                availableSubjects.map((subject) => (
+                                  <TouchableOpacity
+                                    key={subject}
+                                    style={[styles.modalItem, { backgroundColor: colors.background, borderBottomColor: colors.border }]}
+                                    onPress={() => {
+                                      setSelectedSubject(subject);
+                                      setSelectedChapter('');
+                                      setShowSubjectDropdown(false);
+                                    }}
+                                  >
+                                    <ThemedText style={[styles.modalItemText, { color: colors.text }]}>{toTitleCase(subject)}</ThemedText>
+                                    <IconSymbol name="chevron.right" size={20} color={colors.tint} />
+                                  </TouchableOpacity>
+                                ))
+                              ) : (
+                                selectedGradeData?.subjects.map((subject: Subject) => (
+                                  <TouchableOpacity
+                                    key={subject.id}
+                                    style={[styles.modalItem, { backgroundColor: colors.background, borderBottomColor: colors.border }]}
+                                    onPress={() => {
+                                      setSelectedSubject(subject.id);
+                                      setSelectedChapter('');
+                                      setShowSubjectDropdown(false);
+                                    }}
+                                  >
+                                    <ThemedText style={[styles.modalItemText, { color: colors.text }]}>{subject.name}</ThemedText>
+                                    <IconSymbol name="chevron.right" size={20} color={colors.tint} />
+                                  </TouchableOpacity>
+                                ))
+                              )}
                             </ScrollView>
                           </ThemedView>
                         </TouchableOpacity>
@@ -932,7 +997,7 @@ export default function MCQScreen() {
                           >
                             <ThemedView style={[styles.modalContent, { backgroundColor: colors.background }]}>
                               <ScrollView>
-                                {[2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023].map((year) => (
+                                {availableYears.map((year) => (
                                   <TouchableOpacity
                                     key={year}
                                     style={[styles.modalItem, { backgroundColor: colors.background, borderBottomColor: colors.border }]}
@@ -1695,4 +1760,11 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: '600',
   },
-}); 
+});
+
+// Helper function to convert string to Title Case
+const toTitleCase = (str: string) => {
+  return str.replace(/\w\S*/g, (txt) => {
+    return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();
+  });
+}; 
