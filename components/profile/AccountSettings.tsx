@@ -71,7 +71,6 @@ export function AccountSettings({ colors, profileData }: AccountSettingsProps) {
         await login(updatedProfileData);
       }
     } catch (error) {
-      console.error('Error updating full name:', error);
       // You might want to show an error message to the user here
     }
   };

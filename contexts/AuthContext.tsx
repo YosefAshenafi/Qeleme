@@ -33,7 +33,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         }
       }
     } catch (error) {
-      console.error('Error checking auth state:', error);
+      // Silently handle auth state check error
     } finally {
       setIsLoading(false);
     }
@@ -44,7 +44,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setUser(userData);
       setIsAuthenticated(true);
     } catch (error) {
-      console.error('Error updating auth state:', error);
+      // Silently handle auth state update error
     }
   };
 
@@ -55,7 +55,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setIsAuthenticated(false);
       router.replace('/(auth)/login');
     } catch (error) {
-      console.error('Error during logout:', error);
+      // Silently handle logout error
     }
   };
 

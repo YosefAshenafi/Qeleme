@@ -52,7 +52,7 @@ export default function OTPScreen() {
           router.setParams({ otp: response.otp });
         }
       } catch (error) {
-        console.error('Error resending OTP:', error);
+        // Silently fail - user can try again
       }
     }
   };

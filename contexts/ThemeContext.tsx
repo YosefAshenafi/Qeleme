@@ -28,7 +28,6 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
         setIsDarkMode(systemColorScheme === 'dark');
       }
     } catch (error) {
-      console.error('Error loading theme preference:', error);
       setIsDarkMode(systemColorScheme === 'dark');
     }
   };
@@ -39,7 +38,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     try {
       await AsyncStorage.setItem('themePreference', newTheme ? 'dark' : 'light');
     } catch (error) {
-      console.error('Error saving theme preference:', error);
+      // Silently handle theme preference save error
     }
   };
 

@@ -78,7 +78,7 @@ const PaymentButton: React.FC<PaymentButtonProps> = ({
           onFailure?.();
         }
       } catch (error) {
-        console.error('Error checking payment status:', error);
+        // Silently handle payment status check error
       }
     }, 5000);
 

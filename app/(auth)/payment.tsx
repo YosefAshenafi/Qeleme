@@ -39,9 +39,6 @@ export default function PaymentScreen() {
         amountPaid: amount
       };
 
-      console.log('Sending registration request to:', endpoint);
-      console.log('Request body:', JSON.stringify(requestBody, null, 2));
-
       const response = await fetch(endpoint, {
         method: 'POST',
         headers: {
@@ -57,8 +54,7 @@ export default function PaymentScreen() {
         throw new Error(errorData.message || errorData.error || 'Failed to register user');
       }
 
-      const data = await response.json();
-      console.log('User registered successfully:', data);
+      await response.json();
 
       // Show success modal
       setShowSuccessModal(true);
@@ -68,7 +64,6 @@ export default function PaymentScreen() {
         router.replace('/(tabs)');
       }, 2000);
     } catch (error: any) {
-      console.error('Registration error:', error);
       // Handle registration error - you might want to show an error message to the user
     }
   };

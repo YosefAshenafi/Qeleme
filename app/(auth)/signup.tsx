@@ -94,7 +94,6 @@ export default function SignupScreen() {
       setUsernameValid(!data.exists);
       setUsernameError(data.exists ? 'Username is already taken' : '');
     } catch (error) {
-      console.error('Error checking username:', error);
       setUsernameError('Error checking username availability');
     } finally {
       setUsernameChecking(false);
@@ -145,7 +144,6 @@ export default function SignupScreen() {
       };
       setChildrenData(newChildrenData);
     } catch (error) {
-      console.error('Error checking username:', error);
       newChildrenData[index] = { 
         ...newChildrenData[index], 
         usernameChecking: false 
@@ -198,63 +196,30 @@ export default function SignupScreen() {
     }
 
     if (password !== confirmPassword) {
-      setError(t('signup.errors.passwordMismatch'));
-      return;
-    }
-
-    // Validate username availability
-    if (usernameValid === false) {
-      setError('Username is already taken');
-      return;
-    }
-
-    // Validate children data if parent registration
-    if (role === 'parent' && numberOfChildren > 0) {
-      const invalidChildren = childrenData.some(child => 
-        !child.fullName || 
-        !child.username || 
-        !child.grade || 
-        !child.password || 
-        !child.confirmPassword ||
-        child.password !== child.confirmPassword ||
-        child.usernameValid === false
-      );
-      if (invalidChildren) {
-        setError(t('signup.errors.incompleteChildrenData'));
-        return;
-      }
-    } else if (!grade) {
-      setError(t('signup.errors.gradeRequired'));
+      setError('Passwords do not match');
       return;
     }
 
     try {
-      const userData = {
-        fullName,
-        username,
-        phoneNumber: `+251${phoneNumber}`,
-        password,
-        role,
-        grade: role === 'student' ? grade : undefined,
-        numberOfChildren,
-        childrenData: role === 'parent' && numberOfChildren > 0 ? childrenData : undefined
-      };
-
-      // Try to send OTP but proceed regardless of result
-      const otpResponse = await sendOTP(userData.phoneNumber);
+      // Send OTP
+      await sendOTP(phoneNumber);
       
-      // Navigate to OTP verification with user data
+      // Navigate to OTP screen with registration data
       router.push({
-        pathname: '/(auth)/otp',
+        pathname: '/otp',
         params: {
-          otp: otpResponse.otp || "102132", // Use a default OTP if sending failed
-          userData: JSON.stringify(userData),
-          nextScreen: 'plan-selection'
+          phoneNumber,
+          fullName,
+          username,
+          password,
+          grade,
+          role,
+          numberOfChildren: numberOfChildren.toString(),
+          childrenData: JSON.stringify(childrenData)
         }
       });
-    } catch (err: any) {
-      console.error('Error:', err);
-      setError(err.message || t('signup.errors.generic'));
+    } catch (err) {
+      setError('Failed to send verification code. Please try again.');
     }
   };
 

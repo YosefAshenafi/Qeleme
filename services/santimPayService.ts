@@ -34,7 +34,6 @@ export const initiatePayment = async (
     const data: PaymentResponse = await response.json();
     return data;
   } catch (error) {
-    console.error('Payment initiation failed:', error);
     throw error;
   }
 };
@@ -47,7 +46,6 @@ export const checkPaymentStatus = async (
     const data: PaymentStatusResponse = await response.json();
     return data;
   } catch (error) {
-    console.error('Status check failed:', error);
     throw error;
   }
 };

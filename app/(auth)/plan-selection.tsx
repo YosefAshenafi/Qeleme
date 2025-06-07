@@ -328,23 +328,9 @@ const styles = StyleSheet.create({
           throw new Error(data.message || 'Registration failed');
         }
       }
-    } catch (err: any) {
-      console.error('Registration error:', err);
-      // Show error alert and go back to signup
-      Alert.alert(
-        t('auth.planSelection.error.title'),
-        err.message || t('auth.planSelection.error.network'),
-        [
-          {
-            text: t('auth.planSelection.error.button'),
-            onPress: () => router.back(),
-            style: 'default'
-          }
-        ],
-        {
-          cancelable: false
-        }
-      );
+    } catch (err) {
+      // Silently handle registration error
+      Alert.alert(t('common.error'), t('auth.errors.registrationFailed'));
     }
   };
 

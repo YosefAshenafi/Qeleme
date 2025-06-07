@@ -92,9 +92,7 @@ export default function FlashcardsScreen() {
   // Update the selected grade when flashcards data is loaded
   useEffect(() => {
     if (flashcardsData && flashcardsData.length > 0) {
-      console.log('Setting default grade:', flashcardsData[0].name);
       setSelectedGrade(flashcardsData[0].name);
-      console.log('All subjects available:', flashcardsData[0].subjects);
     }
   }, [flashcardsData]);
 
@@ -102,10 +100,7 @@ export default function FlashcardsScreen() {
   useEffect(() => {
     if (flashcardsData && selectedGrade) {
       const grade = flashcardsData.find(g => g.name === selectedGrade);
-      console.log('Selected grade data:', grade);
-      console.log('Available subjects for grade:', grade?.subjects);
       if (grade && grade.subjects.length > 0) {
-        console.log('Setting default subject:', grade.subjects[0].id);
         setSelectedSubject(grade.subjects[0].id);
       } else {
         setSelectedSubject('');
@@ -119,9 +114,7 @@ export default function FlashcardsScreen() {
       const grade = flashcardsData.find(g => g.name === selectedGrade);
       if (grade) {
         const subject = grade.subjects.find(s => s.id === selectedSubject);
-        console.log('Selected subject data:', subject);
         if (subject && subject.chapters.length > 0) {
-          console.log('Setting default chapter:', subject.chapters[0].id);
           setSelectedChapter(subject.chapters[0].id);
         } else {
           setSelectedChapter('');
@@ -131,9 +124,6 @@ export default function FlashcardsScreen() {
   }, [selectedSubject, selectedGrade, flashcardsData]);
 
   const selectedGradeData = selectedGrade ? flashcardsData.find(g => g.name === selectedGrade) : null;
-  console.log('Current selected grade data:', selectedGradeData);
-  console.log('Current selected subject:', selectedSubject);
-  console.log('Available subjects in dropdown:', selectedGradeData?.subjects);
   const selectedSubjectData = selectedSubject && selectedGradeData
     ? selectedGradeData.subjects.find(s => s.id === selectedSubject)
     : null;
@@ -216,12 +206,12 @@ export default function FlashcardsScreen() {
         const trackActivity = async () => {
           try {
             const activity: RecentActivity = {
-              type: 'flashcard',
-              grade: selectedGrade,
+              type: 'flashcards',
+              grade: selectedGradeData?.name || '',
               subject: selectedSubjectData?.name || '',
               chapter: selectedChapterData?.name || '',
               timestamp: Date.now(),
-              details: `Reviewed ${selectedChapterData?.flashcards.length || 0} flashcards`
+              details: `Reviewed ${currentIndex + 1} out of ${selectedChapterData?.flashcards.length || 0} flashcards`
             };
             
             // Get existing activities
@@ -241,7 +231,7 @@ export default function FlashcardsScreen() {
             // Save updated activities
             await AsyncStorage.setItem('recentActivities', JSON.stringify(activities));
           } catch (error) {
-            console.error('Error tracking activity:', error);
+            // Silently fail - activity tracking is not critical
           }
         };
         

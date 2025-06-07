@@ -42,7 +42,7 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         await saveLanguage(lang);
       }
     } catch (error) {
-      console.error('Failed to change language:', error);
+      // Silently handle language change error
     }
   };
 

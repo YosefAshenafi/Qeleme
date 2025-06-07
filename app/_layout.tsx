@@ -63,7 +63,6 @@ export default function RootLayout() {
         await initI18n();
         setIsI18nReady(true);
       } catch (error) {
-        console.error('Failed to initialize i18n:', error);
         setIsI18nReady(true); // Still set to true to prevent app from being stuck
       }
     };

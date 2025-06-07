@@ -176,14 +176,13 @@ export default function HomeworkScreen() {
             // Save updated activities
             await AsyncStorage.setItem('recentActivities', JSON.stringify(activities));
           } catch (error) {
-            console.error('Error tracking activity:', error);
+            // Silently fail - activity tracking is not critical
           }
         };
         
         trackActivity();
       }
     } catch (error) {
-      console.error('Error getting chat completion:', error);
       const errorMessage: Message = {
         id: (Date.now() + 1).toString(),
         text: 'Sorry, I encountered an error. Please try again.',

@@ -86,11 +86,9 @@ export const getMCQData = async (gradeId: string): Promise<MCQData> => {
   try {
     // Format the grade ID to match API expectations (e.g., "grade 6" -> "grade-6")
     const formattedGradeId = gradeId.toLowerCase().replace(/\s+/g, '-');
-    console.log(`Fetching MCQ data for grade ${formattedGradeId}...`);
 
     // For Kindergarten, use the local picture MCQ data without authentication
     if (formattedGradeId === 'grade-kg') {
-      console.log('Using local picture MCQ data for Kindergarten');
       return pictureMCQData;
     }
 
@@ -120,11 +118,6 @@ export const getMCQData = async (gradeId: string): Promise<MCQData> => {
       throw new Error('Server returned invalid data. Please try again later.');
     }
 
-    // Log the raw API response for debugging
-    console.log('Raw MCQ API response:', JSON.stringify(rawData, null, 2));
-    console.log('Response status:', response.status);
-    console.log('Response headers:', Object.fromEntries(response.headers.entries()));
-
     if (!response.ok) {
       if (response.status === 404) {
         throw new Error(`No MCQ data found for grade ${formattedGradeId}.`);
@@ -136,21 +129,18 @@ export const getMCQData = async (gradeId: string): Promise<MCQData> => {
 
     // If the response is not an object or doesn't have the expected structure
     if (!rawData || !Array.isArray(rawData) || rawData.length === 0) {
-      console.error('Invalid response type:', typeof rawData);
       throw new Error('Server returned invalid data type. Please try again later.');
     }
 
     // The server returns an array with a single object containing the grades
     const mcqData = rawData[0];
     if (!mcqData.grades) {
-      console.error('Missing grades in response:', mcqData);
       throw new Error('Server response missing grades data. Please try again later.');
     }
 
     // The server response matches our MCQData format, so we can return it directly
     return mcqData as MCQData;
   } catch (error) {
-    console.log('MCQ data not available: ', error instanceof Error ? error.message : 'Unknown error');
     throw error;
   }
 };
@@ -167,12 +157,6 @@ export const getNationalExamQuestions = async (
       throw new Error('No authentication token found. Please login again.');
     }
 
-    console.log('🔍 Fetching national exam questions with params:', {
-      gradeLevelId,
-      yearId,
-      subject
-    });
-
     const response = await fetch(
       `${BASE_URL}/national-exams/grouped?gradeLevelId=${gradeLevelId}&yearId=${yearId}&subject=${encodeURIComponent(subject)}`,
       {
@@ -186,12 +170,10 @@ export const getNationalExamQuestions = async (
     
     if (!response.ok) {
       const errorData = await response.json().catch(() => null);
-      console.error('❌ API Error:', errorData);
       throw new Error(errorData?.message || 'Failed to fetch national exam questions');
     }
     
     const data = await response.json();
-    console.log('✅ Received response:', data);
     
     if (!data.data || !Array.isArray(data.data) || data.data.length === 0) {
       throw new Error('No questions found for this exam');
@@ -217,10 +199,8 @@ export const getNationalExamQuestions = async (
       gradeLevelId: examGroup.gradeLevel
     }));
 
-    console.log('📚 Transformed questions:', transformedQuestions.length);
     return transformedQuestions;
   } catch (error) {
-    console.error('Error fetching national exam questions:', error);
     throw error;
   }
 };
@@ -239,9 +219,6 @@ export const getNationalExamAvailable = async (gradeNumber: number): Promise<Nat
       throw new Error('Invalid grade level. Must be 6, 8, or 12');
     }
 
-    console.log(`🔍 Fetching national exam data for grade ${validGrade}...`);
-    console.log(`🔗 API URL: ${BASE_URL}/national-exams/available/${validGrade}`);
-
     const response = await fetch(`${BASE_URL}/national-exams/available/${validGrade}`, {
       method: 'GET',
       headers: {
@@ -250,20 +227,14 @@ export const getNationalExamAvailable = async (gradeNumber: number): Promise<Nat
       },
     });
 
-    console.log('📡 Response status:', response.status);
-    console.log('📡 Response headers:', Object.fromEntries(response.headers.entries()));
-
     if (!response.ok) {
       const errorData = await response.json().catch(() => null);
-      console.error('❌ API Error:', errorData);
       throw new Error(errorData?.message || 'Failed to fetch available national exam data');
     }
 
     const data = await response.json();
-    console.log('✅ API Response:', data);
     return data;
   } catch (error) {
-    console.error('❌ Error fetching available national exam data:', error);
     throw error;
   }
 }; 

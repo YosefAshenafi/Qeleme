@@ -56,7 +56,9 @@ export const initI18n = async () => {
 };
 
 // Initialize i18n immediately
-initI18n().catch(console.error);
+initI18n().catch(() => {
+  // Silently handle initialization error
+});
 
 export default i18n;
 export { LANGUAGES, loadLanguage, saveLanguage }; 

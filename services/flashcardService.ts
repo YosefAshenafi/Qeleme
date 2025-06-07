@@ -61,8 +61,6 @@ export const getFlashcards = async (): Promise<Grade[]> => {
       subjects: data.subjects
     }];
   } catch (error) {
-    // Use log instead of error to prevent red errors in the console
-    console.log('Flashcard data not available: ', error instanceof Error ? error.message : 'Unknown error');
     throw error;
   }
 }; 

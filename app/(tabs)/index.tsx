@@ -98,7 +98,7 @@ export default function HomeScreen() {
       
       setRecentActivities(sortedActivities);
     } catch (error) {
-      console.error('Error loading recent activities:', error);
+      // Silently handle recent activities loading error
       setRecentActivities([]);
     }
   };
@@ -146,7 +146,7 @@ export default function HomeScreen() {
 
       await Promise.all([loadRecentActivities(), loadReportData()]);
     } catch (error) {
-      console.error('Error refreshing data:', error);
+      // Silently handle refresh error
     }
     setRefreshing(false);
   }, []);
@@ -253,93 +253,147 @@ export default function HomeScreen() {
         return;
       }
 
-      // Calculate study hours from activities
-      const studyHours = activities
-        .filter((activity: any) => activity.type === 'study')
-        .reduce((total: number, activity: any) => {
-          const hours = parseInt(activity.duration?.replace('h', '') || '0');
-          return total + hours;
-        }, 0);
+      // Filter activities for the current user
+      const userActivities = activities.filter((activity: any) => activity.username === user?.username);
 
-      // Calculate performance metrics
-      const mcqActivities = activities.filter((activity: any) => activity.type === 'mcq');
-      const totalQuizzes = mcqActivities.length;
-      const totalScore = mcqActivities.reduce((sum: number, activity: any) => {
-        const score = parseInt(activity.details.match(/\d+/)?.[0] || '0');
-        return sum + score;
-      }, 0);
-      const averageScore = totalQuizzes > 0 ? Math.round(totalScore / totalQuizzes) : 0;
-
-      // Calculate learning streak
-      const today = new Date();
-      const yesterday = new Date(today);
-      yesterday.setDate(yesterday.getDate() - 1);
-      
-      const hasActivityToday = activities.some((activity: any) => {
-        const activityDate = new Date(activity.timestamp);
-        return activityDate.toDateString() === today.toDateString();
-      });
-
-      const hasActivityYesterday = activities.some((activity: any) => {
-        const activityDate = new Date(activity.timestamp);
-        return activityDate.toDateString() === yesterday.toDateString();
-      });
-
-      const currentStreak = hasActivityToday ? 1 : 0;
-      const bestStreak = 1;
-
-      // Create report cards with translations
-      const cards: ReportCard[] = [
+      // Calculate report data
+      const reportData = calculateReportData(userActivities);
+      setReportCards(reportData);
+    } catch (error) {
+      // Silently handle report data loading error
+      const defaultCards: ReportCard[] = [
         {
           title: t('home.reportCards.performance.title'),
-          number: `${averageScore}%`,
+          number: '0%',
           subtitle: t('home.reportCards.performance.subtitle'),
           gradient: 'purple',
           icon: 'chart.bar',
           stats: [
-            { label: t('home.reportCards.performance.stats.quizzesTaken'), value: totalQuizzes.toString() },
-            { label: t('home.reportCards.performance.stats.successRate'), value: `${averageScore}%` }
+            { label: t('home.reportCards.performance.stats.quizzesTaken'), value: '0' },
+            { label: t('home.reportCards.performance.stats.successRate'), value: '0%' }
           ]
         },
         {
           title: t('home.reportCards.studyProgress.title'),
-          number: `${studyHours}h`,
+          number: '0h',
           subtitle: t('home.reportCards.studyProgress.subtitle'),
           gradient: 'blue',
           icon: 'clock.fill',
           stats: [
-            { label: t('home.reportCards.studyProgress.stats.dailyGoal'), value: '2h' },
-            { label: t('home.reportCards.studyProgress.stats.weeklyGoal'), value: '10h' }
+            { label: t('home.reportCards.studyProgress.stats.dailyGoal'), value: '0h' },
+            { label: t('home.reportCards.studyProgress.stats.weeklyGoal'), value: '0h' }
           ]
         },
         {
           title: t('home.reportCards.learningStreak.title'),
-          number: `${currentStreak}d`,
+          number: '0d',
           subtitle: t('home.reportCards.learningStreak.subtitle'),
           gradient: 'green',
           icon: 'trophy.fill',
           stats: [
-            { label: t('home.reportCards.learningStreak.stats.currentStreak'), value: `${currentStreak}d` },
-            { label: t('home.reportCards.learningStreak.stats.bestStreak'), value: `${bestStreak}d` }
+            { label: t('home.reportCards.learningStreak.stats.currentStreak'), value: '0d' },
+            { label: t('home.reportCards.learningStreak.stats.bestStreak'), value: '0d' }
           ]
         },
         {
           title: t('home.reportCards.studyFocus.title'),
-          number: '4',
+          number: '0',
           subtitle: t('home.reportCards.studyFocus.subtitle'),
           gradient: 'orange',
           icon: 'chart.bar',
           stats: [
-            { label: t('home.reportCards.studyFocus.stats.topSubject'), value: 'Math' },
-            { label: t('home.reportCards.studyFocus.stats.hoursPerSubject'), value: '2.5h' }
+            { label: t('home.reportCards.studyFocus.stats.topSubject'), value: '-' },
+            { label: t('home.reportCards.studyFocus.stats.hoursPerSubject'), value: '0h' }
           ]
         }
       ];
-
-      setReportCards(cards);
-    } catch (error) {
-      console.error('Error loading report data:', error);
+      setReportCards(defaultCards);
     }
+  };
+
+  const calculateReportData = (activities: any[]): ReportCard[] => {
+    // Calculate study hours from activities
+    const studyHours = activities
+      .filter((activity: any) => activity.type === 'study')
+      .reduce((total: number, activity: any) => {
+        const hours = parseInt(activity.duration?.replace('h', '') || '0');
+        return total + hours;
+      }, 0);
+
+    // Calculate performance metrics
+    const mcqActivities = activities.filter((activity: any) => activity.type === 'mcq');
+    const totalQuizzes = mcqActivities.length;
+    const totalScore = mcqActivities.reduce((sum: number, activity: any) => {
+      const score = parseInt(activity.details.match(/\d+/)?.[0] || '0');
+      return sum + score;
+    }, 0);
+    const averageScore = totalQuizzes > 0 ? Math.round(totalScore / totalQuizzes) : 0;
+
+    // Calculate learning streak
+    const today = new Date();
+    const yesterday = new Date(today);
+    yesterday.setDate(yesterday.getDate() - 1);
+    
+    const hasActivityToday = activities.some((activity: any) => {
+      const activityDate = new Date(activity.timestamp);
+      return activityDate.toDateString() === today.toDateString();
+    });
+
+    const hasActivityYesterday = activities.some((activity: any) => {
+      const activityDate = new Date(activity.timestamp);
+      return activityDate.toDateString() === yesterday.toDateString();
+    });
+
+    const currentStreak = hasActivityToday ? 1 : 0;
+    const bestStreak = 1;
+
+    // Create report cards with translations
+    return [
+      {
+        title: t('home.reportCards.performance.title'),
+        number: `${averageScore}%`,
+        subtitle: t('home.reportCards.performance.subtitle'),
+        gradient: 'purple',
+        icon: 'chart.bar',
+        stats: [
+          { label: t('home.reportCards.performance.stats.quizzesTaken'), value: totalQuizzes.toString() },
+          { label: t('home.reportCards.performance.stats.successRate'), value: `${averageScore}%` }
+        ]
+      },
+      {
+        title: t('home.reportCards.studyProgress.title'),
+        number: `${studyHours}h`,
+        subtitle: t('home.reportCards.studyProgress.subtitle'),
+        gradient: 'blue',
+        icon: 'clock.fill',
+        stats: [
+          { label: t('home.reportCards.studyProgress.stats.dailyGoal'), value: '2h' },
+          { label: t('home.reportCards.studyProgress.stats.weeklyGoal'), value: '10h' }
+        ]
+      },
+      {
+        title: t('home.reportCards.learningStreak.title'),
+        number: `${currentStreak}d`,
+        subtitle: t('home.reportCards.learningStreak.subtitle'),
+        gradient: 'green',
+        icon: 'trophy.fill',
+        stats: [
+          { label: t('home.reportCards.learningStreak.stats.currentStreak'), value: `${currentStreak}d` },
+          { label: t('home.reportCards.learningStreak.stats.bestStreak'), value: `${bestStreak}d` }
+        ]
+      },
+      {
+        title: t('home.reportCards.studyFocus.title'),
+        number: '4',
+        subtitle: t('home.reportCards.studyFocus.subtitle'),
+        gradient: 'orange',
+        icon: 'chart.bar',
+        stats: [
+          { label: t('home.reportCards.studyFocus.stats.topSubject'), value: 'Math' },
+          { label: t('home.reportCards.studyFocus.stats.hoursPerSubject'), value: '2.5h' }
+        ]
+      }
+    ];
   };
 
   const getShimmerStyle = () => {

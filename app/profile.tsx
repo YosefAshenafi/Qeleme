@@ -133,7 +133,7 @@ export default function ProfileScreen() {
         loadStats()
       ]);
     } catch (error) {
-      console.error('Error refreshing data:', error);
+      // Silently handle refresh error
     }
     setRefreshing(false);
   }, []);
@@ -150,7 +150,7 @@ export default function ProfileScreen() {
         setProfileImage(imageUri);
       }
     } catch (error) {
-      console.error(t('profile.errors.loadingImage'), error);
+      // Silently handle profile image loading error
     }
   };
 
@@ -164,7 +164,6 @@ export default function ProfileScreen() {
         { label: t('profile.stats.studyHours'), value: '0', icon: 'clock.fill' as const },
       ]);
     } catch (error) {
-      console.error(t('profile.errors.loadingStats'), error);
       // Set zeros for all stats on error
       setStats([
         { label: t('profile.stats.mcqsCompleted'), value: '0', icon: 'questionmark.circle.fill' as const },
@@ -203,9 +202,6 @@ export default function ProfileScreen() {
 
         const base64Image = `data:image/jpeg;base64,${resizedImage.base64}`;
         
-        // Log the base64 image data
-        console.log('Base64 Image Data:', base64Image);
-        
         // Send to API
         const response = await fetch(`${BASE_URL}/api/profile/${user?.id}/image`, {
           method: 'POST',
@@ -226,7 +222,6 @@ export default function ProfileScreen() {
         }
       }
     } catch (error) {
-      console.error('Error picking image:', error);
       alert(t('profile.errors.imagePicking'));
     }
   };

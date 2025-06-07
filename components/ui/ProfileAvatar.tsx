@@ -33,7 +33,7 @@ export function ProfileAvatar({
         setProfileImage(imageUri);
       }
     } catch (error) {
-      console.error('Error loading profile image:', error);
+      // Silently handle profile image loading error
     }
   };
 

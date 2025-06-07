@@ -127,13 +127,11 @@ export default function MCQScreen() {
     
     // If we have the user's grade, use that
     if (userGradeNumber !== null) {
-      console.log('🔍 Checking exam type selection for user grade:', userGradeNumber);
       return [6, 8, 12].includes(userGradeNumber);
     }
     
     // Fallback to checking the UI grade if user grade is not available
     const gradeNumber = parseInt(grade.id.replace('grade-', ''));
-    console.log('🔍 Checking exam type selection for UI grade:', gradeNumber);
     return [6, 8, 12].includes(gradeNumber);
   };
 
@@ -145,7 +143,6 @@ export default function MCQScreen() {
       // If no grade is selected, use the user's grade or default to grade-6
       const userGrade = user?.grade ? `grade-${user.grade}` : 'grade-6';
       const gradeToFetch = selectedGrade?.id || userGrade;
-      console.log(`🚀 Starting MCQ data fetch for grade ${gradeToFetch}...`);
       
       const data = await getMCQData(gradeToFetch);
       
@@ -153,21 +150,14 @@ export default function MCQScreen() {
       setSelectedSubject('');
       setSelectedChapter('');
       
-      // Log the grade's structure
-      if (data.grades.length > 0) {
-        const grade = data.grades[0];
-        // Set the grade if not already set
-        if (!selectedGrade) {
-          setSelectedGrade(grade);
-        }
-      } else {
-        console.log('⚠️ No grades found in API response');
+      // Set the grade if not already set
+      if (data.grades.length > 0 && !selectedGrade) {
+        setSelectedGrade(data.grades[0]);
       }
       
       // Set MCQ data after setting the grade to ensure they're in sync
       setMcqData(data);
     } catch (error) {
-      console.error('❌ Error fetching MCQ data:', error);
       setError(error instanceof Error ? error.message : 'Failed to load MCQ data');
     } finally {
       setLoading(false);
@@ -177,42 +167,33 @@ export default function MCQScreen() {
   // Function to fetch available national exam data
   const fetchNationalExamAvailable = async () => {
     if (!user?.grade) {
-      console.log('❌ No user grade found, cannot fetch national exam data');
       return;
     }
     
     try {
       const gradeNumber = parseInt(user.grade);
-      console.log(`🔍 Fetching national exam data for grade ${gradeNumber}...`);
       
       if (![6, 8, 12].includes(gradeNumber)) {
-        console.log('⚠️ Invalid grade for national exam:', gradeNumber);
         setError('National exams are only available for grades 6, 8, and 12');
         return;
       }
       
       const response = await getNationalExamAvailable(gradeNumber);
-      console.log('✅ Received national exam data:', response);
       
       if (response.success) {
-        console.log('📚 Available subjects:', response.data.subjects);
-        console.log('📅 Available years:', response.data.years);
         setAvailableSubjects(response.data.subjects);
         setAvailableYears(response.data.years);
       } else {
-        console.log('⚠️ API returned success: false');
+        setError('Failed to fetch available national exam data');
       }
     } catch (error) {
-      console.error('❌ Error fetching available national exam data:', error);
-      setError(error instanceof Error ? error.message : 'Failed to load available national exam data');
+      setError(error instanceof Error ? error.message : 'Failed to fetch available national exam data');
     }
   };
 
   // Add useEffect for fetching national exam data
   useEffect(() => {
-    console.log('🔄 Exam type changed to:', selectedExamType);
     if (selectedExamType === 'national') {
-      console.log('🎯 National exam selected, fetching available data...');
       fetchNationalExamAvailable();
     }
   }, [selectedExamType]);
@@ -477,7 +458,7 @@ export default function MCQScreen() {
         // Save updated activities
         await AsyncStorage.setItem('recentActivities', JSON.stringify(activities));
       } catch (error) {
-        console.error('Error tracking activity:', error);
+        // Silently fail - activity tracking is not critical
       }
     };
     
@@ -499,24 +480,17 @@ export default function MCQScreen() {
 
   const handleStartTest = async () => {
     if (!selectedGrade || !selectedSubject) {
-      console.log('❌ Cannot start test: Missing selections', {
-        grade: selectedGrade,
-        subject: selectedSubject,
-        examType: selectedExamType
-      });
       return;
     }
 
     if (selectedExamType === 'national') {
       if (!selectedYear) {
-        console.log('❌ Cannot start national exam: Missing year selection');
         return;
       }
 
       try {
         // Use the user's grade number directly since we've already validated it
         const gradeNumber = parseInt(user?.grade || '');
-        console.log('🔍 Starting national exam with grade:', gradeNumber);
         
         const questions = await getNationalExamQuestions(
           gradeNumber,
@@ -544,31 +518,19 @@ export default function MCQScreen() {
         setTime(0);
         startTimer();
       } catch (error) {
-        console.error('Error starting national exam:', error);
         setError('Failed to load national exam questions. Please try again.');
       }
     } else {
       // Original MCQ logic
       if (!selectedChapter) {
-        console.log('❌ Cannot start test: Missing chapter selection');
         return;
       }
 
       // Verify that we have questions for this chapter
       if (!selectedChapterData || !selectedChapterData.questions || selectedChapterData.questions.length === 0) {
-        console.log('❌ Cannot start test: No questions found for this chapter', {
-          chapterId: selectedChapter,
-          chapterName: selectedChapterData?.name,
-          hasQuestions: !!selectedChapterData?.questions,
-          questionCount: selectedChapterData?.questions?.length || 0
-        });
-        
         setError('No questions found for this chapter. Please try another chapter or contact support.');
         return;
       }
-      
-      console.log(`✅ Starting test: ${selectedGradeData?.name} > ${selectedSubjectData?.name} > ${selectedChapterData?.name}`);
-      console.log(`📚 Found ${selectedChapterData.questions.length} questions for this chapter`);
       
       // Start the test
       setShowTest(true);
@@ -737,15 +699,6 @@ export default function MCQScreen() {
               </ThemedText>
             </TouchableOpacity>
           </View>
-          
-          <TouchableOpacity 
-            style={{ marginTop: 30, padding: 10 }}
-            onPress={() => console.log('Debug info:', JSON.stringify(mcqData, null, 2))}
-          >
-            <ThemedText style={{ color: colors.tint, fontSize: 14, textAlign: 'center' }}>
-              Show Debug Information
-            </ThemedText>
-          </TouchableOpacity>
         </ScrollView>
       </SafeAreaView>
     );
