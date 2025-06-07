@@ -899,25 +899,33 @@ export default function MCQScreen() {
                       style={[styles.examTypeButton, { backgroundColor: colors.cardAlt }]}
                       onPress={() => setSelectedExamType('national')}
                     >
-                      <IconSymbol name="trophy.fill" size={32} color={colors.tint} style={styles.examTypeIcon} />
-                      <ThemedText style={[styles.examTypeText, { color: colors.text }]}>
-                        {t('mcq.nationalExam')}
-                      </ThemedText>
-                      <ThemedText style={[styles.examTypeDescription, { color: colors.text, opacity: 0.7 }]}>
-                        {t('mcq.nationalExamDescription')}
-                      </ThemedText>
+                      <View style={styles.examTypeContent}>
+                        <IconSymbol name="trophy.fill" size={40} color={colors.tint} style={styles.examTypeIcon} />
+                        <View style={styles.examTypeTextContainer}>
+                          <ThemedText style={[styles.examTypeText, { color: colors.text }]}>
+                            {t('mcq.nationalExam')}
+                          </ThemedText>
+                          <ThemedText style={[styles.examTypeDescription, { color: colors.text, opacity: 0.7 }]}>
+                            {t('mcq.nationalExamDescription')}
+                          </ThemedText>
+                        </View>
+                      </View>
                     </TouchableOpacity>
                     <TouchableOpacity
                       style={[styles.examTypeButton, { backgroundColor: colors.cardAlt }]}
                       onPress={() => setSelectedExamType('mcq')}
                     >
-                      <IconSymbol name="questionmark.circle.fill" size={32} color={colors.tint} style={styles.examTypeIcon} />
-                      <ThemedText style={[styles.examTypeText, { color: colors.text }]}>
-                        {t('mcq.mcqExam')}
-                      </ThemedText>
-                      <ThemedText style={[styles.examTypeDescription, { color: colors.text, opacity: 0.7 }]}>
-                        {t('mcq.mcqExamDescription')}
-                      </ThemedText>
+                      <View style={styles.examTypeContent}>
+                        <IconSymbol name="questionmark.circle.fill" size={40} color={colors.tint} style={styles.examTypeIcon} />
+                        <View style={styles.examTypeTextContainer}>
+                          <ThemedText style={[styles.examTypeText, { color: colors.text }]}>
+                            {t('mcq.mcqExam')}
+                          </ThemedText>
+                          <ThemedText style={[styles.examTypeDescription, { color: colors.text, opacity: 0.7 }]}>
+                            {t('mcq.mcqExamDescription')}
+                          </ThemedText>
+                        </View>
+                      </View>
                     </TouchableOpacity>
                   </View>
                 </ThemedView>
@@ -1740,16 +1748,13 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   examTypeContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginTop: 8,
     gap: 16,
+    marginTop: 8,
   },
   examTypeButton: {
-    flex: 1,
+    width: '100%',
     padding: 24,
     borderRadius: 16,
-    alignItems: 'center',
     borderWidth: 1,
     borderColor: 'rgba(0,0,0,0.1)',
     shadowColor: "#000",
@@ -1761,18 +1766,24 @@ const styles = StyleSheet.create({
     shadowRadius: 3.84,
     elevation: 5,
   },
+  examTypeContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 20,
+  },
   examTypeIcon: {
-    marginBottom: 16,
+    flexShrink: 0,
+  },
+  examTypeTextContainer: {
+    flex: 1,
   },
   examTypeText: {
-    fontSize: 18,
+    fontSize: 20,
     fontWeight: '600',
     marginBottom: 8,
-    textAlign: 'center',
   },
   examTypeDescription: {
     fontSize: 14,
-    textAlign: 'center',
     lineHeight: 20,
   },
   actionButtons: {
