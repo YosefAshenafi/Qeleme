@@ -158,7 +158,7 @@ export const getNationalExamQuestions = async (
     }
 
     const response = await fetch(
-      `${BASE_URL}/national-exams/grouped?gradeLevelId=${gradeLevelId}&yearId=${yearId}&subject=${encodeURIComponent(subject)}`,
+      `${BASE_URL}/questions/grouped?gradeLevelId=${gradeLevelId}&yearId=${yearId}&subject=${encodeURIComponent(subject)}`,
       {
         method: 'GET',
         headers: {
@@ -234,6 +234,61 @@ export const getNationalExamAvailable = async (gradeNumber: number): Promise<Nat
 
     const data = await response.json();
     return data;
+  } catch (error) {
+    throw error;
+  }
+};
+
+// Function to fetch regular MCQ questions
+export const getRegularMCQQuestions = async (
+  gradeLevelId: number,
+  subjectId: string,
+  chapterId: string
+): Promise<NationalExamAPIResponse[]> => {
+  try {
+    const token = await getAuthToken();
+    if (!token) {
+      throw new Error('No authentication token found. Please login again.');
+    }
+
+    const response = await fetch(
+      `${BASE_URL}/mcq/grouped?gradeLevelId=${gradeLevelId}&subjectId=${encodeURIComponent(subjectId)}&chapterId=${encodeURIComponent(chapterId)}`,
+      {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      }
+    );
+    
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => null);
+      throw new Error(errorData?.message || 'Failed to fetch MCQ questions');
+    }
+    
+    const data = await response.json();
+    
+    if (!data.questions || !Array.isArray(data.questions)) {
+      throw new Error('No questions found for this exam');
+    }
+
+    // Transform the questions to match the expected format
+    const transformedQuestions = data.questions.map((q: any) => ({
+      id: q.id,
+      question: q.question,
+      options: q.options.map((opt: any) => ({
+        id: opt.id,
+        text: opt.text,
+        isCorrect: opt.isCorrect
+      })),
+      explanation: q.explanation || '',
+      subjectId: data.subject,
+      gradeLevelId: data.grade,
+      chapterId: data.chapter
+    }));
+
+    return transformedQuestions;
   } catch (error) {
     throw error;
   }
