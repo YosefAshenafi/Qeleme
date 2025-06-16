@@ -1,13 +1,14 @@
-import { StyleSheet, TouchableOpacity, View, ScrollView, Alert } from 'react-native';
+import { StyleSheet, TouchableOpacity, View, ScrollView, Alert, KeyboardAvoidingView, Platform } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useTheme } from '@/contexts/ThemeContext';
 import { getColors } from '@/constants/Colors';
 import { useTranslation } from 'react-i18next';
 import { BASE_URL } from '../../config/constants';
+import { PaymentPlan } from '@/types/payment';
 
 import { ThemedText } from '@/components/ThemedText';
 import { LanguageToggle } from '@/components/ui/LanguageToggle';
@@ -21,220 +22,78 @@ interface ChildData {
   plan: string;
 }
 
-const plans = [
-  {
-    id: '0',
-    name: 'Free',
-    price: 0,
-    features: [
-      'Basic access to learning materials',
-      'Limited practice questions',
-      'Basic progress tracking',
-      'Community support'
-    ]
-  },
-  {
-    id: '1',
-    name: '1 Month',
-    price: 199,
-    features: [
-      'Access to all learning materials',
-      'Practice questions',
-      'Progress tracking',
-      'Basic support'
-    ]
-  },
-  {
-    id: '3',
-    name: '3 Months',
-    price: 299,
-    features: [
-      'Access to all learning materials',
-      'Practice questions',
-      'Progress tracking',
-      'Basic support'
-    ]
-  },
-  {
-    id: '6',
-    name: '6 Months',
-    price: 499,
-    features: [
-      'Access to all learning materials',
-      'Practice questions',
-      'Progress tracking',
-      'Basic support'
-    ]
-  },
-  {
-    id: '12',
-    name: '12 Months',
-    price: 799,
-    features: [
-      'Everything in 6 Months plan',
-      'Priority support',
-      'Advanced analytics',
-      'Exclusive content'
-    ]
-  }
-];
+interface SelectedPlan {
+  plan: string;
+}
 
 export default function PlanSelectionScreen() {
   const { t } = useTranslation();
   const { isDarkMode } = useTheme();
   const colors = getColors(isDarkMode);
+  const [plans, setPlans] = useState<PaymentPlan[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [selectedPlans, setSelectedPlans] = useState<SelectedPlan[]>([]);
   const params = useLocalSearchParams();
-  const userData = JSON.parse(params.userData as string);
-  const [selectedPlans, setSelectedPlans] = useState<ChildData[]>(
-    userData.role === 'parent' && userData.numberOfChildren > 0 
-      ? userData.childrenData.map((child: ChildData) => ({ ...child, plan: child.plan || '0' }))
-      : [{ plan: '0', fullName: '', username: '', grade: '', password: '', confirmPassword: '' }]
-  );
+  const userData = params.userData ? JSON.parse(decodeURIComponent(params.userData as string)) : null;
 
-const styles = StyleSheet.create({
-  gradient: {
-    flex: 1,
-  },
-  safeArea: {
-    flex: 1,
-  },
-  container: {
-    flex: 1,
-    padding: 24,
-      paddingBottom: 180,
-  },
-  backButton: {
-    marginBottom: 16,
-  },
-  header: {
-    marginBottom: 32,
-  },
-  title: {
-      paddingTop: 30,
-    fontSize: 32,
-    fontWeight: '700',
-    marginBottom: 8,
-  },
-  subtitle: {
-    fontSize: 16,
-  },
-  childSection: {
-    marginBottom: 32,
-  },
-  childName: {
-    fontSize: 20,
-    fontWeight: '600',
-    marginBottom: 16,
-  },
-  plansContainer: {
-    gap: 16,
-  },
-  planCard: {
-    borderRadius: 16,
-    padding: 24,
-    borderWidth: 2,
-    backgroundColor: isDarkMode ? '#2C2C2E' : '#FFFFFF',
-    marginBottom: 16,
-  },
-  planHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 16,
-  },
-  planName: {
-    fontSize: 20,
-    fontWeight: '600',
-  },
-  planPrice: {
-    fontSize: 20,
-    fontWeight: '600',
-  },
-  featuresContainer: {
-    gap: 12,
-  },
-  featureRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  featureText: {
-    fontSize: 14,
-  },
-    footer: {
-      padding: 24,
-      backgroundColor: colors.background,
-      borderTopWidth: 1,
-      borderTopColor: colors.border,
-      marginTop: 'auto',
-    },
-    totalContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-      marginBottom: 16,
-  },
-    totalLabel: {
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  totalAmount: {
-    fontSize: 24,
-    fontWeight: '700',
-  },
-  continueButton: {
-    height: 60,
-    borderRadius: 16,
-      justifyContent: 'center',
-    alignItems: 'center',
-  },
-    continueButtonText: {
-    color: '#FFFFFF',
-    fontSize: 16,
-    fontWeight: '600',
-  },
-    calculationContainer: {
-      marginBottom: 32,
-    },
-    calculationText: {
-      fontSize: 16,
-    },
-  languageToggleContainer: {
-    position: 'absolute',
-    top: 0,
-    right: 0,
-    marginTop: 8,
-    marginRight: 16,
-    zIndex: 1,
-  },
-  });
+  useEffect(() => {
+    fetchPaymentPlans();
+  }, []);
+
+  const fetchPaymentPlans = async () => {
+    try {
+      const response = await fetch(`${BASE_URL}/api/payment-plans`);
+      if (!response.ok) {
+        throw new Error('Failed to fetch payment plans');
+      }
+      const data = await response.json();
+      setPlans(data);
+    } catch (error) {
+      Alert.alert(t('common.error'), t('auth.errors.fetchPlansFailed'));
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const getTotalCost = () => {
+    if (!selectedPlans.length) return 0;
+    
     if (userData.role === 'parent' && userData.numberOfChildren > 0) {
-      // For parent registration, multiply the selected plan price by number of children
-      const plan = plans.find(p => p.id === selectedPlans[0].plan);
-      return (plan?.price || 0) * userData.numberOfChildren;
+      const plan = plans.find(p => p._id === selectedPlans[0].plan);
+      return (plan?.amount || 0) * userData.numberOfChildren;
     } else {
-      // For single student, just return the selected plan price
-      const plan = plans.find(p => p.id === selectedPlans[0].plan);
-      return plan?.price || 0;
+      const plan = plans.find(p => p._id === selectedPlans[0].plan);
+      return plan?.amount || 0;
     }
   };
 
   const getPricePerChild = () => {
-    const plan = plans.find(p => p.id === selectedPlans[0].plan);
-    return plan?.price || 0;
+    if (!selectedPlans.length) return 0;
+    
+    const plan = plans.find(p => p._id === selectedPlans[0].plan);
+    return plan?.amount || 0;
   };
 
-  const handlePlanSelect = (planId: string) => {
-    // Apply the same plan to all children
-    const newPlans = selectedPlans.map((child: ChildData) => ({ ...child, plan: planId }));
-    setSelectedPlans(newPlans);
+  const handlePlanSelect = (plan: PaymentPlan) => {
+    if (userData.role === 'parent' && userData.numberOfChildren > 0) {
+      // For parents, update the plan for each child
+      const updatedChildrenData = userData.childrenData.map((child: ChildData) => ({
+        ...child,
+        plan: plan._id
+      }));
+      setSelectedPlans(updatedChildrenData);
+    } else {
+      // For students, just select the plan
+      setSelectedPlans([{ plan: plan._id }]);
+    }
   };
 
   const handleContinue = async () => {
     try {
-      // Update userData with selected plans
+      if (!selectedPlans.length) {
+        throw new Error('No plan selected');
+      }
+
       const updatedUserData = {
         ...userData,
         childrenData: userData.role === 'parent' && userData.numberOfChildren > 0 ? selectedPlans : undefined,
@@ -242,17 +101,15 @@ const styles = StyleSheet.create({
       };
 
       if (updatedUserData.role === 'parent') {
-        // Prepare children data with their selected plans and passwords
         const children = updatedUserData.childrenData?.map((child: ChildData) => ({
           fullName: child.fullName,
           username: child.username,
           password: child.password,
           grade: child.grade,
-          paymentPlan: child.plan || "3",
-          amountPaid: getTotalCost() / updatedUserData.childrenData.length // Split cost among children
+          paymentPlan: child.plan,
+          amountPaid: getTotalCost() / updatedUserData.childrenData.length
         })) || [];
 
-        // Register parent with children in a single API call
         const response = await fetch(`${BASE_URL}/api/auth/register/parent`, {
           method: 'POST',
           headers: {
@@ -273,7 +130,6 @@ const styles = StyleSheet.create({
           throw new Error(data.message || 'Failed to register parent and children');
         }
 
-        // Show success alert
         Alert.alert(
           t('auth.planSelection.success.title'),
           t('auth.planSelection.success.parentMessage'),
@@ -289,7 +145,7 @@ const styles = StyleSheet.create({
           }
         );
       } else {
-        // Regular student registration
+        // For students, register directly
         const response = await fetch(`${BASE_URL}/api/auth/register/student`, {
           method: 'POST',
           headers: {
@@ -300,174 +156,295 @@ const styles = StyleSheet.create({
             username: updatedUserData.username,
             password: updatedUserData.password,
             grade: updatedUserData.grade,
-            parentId: "0", // Default value for now
-            paymentPlan: selectedPlans[0].plan,
+            parentId: "0",
+            paymentPlanId: selectedPlans[0].plan,
             amountPaid: getTotalCost()
           }),
         });
 
         const data = await response.json();
 
-        if (response.ok) {
-          // Show success alert
-          Alert.alert(
-            t('auth.planSelection.success.title'),
-            t('auth.planSelection.success.message'),
-            [
-              {
-                text: t('auth.planSelection.success.button'),
-                onPress: () => router.replace('/(auth)/login'),
-                style: 'default'
-              }
-            ],
-            {
-              cancelable: false
-            }
-          );
-        } else {
-          throw new Error(data.message || 'Registration failed');
+        if (!response.ok) {
+          throw new Error(data.message || 'Failed to register student');
         }
+
+        Alert.alert(
+          t('auth.planSelection.success.title'),
+          t('auth.planSelection.success.message'),
+          [
+            {
+              text: t('auth.planSelection.success.button'),
+              onPress: () => router.replace('/(auth)/login'),
+              style: 'default'
+            }
+          ],
+          {
+            cancelable: false
+          }
+        );
       }
-    } catch (err) {
-      // Silently handle registration error
-      Alert.alert(t('common.error'), t('auth.errors.registrationFailed'));
+    } catch (error) {
+      console.error('Registration error:', error);
+      Alert.alert(
+        t('common.error'),
+        error instanceof Error ? error.message : t('auth.errors.registrationFailed')
+      );
     }
   };
 
+  const getPlanBackgroundColor = (plan: PaymentPlan) => {
+    if (isDarkMode) {
+      switch (plan.durationInMonths) {
+        case 1:
+          return '#1E3A8A'; // Dark blue
+        case 3:
+          return '#1E40AF'; // Slightly lighter blue
+        case 6:
+          return '#1E4C8A'; // Blue-green
+        case 12:
+          return '#1E4C8A'; // Blue-green
+        default:
+          return '#2C2C2E';
+      }
+    } else {
+      switch (plan.durationInMonths) {
+        case 1:
+          return '#EFF6FF'; // Light blue
+        case 3:
+          return '#F0FDF4'; // Light green
+        case 6:
+          return '#EEF2FF'; // Light indigo
+        case 12:
+          return '#F5F3FF'; // Light purple
+        default:
+          return '#F9FAFB';
+      }
+    }
+  };
+
+  if (loading) {
+    return (
+      <View style={[styles.container, { justifyContent: 'center', alignItems: 'center' }]}>
+        <ThemedText>{t('common.loading')}</ThemedText>
+      </View>
+    );
+  }
+
   return (
     <LinearGradient
-      colors={isDarkMode ? ['#000000', '#1C1C1E'] : ['#F8F9FA', '#FFFFFF']}
+      colors={[colors.background, colors.background]}
       style={styles.gradient}
     >
       <SafeAreaView style={styles.safeArea}>
-        <View style={{ flex: 1 }}>
-          <ScrollView style={styles.container}>
-            <TouchableOpacity 
-              style={styles.backButton}
-              onPress={() => router.back()}
-            >
-              <Ionicons name="arrow-back" size={24} color={isDarkMode ? '#A0A0A5' : '#1F2937'} />
-            </TouchableOpacity>
-            <View style={styles.languageToggleContainer}>
-              <LanguageToggle colors={colors} />
-            </View>
-
+        <KeyboardAvoidingView 
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          style={styles.keyboardView}
+        >
+          <View style={styles.container}>
             <View style={styles.header}>
-              <ThemedText style={[styles.title, { color: colors.text }]}>
-                {t('auth.planSelection.title')}
-              </ThemedText>
+              <TouchableOpacity 
+                style={styles.backButton}
+                onPress={() => router.back()}
+              >
+                <Ionicons name="arrow-back" size={24} color={colors.text} />
+              </TouchableOpacity>
+              <View style={styles.languageToggleContainer}>
+                <LanguageToggle colors={colors} />
+              </View>
+              <ThemedText style={[styles.title, { color: colors.text }]}>{t('auth.planSelection.title')}</ThemedText>
               <ThemedText style={[styles.subtitle, { color: colors.text + '80' }]}>
-                {userData.role === 'parent' && userData.numberOfChildren > 1 
-                  ? t('auth.planSelection.subtitleMultiple')
-                  : t('auth.planSelection.subtitleSingle')}
+                {t('auth.planSelection.subtitle')}
               </ThemedText>
             </View>
 
-            <View style={styles.plansContainer}>
-              {plans.map((plan) => (
-                <TouchableOpacity
-                  key={plan.id}
-                  style={[
-                    styles.planCard,
-                    {
-                      backgroundColor: plan.id === '6' || plan.id === '1'
-                        ? isDarkMode ? '#4F46E5' : '#4F46E5' 
-                        : isDarkMode ? '#2C2C2E' : '#FFFFFF',
-                      borderColor: selectedPlans[0].plan === plan.id ? '#4F46E5' : (isDarkMode ? '#3C3C3E' : '#E5E7EB'),
-                    }
-                  ]}
-                  onPress={() => handlePlanSelect(plan.id)}
-                >
-                  <View style={styles.planHeader}>
-                    <ThemedText style={[
-                      styles.planName, 
-                      { 
-                        color: plan.id === '6' || plan.id === '1' ? '#FFFFFF' : colors.text,
-                        fontWeight: plan.id === '6' || plan.id === '1' ? 'bold' : 'normal'
+            <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
+              <View style={styles.plansContainer}>
+                {plans.map((plan) => (
+                  <TouchableOpacity
+                    key={plan._id}
+                    style={[
+                      styles.planCard,
+                      {
+                        backgroundColor: getPlanBackgroundColor(plan),
+                        borderColor: selectedPlans.some(p => p.plan === plan._id) 
+                          ? '#4F46E5' 
+                          : (isDarkMode ? '#3C3C3E' : '#E5E7EB')
                       }
-                    ]}>
-                      {t(`auth.planSelection.plans.${plan.id}.name`)}
+                    ]}
+                    onPress={() => handlePlanSelect(plan)}
+                  >
+                    <View style={styles.planHeader}>
+                      <ThemedText style={[styles.planName, { color: colors.text }]}>
+                        {plan.name}
+                      </ThemedText>
+                      <ThemedText style={[styles.planPrice, { color: colors.text }]}>
+                        ETB {plan.amount}
+                      </ThemedText>
+                    </View>
+                    <ThemedText style={[styles.planDuration, { color: colors.text + '80' }]}>
+                      {plan.durationInMonths} {t('auth.planSelection.months')}
                     </ThemedText>
-                    <ThemedText style={[
-                      styles.planPrice, 
-                      { 
-                        color: plan.id === '6' || plan.id === '1' ? '#FFFFFF' : colors.text,
-                        fontWeight: plan.id === '6' || plan.id === '1' ? 'bold' : 'normal'
-                      }
-                    ]}>
-                      ETB {plan.price}
+                    <ThemedText style={[styles.planDescription, { color: colors.text + '80' }]}>
+                      {plan.description}
                     </ThemedText>
-                  </View>
-                  <View style={styles.featuresContainer}>
-                    {plan.features.map((feature, idx) => (
-                      <View key={idx} style={styles.featureRow}>
-                        <Ionicons 
-                          name="checkmark-circle" 
-                          size={20} 
-                          color={plan.id === '6' || plan.id === '1' ? '#FFFFFF' : '#4F46E5'} 
-                        />
-                        <ThemedText style={[
-                          styles.featureText, 
-                          { 
-                            color: plan.id === '6' || plan.id === '1' ? '#FFFFFF' : colors.text + '80',
-                            flex: 1
-                          }
-                        ]}>
-                          {t(`auth.planSelection.plans.${plan.id}.features.${idx}`)}
-                        </ThemedText>
-                      </View>
-                    ))}
-                  </View>
-                </TouchableOpacity>
-              ))}
-            </View>
+                    {plan.remark && (
+                      <ThemedText style={[styles.planRemark, { color: colors.text + '80' }]}>
+                        {plan.remark}
+                      </ThemedText>
+                    )}
+                  </TouchableOpacity>
+                ))}
+              </View>
+            </ScrollView>
 
-            {userData.role === 'parent' && userData.numberOfChildren > 1 && (
-              <View style={styles.calculationContainer}>
-                <ThemedText style={[styles.calculationText, { color: colors.text }]}>
-                  {t('auth.planSelection.calculation', {
-                    planPrice: getPricePerChild(),
-                    numberOfChildren: userData.numberOfChildren,
-                    total: getTotalCost()
-                  })}
+            <View style={styles.footer}>
+              <View style={styles.totalContainer}>
+                <ThemedText style={[styles.totalLabel, { color: colors.text }]}>
+                  {t('auth.planSelection.total')}
                 </ThemedText>
-                <ThemedText style={[styles.calculationText, { color: colors.text, marginTop: 8 }]}>
-                  {t('auth.planSelection.pricePerChild', {
-                    price: getPricePerChild()
-                  })}
+                <ThemedText style={[styles.totalAmount, { color: colors.text }]}>
+                  ETB {getTotalCost()}
                 </ThemedText>
               </View>
-            )}
-          </ScrollView>
 
-          <View style={styles.footer}>
-            <View style={styles.totalContainer}>
-              <ThemedText style={[styles.totalLabel, { color: colors.text }]}>
-                {t('auth.planSelection.total')}
-              </ThemedText>
-              <ThemedText style={[styles.totalAmount, { color: colors.text }]}>
-                ETB {getTotalCost()}
-              </ThemedText>
+              <TouchableOpacity 
+                style={[
+                  styles.continueButton,
+                  selectedPlans.length > 0 && styles.continueButtonActive
+                ]}
+                onPress={handleContinue}
+                disabled={selectedPlans.length === 0}
+              >
+                <LinearGradient
+                  colors={['#4F46E5', '#7C3AED']}
+                  style={styles.buttonGradient}
+                >
+                  <ThemedText style={styles.buttonText}>
+                    {t('auth.planSelection.continue')}
+                  </ThemedText>
+                </LinearGradient>
+              </TouchableOpacity>
             </View>
-
-            <TouchableOpacity 
-              style={[
-                styles.continueButton, 
-                { 
-                  backgroundColor: '#4F46E5',
-                  opacity: selectedPlans[0].plan ? 1 : 0.5
-                }
-              ]}
-              onPress={handleContinue}
-              disabled={!selectedPlans[0].plan}
-            >
-              <ThemedText style={styles.continueButtonText}>
-                {t('auth.planSelection.continue')}
-              </ThemedText>
-            </TouchableOpacity>
           </View>
-        </View>
+        </KeyboardAvoidingView>
       </SafeAreaView>
     </LinearGradient>
   );
-} 
+}
+
+const styles = StyleSheet.create({
+  gradient: {
+    flex: 1,
+  },
+  safeArea: {
+    flex: 1,
+  },
+  keyboardView: {
+    flex: 1,
+  },
+  container: {
+    flex: 1,
+    padding: 24,
+  },
+  header: {
+    marginBottom: 24,
+  },
+  backButton: {
+    marginBottom: 16,
+  },
+  languageToggleContainer: {
+    position: 'absolute',
+    top: 0,
+    right: 0,
+    marginTop: 8,
+    marginRight: 16,
+    zIndex: 1,
+  },
+  title: {
+    fontSize: 32,
+    fontWeight: '700',
+    marginBottom: 8,
+    paddingTop: 10,
+  },
+  subtitle: {
+    fontSize: 16,
+  },
+  scrollView: {
+    flex: 1,
+  },
+  plansContainer: {
+    gap: 16,
+    paddingBottom: 24,
+  },
+  planCard: {
+    padding: 20,
+    borderRadius: 16,
+    borderWidth: 1,
+  },
+  planHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  planName: {
+    fontSize: 18,
+    fontWeight: '600',
+  },
+  planPrice: {
+    fontSize: 24,
+    fontWeight: '700',
+  },
+  planDuration: {
+    fontSize: 14,
+    marginBottom: 8,
+  },
+  planDescription: {
+    fontSize: 14,
+    marginBottom: 8,
+  },
+  planRemark: {
+    fontSize: 12,
+    fontStyle: 'italic',
+  },
+  footer: {
+    paddingTop: 16,
+    borderTopWidth: 1,
+    borderTopColor: '#E5E7EB',
+    backgroundColor: 'transparent',
+  },
+  totalContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  totalLabel: {
+    fontSize: 18,
+    fontWeight: '600',
+  },
+  totalAmount: {
+    fontSize: 24,
+    fontWeight: '700',
+  },
+  continueButton: {
+    width: '100%',
+    height: 56,
+    borderRadius: 16,
+    overflow: 'hidden',
+    opacity: 0.5,
+  },
+  continueButtonActive: {
+    opacity: 1,
+  },
+  buttonGradient: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  buttonText: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+}); 

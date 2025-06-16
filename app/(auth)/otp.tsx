@@ -21,8 +21,25 @@ export default function OTPScreen() {
   const inputRefs = useRef<Array<TextInput | null>>([]);
   const params = useLocalSearchParams();
   
-  const expectedOtp = params.otp as string;
-  const userData = params.userData ? JSON.parse(params.userData as string) : null;
+  const expectedOtp = '123456'; // Always use 123456 for testing
+  let userData = null;
+  
+  try {
+    // Construct userData from individual parameters
+    userData = {
+      phoneNumber: params.phoneNumber as string,
+      fullName: params.fullName as string,
+      username: params.username as string,
+      password: params.password as string,
+      grade: params.grade as string,
+      role: params.role as string,
+      numberOfChildren: parseInt(params.numberOfChildren as string) || 0,
+      childrenData: params.childrenData ? JSON.parse(params.childrenData as string) : []
+    };
+  } catch (error) {
+    console.error('Error constructing userData:', error);
+    setError('Invalid user data. Please try again.');
+  }
 
   const handleOtpChange = (text: string, index: number) => {
     const newOtp = [...otp];
@@ -47,12 +64,12 @@ export default function OTPScreen() {
     if (userData?.phoneNumber) {
       try {
         const response = await sendOTP(userData.phoneNumber);
-        if (response.success && response.otp) {
-          // Update the expected OTP
-          router.setParams({ otp: response.otp });
+        if (response.success) {
+          // No need to update expected OTP since it's always 123456
+          setError('');
         }
       } catch (error) {
-        // Silently fail - user can try again
+        setError('Failed to resend OTP. Please try again.');
       }
     }
   };
@@ -64,63 +81,34 @@ export default function OTPScreen() {
       return;
     }
 
-    // First check if the entered OTP matches the expected OTP
+    if (!userData) {
+      setError('User data is missing. Please try again.');
+      return;
+    }
+
+    // Check if the entered OTP matches the test OTP (123456)
     if (enteredOtp === expectedOtp) {
-      // Navigate to the next screen specified in params
-      const nextScreen = params.nextScreen as string;
-      if (nextScreen === 'plan-selection') {
+      try {
+        // Always navigate to plan selection after successful OTP verification
         router.push({
           pathname: '/(auth)/plan-selection',
           params: {
-            userData: params.userData
+            userData: encodeURIComponent(JSON.stringify(userData))
           }
         });
-      } else {
-        // Default navigation if no next screen specified
-        router.push('/(tabs)');
+      } catch (error) {
+        console.error('Navigation error:', error);
+        setError('Failed to proceed. Please try again.');
       }
       return;
     }
 
-    try {
-      const response = await fetch('https://api.qelem.net/auth/verify', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          phoneNumber: userData.phoneNumber,
-          otp: enteredOtp,
-        }),
-      });
-
-      const data = await response.json();
-
-      if (response.ok) {
-        // Navigate to the next screen specified in params
-        const nextScreen = params.nextScreen as string;
-        if (nextScreen === 'plan-selection') {
-          router.push({
-            pathname: '/(auth)/plan-selection',
-            params: {
-              userData: params.userData
-            }
-          });
-        } else {
-          // Default navigation if no next screen specified
-          router.push('/(tabs)');
-        }
-      } else {
-        setError(data.message || 'Invalid OTP');
-      }
-    } catch (err) {
-      setError('Network error. Please try again.');
-    }
+    setError('Invalid OTP. Please try again.');
   };
 
   return (
     <LinearGradient
-      colors={isDarkMode ? ['#000000', '#1C1C1E'] : ['#F8F9FA', '#FFFFFF']}
+      colors={[colors.background, colors.background]}
       style={styles.gradient}
     >
       <SafeAreaView style={styles.safeArea}>
@@ -134,7 +122,7 @@ export default function OTPScreen() {
                 style={styles.backButton}
                 onPress={() => router.back()}
               >
-                <Ionicons name="arrow-back" size={24} color={isDarkMode ? '#A0A0A5' : '#1F2937'} />
+                <Ionicons name="arrow-back" size={24} color={colors.text} />
               </TouchableOpacity>
               <View style={styles.languageToggleContainer}>
                 <LanguageToggle colors={colors} />
@@ -169,6 +157,10 @@ export default function OTPScreen() {
                 />
               ))}
             </View>
+
+            <ThemedText style={[styles.testOtpLabel, { color: isDarkMode ? '#A0A0A5' : '#6B7280' }]}>
+              Test OTP: 123456
+            </ThemedText>
 
             {error ? (
               <ThemedText style={styles.errorText}>{error}</ThemedText>
@@ -254,6 +246,12 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     textAlign: 'center',
     fontSize: 24,
+  },
+  testOtpLabel: {
+    fontSize: 14,
+    textAlign: 'center',
+    marginBottom: 16,
+    fontStyle: 'italic',
   },
   errorText: {
     color: '#EF4444',
