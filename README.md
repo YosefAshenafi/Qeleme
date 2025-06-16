@@ -97,7 +97,7 @@ Authorization: Bearer <token>
 
 #### Get MCQ Data
 ```http
-GET /api/mcq
+GET /api/mcq?gradeLevelId={gradeNumber}
 ```
 
 **Headers:**
@@ -108,28 +108,118 @@ Authorization: Bearer <token>
 **Response:**
 ```json
 {
-  "grade": "Grade 5",
-  "subjects": [
+  "grades": [
     {
-      "id": "math",
-      "name": "Mathematics",
-      "topics": [
+      "id": "grade-5",
+      "name": "Grade 5",
+      "subjects": [
         {
-          "id": "algebra",
-          "name": "Algebra",
-          "questions": [
+          "id": "math",
+          "name": "Mathematics",
+          "chapters": [
             {
-              "id": "q1",
-              "text": "What is 2 + 2?",
-              "options": [
-                {"id": "1", "text": "3", "isCorrect": false},
-                {"id": "2", "text": "4", "isCorrect": true},
-                {"id": "3", "text": "5", "isCorrect": false}
+              "id": "algebra",
+              "name": "Algebra",
+              "questions": [
+                {
+                  "id": "q1",
+                  "question": "What is 2 + 2?",
+                  "options": [
+                    {"id": "1", "text": "3", "isCorrect": false},
+                    {"id": "2", "text": "4", "isCorrect": true},
+                    {"id": "3", "text": "5", "isCorrect": false}
+                  ],
+                  "explanation": "The correct answer is 4"
+                }
               ]
             }
           ]
         }
       ]
+    }
+  ]
+}
+```
+
+#### Get National Exam Questions
+```http
+GET /api/questions/grouped?gradeLevelId={gradeLevelId}&yearId={yearId}&subject={subject}
+```
+
+**Headers:**
+```
+Authorization: Bearer <token>
+```
+
+**Response:**
+```json
+{
+  "data": [
+    {
+      "subject": "Mathematics",
+      "year": 2023,
+      "gradeLevel": 8,
+      "questions": [
+        {
+          "id": "q1",
+          "question": "What is the value of x in 2x + 5 = 15?",
+          "options": [
+            {"id": "1", "text": "5", "isCorrect": true},
+            {"id": "2", "text": "7", "isCorrect": false},
+            {"id": "3", "text": "10", "isCorrect": false}
+          ],
+          "explanation": "To solve for x, subtract 5 from both sides and divide by 2"
+        }
+      ]
+    }
+  ]
+}
+```
+
+#### Get Available National Exams
+```http
+GET /api/national-exams/available/{gradeNumber}
+```
+
+**Headers:**
+```
+Authorization: Bearer <token>
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "subjects": ["Mathematics", "English", "Science"],
+    "years": [2023, 2022, 2021]
+  }
+}
+```
+
+#### Get Regular MCQ Questions
+```http
+GET /api/mcq/questions?gradeLevelId={gradeLevelId}&subjectId={subjectId}&chapterId={chapterId}
+```
+
+**Headers:**
+```
+Authorization: Bearer <token>
+```
+
+**Response:**
+```json
+{
+  "data": [
+    {
+      "id": "q1",
+      "question": "What is the capital of France?",
+      "options": [
+        {"id": "1", "text": "London", "isCorrect": false},
+        {"id": "2", "text": "Paris", "isCorrect": true},
+        {"id": "3", "text": "Berlin", "isCorrect": false}
+      ],
+      "explanation": "Paris is the capital city of France"
     }
   ]
 }
