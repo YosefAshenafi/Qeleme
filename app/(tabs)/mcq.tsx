@@ -127,6 +127,7 @@ export default function MCQScreen() {
     
     // If we have the user's grade, use that
     if (userGradeNumber !== null) {
+      // Only show exam type selection for grades 6, 8, and 12
       return [6, 8, 12].includes(userGradeNumber);
     }
     
@@ -157,12 +158,29 @@ export default function MCQScreen() {
       
       // Set MCQ data after setting the grade to ensure they're in sync
       setMcqData(data);
+
+      // For non-national exam students, automatically set exam type to 'mcq'
+      if (selectedGrade && !needsExamTypeSelection(selectedGrade)) {
+        setSelectedExamType('mcq');
+      }
     } catch (error) {
       setError(error instanceof Error ? error.message : 'Failed to load MCQ data');
     } finally {
       setLoading(false);
     }
   };
+
+  // Add useEffect to handle initial data loading and grade changes
+  useEffect(() => {
+    fetchMCQData();
+  }, []);
+
+  // Add useEffect to handle exam type selection based on grade
+  useEffect(() => {
+    if (selectedGrade && !needsExamTypeSelection(selectedGrade)) {
+      setSelectedExamType('mcq');
+    }
+  }, [selectedGrade]);
 
   // Function to fetch available national exam data
   const fetchNationalExamAvailable = async () => {
