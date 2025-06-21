@@ -1,6 +1,6 @@
 import { getAuthToken } from '@/utils/authStorage';
 import { BASE_URL as BASE_URL_CONSTANT } from '@/config/constants';
-import pictureMCQData from '@/data/pictureMCQData.json';
+import kgMCQData from '@/data/kgMCQData.json';
 
 const BASE_URL = `${BASE_URL_CONSTANT}/api`;
 
@@ -89,7 +89,7 @@ export const getMCQData = async (gradeId: string): Promise<MCQData> => {
 
     // For Kindergarten, use the local picture MCQ data without authentication
     if (formattedGradeId === 'grade-kg') {
-      return pictureMCQData;
+      return kgMCQData;
     }
 
     // For other grades, require authentication

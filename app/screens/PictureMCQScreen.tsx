@@ -25,7 +25,7 @@ import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 import { IconSymbol } from '@/components/ui/IconSymbol';
 import { ProfileAvatar } from '@/components/ui/ProfileAvatar';
-import pictureQuestionsData from '@/data/pictureMCQData.json';
+import kgQuestionsData from '@/data/kgMCQData.json';
 import { LanguageToggle } from '@/components/ui/LanguageToggle';
 
 // Image mapping object
@@ -74,7 +74,7 @@ interface PictureMCQData {
   grades: Grade[];
 }
 
-const typedPictureQuestionsData = pictureQuestionsData as PictureMCQData;
+const typedPictureQuestionsData = kgQuestionsData as PictureMCQData;
 
 interface PictureMCQScreenProps {
   onBackToInstructions: () => void;
