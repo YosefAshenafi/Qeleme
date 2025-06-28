@@ -36,6 +36,15 @@ export default function PlanSelectionScreen() {
   const params = useLocalSearchParams();
   const userData = params.userData ? JSON.parse(decodeURIComponent(params.userData as string)) : null;
 
+  // Debug: Log the received userData
+  console.log('Plan Selection - Received userData:', userData);
+  console.log('Plan Selection - userData keys:', userData ? Object.keys(userData) : 'No userData');
+  console.log('Plan Selection - userData.fullName:', userData?.fullName);
+  console.log('Plan Selection - userData.role:', userData?.role);
+  console.log('Plan Selection - userData.childrenData:', userData?.childrenData);
+  console.log('Plan Selection - userData.phoneNumber:', userData?.phoneNumber);
+  console.log('Plan Selection - userData.grade:', userData?.grade);
+
   useEffect(() => {
     fetchPaymentPlans();
   }, []);
@@ -104,6 +113,11 @@ export default function PlanSelectionScreen() {
     }
   };
 
+  const getTotalCostAsNumber = () => {
+    const totalCost = getTotalCost();
+    return typeof totalCost === 'string' ? parseFloat(totalCost) : totalCost;
+  };
+
   const getPricePerChild = () => {
     if (!selectedPlans.length) return 0;
     
@@ -131,102 +145,58 @@ export default function PlanSelectionScreen() {
       }
 
       const selectedPlanId = selectedPlans[0].plan;
+      const amount = getTotalCostAsNumber();
 
-      if (userData.role === 'parent' && userData.numberOfChildren > 0) {
-        // For parents, update children data with the selected plan
-        const updatedChildrenData = userData.childrenData.map((child: ChildData) => ({
-          ...child,
-          plan: selectedPlanId
-        }));
+      // Directly initiate payment with Santim Pay
+      const orderId = `ORDER_${Date.now()}`;
+      const phoneNumber = userData.phoneNumber?.replace('+251', '') || userData.phoneNumber;
+      
+      console.log('Initiating direct payment with Santim Pay:', {
+        amount,
+        orderId,
+        phoneNumber,
+        planId: selectedPlanId
+      });
 
-        const children = updatedChildrenData.map((child: ChildData) => ({
-          fullName: child.fullName,
-          username: child.username,
-          password: child.password,
-          grade: child.grade,
-          paymentPlan: child.plan,
-          amountPaid: getTotalCost() / updatedChildrenData.length
-        }));
+      const paymentResponse = await fetch('http://localhost:3000/api/payment/initiate', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          id: orderId,
+          amount: parseFloat(amount.toString()),
+          paymentReason: `Qelem Premium Subscription - ${selectedPlanId} months`,
+          successRedirectUrl: "https://santimpay.com",
+          failureRedirectUrl: "https://santimpay.com",
+          notifyUrl: "https://webhook.site/783a4514-3e30-4315-9c68-c8b41a743c9d",
+          phoneNumber: phoneNumber,
+          cancelRedirectUrl: "https://santimpay.com",
+          merchantId: "f660f84e-7395-417b-91ff-542026c38326"
+        }),
+      });
 
-        const response = await fetch(`${BASE_URL}/api/auth/register/parent`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-            'X-Requested-With': 'XMLHttpRequest',
-          },
-          body: JSON.stringify({
-            fullName: userData.fullName,
-            username: userData.username,
-            password: userData.password,
-            phoneNumber: userData.phoneNumber,
-            children: children
-          }),
-        });
+      const paymentData = await paymentResponse.json();
+      console.log('Santim Pay response:', paymentData);
 
-        const data = await response.json();
-
-        if (!response.ok) {
-          throw new Error(data.message || 'Failed to register parent and children');
-        }
-
-        Alert.alert(
-          t('auth.planSelection.success.title'),
-          t('auth.planSelection.success.parentMessage'),
-          [
-            {
-              text: t('auth.planSelection.success.button'),
-              onPress: () => router.replace('/(auth)/login'),
-              style: 'default'
-            }
-          ],
-          {
-            cancelable: false
+      if (paymentData.success && paymentData.paymentUrl) {
+        // Navigate to payment screen with the Santim Pay URL
+        router.push({
+          pathname: '/(auth)/payment',
+          params: {
+            userData: encodeURIComponent(JSON.stringify(userData)),
+            selectedPlanId: selectedPlanId,
+            amount: amount.toString(),
+            paymentUrl: paymentData.paymentUrl,
+            orderId: orderId
           }
-        );
+        });
       } else {
-        // For students, register directly
-        const response = await fetch(`${BASE_URL}/api/auth/register/student`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-            'X-Requested-With': 'XMLHttpRequest',
-          },
-          body: JSON.stringify({
-            fullName: userData.fullName,
-            username: userData.username,
-            password: userData.password,
-            grade: userData.grade,
-            parentId: "0",
-            paymentPlanId: selectedPlanId,
-            amountPaid: getTotalCost()
-          }),
-        });
-
-        const data = await response.json();
-
-        if (!response.ok) {
-          throw new Error(data.message || 'Failed to register student');
-        }
-
-        Alert.alert(
-          t('auth.planSelection.success.title'),
-          t('auth.planSelection.success.message'),
-          [
-            {
-              text: t('auth.planSelection.success.button'),
-              onPress: () => router.replace('/(auth)/login'),
-              style: 'default'
-            }
-          ],
-          {
-            cancelable: false
-          }
-        );
+        throw new Error(paymentData.error || 'Failed to initiate payment');
       }
+
     } catch (error) {
-      console.error('Registration error:', error);
+      console.error('Payment initiation error:', error);
       Alert.alert(
         t('common.error'),
         error instanceof Error ? error.message : t('auth.errors.registrationFailed')

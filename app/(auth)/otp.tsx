@@ -109,34 +109,19 @@ export default function OTPScreen() {
   };
 
   const handleVerify = async () => {
-    const enteredOtp = otp.join('');
-    if (!enteredOtp) {
-      setError('Please enter the OTP');
-      return;
-    }
-
-    if (!userData) {
-      setError('User data is missing. Please try again.');
-      return;
-    }
-
+    // Skip OTP verification for testing
     try {
       setIsLoading(true);
-      const response = await verifyOTP(userData.phoneNumber, enteredOtp);
       
-      if (response.success) {
-        // Navigate to plan selection after successful OTP verification
-        router.push({
-          pathname: '/(auth)/plan-selection',
-          params: {
-            userData: encodeURIComponent(JSON.stringify(userData))
-          }
-        });
-      } else {
-        setError(response.message || 'Invalid OTP. Please try again.');
-      }
+      // Navigate to plan selection without OTP verification
+      router.push({
+        pathname: '/(auth)/plan-selection',
+        params: {
+          userData: encodeURIComponent(JSON.stringify(userData))
+        }
+      });
     } catch (error) {
-      setError('Failed to verify OTP. Please try again.');
+      setError('Failed to proceed. Please try again.');
     } finally {
       setIsLoading(false);
     }
@@ -209,17 +194,17 @@ export default function OTPScreen() {
             <TouchableOpacity 
               style={[
                 styles.verifyButton,
-                otp.join('').length === 6 && !isLoading && styles.verifyButtonActive
+                !isLoading && styles.verifyButtonActive
               ]}
               onPress={handleVerify}
-              disabled={otp.join('').length !== 6 || isLoading}
+              disabled={isLoading}
             >
               <LinearGradient
                 colors={['#4F46E5', '#7C3AED']}
                 style={styles.buttonGradient}
               >
                 <ThemedText style={styles.buttonText}>
-                  {isLoading ? 'Verifying...' : t('auth.otp.verify')}
+                  {isLoading ? 'Proceeding...' : 'Continue'}
                 </ThemedText>
               </LinearGradient>
             </TouchableOpacity>

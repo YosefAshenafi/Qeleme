@@ -8,38 +8,63 @@ import { useTheme } from '@/contexts/ThemeContext';
 import { getColors } from '@/constants/Colors';
 import { useTranslation } from 'react-i18next';
 import { BASE_URL } from '../../config/constants';
-import { PaymentPlan } from '@/types/payment';
 import { ThemedText } from '@/components/ThemedText';
 import { LanguageToggle } from '@/components/ui/LanguageToggle';
-import PaymentButton from '@/components/PaymentButton';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { WebView } from 'react-native-webview';
 
 export default function PaymentScreen() {
   const { t } = useTranslation();
   const { isDarkMode } = useTheme();
   const colors = getColors(isDarkMode);
   const params = useLocalSearchParams();
-  const userData = JSON.parse(params.userData as string);
-  const [plans, setPlans] = useState<PaymentPlan[]>([]);
-  const [loading, setLoading] = useState(true);
+  const userData = params.userData ? JSON.parse(decodeURIComponent(params.userData as string)) : null;
+  const selectedPlanId = params.selectedPlanId as string;
+  const amount = params.amount as string;
+  const paymentUrl = params.paymentUrl as string;
+  const orderId = params.orderId as string;
   const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [showWebView, setShowWebView] = useState(true);
 
   useEffect(() => {
-    fetchPaymentPlans();
-  }, []);
-
-  const fetchPaymentPlans = async () => {
-    try {
-      const response = await fetch(`${BASE_URL}/api/payment-plans`);
-      if (!response.ok) {
-        throw new Error('Failed to fetch payment plans');
-      }
-      const data = await response.json();
-      setPlans(data);
-    } catch (error) {
-      Alert.alert(t('common.error'), t('auth.errors.fetchPlansFailed'));
-    } finally {
-      setLoading(false);
+    // Store phone number for PaymentButton component
+    if (userData?.phoneNumber) {
+      AsyncStorage.setItem('userPhoneNumber', userData.phoneNumber);
     }
+    
+    // Start polling for payment status
+    if (orderId) {
+      pollPaymentStatus(orderId);
+    }
+  }, [orderId]);
+
+  const pollPaymentStatus = async (orderId: string) => {
+    // Poll for payment status every 5 seconds
+    const interval = setInterval(async () => {
+      try {
+        const response = await fetch(`http://localhost:3000/api/payment/status/${orderId}`);
+        const data = await response.json();
+        
+        console.log('Payment status check:', data);
+        
+        if (data.success && data.data?.status === 'SUCCESS') {
+          clearInterval(interval);
+          setShowWebView(false);
+          await handlePaymentSuccess(parseFloat(amount), selectedPlanId);
+        } else if (data.success && data.data?.status === 'FAILED') {
+          clearInterval(interval);
+          setShowWebView(false);
+          handlePaymentFailure();
+        }
+      } catch (error) {
+        console.error('Payment status check error:', error);
+      }
+    }, 5000);
+
+    // Clear interval after 5 minutes (timeout)
+    setTimeout(() => {
+      clearInterval(interval);
+    }, 300000);
   };
 
   const handlePaymentSuccess = async (amount: number, planId: string) => {
@@ -51,31 +76,36 @@ export default function PaymentScreen() {
       const endpoint = `${BASE_URL}/api/auth/register/student`;
 
       const requestBody = {
-        fullName: userData.fullName,
+        name: userData.fullName,
         username: userData.username,
         password: userData.password,
         grade: userData.grade,
+        phoneNumber: userData.phoneNumber?.replace('+251', '') || userData.phoneNumber,
         parentId: "0",
-        paymentPlanId: planId,
+        Plan: parseInt(planId),
         amountPaid: amount
       };
+
+      console.log('Payment Success - Registration request body:', requestBody);
 
       const response = await fetch(endpoint, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Accept': 'application/json',
-          'User-Agent': 'Qelem-Mobile-App',
+          'X-Requested-With': 'XMLHttpRequest',
         },
         body: JSON.stringify(requestBody),
       });
 
+      const data = await response.json();
+
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || errorData.error || 'Failed to register user');
+        console.error('Registration failed after payment:', data);
+        throw new Error(data.message || data.error || 'Failed to register user');
       }
 
-      await response.json();
+      console.log('Registration successful after payment:', data);
 
       setShowSuccessModal(true);
 
@@ -83,6 +113,7 @@ export default function PaymentScreen() {
         router.replace('/(tabs)');
       }, 2000);
     } catch (error: any) {
+      console.error('Payment success handler error:', error);
       Alert.alert(t('common.error'), t('auth.errors.registrationFailed'));
     }
   };
@@ -91,11 +122,44 @@ export default function PaymentScreen() {
     Alert.alert(t('common.error'), t('auth.errors.paymentFailed'));
   };
 
-  if (loading) {
+  if (showWebView && paymentUrl) {
     return (
-      <View style={[styles.container, { justifyContent: 'center', alignItems: 'center' }]}>
-        <ThemedText>{t('common.loading')}</ThemedText>
-      </View>
+      <LinearGradient
+        colors={[colors.background, colors.background]}
+        style={styles.gradient}
+      >
+        <SafeAreaView style={styles.safeArea}>
+          <View style={styles.container}>
+            <View style={styles.webviewHeader}>
+              <TouchableOpacity
+                style={styles.backButton}
+                onPress={() => setShowWebView(false)}
+              >
+                <Ionicons name="arrow-back" size={24} color={colors.text} />
+              </TouchableOpacity>
+              <ThemedText style={styles.webviewTitle}>Complete Payment</ThemedText>
+              <View style={{ width: 24 }} />
+            </View>
+            <WebView
+              source={{ uri: paymentUrl }}
+              style={styles.webview}
+              onNavigationStateChange={(navState) => {
+                console.log('WebView navigation state:', navState);
+                console.log('Current URL:', navState.url);
+              }}
+              onLoadStart={() => {
+                console.log('WebView load started for URL:', paymentUrl);
+              }}
+              onLoadEnd={() => {
+                console.log('WebView load ended for URL:', paymentUrl);
+              }}
+              onError={(syntheticEvent) => {
+                console.error('WebView error:', syntheticEvent.nativeEvent);
+              }}
+            />
+          </View>
+        </SafeAreaView>
+      </LinearGradient>
     );
   }
 
@@ -126,63 +190,11 @@ export default function PaymentScreen() {
             </ThemedText>
           </View>
 
-          <ScrollView style={styles.container}>
-            <View style={styles.paymentOptionsContainer}>
-              {plans.map((plan, index) => (
-                <PaymentButton
-                  key={`${plan._id || 'plan'}-${plan.name}-${index}`}
-                  amount={plan.amount}
-                  onSuccess={() => handlePaymentSuccess(plan.amount, plan._id)}
-                  onFailure={handlePaymentFailure}
-                >
-                  <LinearGradient
-                    colors={[isDarkMode ? '#4B3A7A' : '#6B54AE', isDarkMode ? '#4B3A7A' : '#6B54AE']}
-                    style={styles.paymentOptionGradient}
-                  >
-                    <View style={styles.paymentOptionHeader}>
-                      <ThemedText style={[styles.paymentOptionTitle, { color: '#FFFFFF' }]}>
-                        {plan.name}
-                      </ThemedText>
-                      {plan.durationInMonths >= 6 && (
-                        <View style={[styles.badge, { backgroundColor: 'rgba(255, 255, 255, 0.15)' }]}>
-                          <ThemedText style={[styles.badgeText, { color: '#FFFFFF' }]}>
-                            {t('payment.plans.bestValue')}
-                          </ThemedText>
-                        </View>
-                      )}
-                    </View>
-                    <View style={styles.featuresContainer}>
-                      <View style={styles.featureItem}>
-                        <Ionicons name="infinite" size={20} color="#FFFFFF" />
-                        <ThemedText style={[styles.featureText, { color: '#FFFFFF' }]}>
-                          {plan.description}
-                        </ThemedText>
-                      </View>
-                      <View style={styles.featureItem}>
-                        <Ionicons name="infinite" size={20} color="#FFFFFF" />
-                        <ThemedText style={[styles.featureText, { color: '#FFFFFF' }]}>
-                          {plan.remark}
-                        </ThemedText>
-                      </View>
-                    </View>
-                    <View style={styles.priceContainer}>
-                      <ThemedText style={[styles.paymentOptionPrice, { color: '#FFFFFF' }]}>
-                        ETB {plan.amount}
-                      </ThemedText>
-                      <ThemedText style={[styles.paymentOptionPeriod, { color: '#FFFFFF' }]}>
-                        {plan.durationInMonths} {t('payment.plans.months')}
-                      </ThemedText>
-                    </View>
-                    <View style={[styles.getStartedButton, { backgroundColor: 'rgba(255, 255, 255, 0.15)' }]}>
-                      <ThemedText style={styles.getStartedButtonText}>
-                        {t('payment.plans.getStarted')}
-                      </ThemedText>
-                    </View>
-                  </LinearGradient>
-                </PaymentButton>
-              ))}
-            </View>
-          </ScrollView>
+          <View style={styles.container}>
+            <ThemedText style={styles.subtitle}>
+              Redirecting to Santim Pay...
+            </ThemedText>
+          </View>
         </View>
       </SafeAreaView>
 
@@ -346,5 +358,18 @@ const styles = StyleSheet.create({
     fontSize: 16,
     lineHeight: 24,
     textAlign: 'center',
+  },
+  webviewHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  webviewTitle: {
+    fontSize: 20,
+    fontWeight: '700',
+    flex: 1,
+  },
+  webview: {
+    flex: 1,
   },
 }); 

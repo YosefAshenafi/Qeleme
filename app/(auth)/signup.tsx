@@ -190,26 +190,6 @@ export default function SignupScreen() {
     // Reset error state
     setError('');
 
-    // Validate required fields and collect missing fields
-    const missingFields = [];
-    if (!fullName) missingFields.push('full name');
-    if (!username) missingFields.push('username');
-    if (!phoneNumber) missingFields.push('phone number');
-    if (!password) missingFields.push('password');
-    if (!confirmPassword) missingFields.push('confirm password');
-    if (!acceptTerms) missingFields.push('terms and conditions acceptance');
-
-    // If there are missing fields, show error with specific fields
-    if (missingFields.length > 0) {
-      setError(`Please fill in the following required fields: ${missingFields.join(', ')}`);
-      return;
-    }
-
-    if (password !== confirmPassword) {
-      setError('Passwords do not match');
-      return;
-    }
-
     // Add country code to phone number for OTP service
     const fullPhoneNumber = `+251${phoneNumber}`;
     
