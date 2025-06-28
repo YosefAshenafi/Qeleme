@@ -247,6 +247,9 @@ export default {
         text: "Didn't receive the code?",
         button: 'Resend'
       },
+      timer: {
+        text: 'Time remaining:'
+      },
       verify: 'Verify'
     },
     planSelection: {

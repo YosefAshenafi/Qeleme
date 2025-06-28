@@ -263,9 +263,9 @@ export default function PlanSelectionScreen() {
 
             <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
               <View style={styles.plansContainer}>
-                {plans.map((plan) => (
+                {plans.map((plan, index) => (
                   <TouchableOpacity
-                    key={plan._id}
+                    key={index}
                     style={[
                       styles.planCard,
                       {

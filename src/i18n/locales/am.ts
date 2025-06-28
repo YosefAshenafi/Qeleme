@@ -473,6 +473,9 @@ export default {
         text: 'ኮዱን አላገኙም?',
         button: 'ዳግም ላክ'
       },
+      timer: {
+        text: 'የቀረ ጊዜ:'
+      },
       verify: 'ያረጋግጡ'
     },
     planSelection: {

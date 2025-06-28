@@ -130,7 +130,7 @@ export default function PaymentScreen() {
             <View style={styles.paymentOptionsContainer}>
               {plans.map((plan, index) => (
                 <PaymentButton
-                  key={plan._id || `plan-${index}`}
+                  key={`${plan._id || 'plan'}-${plan.name}-${index}`}
                   amount={plan.amount}
                   onSuccess={() => handlePaymentSuccess(plan.amount, plan._id)}
                   onFailure={handlePaymentFailure}

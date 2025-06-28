@@ -3,7 +3,7 @@ import { router, useLocalSearchParams } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useTheme } from '@/contexts/ThemeContext';
 import { getColors } from '@/constants/Colors';
 import { sendOTP, verifyOTP } from '@/utils/otpService';
@@ -19,6 +19,8 @@ export default function OTPScreen() {
   const [otp, setOtp] = useState(['', '', '', '', '', '']);
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [timeLeft, setTimeLeft] = useState(300); // 5 minutes in seconds
+  const [canResend, setCanResend] = useState(false);
   const inputRefs = useRef<Array<TextInput | null>>([]);
   const params = useLocalSearchParams();
   
@@ -44,6 +46,57 @@ export default function OTPScreen() {
     setError('Invalid user data. Please try again.');
   }
 
+  // Timer effect
+  useEffect(() => {
+    if (timeLeft > 0) {
+      const timer = setInterval(() => {
+        setTimeLeft((prevTime) => {
+          if (prevTime <= 1) {
+            setCanResend(true);
+            return 0;
+          }
+          return prevTime - 1;
+        });
+      }, 1000);
+
+      return () => clearInterval(timer);
+    }
+  }, [timeLeft]);
+
+  // Auto-send OTP on component mount
+  useEffect(() => {
+    const sendInitialOTP = async () => {
+      if (userData?.phoneNumber) {
+        try {
+          console.log('Auto-sending initial OTP to:', userData.phoneNumber);
+          setIsLoading(true);
+          const response = await sendOTP(userData.phoneNumber);
+          if (response.success) {
+            console.log('Initial OTP sent successfully');
+            setError('');
+          } else {
+            console.error('Failed to send initial OTP:', response.message);
+            setError(response.message || 'Failed to send OTP');
+          }
+        } catch (error) {
+          console.error('Error sending initial OTP:', error);
+          setError('Failed to send OTP. Please try again.');
+        } finally {
+          setIsLoading(false);
+        }
+      }
+    };
+
+    sendInitialOTP();
+  }, [userData?.phoneNumber]);
+
+  // Format time as MM:SS
+  const formatTime = (seconds: number): string => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+  };
+
   const handleOtpChange = (text: string, index: number) => {
     const newOtp = [...otp];
     newOtp[index] = text;
@@ -64,16 +117,25 @@ export default function OTPScreen() {
   };
 
   const handleResend = async () => {
-    if (userData?.phoneNumber) {
+    if (userData?.phoneNumber && canResend && !isLoading) {
       try {
         setIsLoading(true);
+        setError(''); // Clear any previous errors
+        
+        console.log('Resending OTP to:', userData.phoneNumber);
         const response = await sendOTP(userData.phoneNumber);
+        
         if (response.success) {
-          setError('');
+          // Reset timer and disable resend
+          setTimeLeft(300);
+          setCanResend(false);
+          console.log('OTP resent successfully');
         } else {
           setError(response.message || 'Failed to resend OTP');
+          console.error('Failed to resend OTP:', response.message);
         }
       } catch (error) {
+        console.error('Resend OTP error:', error);
         setError('Failed to resend OTP. Please try again.');
       } finally {
         setIsLoading(false);
@@ -169,6 +231,13 @@ export default function OTPScreen() {
               ))}
             </View>
 
+            {/* Timer Display */}
+            <View style={styles.timerContainer}>
+              <ThemedText style={[styles.timerText, { color: isDarkMode ? '#A0A0A5' : '#6B7280' }]}>
+                {t('auth.otp.timer.text')} {formatTime(timeLeft)}
+              </ThemedText>
+            </View>
+
             {error ? (
               <ThemedText style={styles.errorText}>{error}</ThemedText>
             ) : null}
@@ -195,9 +264,19 @@ export default function OTPScreen() {
               <ThemedText style={[styles.resendText, { color: isDarkMode ? '#A0A0A5' : '#6B7280' }]}>
                 {t('auth.otp.resend.text')}
               </ThemedText>
-              <TouchableOpacity onPress={handleResend} disabled={isLoading}>
-                <ThemedText style={[styles.resendButton, isLoading && { opacity: 0.5 }]}>
-                  {isLoading ? 'Sending...' : t('auth.otp.resend.button')}
+              <TouchableOpacity 
+                onPress={handleResend} 
+                disabled={!canResend || isLoading}
+                style={[
+                  styles.resendButtonContainer,
+                  (!canResend || isLoading) && { opacity: 0.5 }
+                ]}
+              >
+                <ThemedText style={[
+                  styles.resendButton, 
+                  { color: canResend ? '#4F46E5' : (isDarkMode ? '#A0A0A5' : '#6B7280') }
+                ]}>
+                  {isLoading ? 'Sending...' : canResend ? t('auth.otp.resend.button') : formatTime(timeLeft)}
                 </ThemedText>
               </TouchableOpacity>
             </View>
@@ -298,5 +377,18 @@ const styles = StyleSheet.create({
     color: '#4F46E5',
     fontSize: 14,
     fontWeight: '600',
+  },
+  resendButtonContainer: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 8,
+  },
+  timerContainer: {
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  timerText: {
+    fontSize: 14,
+    textAlign: 'center',
   },
 }); 
