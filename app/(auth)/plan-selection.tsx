@@ -48,8 +48,12 @@ export default function PlanSelectionScreen() {
       }
       const data = await response.json();
       
+      // Debug: Log the full plan structure
+      console.log('Raw plans data:', data);
+      console.log('First plan structure:', data[0]);
+      
       // Debug: Log the plans before sorting
-      console.log('Plans before sorting:', data.map((p: PaymentPlan) => ({ name: p.name, duration: p.durationInMonths })));
+      console.log('Plans before sorting:', data.map((p: PaymentPlan) => ({ name: p.name, duration: p.durationInMonths, id: getPlanId(p) })));
       
       // Separate paid and free plans
       const paidPlans = data.filter((plan: PaymentPlan) => plan.durationInMonths > 0);
@@ -64,7 +68,7 @@ export default function PlanSelectionScreen() {
       const sortedPlans = [...freePlans, ...sortedPaidPlans];
       
       // Debug: Log the plans after sorting
-      console.log('Plans after sorting:', sortedPlans.map((p: PaymentPlan) => ({ name: p.name, duration: p.durationInMonths })));
+      console.log('Plans after sorting:', sortedPlans.map((p: PaymentPlan) => ({ name: p.name, duration: p.durationInMonths, id: getPlanId(p) })));
       
       setPlans(sortedPlans);
     } catch (error) {
@@ -74,15 +78,28 @@ export default function PlanSelectionScreen() {
     }
   };
 
+  const getPlanId = (plan: PaymentPlan) => {
+    // Try different possible ID field names
+    return plan._id || (plan as any).id || (plan as any).planId || plan.name;
+  };
+
   const getTotalCost = () => {
     if (!selectedPlans.length) return 0;
     
+    const plan = plans.find(p => getPlanId(p) === selectedPlans[0].plan);
+    console.log('Found plan for total calculation:', plan);
+    console.log('Selected plan ID:', selectedPlans[0].plan);
+    console.log('Available plan IDs:', plans.map(p => getPlanId(p)));
+    
+    const baseAmount = plan ? (typeof plan.amount === 'string' ? parseFloat(plan.amount) : plan.amount) : 0;
+    
     if (userData.role === 'parent' && userData.numberOfChildren > 0) {
-      const plan = plans.find(p => p._id === selectedPlans[0].plan);
-      return (plan?.amount || 0) * userData.numberOfChildren;
+      const total = baseAmount * userData.numberOfChildren;
+      console.log('Parent total calculation:', { baseAmount, numberOfChildren: userData.numberOfChildren, total });
+      return total;
     } else {
-      const plan = plans.find(p => p._id === selectedPlans[0].plan);
-      return plan?.amount || 0;
+      console.log('Student total calculation:', { baseAmount });
+      return baseAmount;
     }
   };
 
@@ -94,17 +111,16 @@ export default function PlanSelectionScreen() {
   };
 
   const handlePlanSelect = (plan: PaymentPlan) => {
-    if (userData.role === 'parent' && userData.numberOfChildren > 0) {
-      // For parents, update the plan for each child
-      const updatedChildrenData = userData.childrenData.map((child: ChildData) => ({
-        ...child,
-        plan: plan._id
-      }));
-      setSelectedPlans(updatedChildrenData);
-    } else {
-      // For students, just select the plan
-      setSelectedPlans([{ plan: plan._id }]);
-    }
+    const planId = getPlanId(plan);
+    console.log('Full plan object:', plan);
+    console.log('Plan selected:', { 
+      planId: planId, 
+      planName: plan.name, 
+      amount: plan.amount,
+      allKeys: Object.keys(plan)
+    });
+    // For both parents and students, just select the plan (replace any existing selection)
+    setSelectedPlans([{ plan: planId }]);
   };
 
   const handleContinue = async () => {
@@ -113,21 +129,23 @@ export default function PlanSelectionScreen() {
         throw new Error('No plan selected');
       }
 
-      const updatedUserData = {
-        ...userData,
-        childrenData: userData.role === 'parent' && userData.numberOfChildren > 0 ? selectedPlans : undefined,
-        plan: selectedPlans[0].plan
-      };
+      const selectedPlanId = selectedPlans[0].plan;
 
-      if (updatedUserData.role === 'parent') {
-        const children = updatedUserData.childrenData?.map((child: ChildData) => ({
+      if (userData.role === 'parent' && userData.numberOfChildren > 0) {
+        // For parents, update children data with the selected plan
+        const updatedChildrenData = userData.childrenData.map((child: ChildData) => ({
+          ...child,
+          plan: selectedPlanId
+        }));
+
+        const children = updatedChildrenData.map((child: ChildData) => ({
           fullName: child.fullName,
           username: child.username,
           password: child.password,
           grade: child.grade,
           paymentPlan: child.plan,
-          amountPaid: getTotalCost() / updatedUserData.childrenData.length
-        })) || [];
+          amountPaid: getTotalCost() / updatedChildrenData.length
+        }));
 
         const response = await fetch(`${BASE_URL}/api/auth/register/parent`, {
           method: 'POST',
@@ -137,10 +155,10 @@ export default function PlanSelectionScreen() {
             'X-Requested-With': 'XMLHttpRequest',
           },
           body: JSON.stringify({
-            fullName: updatedUserData.fullName,
-            username: updatedUserData.username,
-            password: updatedUserData.password,
-            phoneNumber: updatedUserData.phoneNumber,
+            fullName: userData.fullName,
+            username: userData.username,
+            password: userData.password,
+            phoneNumber: userData.phoneNumber,
             children: children
           }),
         });
@@ -175,12 +193,12 @@ export default function PlanSelectionScreen() {
             'X-Requested-With': 'XMLHttpRequest',
           },
           body: JSON.stringify({
-            fullName: updatedUserData.fullName,
-            username: updatedUserData.username,
-            password: updatedUserData.password,
-            grade: updatedUserData.grade,
+            fullName: userData.fullName,
+            username: userData.username,
+            password: userData.password,
+            grade: userData.grade,
             parentId: "0",
-            paymentPlanId: selectedPlans[0].plan,
+            paymentPlanId: selectedPlanId,
             amountPaid: getTotalCost()
           }),
         });
@@ -216,7 +234,7 @@ export default function PlanSelectionScreen() {
   };
 
   const getPlanColors = (plan: PaymentPlan) => {
-    const isSelected = selectedPlans.some(p => p.plan === plan._id);
+    const isSelected = selectedPlans.some(p => p.plan === getPlanId(plan));
     
     if (isDarkMode) {
       switch (plan.durationInMonths) {
@@ -227,7 +245,8 @@ export default function PlanSelectionScreen() {
             text: '#FFFFFF',
             subtitle: '#E5E7EB',
             gradient: ['#1E40AF', '#1E3A8A'],
-            accent: '#F59E0B'
+            accent: '#F59E0B',
+            activeBorder: '#60A5FA'
           };
         case 6:
           return {
@@ -236,7 +255,8 @@ export default function PlanSelectionScreen() {
             text: '#FFFFFF',
             subtitle: '#E5E7EB',
             gradient: ['#059669', '#047857'],
-            accent: '#10B981'
+            accent: '#10B981',
+            activeBorder: '#34D399'
           };
         case 3:
           return {
@@ -245,7 +265,8 @@ export default function PlanSelectionScreen() {
             text: '#FFFFFF',
             subtitle: '#E5E7EB',
             gradient: ['#EA580C', '#C2410C'],
-            accent: '#F97316'
+            accent: '#F97316',
+            activeBorder: '#FB923C'
           };
         case 1:
           return {
@@ -254,7 +275,8 @@ export default function PlanSelectionScreen() {
             text: '#FFFFFF',
             subtitle: '#E5E7EB',
             gradient: ['#7C3AED', '#6D28D9'],
-            accent: '#8B5CF6'
+            accent: '#8B5CF6',
+            activeBorder: '#A78BFA'
           };
         case 0:
           return {
@@ -263,7 +285,8 @@ export default function PlanSelectionScreen() {
             text: '#FFFFFF',
             subtitle: '#E5E7EB',
             gradient: ['#374151', '#1F2937'],
-            accent: '#6B7280'
+            accent: '#6B7280',
+            activeBorder: '#9CA3AF'
           };
         default:
           return {
@@ -272,7 +295,8 @@ export default function PlanSelectionScreen() {
             text: '#FFFFFF',
             subtitle: '#E5E7EB',
             gradient: ['#374151', '#1F2937'],
-            accent: '#6B7280'
+            accent: '#6B7280',
+            activeBorder: '#9CA3AF'
           };
       }
     } else {
@@ -284,7 +308,8 @@ export default function PlanSelectionScreen() {
             text: '#1E40AF',
             subtitle: '#6B7280',
             gradient: ['#DBEAFE', '#EFF6FF'],
-            accent: '#F59E0B'
+            accent: '#F59E0B',
+            activeBorder: '#2563EB'
           };
         case 6:
           return {
@@ -293,7 +318,8 @@ export default function PlanSelectionScreen() {
             text: '#047857',
             subtitle: '#6B7280',
             gradient: ['#D1FAE5', '#ECFDF5'],
-            accent: '#10B981'
+            accent: '#10B981',
+            activeBorder: '#059669'
           };
         case 3:
           return {
@@ -302,7 +328,8 @@ export default function PlanSelectionScreen() {
             text: '#C2410C',
             subtitle: '#6B7280',
             gradient: ['#FED7AA', '#FFEDD5'],
-            accent: '#F97316'
+            accent: '#F97316',
+            activeBorder: '#EA580C'
           };
         case 1:
           return {
@@ -311,7 +338,8 @@ export default function PlanSelectionScreen() {
             text: '#6D28D9',
             subtitle: '#6B7280',
             gradient: ['#EDE9FE', '#F5F3FF'],
-            accent: '#8B5CF6'
+            accent: '#8B5CF6',
+            activeBorder: '#7C3AED'
           };
         case 0:
           return {
@@ -320,7 +348,8 @@ export default function PlanSelectionScreen() {
             text: '#374151',
             subtitle: '#6B7280',
             gradient: ['#F3F4F6', '#F9FAFB'],
-            accent: '#6B7280'
+            accent: '#6B7280',
+            activeBorder: '#4B5563'
           };
         default:
           return {
@@ -329,7 +358,8 @@ export default function PlanSelectionScreen() {
             text: '#374151',
             subtitle: '#6B7280',
             gradient: ['#F3F4F6', '#F9FAFB'],
-            accent: '#6B7280'
+            accent: '#6B7280',
+            activeBorder: '#4B5563'
           };
       }
     }
@@ -375,7 +405,7 @@ export default function PlanSelectionScreen() {
                 {plans.map((plan, index) => {
                   const planColors = getPlanColors(plan);
                   const isRecommended = plan.durationInMonths === 6;
-                  const isSelected = selectedPlans.some(p => p.plan === plan._id);
+                  const isSelected = selectedPlans.some(p => p.plan === getPlanId(plan));
                   const isFree = plan.durationInMonths === 0;
                   
                   return (
@@ -384,7 +414,7 @@ export default function PlanSelectionScreen() {
                       style={[
                         styles.planCard,
                         {
-                          borderColor: isSelected ? planColors.border : planColors.border,
+                          borderColor: isSelected ? planColors.activeBorder : planColors.border,
                           borderWidth: isSelected ? 3 : 2,
                           shadowColor: isDarkMode ? '#000000' : '#000000',
                           shadowOffset: {
@@ -394,7 +424,6 @@ export default function PlanSelectionScreen() {
                           shadowOpacity: isDarkMode ? 0.4 : 0.15,
                           shadowRadius: isSelected ? 16 : 12,
                           elevation: isSelected ? 16 : 12,
-                          transform: [{ scale: isSelected ? 1.02 : 1 }],
                         }
                       ]}
                       onPress={() => handlePlanSelect(plan)}
@@ -454,16 +483,9 @@ export default function PlanSelectionScreen() {
                           </View>
                         )}
 
-                        {/* Selection Indicator */}
+                        {/* Active Border Indicator */}
                         {isSelected && (
-                          <View style={styles.selectedIndicator}>
-                            <LinearGradient
-                              colors={['#10B981', '#059669']}
-                              style={styles.selectedIndicatorGradient}
-                            >
-                              <Ionicons name="checkmark" size={16} color="#FFFFFF" />
-                            </LinearGradient>
-                          </View>
+                          <View style={[styles.activeBorderIndicator, { borderColor: planColors.activeBorder }]} />
                         )}
                       </LinearGradient>
                     </TouchableOpacity>
@@ -630,10 +652,46 @@ const styles = StyleSheet.create({
     opacity: 0.9,
     fontWeight: '500',
   },
-  selectedIndicator: {
+  ribbonBadge: {
+    position: 'absolute',
+    bottom: 5,
+    right: -28,
+    zIndex: 10,
+    transform: [{ rotate: '-45deg' }],
+  },
+  ribbonGradient: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 0,
+    gap: 4,
+    shadowColor: '#000000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+    elevation: 5,
+    minWidth: 80,
+    justifyContent: 'center',
+  },
+  ribbonText: {
+    color: '#FFFFFF',
+    fontSize: 10,
+    fontWeight: '700',
+    textAlign: 'center',
+  },
+  activeBorderIndicator: {
     position: 'absolute',
     top: 20,
     right: 20,
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    borderWidth: 2,
+    backgroundColor: 'transparent',
   },
   footer: {
     paddingTop: 20,
@@ -675,43 +733,5 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     fontSize: 16,
     fontWeight: '600',
-  },
-  selectedIndicatorGradient: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  ribbonBadge: {
-    position: 'absolute',
-    bottom: 5,
-    right: -28,
-    zIndex: 10,
-    transform: [{ rotate: '-45deg' }],
-  },
-  ribbonGradient: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 0,
-    gap: 4,
-    shadowColor: '#000000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.3,
-    shadowRadius: 4,
-    elevation: 5,
-    minWidth: 80,
-    justifyContent: 'center',
-  },
-  ribbonText: {
-    color: '#FFFFFF',
-    fontSize: 10,
-    fontWeight: '700',
-    textAlign: 'center',
   },
 }); 
