@@ -259,6 +259,8 @@ export default {
       total: 'Total',
       continue: 'Continue',
       free: 'Free',
+      recommended: 'Recommended',
+      months: 'months',
       calculation: '{{planPrice}} ETB × {{numberOfChildren}} children = {{total}} ETB',
       pricePerChild: 'Price per child: {{price}} ETB',
       success: {

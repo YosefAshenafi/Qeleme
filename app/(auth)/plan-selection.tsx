@@ -47,7 +47,19 @@ export default function PlanSelectionScreen() {
         throw new Error('Failed to fetch payment plans');
       }
       const data = await response.json();
-      setPlans(data);
+      
+      // Debug: Log the plans before sorting
+      console.log('Plans before sorting:', data.map((p: PaymentPlan) => ({ name: p.name, duration: p.durationInMonths })));
+      
+      // Sort plans in descending order based on durationInMonths
+      const sortedPlans = data.sort((a: PaymentPlan, b: PaymentPlan) => {
+        return b.durationInMonths - a.durationInMonths;
+      });
+      
+      // Debug: Log the plans after sorting
+      console.log('Plans after sorting:', sortedPlans.map((p: PaymentPlan) => ({ name: p.name, duration: p.durationInMonths })));
+      
+      setPlans(sortedPlans);
     } catch (error) {
       Alert.alert(t('common.error'), t('auth.errors.fetchPlansFailed'));
     } finally {
@@ -196,32 +208,122 @@ export default function PlanSelectionScreen() {
     }
   };
 
-  const getPlanBackgroundColor = (plan: PaymentPlan) => {
+  const getPlanColors = (plan: PaymentPlan) => {
+    const isSelected = selectedPlans.some(p => p.plan === plan._id);
+    
     if (isDarkMode) {
       switch (plan.durationInMonths) {
-        case 1:
-          return '#1E3A8A'; // Dark blue
-        case 3:
-          return '#1E40AF'; // Slightly lighter blue
-        case 6:
-          return '#1E4C8A'; // Blue-green
         case 12:
-          return '#1E4C8A'; // Blue-green
+          return {
+            background: isSelected ? '#1E40AF' : '#1E3A8A',
+            border: isSelected ? '#60A5FA' : '#3B82F6',
+            text: '#FFFFFF',
+            subtitle: '#E5E7EB',
+            gradient: ['#1E40AF', '#1E3A8A'],
+            accent: '#F59E0B'
+          };
+        case 6:
+          return {
+            background: isSelected ? '#059669' : '#047857',
+            border: isSelected ? '#34D399' : '#10B981',
+            text: '#FFFFFF',
+            subtitle: '#E5E7EB',
+            gradient: ['#059669', '#047857'],
+            accent: '#10B981'
+          };
+        case 3:
+          return {
+            background: isSelected ? '#EA580C' : '#C2410C',
+            border: isSelected ? '#FB923C' : '#F97316',
+            text: '#FFFFFF',
+            subtitle: '#E5E7EB',
+            gradient: ['#EA580C', '#C2410C'],
+            accent: '#F97316'
+          };
+        case 1:
+          return {
+            background: isSelected ? '#7C3AED' : '#6D28D9',
+            border: isSelected ? '#A78BFA' : '#8B5CF6',
+            text: '#FFFFFF',
+            subtitle: '#E5E7EB',
+            gradient: ['#7C3AED', '#6D28D9'],
+            accent: '#8B5CF6'
+          };
+        case 0:
+          return {
+            background: isSelected ? '#374151' : '#1F2937',
+            border: isSelected ? '#9CA3AF' : '#6B7280',
+            text: '#FFFFFF',
+            subtitle: '#E5E7EB',
+            gradient: ['#374151', '#1F2937'],
+            accent: '#6B7280'
+          };
         default:
-          return '#2C2C2E';
+          return {
+            background: isSelected ? '#374151' : '#1F2937',
+            border: isSelected ? '#9CA3AF' : '#6B7280',
+            text: '#FFFFFF',
+            subtitle: '#E5E7EB',
+            gradient: ['#374151', '#1F2937'],
+            accent: '#6B7280'
+          };
       }
     } else {
       switch (plan.durationInMonths) {
-        case 1:
-          return '#EFF6FF'; // Light blue
-        case 3:
-          return '#F0FDF4'; // Light green
-        case 6:
-          return '#EEF2FF'; // Light indigo
         case 12:
-          return '#F5F3FF'; // Light purple
+          return {
+            background: isSelected ? '#DBEAFE' : '#EFF6FF',
+            border: isSelected ? '#2563EB' : '#1D4ED8',
+            text: '#1E40AF',
+            subtitle: '#6B7280',
+            gradient: ['#DBEAFE', '#EFF6FF'],
+            accent: '#F59E0B'
+          };
+        case 6:
+          return {
+            background: isSelected ? '#D1FAE5' : '#ECFDF5',
+            border: isSelected ? '#059669' : '#047857',
+            text: '#047857',
+            subtitle: '#6B7280',
+            gradient: ['#D1FAE5', '#ECFDF5'],
+            accent: '#10B981'
+          };
+        case 3:
+          return {
+            background: isSelected ? '#FED7AA' : '#FFEDD5',
+            border: isSelected ? '#EA580C' : '#C2410C',
+            text: '#C2410C',
+            subtitle: '#6B7280',
+            gradient: ['#FED7AA', '#FFEDD5'],
+            accent: '#F97316'
+          };
+        case 1:
+          return {
+            background: isSelected ? '#EDE9FE' : '#F5F3FF',
+            border: isSelected ? '#7C3AED' : '#6D28D9',
+            text: '#6D28D9',
+            subtitle: '#6B7280',
+            gradient: ['#EDE9FE', '#F5F3FF'],
+            accent: '#8B5CF6'
+          };
+        case 0:
+          return {
+            background: isSelected ? '#F3F4F6' : '#F9FAFB',
+            border: isSelected ? '#4B5563' : '#374151',
+            text: '#374151',
+            subtitle: '#6B7280',
+            gradient: ['#F3F4F6', '#F9FAFB'],
+            accent: '#6B7280'
+          };
         default:
-          return '#F9FAFB';
+          return {
+            background: isSelected ? '#F3F4F6' : '#F9FAFB',
+            border: isSelected ? '#4B5563' : '#374151',
+            text: '#374151',
+            subtitle: '#6B7280',
+            gradient: ['#F3F4F6', '#F9FAFB'],
+            accent: '#6B7280'
+          };
       }
     }
   };
@@ -263,41 +365,101 @@ export default function PlanSelectionScreen() {
 
             <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
               <View style={styles.plansContainer}>
-                {plans.map((plan, index) => (
-                  <TouchableOpacity
-                    key={index}
-                    style={[
-                      styles.planCard,
-                      {
-                        backgroundColor: getPlanBackgroundColor(plan),
-                        borderColor: selectedPlans.some(p => p.plan === plan._id) 
-                          ? '#4F46E5' 
-                          : (isDarkMode ? '#3C3C3E' : '#E5E7EB')
-                      }
-                    ]}
-                    onPress={() => handlePlanSelect(plan)}
-                  >
-                    <View style={styles.planHeader}>
-                      <ThemedText style={[styles.planName, { color: colors.text }]}>
-                        {plan.name}
-                      </ThemedText>
-                      <ThemedText style={[styles.planPrice, { color: colors.text }]}>
-                        ETB {plan.amount}
-                      </ThemedText>
-                    </View>
-                    <ThemedText style={[styles.planDuration, { color: colors.text + '80' }]}>
-                      {plan.durationInMonths} {t('auth.planSelection.months')}
-                    </ThemedText>
-                    <ThemedText style={[styles.planDescription, { color: colors.text + '80' }]}>
-                      {plan.description}
-                    </ThemedText>
-                    {plan.remark && (
-                      <ThemedText style={[styles.planRemark, { color: colors.text + '80' }]}>
-                        {plan.remark}
-                      </ThemedText>
-                    )}
-                  </TouchableOpacity>
-                ))}
+                {plans.map((plan, index) => {
+                  const planColors = getPlanColors(plan);
+                  const isRecommended = plan.durationInMonths === 12;
+                  const isSelected = selectedPlans.some(p => p.plan === plan._id);
+                  const isFree = plan.durationInMonths === 0;
+                  
+                  return (
+                    <TouchableOpacity
+                      key={index}
+                      style={[
+                        styles.planCard,
+                        {
+                          borderColor: isSelected ? planColors.border : planColors.border,
+                          borderWidth: isSelected ? 3 : 2,
+                          shadowColor: isDarkMode ? '#000000' : '#000000',
+                          shadowOffset: {
+                            width: 0,
+                            height: isSelected ? 8 : 4,
+                          },
+                          shadowOpacity: isDarkMode ? 0.4 : 0.15,
+                          shadowRadius: isSelected ? 16 : 12,
+                          elevation: isSelected ? 16 : 12,
+                          transform: [{ scale: isSelected ? 1.02 : 1 }],
+                        }
+                      ]}
+                      onPress={() => handlePlanSelect(plan)}
+                    >
+                      <LinearGradient
+                        colors={planColors.gradient as [string, string]}
+                        style={styles.planCardGradient}
+                      >
+                        {/* Header with Badge */}
+                        <View style={styles.planHeader}>
+                          <View style={styles.planTitleContainer}>
+                            <ThemedText style={[styles.planName, { color: planColors.text }]}>
+                              {plan.name}
+                            </ThemedText>
+                            {isRecommended && (
+                              <View style={styles.recommendedBadge}>
+                                <LinearGradient
+                                  colors={['#F59E0B', '#D97706']}
+                                  style={styles.badgeGradient}
+                                >
+                                  <Ionicons name="star" size={12} color="#FFFFFF" />
+                                  <ThemedText style={styles.badgeText}>
+                                    {t('auth.planSelection.recommended')}
+                                  </ThemedText>
+                                </LinearGradient>
+                              </View>
+                            )}
+                          </View>
+                          
+                          <View style={styles.priceContainer}>
+                            <ThemedText style={[styles.planPrice, { color: planColors.text }]}>
+                              {isFree ? t('auth.planSelection.free') : `ETB ${plan.amount}`}
+                            </ThemedText>
+                            {!isFree && (
+                              <ThemedText style={[styles.planDuration, { color: planColors.subtitle }]}>
+                              </ThemedText>
+                            )}
+                          </View>
+                        </View>
+
+                        {/* Description */}
+                        <View style={styles.descriptionContainer}>
+                          <ThemedText style={[styles.planDescription, { color: planColors.subtitle }]}>
+                            {plan.description}
+                          </ThemedText>
+                        </View>
+
+                        {/* Features or Remark */}
+                        {plan.remark && (
+                          <View style={styles.remarkContainer}>
+                            <Ionicons name="checkmark-circle" size={16} color={planColors.accent} />
+                            <ThemedText style={[styles.planRemark, { color: planColors.subtitle }]}>
+                              {plan.remark}
+                            </ThemedText>
+                          </View>
+                        )}
+
+                        {/* Selection Indicator */}
+                        {isSelected && (
+                          <View style={styles.selectedIndicator}>
+                            <LinearGradient
+                              colors={['#10B981', '#059669']}
+                              style={styles.selectedIndicatorGradient}
+                            >
+                              <Ionicons name="checkmark" size={16} color="#FFFFFF" />
+                            </LinearGradient>
+                          </View>
+                        )}
+                      </LinearGradient>
+                    </TouchableOpacity>
+                  );
+                })}
               </View>
             </ScrollView>
 
@@ -377,42 +539,95 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   plansContainer: {
-    gap: 16,
+    gap: 20,
     paddingBottom: 24,
   },
   planCard: {
-    padding: 20,
+    borderRadius: 20,
+    position: 'relative',
+    overflow: 'hidden',
+    marginBottom: 20,
+    minHeight: 140,
+    backgroundColor: 'transparent',
+  },
+  planCardGradient: {
+    flex: 1,
+    padding: 24,
+    borderRadius: 18,
+  },
+  recommendedBadge: {
+    marginLeft: 8,
+  },
+  badgeGradient: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 10,
+    paddingVertical: 6,
     borderRadius: 16,
-    borderWidth: 1,
+    gap: 4,
+  },
+  badgeText: {
+    color: '#FFFFFF',
+    fontSize: 11,
+    fontWeight: '600',
   },
   planHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    marginBottom: 20,
+  },
+  planTitleContainer: {
+    flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 8,
+    flex: 1,
   },
   planName: {
-    fontSize: 18,
-    fontWeight: '600',
-  },
-  planPrice: {
-    fontSize: 24,
+    fontSize: 22,
     fontWeight: '700',
   },
+  priceContainer: {
+    alignItems: 'flex-end',
+  },
+  planPrice: {
+    fontSize: 26,
+    fontWeight: '800',
+    marginBottom: 6,
+  },
   planDuration: {
-    fontSize: 14,
-    marginBottom: 8,
+    fontSize: 15,
+    fontWeight: '500',
+  },
+  descriptionContainer: {
+    marginBottom: 20,
   },
   planDescription: {
-    fontSize: 14,
-    marginBottom: 8,
+    fontSize: 16,
+    lineHeight: 24,
+    opacity: 0.85,
+  },
+  remarkContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    borderRadius: 12,
   },
   planRemark: {
-    fontSize: 12,
-    fontStyle: 'italic',
+    fontSize: 14,
+    flex: 1,
+    opacity: 0.9,
+    fontWeight: '500',
+  },
+  selectedIndicator: {
+    position: 'absolute',
+    top: 20,
+    right: 20,
   },
   footer: {
-    paddingTop: 16,
+    paddingTop: 20,
     borderTopWidth: 1,
     borderTopColor: '#E5E7EB',
     backgroundColor: 'transparent',
@@ -421,15 +636,16 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 16,
+    marginBottom: 20,
   },
   totalLabel: {
     fontSize: 18,
     fontWeight: '600',
   },
   totalAmount: {
-    fontSize: 24,
-    fontWeight: '700',
+    paddingTop: 15,
+    fontSize: 28,
+    fontWeight: '800',
   },
   continueButton: {
     width: '100%',
@@ -450,5 +666,12 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     fontSize: 16,
     fontWeight: '600',
+  },
+  selectedIndicatorGradient: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 }); 

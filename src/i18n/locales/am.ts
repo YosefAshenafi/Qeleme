@@ -485,6 +485,8 @@ export default {
       total: 'ጠቅላላ',
       continue: 'ይቀጥሉ',
       free: 'ነጻ',
+      recommended: 'የሚመከር',
+      months: 'ወራት',
       calculation: '{{planPrice}} ብር × {{numberOfChildren}} ልጆች = {{total}} ብር',
       pricePerChild: 'በአንድ ልጅ ዋጋ: {{price}} ብር',
       success: {
