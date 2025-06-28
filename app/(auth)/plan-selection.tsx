@@ -91,15 +91,16 @@ export default function PlanSelectionScreen() {
     console.log('Selected plan ID:', selectedPlans[0].plan);
     console.log('Available plan IDs:', plans.map(p => getPlanId(p)));
     
+    // Ensure we don't modify the original plan data
     const baseAmount = plan ? (typeof plan.amount === 'string' ? parseFloat(plan.amount) : plan.amount) : 0;
     
     if (userData.role === 'parent' && userData.numberOfChildren > 0) {
-      const total = baseAmount * userData.numberOfChildren;
+      const total = Number(baseAmount) * Number(userData.numberOfChildren);
       console.log('Parent total calculation:', { baseAmount, numberOfChildren: userData.numberOfChildren, total });
-      return total;
+      return total.toFixed(2);
     } else {
       console.log('Student total calculation:', { baseAmount });
-      return baseAmount;
+      return Number(baseAmount).toFixed(2);
     }
   };
 
@@ -457,7 +458,7 @@ export default function PlanSelectionScreen() {
                           
                           <View style={styles.priceContainer}>
                             <ThemedText style={[styles.planPrice, { color: planColors.text }]}>
-                              {isFree ? t('auth.planSelection.free') : `ETB ${plan.amount}`}
+                              {isFree ? t('auth.planSelection.free') : `ETB ${typeof plan.amount === 'string' ? parseFloat(plan.amount).toFixed(2) : plan.amount.toFixed(2)}`}
                             </ThemedText>
                             {!isFree && (
                               <ThemedText style={[styles.planDuration, { color: planColors.subtitle }]}>
@@ -685,11 +686,11 @@ const styles = StyleSheet.create({
   },
   activeBorderIndicator: {
     position: 'absolute',
-    top: 20,
-    right: 20,
-    width: 20,
-    height: 20,
-    borderRadius: 10,
+    top: 8,
+    right: 8,
+    width: 14,
+    height: 14,
+    borderRadius: 7,
     borderWidth: 2,
     backgroundColor: 'transparent',
   },
