@@ -128,9 +128,9 @@ export default function PaymentScreen() {
 
           <ScrollView style={styles.container}>
             <View style={styles.paymentOptionsContainer}>
-              {plans.map((plan) => (
+              {plans.map((plan, index) => (
                 <PaymentButton
-                  key={plan._id}
+                  key={plan._id || `plan-${index}`}
                   amount={plan.amount}
                   onSuccess={() => handlePaymentSuccess(plan.amount, plan._id)}
                   onFailure={handlePaymentFailure}

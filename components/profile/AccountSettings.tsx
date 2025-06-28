@@ -34,7 +34,9 @@ export function AccountSettings({ colors, profileData }: AccountSettingsProps) {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${await AsyncStorage.getItem('@auth_token')}`
+          'Authorization': `Bearer ${await AsyncStorage.getItem('@auth_token')}`,
+          'Accept': 'application/json',
+          'X-Requested-With': 'XMLHttpRequest',
         },
         body: JSON.stringify({
           username: profileData.username.replace('@', ''),
@@ -60,9 +62,11 @@ export function AccountSettings({ colors, profileData }: AccountSettingsProps) {
       setIsEditing(false);
 
       // Force a refresh of the profile data
-      const profileResponse = await fetch('http://172.20.10.3:5001/api/auth/student/profile', {
+      const profileResponse = await fetch(`${BASE_URL}/api/auth/student/profile`, {
         headers: {
-          'Authorization': `Bearer ${await AsyncStorage.getItem('@auth_token')}`
+          'Authorization': `Bearer ${await AsyncStorage.getItem('@auth_token')}`,
+          'Accept': 'application/json',
+          'X-Requested-With': 'XMLHttpRequest',
         }
       });
       

@@ -98,7 +98,7 @@ export default function ProfileScreen() {
 
   // Update stats when language changes
   useEffect(() => {
-    if (user?.grade?.toLowerCase().includes('kg')) {
+    if (typeof user?.grade === 'string' && user.grade.toLowerCase().includes('kg')) {
       setKgStats([
         { label: t('profile.stats.pictureQuestions'), value: '0', icon: 'photo' as const },
         { label: t('profile.stats.cardGroups'), value: '0', icon: 'rectangle.stack.fill' as const },
@@ -119,7 +119,9 @@ export default function ProfileScreen() {
       // Fetch updated user data
       const response = await fetch(`${BASE_URL}/api/auth/student/profile`, {
         headers: {
-          'Authorization': `Bearer ${await AsyncStorage.getItem('@auth_token')}`
+          'Authorization': `Bearer ${await AsyncStorage.getItem('@auth_token')}`,
+          'Accept': 'application/json',
+          'X-Requested-With': 'XMLHttpRequest',
         }
       });
       
@@ -382,7 +384,7 @@ export default function ProfileScreen() {
 
         {/* Stats Section - Show different stats for KG students */}
         <View style={styles.statsContainer}>
-          {user?.grade?.toLowerCase().includes('kg') ? (
+          {typeof user?.grade === 'string' && user.grade.toLowerCase().includes('kg') ? (
             kgStats.map((stat, index) => (
               <View key={index} style={[styles.statCard, { backgroundColor: colors.card }]}>
                 <IconSymbol name={stat.icon} size={24} color={colors.tint} />

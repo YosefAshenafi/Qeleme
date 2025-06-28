@@ -90,11 +90,17 @@ export default function LoginScreen() {
       setIsLoading(true);
       setError('');
       
+      // Debug: Log the payload being sent
+      console.log('LOGIN PAYLOAD', { username: username.toLowerCase(), password });
+      console.log('LOGIN URL:', `${BASE_URL}/api/auth/login`);
       try {
+        // Make the login request with headers similar to the working curl request
         const response = await fetch(`${BASE_URL}/api/auth/login`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest',
           },
           body: JSON.stringify({
             username: username.toLowerCase(),
@@ -102,7 +108,11 @@ export default function LoginScreen() {
           }),
         });
 
+        console.log('Response status:', response.status);
+        console.log('Response headers:', response.headers);
+        
         const data = await response.json();
+        console.log('Login response:', data);
 
         if (!response.ok) {
           throw new Error(data.message || t('login.error.invalidCredentials'));
@@ -121,6 +131,7 @@ export default function LoginScreen() {
           router.replace('/(tabs)');
         }
       } catch (error) {
+        console.error('Login error:', error);
         if (error instanceof Error) {
           // Check if the error message is a translation key
           if (error.message.startsWith('login.error.')) {

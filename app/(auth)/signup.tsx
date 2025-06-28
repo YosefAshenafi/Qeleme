@@ -89,7 +89,12 @@ export default function SignupScreen() {
 
     setUsernameChecking(true);
     try {
-      const response = await fetch(`${BASE_URL}/api/auth/check-username?username=${encodeURIComponent(username)}`);
+      const response = await fetch(`${BASE_URL}/api/auth/check-username?username=${encodeURIComponent(username)}`, {
+        headers: {
+          'Accept': 'application/json',
+          'X-Requested-With': 'XMLHttpRequest',
+        }
+      });
       const data = await response.json();
       setUsernameValid(!data.exists);
       setUsernameError(data.exists ? 'Username is already taken' : '');
@@ -135,7 +140,12 @@ export default function SignupScreen() {
     setChildrenData(newChildrenData);
 
     try {
-      const response = await fetch(`${BASE_URL}/api/auth/check-username?username=${encodeURIComponent(username)}`);
+      const response = await fetch(`${BASE_URL}/api/auth/check-username?username=${encodeURIComponent(username)}`, {
+        headers: {
+          'Accept': 'application/json',
+          'X-Requested-With': 'XMLHttpRequest',
+        }
+      });
       const data = await response.json();
       newChildrenData[index] = { 
         ...newChildrenData[index], 
