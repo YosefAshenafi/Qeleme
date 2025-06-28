@@ -310,6 +310,7 @@ export default {
   },
   common: {
     tryAgain: 'እንደገና ይሞክሩ',
+    loading: 'በማዘዋወር ላይ...',
   },
   mcq: {
     question: 'ጥያቄ',

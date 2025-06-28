@@ -6,7 +6,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useState, useRef } from 'react';
 import { useTheme } from '@/contexts/ThemeContext';
 import { getColors } from '@/constants/Colors';
-import { sendOTP } from '@/utils/otpService';
+import { sendOTP, verifyOTP } from '@/utils/otpService';
 import { useTranslation } from 'react-i18next';
 
 import { ThemedText } from '@/components/ThemedText';
@@ -18,10 +18,12 @@ export default function OTPScreen() {
   const colors = getColors(isDarkMode);
   const [otp, setOtp] = useState(['', '', '', '', '', '']);
   const [error, setError] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
   const inputRefs = useRef<Array<TextInput | null>>([]);
   const params = useLocalSearchParams();
   
-  const expectedOtp = '123456'; // Always use 123456 for testing
+  console.log('OTP Screen - Received params:', params);
+  
   let userData = null;
   
   try {
@@ -36,6 +38,7 @@ export default function OTPScreen() {
       numberOfChildren: parseInt(params.numberOfChildren as string) || 0,
       childrenData: params.childrenData ? JSON.parse(params.childrenData as string) : []
     };
+    console.log('OTP Screen - Constructed userData:', userData);
   } catch (error) {
     console.error('Error constructing userData:', error);
     setError('Invalid user data. Please try again.');
@@ -63,13 +66,17 @@ export default function OTPScreen() {
   const handleResend = async () => {
     if (userData?.phoneNumber) {
       try {
+        setIsLoading(true);
         const response = await sendOTP(userData.phoneNumber);
         if (response.success) {
-          // No need to update expected OTP since it's always 123456
           setError('');
+        } else {
+          setError(response.message || 'Failed to resend OTP');
         }
       } catch (error) {
         setError('Failed to resend OTP. Please try again.');
+      } finally {
+        setIsLoading(false);
       }
     }
   };
@@ -86,24 +93,27 @@ export default function OTPScreen() {
       return;
     }
 
-    // Check if the entered OTP matches the test OTP (123456)
-    if (enteredOtp === expectedOtp) {
-      try {
-        // Always navigate to plan selection after successful OTP verification
+    try {
+      setIsLoading(true);
+      const response = await verifyOTP(userData.phoneNumber, enteredOtp);
+      
+      if (response.success) {
+        // Navigate to plan selection after successful OTP verification
         router.push({
           pathname: '/(auth)/plan-selection',
           params: {
             userData: encodeURIComponent(JSON.stringify(userData))
           }
         });
-      } catch (error) {
-        console.error('Navigation error:', error);
-        setError('Failed to proceed. Please try again.');
+      } else {
+        setError(response.message || 'Invalid OTP. Please try again.');
       }
-      return;
+    } catch (error) {
+      console.error('OTP verification error:', error);
+      setError('Failed to verify OTP. Please try again.');
+    } finally {
+      setIsLoading(false);
     }
-
-    setError('Invalid OTP. Please try again.');
   };
 
   return (
@@ -154,13 +164,10 @@ export default function OTPScreen() {
                   selectTextOnFocus
                   autoFocus={index === 0}
                   placeholderTextColor={isDarkMode ? '#A0A0A5' : '#9CA3AF'}
+                  editable={!isLoading}
                 />
               ))}
             </View>
-
-            <ThemedText style={[styles.testOtpLabel, { color: isDarkMode ? '#A0A0A5' : '#6B7280' }]}>
-              Test OTP: 123456
-            </ThemedText>
 
             {error ? (
               <ThemedText style={styles.errorText}>{error}</ThemedText>
@@ -169,16 +176,18 @@ export default function OTPScreen() {
             <TouchableOpacity 
               style={[
                 styles.verifyButton,
-                otp.join('').length === 6 && styles.verifyButtonActive
+                otp.join('').length === 6 && !isLoading && styles.verifyButtonActive
               ]}
               onPress={handleVerify}
-              disabled={otp.join('').length !== 6}
+              disabled={otp.join('').length !== 6 || isLoading}
             >
               <LinearGradient
                 colors={['#4F46E5', '#7C3AED']}
                 style={styles.buttonGradient}
               >
-                <ThemedText style={styles.buttonText}>{t('auth.otp.verify')}</ThemedText>
+                <ThemedText style={styles.buttonText}>
+                  {isLoading ? 'Verifying...' : t('auth.otp.verify')}
+                </ThemedText>
               </LinearGradient>
             </TouchableOpacity>
 
@@ -186,8 +195,10 @@ export default function OTPScreen() {
               <ThemedText style={[styles.resendText, { color: isDarkMode ? '#A0A0A5' : '#6B7280' }]}>
                 {t('auth.otp.resend.text')}
               </ThemedText>
-              <TouchableOpacity onPress={handleResend}>
-                <ThemedText style={styles.resendButton}>{t('auth.otp.resend.button')}</ThemedText>
+              <TouchableOpacity onPress={handleResend} disabled={isLoading}>
+                <ThemedText style={[styles.resendButton, isLoading && { opacity: 0.5 }]}>
+                  {isLoading ? 'Sending...' : t('auth.otp.resend.button')}
+                </ThemedText>
               </TouchableOpacity>
             </View>
           </View>
@@ -246,12 +257,6 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     textAlign: 'center',
     fontSize: 24,
-  },
-  testOtpLabel: {
-    fontSize: 14,
-    textAlign: 'center',
-    marginBottom: 16,
-    fontStyle: 'italic',
   },
   errorText: {
     color: '#EF4444',

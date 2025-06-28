@@ -7,6 +7,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '@/contexts/ThemeContext';
 import { getColors } from '@/constants/Colors';
+import { sendOTP, verifyOTP } from '@/utils/otpService';
 
 import { ThemedText } from '@/components/ThemedText';
 import { LanguageToggle } from '@/components/ui/LanguageToggle';
@@ -22,6 +23,8 @@ export default function ForgotPasswordScreen() {
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [step, setStep] = useState<'phone' | 'verify' | 'reset'>('phone');
+  const [error, setError] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const slideAnim = useRef(new Animated.Value(50)).current;
 
@@ -40,23 +43,82 @@ export default function ForgotPasswordScreen() {
     ]).start();
   }, []);
 
-  const handleSendCode = () => {
-    // TODO: Implement send verification code logic
-    setStep('verify');
-  };
-
-  const handleVerifyCode = () => {
-    // TODO: Implement verify code logic
-    setStep('reset');
-  };
-
-  const handleResetPassword = () => {
-    if (newPassword !== confirmPassword) {
-      // TODO: Show error message
+  const handleSendCode = async () => {
+    if (!phoneNumber.trim()) {
+      setError('Please enter your phone number');
       return;
     }
-    // TODO: Implement reset password logic
-    router.replace('/(auth)/login');
+
+    try {
+      setIsLoading(true);
+      setError('');
+      const response = await sendOTP(phoneNumber);
+      
+      if (response.success) {
+        setStep('verify');
+      } else {
+        setError(response.message || 'Failed to send verification code');
+      }
+    } catch (error) {
+      setError('Failed to send verification code. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleVerifyCode = async () => {
+    if (!verificationCode.trim()) {
+      setError('Please enter the verification code');
+      return;
+    }
+
+    try {
+      setIsLoading(true);
+      setError('');
+      const response = await verifyOTP(phoneNumber, verificationCode);
+      
+      if (response.success) {
+        setStep('reset');
+      } else {
+        setError(response.message || 'Invalid verification code');
+      }
+    } catch (error) {
+      setError('Failed to verify code. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleResetPassword = async () => {
+    if (!newPassword.trim()) {
+      setError('Please enter a new password');
+      return;
+    }
+
+    if (newPassword !== confirmPassword) {
+      setError('Passwords do not match');
+      return;
+    }
+
+    if (newPassword.length < 6) {
+      setError('Password must be at least 6 characters long');
+      return;
+    }
+
+    try {
+      setIsLoading(true);
+      setError('');
+      
+      // TODO: Implement actual password reset API call
+      // For now, simulate success
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      router.replace('/(auth)/login');
+    } catch (error) {
+      setError('Failed to reset password. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const renderPhoneStep = () => (
@@ -64,28 +126,44 @@ export default function ForgotPasswordScreen() {
       <View style={styles.inputWrapper}>
         <View style={[styles.inputContainer, { backgroundColor: isDarkMode ? '#2C2C2E' : '#F9FAFB' }]}>
           <Ionicons name="call-outline" size={20} color={isDarkMode ? '#A0A0A5' : '#6B7280'} style={styles.inputIcon} />
-          <TextInput
-            style={[styles.input, { color: colors.text }]}
-            placeholder={t('resetPassword.phoneNumber')}
-            placeholderTextColor={isDarkMode ? '#A0A0A5' : '#9CA3AF'}
-            value={phoneNumber}
-            onChangeText={setPhoneNumber}
-            keyboardType="phone-pad"
-            autoCapitalize="none"
-          />
+          <View style={styles.phoneInputContainer}>
+            <ThemedText style={[styles.phonePrefix, { color: colors.text }]}>+251</ThemedText>
+            <TextInput
+              style={[styles.input, { color: colors.text }]}
+              placeholder={t('resetPassword.phoneNumber')}
+              placeholderTextColor={isDarkMode ? '#A0A0A5' : '#9CA3AF'}
+              value={phoneNumber}
+              onChangeText={(text) => {
+                const numericValue = text.replace(/[^0-9]/g, '').slice(0, 9);
+                setPhoneNumber(numericValue);
+                if (error) setError('');
+              }}
+              keyboardType="phone-pad"
+              maxLength={9}
+              autoCapitalize="none"
+              editable={!isLoading}
+            />
+          </View>
         </View>
       </View>
 
+      {error ? (
+        <ThemedText style={styles.errorText}>{error}</ThemedText>
+      ) : null}
+
       <TouchableOpacity 
-        style={styles.resetButton} 
+        style={[styles.resetButton, isLoading && styles.buttonDisabled]} 
         onPress={handleSendCode}
         activeOpacity={0.8}
+        disabled={isLoading}
       >
         <LinearGradient
           colors={['#4F46E5', '#7C3AED']}
           style={styles.buttonGradient}
         >
-          <ThemedText style={styles.buttonText}>{t('resetPassword.sendCode')}</ThemedText>
+          <ThemedText style={styles.buttonText}>
+            {isLoading ? 'Sending...' : t('resetPassword.sendCode')}
+          </ThemedText>
         </LinearGradient>
       </TouchableOpacity>
     </View>
@@ -101,23 +179,35 @@ export default function ForgotPasswordScreen() {
             placeholder={t('resetPassword.verificationCode')}
             placeholderTextColor={isDarkMode ? '#A0A0A5' : '#9CA3AF'}
             value={verificationCode}
-            onChangeText={setVerificationCode}
+            onChangeText={(text) => {
+              const numericValue = text.replace(/[^0-9]/g, '').slice(0, 6);
+              setVerificationCode(numericValue);
+              if (error) setError('');
+            }}
             keyboardType="number-pad"
             maxLength={6}
+            editable={!isLoading}
           />
         </View>
       </View>
 
+      {error ? (
+        <ThemedText style={styles.errorText}>{error}</ThemedText>
+      ) : null}
+
       <TouchableOpacity 
-        style={styles.resetButton} 
+        style={[styles.resetButton, isLoading && styles.buttonDisabled]} 
         onPress={handleVerifyCode}
         activeOpacity={0.8}
+        disabled={isLoading}
       >
         <LinearGradient
           colors={['#4F46E5', '#7C3AED']}
           style={styles.buttonGradient}
         >
-          <ThemedText style={styles.buttonText}>{t('resetPassword.verifyCode')}</ThemedText>
+          <ThemedText style={styles.buttonText}>
+            {isLoading ? 'Verifying...' : t('resetPassword.verifyCode')}
+          </ThemedText>
         </LinearGradient>
       </TouchableOpacity>
     </View>
@@ -133,8 +223,12 @@ export default function ForgotPasswordScreen() {
             placeholder={t('resetPassword.newPassword')}
             placeholderTextColor={isDarkMode ? '#A0A0A5' : '#9CA3AF'}
             value={newPassword}
-            onChangeText={setNewPassword}
+            onChangeText={(text) => {
+              setNewPassword(text);
+              if (error) setError('');
+            }}
             secureTextEntry
+            editable={!isLoading}
           />
         </View>
 
@@ -145,22 +239,33 @@ export default function ForgotPasswordScreen() {
             placeholder={t('resetPassword.confirmPassword')}
             placeholderTextColor={isDarkMode ? '#A0A0A5' : '#9CA3AF'}
             value={confirmPassword}
-            onChangeText={setConfirmPassword}
+            onChangeText={(text) => {
+              setConfirmPassword(text);
+              if (error) setError('');
+            }}
             secureTextEntry
+            editable={!isLoading}
           />
         </View>
       </View>
 
+      {error ? (
+        <ThemedText style={styles.errorText}>{error}</ThemedText>
+      ) : null}
+
       <TouchableOpacity 
-        style={styles.resetButton} 
+        style={[styles.resetButton, isLoading && styles.buttonDisabled]} 
         onPress={handleResetPassword}
         activeOpacity={0.8}
+        disabled={isLoading}
       >
         <LinearGradient
           colors={['#4F46E5', '#7C3AED']}
           style={styles.buttonGradient}
         >
-          <ThemedText style={styles.buttonText}>{t('resetPassword.resetPassword')}</ThemedText>
+          <ThemedText style={styles.buttonText}>
+            {isLoading ? 'Resetting...' : t('resetPassword.resetPassword')}
+          </ThemedText>
         </LinearGradient>
       </TouchableOpacity>
     </View>
@@ -338,5 +443,19 @@ const styles = StyleSheet.create({
     right: 0,
     padding: 16,
     zIndex: 1,
+  },
+  phoneInputContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  phonePrefix: {
+    marginRight: 8,
+  },
+  errorText: {
+    color: 'red',
+    marginBottom: 16,
+  },
+  buttonDisabled: {
+    opacity: 0.5,
   },
 }); 

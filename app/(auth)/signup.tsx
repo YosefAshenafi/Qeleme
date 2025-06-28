@@ -210,15 +210,41 @@ export default function SignupScreen() {
       return;
     }
 
+    // Add country code to phone number for OTP service
+    const fullPhoneNumber = `+251${phoneNumber}`;
+    console.log('Attempting to send OTP to:', fullPhoneNumber);
+    
+    // Try to send OTP (but don't block navigation if it fails)
     try {
-      // Send OTP
-      await sendOTP(phoneNumber);
-      
-      // Navigate to OTP screen with registration data
-      router.push({
-        pathname: '/otp',
+      const otpResponse = await sendOTP(fullPhoneNumber);
+      console.log('OTP Response:', otpResponse);
+      if (!otpResponse.success) {
+        console.log('OTP service failed, but continuing with navigation...');
+      }
+    } catch (err) {
+      console.error('Error sending OTP:', err);
+      console.log('OTP service error, but continuing with navigation...');
+      // Don't set error here, just log it and continue
+    }
+    
+    // Always navigate to OTP screen regardless of OTP service response
+    console.log('Navigating to OTP screen...');
+    console.log('Navigation params:', {
+      phoneNumber: fullPhoneNumber,
+      fullName,
+      username,
+      password,
+      grade,
+      role,
+      numberOfChildren: numberOfChildren.toString(),
+      childrenData: JSON.stringify(childrenData)
+    });
+    
+    try {
+      await router.replace({
+        pathname: '/(auth)/otp',
         params: {
-          phoneNumber,
+          phoneNumber: fullPhoneNumber, // Pass the full phone number with country code
           fullName,
           username,
           password,
@@ -228,8 +254,10 @@ export default function SignupScreen() {
           childrenData: JSON.stringify(childrenData)
         }
       });
-    } catch (err) {
-      setError('Failed to send verification code. Please try again.');
+      console.log('Navigation completed successfully');
+    } catch (navigationError) {
+      console.error('Navigation error:', navigationError);
+      setError('Failed to navigate to OTP screen. Please try again.');
     }
   };
 

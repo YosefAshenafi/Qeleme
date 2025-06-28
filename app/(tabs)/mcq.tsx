@@ -16,7 +16,7 @@ import { Header } from '../../components/Header';
 import { ThemedText } from '../../components/ThemedText';
 import { ThemedView } from '../../components/ThemedView';
 import { IconSymbol } from '../../components/ui/IconSymbol';
-import { getMCQData, MCQData, Grade, Subject, Chapter, Question, Option, ExamType, getNationalExamQuestions, getNationalExamAvailable, NationalExamAPIResponse } from '../../services/mcqService';
+import { getMCQData, MCQData, Grade, Subject, Chapter, Question, Option, ExamType, getNationalExamQuestions, getNationalExamAvailable, NationalExamAPIResponse, getRegularMCQQuestions } from '../../services/mcqService';
 import PictureMCQScreen from '../screens/PictureMCQScreen';
 import PictureMCQInstructionScreen from '../screens/PictureMCQInstructionScreen';
 
@@ -85,16 +85,10 @@ export default function MCQScreen() {
   const selectedGradeData = mcqData?.grades.find((grade: Grade) => grade.id === selectedGrade?.id);
   const selectedSubjectData = selectedGradeData?.subjects.find((subject: Subject) => subject.id === selectedSubject);
   const selectedChapterData = selectedSubjectData?.chapters.find((chapter: Chapter) => chapter.id === selectedChapter);
-  const currentQuestion = selectedExamType === 'national'
-    ? nationalExamQuestions[currentQuestionIndex]
-    : selectedChapterData?.questions[currentQuestionIndex];
-  const isLastQuestion = currentQuestionIndex === (selectedExamType === 'national' 
-    ? nationalExamQuestions.length - 1 
-    : (selectedChapterData?.questions.length || 0) - 1);
+  const currentQuestion = nationalExamQuestions[currentQuestionIndex];
+  const isLastQuestion = currentQuestionIndex === (nationalExamQuestions.length - 1);
   const isFirstQuestion = currentQuestionIndex === 0;
-  const totalQuestions = selectedExamType === 'national' 
-    ? nationalExamQuestions.length 
-    : selectedChapterData?.questions.length || 0;
+  const totalQuestions = nationalExamQuestions.length;
   const percentage = Math.round((score / totalQuestions) * 100);
 
   // Timer functions (were accidentally removed)
@@ -280,84 +274,24 @@ export default function MCQScreen() {
           useNativeDriver: true,
         }),
       ]).start();
-
-      if (percentage >= 90) {
-        // Start confetti animation for high scores
-        Animated.loop(
-          Animated.sequence([
-            Animated.timing(confettiAnim, {
-              toValue: 1,
-              duration: 2000,
-              useNativeDriver: true,
-            }),
-            Animated.timing(confettiAnim, {
-              toValue: 0,
-              duration: 2000,
-              useNativeDriver: true,
-            }),
-          ])
-        ).start();
-
-        // Get screen dimensions
-        const screenWidth = Dimensions.get('window').width;
-        const screenHeight = Dimensions.get('window').height;
-        const maxDistance = Math.sqrt(Math.pow(screenWidth, 2) + Math.pow(screenHeight, 2)) / 2;
-
-        // Start firework animation
-        const createParticleAnimation = (anim: any, index: number) => {
-          const angle = (index * 5.625) * (Math.PI / 180); // Distribute particles in a circle (64 particles)
-          const distance = maxDistance; // Travel to screen edges
-          const burstDuration = 3000; // Slower movement (3 seconds)
-          const rotationDuration = 2000 + Math.random() * 1000; // Random rotation duration
-
-          return Animated.parallel([
-            Animated.timing(anim.scale, {
-              toValue: 1,
-              duration: burstDuration,
-              useNativeDriver: true,
-            }),
-            Animated.timing(anim.translateX, {
-              toValue: Math.cos(angle) * distance,
-              duration: burstDuration,
-              useNativeDriver: true,
-            }),
-            Animated.timing(anim.translateY, {
-              toValue: Math.sin(angle) * distance,
-              duration: burstDuration,
-              useNativeDriver: true,
-            }),
-            Animated.timing(anim.opacity, {
-              toValue: 0,
-              duration: 100, // Very quick fade out
-              delay: burstDuration - 100, // Start fading just before reaching the edge
-              useNativeDriver: true,
-            }),
-            Animated.timing(anim.rotate, {
-              toValue: 1,
-              duration: rotationDuration,
-              useNativeDriver: true,
-            }),
-          ]);
-        };
-
-        // Create a single explosion with all particles
-        const explosion = particleAnims.map((anim, index) => 
-          createParticleAnimation(anim, index)
-        );
-
-        // Start all particles simultaneously
-        Animated.parallel(explosion).start();
-
-        // Create a second explosion after a longer delay
-        setTimeout(() => {
-          const secondExplosion = particleAnims.map((anim, index) => 
-            createParticleAnimation(anim, index)
-          );
-          Animated.parallel(secondExplosion).start();
-        }, 3500); // Start second explosion after 3.5 seconds
-      }
     }
   }, [showResult]);
+
+  // Debug logging for current question
+  useEffect(() => {
+    if (showTest && currentQuestion) {
+      console.log('🔍 Current Question Debug:', {
+        currentQuestionIndex,
+        totalQuestions,
+        currentQuestion: {
+          id: currentQuestion.id,
+          question: currentQuestion.question?.substring(0, 50) + '...',
+          optionsCount: currentQuestion.options?.length || 0
+        },
+        nationalExamQuestionsLength: nationalExamQuestions.length
+      });
+    }
+  }, [currentQuestionIndex, currentQuestion, showTest, nationalExamQuestions.length]);
 
   const spin = rotateAnim.interpolate({
     inputRange: [0, 1],
@@ -389,7 +323,7 @@ export default function MCQScreen() {
     setShowAnswerMessage(false);
     
     // Update score if answer is correct
-    const isCorrect = currentQuestion?.options.find((opt: Option) => opt.id === answerId)?.isCorrect;
+    const isCorrect = currentQuestion?.options?.find((opt: Option) => opt.id === answerId)?.isCorrect;
     if (isCorrect) {
       setScore(prev => prev + 1);
     }
@@ -406,32 +340,27 @@ export default function MCQScreen() {
   };
 
   const handleNextQuestion = () => {
-    if (selectedExamType === 'national') {
-      if (currentQuestionIndex < nationalExamQuestions.length - 1) {
-        if (!selectedAnswer) {
-          setShowAnswerMessage(true);
-          return;
-        }
-        setCurrentQuestionIndex(prev => prev + 1);
-        setSelectedAnswer(null);
-        setShowExplanation(false);
-        setShowAnswerMessage(false);
-      } else {
-        setShowResult(true);
+    console.log('🔄 Next Question Debug:', {
+      currentQuestionIndex,
+      totalQuestions: nationalExamQuestions.length,
+      hasSelectedAnswer: !!selectedAnswer,
+      isLastQuestion: currentQuestionIndex >= nationalExamQuestions.length - 1
+    });
+    
+    if (currentQuestionIndex < nationalExamQuestions.length - 1) {
+      if (!selectedAnswer) {
+        console.log('❌ No answer selected, showing message');
+        setShowAnswerMessage(true);
+        return;
       }
+      console.log('✅ Moving to next question');
+      setCurrentQuestionIndex(prev => prev + 1);
+      setSelectedAnswer(null);
+      setShowExplanation(false);
+      setShowAnswerMessage(false);
     } else {
-      if (currentQuestionIndex < (selectedChapterData?.questions.length || 0) - 1) {
-        if (!selectedAnswer) {
-          setShowAnswerMessage(true);
-          return;
-        }
-        setCurrentQuestionIndex(prev => prev + 1);
-        setSelectedAnswer(null);
-        setShowExplanation(false);
-        setShowAnswerMessage(false);
-      } else {
-        setShowResult(true);
-      }
+      console.log('🏁 Last question reached, showing results');
+      setShowResult(true);
     }
   };
 
@@ -456,7 +385,7 @@ export default function MCQScreen() {
           subject: selectedSubjectData?.name || '',
           chapter: selectedChapterData?.name || '',
           timestamp: Date.now(),
-          details: `Completed ${score} out of ${selectedExamType === 'national' ? nationalExamQuestions.length : (selectedChapterData?.questions.length || 0)} questions`
+          details: `Completed ${score} out of ${nationalExamQuestions.length} questions`
         };
         
         // Get existing activities
@@ -497,18 +426,34 @@ export default function MCQScreen() {
   };
 
   const handleStartTest = async () => {
+    console.log('=== START QUIZ DEBUG ===');
+    console.log('Selected Grade:', selectedGrade);
+    console.log('Selected Subject:', selectedSubject);
+    console.log('Selected Chapter:', selectedChapter);
+    console.log('Selected Exam Type:', selectedExamType);
+    console.log('Selected Year:', selectedYear);
+    console.log('User Grade:', user?.grade);
+    
     if (!selectedGrade || !selectedSubject) {
+      console.log('❌ Missing grade or subject selection');
       return;
     }
 
     if (selectedExamType === 'national') {
+      console.log('🔄 Starting National Exam...');
       if (!selectedYear) {
+        console.log('❌ Missing year selection for national exam');
         return;
       }
 
       try {
         // Use the user's grade number directly since we've already validated it
         const gradeNumber = parseInt(user?.grade || '');
+        console.log('📊 National Exam Parameters:', {
+          gradeNumber,
+          year: selectedYear,
+          subject: selectedSubject
+        });
         
         const questions = await getNationalExamQuestions(
           gradeNumber,
@@ -516,7 +461,10 @@ export default function MCQScreen() {
           selectedSubject
         );
 
+        console.log('✅ National Exam Questions Received:', questions?.length || 0);
+
         if (!questions || questions.length === 0) {
+          console.log('❌ No national exam questions found');
           setError('No questions found for this exam. Please try another year or subject.');
           return;
         }
@@ -535,39 +483,76 @@ export default function MCQScreen() {
         setAnsweredQuestions({});
         setTime(0);
         startTimer();
+        console.log('✅ National Exam Started Successfully');
       } catch (error) {
+        console.error('❌ National Exam Error:', error);
         setError('Failed to load national exam questions. Please try again.');
       }
     } else {
-      // Original MCQ logic
+      console.log('🔄 Starting Regular MCQ...');
+      // Regular MCQ logic
       if (!selectedChapter) {
+        console.log('❌ Missing chapter selection for regular MCQ');
         return;
       }
 
-      // Verify that we have questions for this chapter
-      if (!selectedChapterData || !selectedChapterData.questions || selectedChapterData.questions.length === 0) {
-        setError('No questions found for this chapter. Please try another chapter or contact support.');
-        return;
+      try {
+        // Use the user's grade number directly
+        const gradeNumber = parseInt(user?.grade || '');
+        
+        // Get the subject ID from the selected subject
+        const subjectId = selectedSubject;
+        
+        // Get the chapter ID from the selected chapter
+        const chapterId = selectedChapter;
+        
+        console.log('📊 Regular MCQ Parameters:', {
+          gradeNumber,
+          subjectId,
+          chapterId
+        });
+        
+        const questions = await getRegularMCQQuestions(
+          gradeNumber,
+          subjectId,
+          chapterId
+        );
+
+        console.log('✅ Regular MCQ Questions Received:', questions?.length || 0);
+
+        if (!questions || questions.length === 0) {
+          console.log('❌ No regular MCQ questions found');
+          setError('No questions found for this chapter. Please try another chapter or contact support.');
+          return;
+        }
+
+        // Store the questions in state for regular MCQ
+        setNationalExamQuestions(questions); // Reuse this state for regular MCQ questions
+
+        // Start the test
+        setShowTest(true);
+        setCurrentQuestionIndex(0);
+        setSelectedAnswer(null);
+        setShowExplanation(false);
+        setShowAnswerMessage(false);
+        setScore(0);
+        setShowResult(false);
+        setAnsweredQuestions({});
+        setTime(0);
+        startTimer();
+        console.log('✅ Regular MCQ Started Successfully');
+      } catch (error) {
+        console.error('❌ Regular MCQ Error:', error);
+        setError('Failed to load MCQ questions. Please try again.');
       }
-      
-      // Start the test
-      setShowTest(true);
-      setCurrentQuestionIndex(0);
-      setSelectedAnswer(null);
-      setShowExplanation(false);
-      setShowAnswerMessage(false);
-      setScore(0);
-      setShowResult(false);
-      setAnsweredQuestions({});
-      setTime(0);
-      startTimer();
     }
+    console.log('=== END START QUIZ DEBUG ===');
   };
 
   const getOptionStyle = (optionId: string) => {
     if (!showExplanation) return [styles.optionContainer];
     
-    const isCorrect = currentQuestion?.options.find((opt: Option) => opt.id === optionId)?.isCorrect;
+    const isCorrect = currentQuestion?.options?.find((opt: Option) => opt.id === optionId)?.isCorrect;
     const isSelected = selectedAnswer === optionId;
     
     if (isCorrect) {
@@ -665,7 +650,7 @@ export default function MCQScreen() {
   }
   
   // Debug state for empty subjects
-  if (mcqData && mcqData.grades.length > 0 && (!selectedGradeData?.subjects || selectedGradeData.subjects.length === 0)) {
+  if (mcqData && mcqData.grades.length > 0 && (!selectedGradeData?.subjects || (selectedGradeData?.subjects?.length || 0) === 0)) {
     return (
       <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]}>
         <Header title={t('mcq.title')} />
@@ -1048,7 +1033,7 @@ export default function MCQScreen() {
                             }
                           ]}
                         >
-                          {selectedChapter ? selectedSubjectData?.chapters.find((c: Chapter) => c.id === selectedChapter)?.name : t('mcq.selectChapter')}
+                          {selectedChapter ? selectedSubjectData?.chapters?.find((c: Chapter) => c.id === selectedChapter)?.name : t('mcq.selectChapter')}
                         </ThemedText>
                         <IconSymbol 
                           name="chevron.right" 
@@ -1070,7 +1055,7 @@ export default function MCQScreen() {
                           >
                             <ThemedView style={[styles.modalContent, { backgroundColor: colors.background }]}>
                               <ScrollView>
-                                {selectedSubjectData?.chapters.map((chapter: Chapter) => (
+                                {selectedSubjectData?.chapters?.map((chapter: Chapter) => (
                                   <TouchableOpacity
                                     key={chapter.id}
                                     style={[styles.modalItem, { backgroundColor: colors.background, borderBottomColor: colors.border }]}
@@ -1082,7 +1067,13 @@ export default function MCQScreen() {
                                     <ThemedText style={[styles.modalItemText, { color: colors.text }]}>{chapter.name}</ThemedText>
                                     <IconSymbol name="chevron.right" size={20} color={colors.tint} />
                                   </TouchableOpacity>
-                                ))}
+                                )) || (
+                                  <View style={[styles.modalItem, { backgroundColor: colors.background, borderBottomColor: colors.border }]}>
+                                    <ThemedText style={[styles.modalItemText, { color: colors.text, opacity: 0.7 }]}>
+                                      No chapters available
+                                    </ThemedText>
+                                  </View>
+                                )}
                               </ScrollView>
                             </ThemedView>
                           </TouchableOpacity>
@@ -1145,7 +1136,7 @@ export default function MCQScreen() {
                       <IconSymbol name="chevron.right" size={16} color={colors.tint} />
                       <View style={[styles.breadcrumbItem, { backgroundColor: colors.background, borderColor: colors.border }]}>
                         <ThemedText style={[styles.breadcrumbText, { color: colors.tint }]}>
-                          {selectedChapter ? selectedSubjectData?.chapters.find((c: Chapter) => c.id === selectedChapter)?.name : 'Select Chapter'}
+                          {selectedChapter ? selectedSubjectData?.chapters?.find((c: Chapter) => c.id === selectedChapter)?.name : 'Select Chapter'}
                         </ThemedText>
                       </View>
                     </>
@@ -1174,32 +1165,38 @@ export default function MCQScreen() {
 
                 <View style={styles.questionContainer}>
                   <ThemedText style={[styles.questionText, { color: colors.text }]}>
-                    {currentQuestion?.question}
+                    {currentQuestion?.question || 'Question not available'}
                   </ThemedText>
                 </View>
 
                 <View style={styles.optionsContainer}>
-                  {currentQuestion?.options.map((option: Option, index: number) => (
+                  {currentQuestion?.options?.map((option: Option, index: number) => (
                     <TouchableOpacity
                       key={option.id}
                       style={[
                         styles.optionContainer,
                         { backgroundColor: colors.background, borderColor: colors.border },
-                        getOptionStyle(option.id)
+                        getOptionStyle(String(option.id))
                       ]}
-                      onPress={() => handleAnswerSelect(option.id)}
+                      onPress={() => handleAnswerSelect(String(option.id))}
                       disabled={!!selectedAnswer}
                     >
                       <View style={styles.optionContent}>
                         <View style={[styles.optionId, { backgroundColor: colors.cardAlt, borderColor: colors.border }]}>
                           <ThemedText style={[styles.optionIdText, { color: colors.tint }]}>
-                            {selectedExamType === 'national' ? String.fromCharCode(65 + index) : option.id}
+                            {selectedExamType === 'national' ? String.fromCharCode(65 + index) : String(option.id)}
                           </ThemedText>
                         </View>
                         <ThemedText style={[styles.optionText, { color: colors.text }]}>{option.text}</ThemedText>
                       </View>
                     </TouchableOpacity>
-                  ))}
+                  )) || (
+                    <View style={[styles.optionContainer, { backgroundColor: colors.background, borderColor: colors.border, justifyContent: 'center', alignItems: 'center' }]}>
+                      <ThemedText style={[styles.optionText, { color: colors.text, opacity: 0.7 }]}>
+                        No options available
+                      </ThemedText>
+                    </View>
+                  )}
                 </View>
 
                 {showAnswerMessage && (
@@ -1214,7 +1211,7 @@ export default function MCQScreen() {
                   <View ref={explanationRef} style={[styles.explanationContainer, { backgroundColor: colors.cardAlt }]}>
                     <ThemedText style={[styles.explanationTitle, { color: colors.tint }]}>Explanation:</ThemedText>
                     <ThemedText style={[styles.explanationText, { color: colors.text }]}>
-                      {currentQuestion?.explanation}
+                      {currentQuestion?.explanation || 'No explanation available'}
                     </ThemedText>
                   </View>
                 )}

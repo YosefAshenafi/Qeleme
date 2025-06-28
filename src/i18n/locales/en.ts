@@ -324,6 +324,7 @@ export default {
   common: {
     tryAgain: 'Try Again',
     back: 'Back',
+    loading: 'Loading...',
   },
   mcq: {
     question: 'Question',

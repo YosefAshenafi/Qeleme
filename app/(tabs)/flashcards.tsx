@@ -395,7 +395,7 @@ export default function FlashcardsScreen() {
                       }
                     ]}
                   >
-                    {selectedChapter ? selectedSubjectData?.chapters.find((c: Chapter) => c.id === selectedChapter)?.name : t('flashcards.selectChapter')}
+                    {selectedChapter ? selectedSubjectData?.chapters?.find((c: Chapter) => c.id === selectedChapter)?.name : t('flashcards.selectChapter')}
                   </ThemedText>
                   <IconSymbol 
                     name="chevron.right" 
@@ -417,7 +417,7 @@ export default function FlashcardsScreen() {
                     >
                       <ThemedView style={[styles.modalContent, { backgroundColor: colors.background }]}>
                         <ScrollView>
-                          {selectedSubjectData?.chapters.map((chapter: Chapter) => (
+                          {selectedSubjectData?.chapters?.map((chapter: Chapter) => (
                             <TouchableOpacity
                               key={chapter.id}
                               style={[styles.modalItem, { backgroundColor: colors.background, borderBottomColor: colors.border }]}
@@ -429,7 +429,13 @@ export default function FlashcardsScreen() {
                               <ThemedText style={[styles.modalItemText, { color: colors.text }]}>{chapter.name}</ThemedText>
                               <IconSymbol name="chevron.right" size={20} color={colors.tint} />
                             </TouchableOpacity>
-                          ))}
+                          )) || (
+                            <View style={[styles.modalItem, { backgroundColor: colors.background, borderBottomColor: colors.border }]}>
+                              <ThemedText style={[styles.modalItemText, { color: colors.text, opacity: 0.7 }]}>
+                                No chapters available
+                              </ThemedText>
+                            </View>
+                          )}
                         </ScrollView>
                       </ThemedView>
                     </TouchableOpacity>

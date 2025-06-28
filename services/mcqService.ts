@@ -245,51 +245,105 @@ export const getRegularMCQQuestions = async (
   subjectId: string,
   chapterId: string
 ): Promise<NationalExamAPIResponse[]> => {
+  console.log('=== getRegularMCQQuestions DEBUG ===');
+  console.log('📊 Input Parameters:', { gradeLevelId, subjectId, chapterId });
+  
   try {
     const token = await getAuthToken();
+    console.log('🔑 Token Status:', token ? '✅ Token found' : '❌ No token found');
+    console.log('🔑 Token Preview:', token ? `${token.substring(0, 20)}...` : 'No token');
+    
     if (!token) {
+      console.log('❌ Authentication failed - no token');
       throw new Error('No authentication token found. Please login again.');
     }
 
-    const response = await fetch(
-      `${BASE_URL}/mcq/grouped?gradeLevelId=${gradeLevelId}&subjectId=${encodeURIComponent(subjectId)}&chapterId=${encodeURIComponent(chapterId)}`,
-      {
-        method: 'GET',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-      }
-    );
+    const url = `${BASE_URL}/questions/grouped?gradeLevelId=${gradeLevelId}&subjectId=${encodeURIComponent(subjectId)}&chapterId=${encodeURIComponent(chapterId)}`;
+    console.log('🌐 API URL:', url);
+    console.log('📤 Request Headers:', {
+      'Authorization': `Bearer ${token.substring(0, 20)}...`,
+      'Accept': 'application/json',
+      'Content-Type': 'application/json'
+    });
+
+    const response = await fetch(url, {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+      },
+    });
+    
+    console.log('📥 Response Status:', response.status);
+    console.log('📥 Response OK:', response.ok);
+    console.log('📥 Response Headers:', Object.fromEntries(response.headers.entries()));
     
     if (!response.ok) {
       const errorData = await response.json().catch(() => null);
+      console.log('❌ API Error Response:', errorData);
       throw new Error(errorData?.message || 'Failed to fetch MCQ questions');
     }
     
     const data = await response.json();
+    console.log('📥 Raw API Response:', JSON.stringify(data, null, 2));
     
-    if (!data.questions || !Array.isArray(data.questions)) {
+    // Handle the actual API response structure
+    if (!data.subjects || typeof data.subjects !== 'object') {
+      console.log('❌ No subjects object in response');
       throw new Error('No questions found for this exam');
     }
 
-    // Transform the questions to match the expected format
-    const transformedQuestions = data.questions.map((q: any) => ({
-      id: q.id,
-      question: q.question,
-      options: q.options.map((opt: any) => ({
-        id: opt.id,
-        text: opt.text,
-        isCorrect: opt.isCorrect
-      })),
-      explanation: q.explanation || '',
-      subjectId: data.subject,
-      gradeLevelId: data.grade,
-      chapterId: data.chapter
-    }));
+    // Find the subject data
+    const subjectKey = Object.keys(data.subjects)[0];
+    if (!subjectKey) {
+      console.log('❌ No subject found in response');
+      throw new Error('No questions found for this exam');
+    }
 
+    const subjectData = data.subjects[subjectKey];
+    console.log('📊 Subject Data:', subjectData);
+    
+    if (!subjectData.questions || !Array.isArray(subjectData.questions)) {
+      console.log('❌ No questions array in subject data');
+      throw new Error('Invalid questions format in response');
+    }
+
+    console.log('📊 Questions Count:', subjectData.questions.length);
+
+    // Transform the questions to match the expected format
+    const transformedQuestions = subjectData.questions.map((q: any, index: number) => {
+      console.log(`📝 Question ${index + 1}:`, {
+        id: q.id,
+        question: q.question?.substring(0, 50) + '...',
+        optionsCount: q.options?.length || 0,
+        correctAnswer: q.correctAnswer
+      });
+      
+      // Transform options to include isCorrect property
+      const options = q.options.map((opt: string, optIndex: number) => ({
+        id: String.fromCharCode(65 + optIndex), // A, B, C, D...
+        text: opt,
+        isCorrect: q.correctAnswer === String.fromCharCode(65 + optIndex)
+      }));
+      
+      return {
+        id: q.id,
+        question: q.question,
+        options: options,
+        explanation: q.explanations || '',
+        subjectId: subjectKey,
+        gradeLevelId: gradeLevelId,
+        chapterId: chapterId
+      };
+    });
+
+    console.log('✅ Transformed Questions Count:', transformedQuestions.length);
+    console.log('=== END getRegularMCQQuestions DEBUG ===');
     return transformedQuestions;
   } catch (error) {
+    console.error('❌ getRegularMCQQuestions Error:', error);
+    console.log('=== END getRegularMCQQuestions DEBUG (ERROR) ===');
     throw error;
   }
 }; 
