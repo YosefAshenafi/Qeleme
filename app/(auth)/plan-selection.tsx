@@ -51,10 +51,17 @@ export default function PlanSelectionScreen() {
       // Debug: Log the plans before sorting
       console.log('Plans before sorting:', data.map((p: PaymentPlan) => ({ name: p.name, duration: p.durationInMonths })));
       
-      // Sort plans in descending order based on durationInMonths
-      const sortedPlans = data.sort((a: PaymentPlan, b: PaymentPlan) => {
+      // Separate paid and free plans
+      const paidPlans = data.filter((plan: PaymentPlan) => plan.durationInMonths > 0);
+      const freePlans = data.filter((plan: PaymentPlan) => plan.durationInMonths === 0);
+      
+      // Sort paid plans by duration in descending order
+      const sortedPaidPlans = paidPlans.sort((a: PaymentPlan, b: PaymentPlan) => {
         return b.durationInMonths - a.durationInMonths;
       });
+      
+      // Combine free plans first, then paid plans
+      const sortedPlans = [...freePlans, ...sortedPaidPlans];
       
       // Debug: Log the plans after sorting
       console.log('Plans after sorting:', sortedPlans.map((p: PaymentPlan) => ({ name: p.name, duration: p.durationInMonths })));
@@ -367,7 +374,7 @@ export default function PlanSelectionScreen() {
               <View style={styles.plansContainer}>
                 {plans.map((plan, index) => {
                   const planColors = getPlanColors(plan);
-                  const isRecommended = plan.durationInMonths === 12;
+                  const isRecommended = plan.durationInMonths === 6;
                   const isSelected = selectedPlans.some(p => p.plan === plan._id);
                   const isFree = plan.durationInMonths === 0;
                   
@@ -396,25 +403,27 @@ export default function PlanSelectionScreen() {
                         colors={planColors.gradient as [string, string]}
                         style={styles.planCardGradient}
                       >
-                        {/* Header with Badge */}
+                        {/* Recommended Badge - Ribbon Style */}
+                        {isRecommended && (
+                          <View style={styles.ribbonBadge}>
+                            <LinearGradient
+                              colors={['#8B5CF6', '#7C3AED']}
+                              style={styles.ribbonGradient}
+                            >
+                              <Ionicons name="star" size={12} color="#FFFFFF" />
+                              <ThemedText style={styles.ribbonText}>
+                                {t('auth.planSelection.recommended')}
+                              </ThemedText>
+                            </LinearGradient>
+                          </View>
+                        )}
+
+                        {/* Header */}
                         <View style={styles.planHeader}>
                           <View style={styles.planTitleContainer}>
                             <ThemedText style={[styles.planName, { color: planColors.text }]}>
                               {plan.name}
                             </ThemedText>
-                            {isRecommended && (
-                              <View style={styles.recommendedBadge}>
-                                <LinearGradient
-                                  colors={['#F59E0B', '#D97706']}
-                                  style={styles.badgeGradient}
-                                >
-                                  <Ionicons name="star" size={12} color="#FFFFFF" />
-                                  <ThemedText style={styles.badgeText}>
-                                    {t('auth.planSelection.recommended')}
-                                  </ThemedText>
-                                </LinearGradient>
-                              </View>
-                            )}
                           </View>
                           
                           <View style={styles.priceContainer}>
@@ -673,5 +682,36 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  ribbonBadge: {
+    position: 'absolute',
+    bottom: 5,
+    right: -28,
+    zIndex: 10,
+    transform: [{ rotate: '-45deg' }],
+  },
+  ribbonGradient: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 0,
+    gap: 4,
+    shadowColor: '#000000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+    elevation: 5,
+    minWidth: 80,
+    justifyContent: 'center',
+  },
+  ribbonText: {
+    color: '#FFFFFF',
+    fontSize: 10,
+    fontWeight: '700',
+    textAlign: 'center',
   },
 }); 

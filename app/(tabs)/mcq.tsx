@@ -900,7 +900,7 @@ export default function MCQScreen() {
                       onPress={() => setShowSubjectDropdown(!showSubjectDropdown)}
                     >
                       <ThemedText style={[styles.formInputText, { color: colors.text }]}>
-                        {selectedSubject ? toTitleCase(selectedSubject) : t('mcq.selectSubject')}
+                        {selectedSubject ? (selectedExamType === 'national' ? toTitleCase(selectedSubject) : selectedGradeData?.subjects.find((s: Subject) => s.id === selectedSubject)?.name) : t('mcq.selectSubject')}
                       </ThemedText>
                       <IconSymbol name="chevron.right" size={20} color={colors.tint} />
                     </TouchableOpacity>
