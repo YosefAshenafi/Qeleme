@@ -24,8 +24,6 @@ export default function OTPScreen() {
   const inputRefs = useRef<Array<TextInput | null>>([]);
   const params = useLocalSearchParams();
   
-  console.log('OTP Screen - Received params:', params);
-  
   let userData = null;
   
   try {
@@ -40,9 +38,7 @@ export default function OTPScreen() {
       numberOfChildren: parseInt(params.numberOfChildren as string) || 0,
       childrenData: params.childrenData ? JSON.parse(params.childrenData as string) : []
     };
-    console.log('OTP Screen - Constructed userData:', userData);
   } catch (error) {
-    console.error('Error constructing userData:', error);
     setError('Invalid user data. Please try again.');
   }
 
@@ -62,33 +58,6 @@ export default function OTPScreen() {
       return () => clearInterval(timer);
     }
   }, [timeLeft]);
-
-  // Auto-send OTP on component mount
-  useEffect(() => {
-    const sendInitialOTP = async () => {
-      if (userData?.phoneNumber) {
-        try {
-          console.log('Auto-sending initial OTP to:', userData.phoneNumber);
-          setIsLoading(true);
-          const response = await sendOTP(userData.phoneNumber);
-          if (response.success) {
-            console.log('Initial OTP sent successfully');
-            setError('');
-          } else {
-            console.error('Failed to send initial OTP:', response.message);
-            setError(response.message || 'Failed to send OTP');
-          }
-        } catch (error) {
-          console.error('Error sending initial OTP:', error);
-          setError('Failed to send OTP. Please try again.');
-        } finally {
-          setIsLoading(false);
-        }
-      }
-    };
-
-    sendInitialOTP();
-  }, [userData?.phoneNumber]);
 
   // Format time as MM:SS
   const formatTime = (seconds: number): string => {
@@ -117,26 +86,22 @@ export default function OTPScreen() {
   };
 
   const handleResend = async () => {
-    if (userData?.phoneNumber && canResend && !isLoading) {
+    if (userData?.phoneNumber && (canResend || timeLeft === 300) && !isLoading) {
       try {
         setIsLoading(true);
         setError(''); // Clear any previous errors
         
-        console.log('Resending OTP to:', userData.phoneNumber);
         const response = await sendOTP(userData.phoneNumber);
         
         if (response.success) {
-          // Reset timer and disable resend
+          // Start timer and disable resend
           setTimeLeft(300);
           setCanResend(false);
-          console.log('OTP resent successfully');
         } else {
-          setError(response.message || 'Failed to resend OTP');
-          console.error('Failed to resend OTP:', response.message);
+          setError(response.message || 'Failed to send OTP');
         }
       } catch (error) {
-        console.error('Resend OTP error:', error);
-        setError('Failed to resend OTP. Please try again.');
+        setError('Failed to send OTP. Please try again.');
       } finally {
         setIsLoading(false);
       }
@@ -171,7 +136,6 @@ export default function OTPScreen() {
         setError(response.message || 'Invalid OTP. Please try again.');
       }
     } catch (error) {
-      console.error('OTP verification error:', error);
       setError('Failed to verify OTP. Please try again.');
     } finally {
       setIsLoading(false);
@@ -262,21 +226,24 @@ export default function OTPScreen() {
 
             <View style={styles.resendContainer}>
               <ThemedText style={[styles.resendText, { color: isDarkMode ? '#A0A0A5' : '#6B7280' }]}>
-                {t('auth.otp.resend.text')}
+                {timeLeft === 300 ? t('auth.otp.send.text') : t('auth.otp.resend.text')}
               </ThemedText>
               <TouchableOpacity 
                 onPress={handleResend} 
-                disabled={!canResend || isLoading}
+                disabled={(!canResend && timeLeft !== 300) || isLoading}
                 style={[
                   styles.resendButtonContainer,
-                  (!canResend || isLoading) && { opacity: 0.5 }
+                  ((!canResend && timeLeft !== 300) || isLoading) && { opacity: 0.5 }
                 ]}
               >
                 <ThemedText style={[
                   styles.resendButton, 
-                  { color: canResend ? '#4F46E5' : (isDarkMode ? '#A0A0A5' : '#6B7280') }
+                  { color: (canResend || timeLeft === 300) ? '#4F46E5' : (isDarkMode ? '#A0A0A5' : '#6B7280') }
                 ]}>
-                  {isLoading ? 'Sending...' : canResend ? t('auth.otp.resend.button') : formatTime(timeLeft)}
+                  {isLoading ? 'Sending...' : 
+                   timeLeft === 300 ? t('auth.otp.send.button') : 
+                   canResend ? t('auth.otp.resend.button') : 
+                   formatTime(timeLeft)}
                 </ThemedText>
               </TouchableOpacity>
             </View>

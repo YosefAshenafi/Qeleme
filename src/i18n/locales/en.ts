@@ -1,4 +1,14 @@
 export default {
+  errors: {
+    network: {
+      title: 'Network Error',
+      message: 'Unable to connect to the server. Please check your internet connection and try again.'
+    },
+    generic: {
+      title: 'Error',
+      message: 'Something went wrong. Please try again.'
+    }
+  },
   home: {
     welcome: 'Welcome {{name}}!',
     subtitle: 'Ready to learn something new today?',
@@ -242,6 +252,10 @@ export default {
       error: {
         invalid: 'Invalid verification code',
         incomplete: 'Please enter all digits'
+      },
+      send: {
+        text: "Ready to verify your phone?",
+        button: 'Send OTP'
       },
       resend: {
         text: "Didn't receive the code?",

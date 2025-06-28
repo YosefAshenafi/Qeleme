@@ -1,4 +1,14 @@
 export default {
+  errors: {
+    network: {
+      title: 'የበይነመረብ ግንኙነት መቋረጥ',
+      message: 'ወደ አገልግሎት መገናኘት አልተቻለም። የበይነመረብ ግንኙነትዎን ያረጋግጡ እና እንደገና ይሞክሩ።'
+    },
+    generic: {
+      title: 'ስህተት',
+      message: 'የሆነ ነገር ተከስቷል። እባክዎ እንደገና ይሞክሩ።'
+    }
+  },
   home: {
     welcome: 'እንኳን ደህና መጡ {{name}}!',
     subtitle: 'ዛሬ አዲስ ነገር እንማር!',
@@ -468,6 +478,10 @@ export default {
       error: {
         invalid: 'ልክ ያልሆነ የማረጋገጫ ኮድ',
         incomplete: 'እባክዎ ሁሉንም አሃዞች ያስገቡ'
+      },
+      send: {
+        text: 'ስልክዎን ለማረጋገጥ ዝግጁ ነዎት?',
+        button: 'OTP ላክ'
       },
       resend: {
         text: 'ኮዱን አላገኙም?',

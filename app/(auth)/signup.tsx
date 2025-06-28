@@ -212,34 +212,18 @@ export default function SignupScreen() {
 
     // Add country code to phone number for OTP service
     const fullPhoneNumber = `+251${phoneNumber}`;
-    console.log('Attempting to send OTP to:', fullPhoneNumber);
     
     // Try to send OTP (but don't block navigation if it fails)
     try {
       const otpResponse = await sendOTP(fullPhoneNumber);
-      console.log('OTP Response:', otpResponse);
       if (!otpResponse.success) {
-        console.log('OTP service failed, but continuing with navigation...');
+        // OTP service failed, but continuing with navigation
       }
     } catch (err) {
-      console.error('Error sending OTP:', err);
-      console.log('OTP service error, but continuing with navigation...');
       // Don't set error here, just log it and continue
     }
     
     // Always navigate to OTP screen regardless of OTP service response
-    console.log('Navigating to OTP screen...');
-    console.log('Navigation params:', {
-      phoneNumber: fullPhoneNumber,
-      fullName,
-      username,
-      password,
-      grade,
-      role,
-      numberOfChildren: numberOfChildren.toString(),
-      childrenData: JSON.stringify(childrenData)
-    });
-    
     try {
       await router.replace({
         pathname: '/(auth)/otp',
@@ -254,9 +238,7 @@ export default function SignupScreen() {
           childrenData: JSON.stringify(childrenData)
         }
       });
-      console.log('Navigation completed successfully');
     } catch (navigationError) {
-      console.error('Navigation error:', navigationError);
       setError('Failed to navigate to OTP screen. Please try again.');
     }
   };
