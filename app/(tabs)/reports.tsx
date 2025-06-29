@@ -277,38 +277,6 @@ export default function ReportsScreen() {
             </LinearGradient>
           </ThemedView>
 
-          {/* Subject Breakdown */}
-          <ThemedView style={[styles.section, { backgroundColor: colors.background }]}>
-            <ThemedText style={[styles.sectionTitle, { color: colors.text }]}>
-              {t('reports.subjectBreakdown.title')}
-            </ThemedText>
-            {reportData.subjectBreakdown.map((subject, index) => (
-              <ThemedView 
-                key={index} 
-                style={[styles.subjectCard, { 
-                  backgroundColor: colors.cardAlt,
-                  borderColor: colors.border,
-                  borderWidth: isDarkMode ? 1 : 0
-                }]}
-              >
-                <View style={styles.subjectHeader}>
-                  <ThemedText style={[styles.subjectName, { color: colors.text }]}>
-                    {subject.subject}
-                  </ThemedText>
-                  <ThemedText style={[styles.subjectScore, { color: colors.tint }]}>
-                    {`${subject.progress}% ${t('reports.subjectBreakdown.progress')}`}
-                  </ThemedText>
-                </View>
-                <View style={[styles.progressBar, { backgroundColor: isDarkMode ? 'rgba(255, 255, 255, 0.1)' : '#E0E0E0' }]}>
-                  <View style={[styles.progressFill, { 
-                    width: `${subject.progress}%`,
-                    backgroundColor: colors.tint
-                  }]} />
-                </View>
-              </ThemedView>
-            ))}
-          </ThemedView>
-
           {/* Recent Activity */}
           <ThemedView style={[styles.section, { backgroundColor: colors.background }]}>
             {reportData.recentActivity.map((activity, index) => (
@@ -347,94 +315,6 @@ export default function ReportsScreen() {
             ))}
           </ThemedView>
 
-          {/* How Reports are Calculated */}
-          <ThemedView style={[styles.section, { backgroundColor: colors.background, marginBottom: 40 }]}>
-            <TouchableOpacity 
-              onPress={toggleInfo}
-              style={[styles.accordionHeader, { 
-                backgroundColor: colors.cardAlt,
-                borderColor: colors.border,
-                borderWidth: isDarkMode ? 1 : 0,
-              }]}
-            >
-              <View style={styles.accordionTitleContainer}>
-                <IconSymbol 
-                  name="questionmark.circle.fill" 
-                  size={24} 
-                  color={colors.tint} 
-                  style={styles.infoIcon}
-                />
-                <ThemedText style={[styles.sectionTitle, styles.accordionTitle, { color: colors.text }]}>
-                  {t('reports.howCalculated.title')}
-                </ThemedText>
-              </View>
-              <Animated.View style={{ transform: [{ rotate: spin }] }}>
-                <IconSymbol 
-                  name="chevron.right" 
-                  size={24} 
-                  color={colors.text}
-                />
-              </Animated.View>
-            </TouchableOpacity>
-
-            <Animated.View style={[
-              styles.accordionContent,
-              {
-                maxHeight: animatedHeight.interpolate({
-                  inputRange: [0, 1],
-                  outputRange: [0, 500],
-                }),
-                opacity: animatedHeight,
-              }
-            ]}>
-              <ThemedView 
-                style={[styles.infoCard, { 
-                  backgroundColor: colors.cardAlt,
-                  borderColor: colors.border,
-                  borderWidth: isDarkMode ? 1 : 0,
-                  borderTopWidth: 0,
-                  borderTopLeftRadius: 0,
-                  borderTopRightRadius: 0,
-                }]}
-              >
-                <View style={styles.infoSection}>
-                  <View style={styles.infoTitleContainer}>
-                    <IconSymbol name="message.fill" size={20} color={colors.tint} />
-                    <ThemedText style={[styles.infoTitle, { color: colors.text }]}>
-                      {t('reports.howCalculated.overallProgress.title')}
-                    </ThemedText>
-                  </View>
-                  <ThemedText style={[styles.infoText, { color: colors.text }]}>
-                    {t('reports.howCalculated.overallProgress.description')}
-                  </ThemedText>
-                </View>
-
-                <View style={styles.infoSection}>
-                  <View style={styles.infoTitleContainer}>
-                    <IconSymbol name="message.fill" size={20} color={colors.tint} />
-                    <ThemedText style={[styles.infoTitle, { color: colors.text }]}>
-                      {t('reports.howCalculated.performance.title')}
-                    </ThemedText>
-                  </View>
-                  <ThemedText style={[styles.infoText, { color: colors.text }]}>
-                    {t('reports.howCalculated.performance.description')}
-                  </ThemedText>
-                </View>
-
-                <View style={styles.infoSection}>
-                  <View style={styles.infoTitleContainer}>
-                    <IconSymbol name="clock.fill" size={20} color={colors.tint} />
-                    <ThemedText style={[styles.infoTitle, { color: colors.text }]}>
-                      {t('reports.howCalculated.studyHours.title')}
-                    </ThemedText>
-                  </View>
-                  <ThemedText style={[styles.infoText, { color: colors.text }]}>
-                    {t('reports.howCalculated.studyHours.description')}
-                  </ThemedText>
-                </View>
-              </ThemedView>
-            </Animated.View>
-          </ThemedView>
         </ThemedView>
       </ScrollView>
     </SafeAreaView>
@@ -461,6 +341,7 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.25,
     shadowRadius: 3.84,
+    marginBottom: 30,
   },
   cardGradient: {
     padding: 20,

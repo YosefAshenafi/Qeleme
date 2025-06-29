@@ -168,7 +168,6 @@ export default function PlanSelectionScreen() {
       
       if (isFreePlan) {
         // For free plans, register directly without payment
-        console.log('Free plan selected, registering directly');
         
         const endpoint = `${BASE_URL}/api/auth/register/student`;
         const requestBody = {
@@ -179,8 +178,6 @@ export default function PlanSelectionScreen() {
           phoneNumber: userData.phoneNumber?.replace('+251', '').replace(/^9/, '09') || userData.phoneNumber,
           Plan: selectedPlan.name
         };
-
-        console.log('Free plan registration request:', requestBody);
 
         const response = await fetch(endpoint, {
           method: 'POST',
@@ -195,11 +192,8 @@ export default function PlanSelectionScreen() {
         const data = await response.json();
 
         if (!response.ok) {
-          console.error('Free plan registration failed:', data);
           throw new Error(data.message || 'Failed to register user');
         }
-
-        console.log('Free plan registration successful:', data);
         
         Alert.alert(
           t('auth.planSelection.success.title'),
@@ -224,13 +218,6 @@ export default function PlanSelectionScreen() {
 
       // Directly initiate payment with Santim Pay
       const orderId = `ORDER_${Date.now()}`;
-      
-      console.log('Initiating direct payment with Santim Pay:', {
-        amount,
-        orderId,
-        phoneNumber: userData.phoneNumber,
-        planId: selectedPlanId
-      });
 
       const paymentResponse = await fetch('http://localhost:3000/api/payment/initiate', {
         method: 'POST',
@@ -251,7 +238,6 @@ export default function PlanSelectionScreen() {
       });
 
       const paymentData = await paymentResponse.json();
-      console.log('Santim Pay response:', paymentData);
 
       if (paymentData.success && paymentData.paymentUrl) {
         // Navigate to payment screen with the Santim Pay URL
@@ -271,7 +257,6 @@ export default function PlanSelectionScreen() {
       }
 
     } catch (error) {
-      console.error('Payment initiation error:', error);
       Alert.alert(
         t('common.error'),
         error instanceof Error ? error.message : t('auth.errors.registrationFailed')

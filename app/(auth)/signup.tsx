@@ -48,7 +48,6 @@ export default function SignupScreen() {
   const [showTermsModal, setShowTermsModal] = useState(false);
   const [childrenData, setChildrenData] = useState<ChildData[]>(initialChildrenData);
   const [selectedChildIndex, setSelectedChildIndex] = useState<number | null>(null);
-  const [showPlanModal, setShowPlanModal] = useState(false);
   const [error, setError] = useState('');
   const [usernameValid, setUsernameValid] = useState<boolean | null>(null);
   const [usernameChecking, setUsernameChecking] = useState(false);
@@ -116,18 +115,25 @@ export default function SignupScreen() {
   };
 
   const handleChildUsernameChange = (text: string, index: number) => {
-    const formattedUsername = text.toLowerCase();
     const newChildrenData = [...childrenData];
-    newChildrenData[index] = { 
-      ...newChildrenData[index], 
-      username: formattedUsername,
-      usernameValid: null,
-      usernameChecking: false
-    };
-    setChildrenData(newChildrenData);
-
-    if (formattedUsername.length >= 5) {
-      checkChildUsernameAvailability(formattedUsername, index);
+    
+    if (text.length >= 5) {
+      newChildrenData[index] = { 
+        ...newChildrenData[index], 
+        username: text,
+        usernameValid: null,
+        usernameChecking: false
+      };
+      setChildrenData(newChildrenData);
+      checkChildUsernameAvailability(text, index);
+    } else {
+      newChildrenData[index] = { 
+        ...newChildrenData[index], 
+        username: text,
+        usernameValid: null,
+        usernameChecking: false
+      };
+      setChildrenData(newChildrenData);
     }
   };
 
@@ -135,6 +141,7 @@ export default function SignupScreen() {
     const newChildrenData = [...childrenData];
     newChildrenData[index] = { 
       ...newChildrenData[index], 
+      username: username,
       usernameChecking: true 
     };
     setChildrenData(newChildrenData);
@@ -149,6 +156,7 @@ export default function SignupScreen() {
       const data = await response.json();
       newChildrenData[index] = { 
         ...newChildrenData[index], 
+        username: username,
         usernameValid: !data.exists,
         usernameChecking: false
       };
@@ -156,6 +164,7 @@ export default function SignupScreen() {
     } catch (error) {
       newChildrenData[index] = { 
         ...newChildrenData[index], 
+        username: username,
         usernameChecking: false 
       };
       setChildrenData(newChildrenData);
@@ -172,18 +181,6 @@ export default function SignupScreen() {
     const newChildrenData = [...childrenData];
     newChildrenData[index] = { ...newChildrenData[index], confirmPassword: text };
     setChildrenData(newChildrenData);
-  };
-
-  const handlePlanSelect = (plan: string, childIndex: number) => {
-    const newChildrenData = [...childrenData];
-    newChildrenData[childIndex] = { ...newChildrenData[childIndex], plan };
-    setChildrenData(newChildrenData);
-    setShowPlanModal(false);
-  };
-
-  const openPlanModal = (childIndex: number) => {
-    setSelectedChildIndex(childIndex);
-    setShowPlanModal(true);
   };
 
   const handleSignup = async () => {
@@ -293,6 +290,9 @@ export default function SignupScreen() {
                       onChangeText={handleUsernameChange}
                       autoCapitalize="none"
                       autoCorrect={false}
+                      textContentType="username"
+                      keyboardType="default"
+                      keyboardAppearance={isDarkMode ? 'dark' : 'light'}
                     />
                     {usernameChecking && (
                       <Ionicons name="time-outline" size={20} color={isDarkMode ? '#A0A0A5' : '#6B7280'} style={styles.inputIcon} />
@@ -398,6 +398,9 @@ export default function SignupScreen() {
                             onChangeText={(text) => handleChildUsernameChange(text, index)}
                             autoCapitalize="none"
                             autoCorrect={false}
+                            textContentType="username"
+                            keyboardType="default"
+                            keyboardAppearance={isDarkMode ? 'dark' : 'light'}
                           />
                           {child.usernameChecking && (
                             <Ionicons name="time-outline" size={20} color={isDarkMode ? '#A0A0A5' : '#6B7280'} style={styles.inputIcon} />
@@ -421,6 +424,11 @@ export default function SignupScreen() {
                             value={child.password}
                             onChangeText={(text) => handleChildPasswordChange(text, index)}
                             secureTextEntry
+                            autoCapitalize="none"
+                            autoCorrect={false}
+                            textContentType="none"
+                            autoComplete="off"
+                            spellCheck={false}
                           />
                         </View>
                         <View style={[styles.inputContainer, {
@@ -435,6 +443,11 @@ export default function SignupScreen() {
                             value={child.confirmPassword}
                             onChangeText={(text) => handleChildConfirmPasswordChange(text, index)}
                             secureTextEntry
+                            autoCapitalize="none"
+                            autoCorrect={false}
+                            textContentType="none"
+                            autoComplete="off"
+                            spellCheck={false}
                           />
                         </View>
                         <View style={[styles.inputContainer, {

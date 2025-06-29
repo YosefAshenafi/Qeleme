@@ -89,8 +89,6 @@ export default function PaymentScreen() {
         Plan: selectedPlanName // Use plan name from parameter
       };
 
-      console.log('Payment Success - Registration request body:', requestBody);
-
       const response = await fetch(endpoint, {
         method: 'POST',
         headers: {
@@ -104,16 +102,13 @@ export default function PaymentScreen() {
       const data = await response.json();
 
       if (!response.ok) {
-        console.error('Registration failed after payment:', data);
         throw new Error(data.message || data.error || 'Failed to register user');
       }
 
-      console.log('Registration successful after payment:', data);
       setRegistrationCompleted(true);
       setShowSuccessModal(true);
 
     } catch (error: any) {
-      console.error('Payment success handler error:', error);
       Alert.alert(t('common.error'), t('auth.errors.registrationFailed'));
     }
   };
@@ -150,17 +145,16 @@ export default function PaymentScreen() {
               source={{ uri: paymentUrl }}
               style={styles.webview}
               onNavigationStateChange={(navState) => {
-                console.log('WebView navigation state:', navState);
-                console.log('Current URL:', navState.url);
+                // Navigation state change handling
               }}
               onLoadStart={() => {
-                console.log('WebView load started for URL:', paymentUrl);
+                // Load start handling
               }}
               onLoadEnd={() => {
-                console.log('WebView load ended for URL:', paymentUrl);
+                // Load end handling
               }}
               onError={(syntheticEvent) => {
-                console.error('WebView error:', syntheticEvent.nativeEvent);
+                // Error handling
               }}
             />
           </View>
