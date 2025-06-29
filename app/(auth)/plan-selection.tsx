@@ -138,6 +138,18 @@ export default function PlanSelectionScreen() {
     setSelectedPlans([{ plan: planId }]);
   };
 
+  const getButtonText = () => {
+    if (selectedPlans.length === 0) return t('auth.planSelection.continue');
+    
+    const selectedPlan = plans.find(p => getPlanId(p) === selectedPlans[0].plan);
+    if (!selectedPlan) return t('auth.planSelection.continue');
+    
+    // Check if it's a free plan (amount is 0 or durationInMonths is 999 for free)
+    const isFreePlan = selectedPlan.amount === 0 || selectedPlan.durationInMonths === 999 || selectedPlan.durationInMonths === 0;
+    
+    return isFreePlan ? 'Finish' : 'Pay';
+  };
+
   const handleContinue = async () => {
     try {
       if (!selectedPlans.length) {
@@ -145,16 +157,80 @@ export default function PlanSelectionScreen() {
       }
 
       const selectedPlanId = selectedPlans[0].plan;
+      const selectedPlan = plans.find(p => getPlanId(p) === selectedPlanId);
+      
+      if (!selectedPlan) {
+        throw new Error('Selected plan not found');
+      }
+
+      // Check if it's a free plan
+      const isFreePlan = selectedPlan.amount === 0 || selectedPlan.durationInMonths === 999 || selectedPlan.durationInMonths === 0;
+      
+      if (isFreePlan) {
+        // For free plans, register directly without payment
+        console.log('Free plan selected, registering directly');
+        
+        const endpoint = `${BASE_URL}/api/auth/register/student`;
+        const requestBody = {
+          name: userData.fullName,
+          username: userData.username,
+          password: userData.password,
+          grade: userData.grade.toString(),
+          phoneNumber: userData.phoneNumber,
+          parentId: "0",
+          Plan: selectedPlanId.toString(),
+          amountPaid: 0
+        };
+
+        console.log('Free plan registration request:', requestBody);
+
+        const response = await fetch(endpoint, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest',
+          },
+          body: JSON.stringify(requestBody),
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          console.error('Free plan registration failed:', data);
+          throw new Error(data.message || 'Failed to register user');
+        }
+
+        console.log('Free plan registration successful:', data);
+        
+        Alert.alert(
+          t('auth.planSelection.success.title'),
+          t('auth.planSelection.success.message'),
+          [
+            {
+              text: t('auth.planSelection.success.button'),
+              onPress: () => router.replace('/(auth)/login'),
+              style: 'default'
+            }
+          ],
+          {
+            cancelable: false
+          }
+        );
+        
+        return;
+      }
+
+      // For paid plans, proceed with payment
       const amount = getTotalCostAsNumber();
 
       // Directly initiate payment with Santim Pay
       const orderId = `ORDER_${Date.now()}`;
-      const phoneNumber = userData.phoneNumber?.replace('+251', '') || userData.phoneNumber;
       
       console.log('Initiating direct payment with Santim Pay:', {
         amount,
         orderId,
-        phoneNumber,
+        phoneNumber: userData.phoneNumber,
         planId: selectedPlanId
       });
 
@@ -166,13 +242,13 @@ export default function PlanSelectionScreen() {
         body: JSON.stringify({
           id: orderId,
           amount: parseFloat(amount.toString()),
-          paymentReason: `Qelem Premium Subscription - ${selectedPlanId} months`,
+          paymentReason: `Qelem Premium Subscription - ${selectedPlan.durationInMonths} months`,
           successRedirectUrl: "https://santimpay.com",
           failureRedirectUrl: "https://santimpay.com",
           notifyUrl: "https://webhook.site/783a4514-3e30-4315-9c68-c8b41a743c9d",
-          phoneNumber: phoneNumber,
+          phoneNumber: userData.phoneNumber, // Use full phone number with +251
           cancelRedirectUrl: "https://santimpay.com",
-          merchantId: "f660f84e-7395-417b-91ff-542026c38326"
+          merchantId: "1369cd04-2f77-4708-8ec9-0177c35935b3"
         }),
       });
 
@@ -488,7 +564,7 @@ export default function PlanSelectionScreen() {
                   style={styles.buttonGradient}
                 >
                   <ThemedText style={styles.buttonText}>
-                    {t('auth.planSelection.continue')}
+                    {getButtonText()}
                   </ThemedText>
                 </LinearGradient>
               </TouchableOpacity>

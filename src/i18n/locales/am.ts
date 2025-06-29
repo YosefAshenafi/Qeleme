@@ -319,6 +319,7 @@ export default {
     progressFormat: '{{progress}}% ተጠናቅቋል'
   },
   common: {
+    error: 'ችግር',
     tryAgain: 'እንደገና ይሞክሩ',
     loading: 'በማዘዋወር ላይ...',
   },
@@ -465,6 +466,9 @@ export default {
     email: 'yosefashenafi7@gmail.com',
   },
   auth: {
+    errors: {
+      paymentFailed: 'ክፍያው አልተሳካም። እባክዎ እንደገና ይሞክሩ።',
+    },
     signIn: 'ግባ',
     signUp: 'ይመዝገቡ',
     email: 'ኢሜይል',

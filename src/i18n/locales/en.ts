@@ -239,6 +239,9 @@ export default {
     },
   },
   auth: {
+    errors: {
+      paymentFailed: 'Payment failed. Please try again.',
+    },
     signIn: 'Sign In',
     signUp: 'Sign Up',
     email: 'Email',
@@ -341,6 +344,7 @@ export default {
     }
   },
   common: {
+    error: 'Error',
     tryAgain: 'Try Again',
     back: 'Back',
     loading: 'Loading...',

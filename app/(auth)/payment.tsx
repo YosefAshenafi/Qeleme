@@ -25,6 +25,8 @@ export default function PaymentScreen() {
   const orderId = params.orderId as string;
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [showWebView, setShowWebView] = useState(true);
+  const [paymentCompleted, setPaymentCompleted] = useState(false);
+  const [registrationCompleted, setRegistrationCompleted] = useState(false);
 
   useEffect(() => {
     // Store phone number for PaymentButton component
@@ -47,11 +49,13 @@ export default function PaymentScreen() {
         
         console.log('Payment status check:', data);
         
-        if (data.success && data.data?.status === 'SUCCESS') {
+        // Check for both "COMPLETED" and "SUCCESS" status
+        if (data.success && (data.status?.status === 'COMPLETED' || data.data?.status === 'SUCCESS')) {
           clearInterval(interval);
           setShowWebView(false);
+          setPaymentCompleted(true);
           await handlePaymentSuccess(parseFloat(amount), selectedPlanId);
-        } else if (data.success && data.data?.status === 'FAILED') {
+        } else if (data.success && (data.status?.status === 'FAILED' || data.data?.status === 'FAILED')) {
           clearInterval(interval);
           setShowWebView(false);
           handlePaymentFailure();
@@ -79,10 +83,10 @@ export default function PaymentScreen() {
         name: userData.fullName,
         username: userData.username,
         password: userData.password,
-        grade: userData.grade,
-        phoneNumber: userData.phoneNumber?.replace('+251', '') || userData.phoneNumber,
+        grade: userData.grade.toString(),
+        phoneNumber: userData.phoneNumber,
         parentId: "0",
-        Plan: parseInt(planId),
+        Plan: planId.toString(),
         amountPaid: amount
       };
 
@@ -106,12 +110,9 @@ export default function PaymentScreen() {
       }
 
       console.log('Registration successful after payment:', data);
-
+      setRegistrationCompleted(true);
       setShowSuccessModal(true);
 
-      setTimeout(() => {
-        router.replace('/(tabs)');
-      }, 2000);
     } catch (error: any) {
       console.error('Payment success handler error:', error);
       Alert.alert(t('common.error'), t('auth.errors.registrationFailed'));
@@ -120,6 +121,12 @@ export default function PaymentScreen() {
 
   const handlePaymentFailure = () => {
     Alert.alert(t('common.error'), t('auth.errors.paymentFailed'));
+  };
+
+  const handleFinishButton = () => {
+    setShowSuccessModal(false);
+    // Navigate to the main app
+    router.replace('/(tabs)');
   };
 
   if (showWebView && paymentUrl) {
@@ -163,6 +170,60 @@ export default function PaymentScreen() {
     );
   }
 
+  // Show success screen when payment is completed
+  if (paymentCompleted && registrationCompleted) {
+    return (
+      <LinearGradient
+        colors={[colors.background, colors.background]}
+        style={styles.gradient}
+      >
+        <SafeAreaView style={styles.safeArea}>
+          <View style={styles.container}>
+            <View style={styles.languageToggleContainer}>
+              <LanguageToggle colors={colors} />
+            </View>
+
+            <View style={styles.successContainer}>
+              <View style={styles.successIconContainer}>
+                <Ionicons name="checkmark-circle" size={120} color={isDarkMode ? '#A78BFA' : '#7C3AED'} />
+              </View>
+              
+              <ThemedText style={styles.successTitle}>
+                Payment Successful!
+              </ThemedText>
+              
+              <ThemedText style={styles.successMessage}>
+                Your payment has been processed successfully and your account has been created. You can now access all premium features.
+              </ThemedText>
+
+              <View style={styles.paymentDetails}>
+                <View style={styles.detailRow}>
+                  <ThemedText style={styles.detailLabel}>Amount Paid:</ThemedText>
+                  <ThemedText style={styles.detailValue}>ETB {amount}</ThemedText>
+                </View>
+                <View style={styles.detailRow}>
+                  <ThemedText style={styles.detailLabel}>Payment Method:</ThemedText>
+                  <ThemedText style={styles.detailValue}>Telebirr</ThemedText>
+                </View>
+                <View style={styles.detailRow}>
+                  <ThemedText style={styles.detailLabel}>Order ID:</ThemedText>
+                  <ThemedText style={styles.detailValue}>{orderId}</ThemedText>
+                </View>
+              </View>
+
+              <TouchableOpacity
+                style={[styles.finishButton, { backgroundColor: isDarkMode ? '#A78BFA' : '#7C3AED' }]}
+                onPress={handleFinishButton}
+              >
+                <ThemedText style={styles.finishButtonText}>Finish</ThemedText>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </SafeAreaView>
+      </LinearGradient>
+    );
+  }
+
   return (
     <LinearGradient
       colors={[colors.background, colors.background]}
@@ -197,34 +258,6 @@ export default function PaymentScreen() {
           </View>
         </View>
       </SafeAreaView>
-
-      {/* Success Modal */}
-      <Modal
-        animationType="fade"
-        transparent={true}
-        visible={showSuccessModal}
-        onRequestClose={() => setShowSuccessModal(false)}
-      >
-        <Pressable 
-          style={styles.modalOverlay}
-          onPress={() => setShowSuccessModal(false)}
-        >
-          <View style={[styles.modalContent, {
-            backgroundColor: isDarkMode ? '#1C1C1E' : '#FFFFFF',
-            borderColor: isDarkMode ? '#3C3C3E' : '#E5E7EB',
-          }]}>
-            <View style={styles.modalIconContainer}>
-              <Ionicons name="checkmark-circle" size={64} color={isDarkMode ? '#A78BFA' : '#7C3AED'} />
-            </View>
-            <ThemedText style={[styles.modalTitle, { color: colors.text }]}>
-              {t('payment.success.title')}
-            </ThemedText>
-            <ThemedText style={[styles.modalMessage, { color: colors.text + '80' }]}>
-              {t('payment.success.message')}
-            </ThemedText>
-          </View>
-        </Pressable>
-      </Modal>
     </LinearGradient>
   );
 }
@@ -371,5 +404,69 @@ const styles = StyleSheet.create({
   },
   webview: {
     flex: 1,
+  },
+  successContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 24,
+  },
+  successIconContainer: {
+    marginBottom: 32,
+  },
+  successTitle: {
+    fontSize: 28,
+    fontWeight: '700',
+    marginBottom: 16,
+    textAlign: 'center',
+  },
+  successMessage: {
+    fontSize: 16,
+    lineHeight: 24,
+    textAlign: 'center',
+    marginBottom: 32,
+    opacity: 0.8,
+  },
+  paymentDetails: {
+    width: '100%',
+    backgroundColor: 'rgba(124, 58, 237, 0.1)',
+    borderRadius: 12,
+    padding: 20,
+    marginBottom: 32,
+  },
+  detailRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  detailLabel: {
+    fontSize: 14,
+    fontWeight: '500',
+    opacity: 0.7,
+  },
+  detailValue: {
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  finishButton: {
+    width: '100%',
+    height: 56,
+    borderRadius: 12,
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  finishButtonText: {
+    color: '#FFFFFF',
+    fontSize: 18,
+    fontWeight: '600',
   },
 }); 
