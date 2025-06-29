@@ -20,6 +20,7 @@ export default function PaymentScreen() {
   const params = useLocalSearchParams();
   const userData = params.userData ? JSON.parse(decodeURIComponent(params.userData as string)) : null;
   const selectedPlanId = params.selectedPlanId as string;
+  const selectedPlanName = params.selectedPlanName as string;
   const amount = params.amount as string;
   const paymentUrl = params.paymentUrl as string;
   const orderId = params.orderId as string;
@@ -83,11 +84,9 @@ export default function PaymentScreen() {
         name: userData.fullName,
         username: userData.username,
         password: userData.password,
-        grade: userData.grade.toString(),
-        phoneNumber: userData.phoneNumber,
-        parentId: "0",
-        Plan: planId.toString(),
-        amountPaid: amount
+        grade: `grade ${userData.grade}`, // Format as "grade 12" (lowercase)
+        phoneNumber: userData.phoneNumber?.replace('+251', '').replace(/^9/, '09') || userData.phoneNumber, // Ensure it starts with "09"
+        Plan: selectedPlanName // Use plan name from parameter
       };
 
       console.log('Payment Success - Registration request body:', requestBody);

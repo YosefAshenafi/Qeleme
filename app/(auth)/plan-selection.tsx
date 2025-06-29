@@ -175,11 +175,9 @@ export default function PlanSelectionScreen() {
           name: userData.fullName,
           username: userData.username,
           password: userData.password,
-          grade: userData.grade.toString(),
-          phoneNumber: userData.phoneNumber,
-          parentId: "0",
-          Plan: selectedPlanId.toString(),
-          amountPaid: 0
+          grade: `grade ${userData.grade}`,
+          phoneNumber: userData.phoneNumber?.replace('+251', '').replace(/^9/, '09') || userData.phoneNumber,
+          Plan: selectedPlan.name
         };
 
         console.log('Free plan registration request:', requestBody);
@@ -262,6 +260,7 @@ export default function PlanSelectionScreen() {
           params: {
             userData: encodeURIComponent(JSON.stringify(userData)),
             selectedPlanId: selectedPlanId,
+            selectedPlanName: selectedPlan.name,
             amount: amount.toString(),
             paymentUrl: paymentData.paymentUrl,
             orderId: orderId
