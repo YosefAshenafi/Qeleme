@@ -231,7 +231,7 @@ export default function MCQScreen() {
       setUserPhoneNumber(phoneNumber);
       
       // If user is a KG student, redirect to KG dashboard
-      if (user?.grade === 'KG') {
+      if (typeof user?.grade === 'string' && user.grade.toLowerCase().includes('kg')) {
         router.replace('/kg-dashboard');
       }
     };
@@ -602,7 +602,7 @@ export default function MCQScreen() {
   }
 
   // Redirect KG students to KG dashboard
-  if (user?.grade === 'KG') {
+  if (typeof user?.grade === 'string' && user.grade.toLowerCase().includes('kg')) {
     return <Redirect href="/kg-dashboard" />;
   }
 

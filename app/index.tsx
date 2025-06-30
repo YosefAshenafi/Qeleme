@@ -19,7 +19,7 @@ export default function Index() {
 
   if (isAuthenticated) {
     // Always redirect KG users to KG dashboard
-    if (user?.grade === 'KG') {
+    if (typeof user?.grade === 'string' && user.grade.toLowerCase().includes('kg')) {
       return <Redirect href="/kg-dashboard" />;
     }
     // For other grades, go to tabs

@@ -125,7 +125,7 @@ export default function LoginScreen() {
         await login(data.user);
         
         // Navigate based on user type
-        if (data.user.type === 'student' && data.user.grade === 'KG') {
+        if (data.user.type === 'student' && typeof data.user.grade === 'string' && data.user.grade.toLowerCase().includes('kg')) {
           router.replace('/kg-dashboard');
         } else {
           router.replace('/(tabs)');

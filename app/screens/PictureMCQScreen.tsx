@@ -254,7 +254,7 @@ export default function PictureMCQScreen({ onBackToInstructions }: PictureMCQScr
       setUserPhoneNumber(phoneNumber);
       
       // For KG students, always allow access
-      if (user?.grade === 'KG') {
+      if (typeof user?.grade === 'string' && user.grade.toLowerCase().includes('kg')) {
         setIsAuthorized(true);
         
         // Check if we need to reset the state
