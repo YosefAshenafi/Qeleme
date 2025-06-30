@@ -84,7 +84,7 @@ export default function PaymentScreen() {
         name: userData.fullName,
         username: userData.username,
         password: userData.password,
-        grade: `grade ${userData.grade}`, // Format as "grade 12" (lowercase)
+        grade: userData.grade.toLowerCase(), // Format as "kg" (lowercase)
         phoneNumber: userData.phoneNumber?.replace('+251', '').replace(/^9/, '09') || userData.phoneNumber, // Ensure it starts with "09"
         Plan: selectedPlanName // Use plan name from parameter
       };
