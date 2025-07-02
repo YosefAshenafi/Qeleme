@@ -348,6 +348,7 @@ export default {
     tryAgain: 'Try Again',
     back: 'Back',
     loading: 'Loading...',
+    retry: 'Retry',
   },
   mcq: {
     question: 'Question',
@@ -567,6 +568,7 @@ export default {
     welcome: 'Welcome {{name}}!',
     subtitle: "Let's learn something new today!",
     categories: {
+      // Fallback categories
       'Animals': 'Animals',
       'Colors': 'Colors',
       'Numbers': 'Numbers',
@@ -580,7 +582,16 @@ export default {
       'Transport': 'Transport',
       'Food': 'Food',
       'School': 'School',
-      'Toys': 'Toys'
+      'Toys': 'Toys',
+      // API categories
+      'Maths': 'Maths',
+      'Domestic Animals': 'Domestic Animals',
+      'Wild Animals': 'Wild Animals',
+      'Household Items': 'Household Items',
+      'Fruits and Vegetables': 'Fruits and Vegetables',
+      'School Compound': 'School Compound',
+      'Different Activities': 'Different Activities',
+      'Foods': 'Foods'
     },
     instructions: {
       subtitle: "Let's learn something new!",
@@ -597,6 +608,17 @@ export default {
         description: 'Learning is fun! Enjoy the process and celebrate your progress.'
       },
       start: 'Start Learning'
+    },
+    subcategories: {
+      welcome: 'Welcome to {{category}}!',
+      subtitle: 'Choose a topic to start learning',
+      '1-10 Numbers': '1-10 Numbers',
+      '11-20 Numbers': '11-20 Numbers',
+      '1-10 Counting': '1-10 Counting',
+      '11-20 Counting': '11-20 Counting',
+      'Fill in the Blanks': 'Fill in the Blanks',
+      'Middle Number 1-10': 'Middle Number 1-10',
+      'Middle Number 11-20': 'Middle Number 11-20'
     }
   },
   subjects: {

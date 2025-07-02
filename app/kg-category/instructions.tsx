@@ -22,6 +22,8 @@ export default function KGCategoryInstructions() {
   const { category } = useLocalSearchParams();
 
   const handleStart = () => {
+    // Since this screen is only used for categories without subcategories,
+    // always navigate directly to MCQ screen
     router.push({
       pathname: '/screens/PictureMCQScreen',
       params: { category }

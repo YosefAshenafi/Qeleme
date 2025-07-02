@@ -223,6 +223,7 @@ export default {
     welcome: 'እንኳን ደህና መጡ {{name}}!',
     subtitle: 'ዛሬ አዲስ ነገር እንማር!',
     categories: {
+      // Fallback categories
       'Animals': 'እንስሳት',
       'Colors': 'ቀለሞች',
       'Numbers': 'ቁጥሮች',
@@ -236,7 +237,16 @@ export default {
       'Transport': 'መጓጓዣ',
       'Food': 'ምግብ',
       'School': 'ትምህርት ቤት',
-      'Toys': 'መጫወቻዎች'
+      'Toys': 'መጫወቻዎች',
+      // API categories
+      'Maths': 'ሂሳብ',
+      'Domestic Animals': 'የቤት እንስሳት',
+      'Wild Animals': 'የዱር እንስሳት',
+      'Household Items': 'የቤት እቃዎች',
+      'Fruits and Vegetables': 'ፍራፍሬዎች እና አትክልቶች',
+      'School Compound': 'የትምህርት ቤት ግቢ',
+      'Different Activities': 'የተለያዩ እንቅስቃሴዎች',
+      'Foods': 'ምግቦች'
     },
     instructions: {
       subtitle: 'አዲስ ነገር እንማር!',
@@ -253,6 +263,17 @@ export default {
         description: 'መማር አስደሳች ነው! ሂደቱን ይደሰቱ እና እድገትዎን ያክብሩ።'
       },
       start: 'መማር ይጀምሩ'
+    },
+    subcategories: {
+      welcome: 'እንኳን ደህና መጡ ወደ {{category}}!',
+      subtitle: 'መማር ለመጀመር ርዕስ ይምረጡ',
+      '1-10 Numbers': '1-10 ቁጥሮች',
+      '11-20 Numbers': '11-20 ቁጥሮች',
+      '1-10 Counting': '1-10 መቁጠሪያ',
+      '11-20 Counting': '11-20 መቁጠሪያ',
+      'Fill in the Blanks': 'ባዶ ቦታዎችን ሙላ',
+      'Middle Number 1-10': 'መካከለኛ ቁጥር 1-10',
+      'Middle Number 11-20': 'መካከለኛ ቁጥር 11-20'
     }
   },
   reports: {
@@ -321,7 +342,9 @@ export default {
   common: {
     error: 'ችግር',
     tryAgain: 'እንደገና ይሞክሩ',
+    back: 'ተመለስ',
     loading: 'በማዘዋወር ላይ...',
+    retry: 'እንደገና ይሞክሩ',
   },
   mcq: {
     question: 'ጥያቄ',

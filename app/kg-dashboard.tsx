@@ -1,8 +1,7 @@
-import React from 'react';
-import { View, Text, ScrollView, TouchableOpacity, StyleSheet, Image } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, ScrollView, TouchableOpacity, StyleSheet, ActivityIndicator, Alert } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
-import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '@/contexts/ThemeContext';
 import { getColors } from '@/constants/Colors';
 import { useTranslation } from 'react-i18next';
@@ -10,31 +9,81 @@ import { LanguageToggle } from '@/components/ui/LanguageToggle';
 import { IconSymbol } from '@/components/ui/IconSymbol';
 import { useAuth } from '@/contexts/AuthContext';
 import { ProfileAvatar } from '@/components/ui/ProfileAvatar';
+import { RemoteImage } from '@/components/ui/RemoteImage';
+import { getKGCategories, KGCategory } from '@/services/kgService';
 
-const categories = [
-  { name: 'Animals', icon: 'paw', image: require('@/assets/images/categories/animals.png') },
-  { name: 'Colors', icon: 'color-palette', image: require('@/assets/images/categories/colors.png') },
-  { name: 'Numbers', icon: 'calculator', image: require('@/assets/images/categories/numbers.png') },
-  { name: 'Shapes', icon: 'apps', image: require('@/assets/images/categories/shapes.png') },
-  { name: 'Fruits', icon: 'nutrition', image: require('@/assets/images/categories/fruits.png') },
-  { name: 'Vegetables', icon: 'leaf', image: require('@/assets/images/categories/vegetables.png') },
-  { name: 'Family', icon: 'people', image: require('@/assets/images/categories/family.png') },
-  { name: 'Body Parts', icon: 'body', image: require('@/assets/images/categories/body-parts.png') },
-  { name: 'Clothes', icon: 'shirt', image: require('@/assets/images/categories/clothes.png') },
-  { name: 'Weather', icon: 'cloud', image: require('@/assets/images/categories/weather.png') },
-  { name: 'Transport', icon: 'car', image: require('@/assets/images/categories/transport.png') },
-  { name: 'Food', icon: 'fast-food', image: require('@/assets/images/categories/food.png') },
-  { name: 'School', icon: 'school', image: require('@/assets/images/categories/school.png') },
-  { name: 'Toys', icon: 'game-controller', image: require('@/assets/images/categories/toys.png') },
+// Fallback categories in case API fails
+const fallbackCategories = [
+  { name: 'Animals' },
+  { name: 'Colors' },
+  { name: 'Numbers' },
+  { name: 'Shapes' },
+  { name: 'Fruits' },
+  { name: 'Vegetables' },
+  { name: 'Family' },
+  { name: 'Body Parts' },
+  { name: 'Clothes' },
+  { name: 'Weather' },
+  { name: 'Transport' },
+  { name: 'Food' },
+  { name: 'School' },
+  { name: 'Toys' },
 ];
+
+// Helper function to get category image
+const getCategoryImage = (categoryName: string, imageUrl?: string | null) => {
+  // Default Unsplash image for categories without image_url
+  const defaultImageUrl = 'https://images.unsplash.com/photo-1503676260728-1c00da094a0b?w=400&h=400&fit=crop&crop=center';
+  
+  return imageUrl ? { uri: imageUrl } : { uri: defaultImageUrl };
+};
+
+// Helper function to get category name based on current language
+const getCategoryName = (category: KGCategory, currentLanguage: string) => {
+  return currentLanguage === 'am' ? category.name_am : category.name_en;
+};
 
 export default function KGDashboard() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const { isDarkMode } = useTheme();
   const colors = getColors(isDarkMode);
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { user } = useAuth();
+  
+  const [categories, setCategories] = useState<KGCategory[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    fetchCategories();
+  }, []);
+
+  const fetchCategories = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const apiCategories = await getKGCategories();
+      setCategories(apiCategories);
+    } catch (err) {
+      console.error('Failed to fetch KG categories:', err);
+      setError(err instanceof Error ? err.message : 'Failed to load categories');
+      // Use fallback categories if API fails
+      setCategories(fallbackCategories.map(cat => ({
+        id: Math.random(),
+        name_en: cat.name,
+        name_am: cat.name, // Use English name as fallback for Amharic too
+        image_url: null, // No image URL for fallback categories
+        has_subcategories: false,
+        order_index: Math.random(),
+        is_active: true,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      })));
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <View style={[
@@ -70,26 +119,61 @@ export default function KGDashboard() {
         contentContainerStyle={styles.cardsContainer}
         showsVerticalScrollIndicator={false}
       >
-        {categories.map((category, index) => (
-          <TouchableOpacity
-            key={index}
-            style={[styles.card, { backgroundColor: isDarkMode ? '#2C2C2E' : '#FFFFFF' }]}
-            onPress={() => {
-              router.push(`/kg-category/instructions?category=${category.name}`);
-            }}
-          >
-            <Image
-              source={category.image}
-              style={styles.categoryImage}
-            />
-            <View style={styles.overlay}>
-              <Ionicons name={category.icon as any} size={24} color="#FFFFFF" />
-              <Text style={styles.cardText}>
-                {t(`kg.categories.${category.name}`)}
+        {loading ? (
+          <View style={styles.loadingContainer}>
+            <ActivityIndicator size="large" color={colors.tint} />
+            <Text style={[styles.loadingText, { color: colors.text }]}>
+              {t('common.loading', 'Loading categories...')}
+            </Text>
+          </View>
+        ) : error ? (
+          <View style={styles.errorContainer}>
+            <Text style={[styles.errorText, { color: colors.text }]}>
+              {error}
+            </Text>
+            <TouchableOpacity
+              style={[styles.retryButton, { backgroundColor: colors.tint }]}
+              onPress={fetchCategories}
+            >
+              <Text style={styles.retryButtonText}>
+                {t('common.retry', 'Retry')}
               </Text>
-            </View>
-          </TouchableOpacity>
-        ))}
+            </TouchableOpacity>
+          </View>
+        ) : (
+          categories.map((category) => {
+            const categoryName = getCategoryName(category, i18n.language);
+            const image = getCategoryImage(categoryName, category.image_url);
+            return (
+              <TouchableOpacity
+                key={category.id}
+                style={[styles.card, { backgroundColor: isDarkMode ? '#2C2C2E' : '#FFFFFF' }]}
+                onPress={() => {
+                  if (category.has_subcategories) {
+                    // Navigate directly to subcategories screen
+                    router.push(`/kg-subcategories?categoryId=${category.id}&categoryName=${categoryName}`);
+                  } else {
+                    // Navigate to instructions screen for categories without subcategories
+                    router.push(`/kg-category/instructions?category=${categoryName}&categoryId=${category.id}&hasSubcategories=false`);
+                  }
+                }}
+              >
+                <RemoteImage
+                  remoteUrl={category.image_url}
+                  fallbackSource={{ uri: 'https://images.unsplash.com/photo-1503676260728-1c00da094a0b?w=400&h=400&fit=crop&crop=center' }}
+                  style={styles.categoryImage}
+                  resizeMode="cover"
+                />
+                <View style={styles.overlay}>
+                  <Text style={styles.cardText}>
+                    {t(`kg.categories.${categoryName}`, categoryName)}
+                  </Text>
+                </View>
+
+              </TouchableOpacity>
+            );
+          })
+        )}
       </ScrollView>
     </View>
   );
@@ -168,15 +252,57 @@ const styles = StyleSheet.create({
     right: 0,
     padding: 12,
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 8,
   },
   cardText: {
     color: '#FFFFFF',
     fontSize: 14,
     fontWeight: '600',
     textAlign: 'center',
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingVertical: 50,
+  },
+  loadingText: {
+    marginTop: 16,
+    fontSize: 16,
+    textAlign: 'center',
+  },
+  errorContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingVertical: 50,
+    paddingHorizontal: 20,
+  },
+  errorText: {
+    fontSize: 16,
+    textAlign: 'center',
+    marginBottom: 20,
+  },
+  retryButton: {
+    paddingHorizontal: 24,
+    paddingVertical: 12,
+    borderRadius: 8,
+  },
+  retryButtonText: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  subcategoryIndicator: {
+    position: 'absolute',
+    top: 12,
+    right: 12,
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    backgroundColor: 'rgba(0, 0, 0, 0.6)',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 }); 
