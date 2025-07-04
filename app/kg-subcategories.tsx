@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, StyleSheet, ActivityIndicator, Alert } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, StyleSheet, ActivityIndicator, Alert, Dimensions } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { useTheme } from '@/contexts/ThemeContext';
@@ -9,78 +9,32 @@ import { LanguageToggle } from '@/components/ui/LanguageToggle';
 import { IconSymbol } from '@/components/ui/IconSymbol';
 import { useAuth } from '@/contexts/AuthContext';
 import { ProfileAvatar } from '@/components/ui/ProfileAvatar';
-import { RemoteImage } from '@/components/ui/RemoteImage';
+import { CategoryImage } from '@/components/ui/CategoryImage';
 import { getKGSubcategories, KGSubcategory } from '@/services/kgService';
+import { LinearGradient } from 'expo-linear-gradient';
+import { imagePreloader } from '@/utils/imagePreloader';
+import Animated, { 
+  useAnimatedStyle, 
+  useSharedValue, 
+  withSpring,
+  withRepeat,
+  withSequence,
+  withTiming,
+  interpolate,
+  Extrapolate
+} from 'react-native-reanimated';
+import { 
+  getSubcategoryConfig, 
+  getSubcategoryImageSource, 
+  getSubcategoryNameByLanguage,
+  ANIMATION_CONFIG,
+  STYLE_CONFIG,
+  DEFAULT_SUBCATEGORY_IMAGE_URL
+} from '@/constants/KGSubcategories';
 
-// Fallback subcategories in case API fails
-const fallbackSubcategories = [
-  { name: '1-10 Numbers' },
-  { name: '11-20 Numbers' },
-  { name: '1-10 Counting' },
-  { name: '11-20 Counting' },
-  { name: 'Fill in the Blanks' },
-  { name: 'Middle Number 1-10' },
-  { name: 'Middle Number 11-20' },
-];
-
-// Mock subcategories for Maths (temporary until backend is fixed)
-const mockMathsSubcategories = [
-  {
-    id: 1,
-    category_id: 1,
-    name_en: 'Numbers 1-10',
-    name_am: 'ቁጥሮች 1-10',
-    description: 'Learn to count from 1 to 10',
-    image_url: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=300&fit=crop',
-    order_index: 1,
-    is_active: true,
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString()
-  },
-  {
-    id: 2,
-    category_id: 1,
-    name_en: 'Numbers 11-20',
-    name_am: 'ቁጥሮች 11-20',
-    description: 'Learn to count from 11 to 20',
-    image_url: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=300&fit=crop',
-    order_index: 2,
-    is_active: true,
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString()
-  },
-  {
-    id: 3,
-    category_id: 1,
-    name_en: 'Addition',
-    name_am: 'መደመር',
-    description: 'Learn basic addition',
-    image_url: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=300&fit=crop',
-    order_index: 3,
-    is_active: true,
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString()
-  },
-  {
-    id: 4,
-    category_id: 1,
-    name_en: 'Subtraction',
-    name_am: 'መቀነስ',
-    description: 'Learn basic subtraction',
-    image_url: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=300&fit=crop',
-    order_index: 4,
-    is_active: true,
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString()
-  }
-];
+const { width } = Dimensions.get('window');
 
 
-
-// Helper function to get subcategory name based on current language
-const getSubcategoryName = (subcategory: KGSubcategory, currentLanguage: string) => {
-  return currentLanguage === 'am' ? subcategory.name_am : subcategory.name_en;
-};
 
 export default function KGSubcategoriesScreen() {
   const insets = useSafeAreaInsets();
@@ -96,10 +50,31 @@ export default function KGSubcategoriesScreen() {
   const [error, setError] = useState<string | null>(null);
   const [categoryData, setCategoryData] = useState<any>(null);
 
+  // Animation values
+  const headerScale = useSharedValue(0);
+  const cardsOpacity = useSharedValue(0);
+  const cardsTranslateY = useSharedValue(50);
+  const floatingAnimation = useSharedValue(0);
+
   useEffect(() => {
     if (categoryId) {
       fetchSubcategories();
     }
+    
+    // Start animations using configuration
+    headerScale.value = withSpring(1, ANIMATION_CONFIG.header);
+    cardsOpacity.value = withTiming(1, ANIMATION_CONFIG.cards.timing);
+    cardsTranslateY.value = withSpring(0, ANIMATION_CONFIG.cards.spring);
+    
+    // Floating animation
+    floatingAnimation.value = withRepeat(
+      withSequence(
+        withTiming(1, { duration: ANIMATION_CONFIG.floating.duration }),
+        withTiming(0, { duration: ANIMATION_CONFIG.floating.duration })
+      ),
+      -1,
+      true
+    );
   }, [categoryId]);
 
   const fetchSubcategories = async () => {
@@ -108,45 +83,37 @@ export default function KGSubcategoriesScreen() {
       setError(null);
       const result = await getKGSubcategories(Number(categoryId));
       setCategoryData(result.category);
+      setSubcategories(result.subcategories);
       
-      // If API returns empty array but this is Maths category, use mock data
-      if (result.subcategories.length === 0 && Number(categoryId) === 1) {
-        console.log('Using mock subcategories for Maths category');
-        setSubcategories(mockMathsSubcategories);
-      } else {
-        setSubcategories(result.subcategories);
-      }
+      // Temporarily disable preloading to fix image loading issues
+      // const imageUrls = result.subcategories
+      //   .map(subcategory => subcategory.image_url)
+      //   .filter(url => url) as string[];
+      
+      // if (imageUrls.length > 0) {
+      //   // Preload images with different priorities
+      //   const visibleImages = imageUrls.slice(0, 6); // First 6 images get high priority
+      //   const remainingImages = imageUrls.slice(6);
+      
+      //   if (visibleImages.length > 0) {
+      //     imagePreloader.preloadImages(visibleImages, 'high');
+      //   }
+      
+      //   if (remainingImages.length > 0) {
+      //     imagePreloader.preloadImages(remainingImages, 'low');
+      //   }
+      // }
     } catch (err) {
       console.error('Failed to fetch KG subcategories:', err);
       setError(err instanceof Error ? err.message : 'Failed to load subcategories');
-      
-      // If this is Maths category, use mock data instead of fallback
-      if (Number(categoryId) === 1) {
-        console.log('Using mock subcategories for Maths category (API failed)');
-        setSubcategories(mockMathsSubcategories);
-        setError(null); // Clear error since we have mock data
-      } else {
-        // Use fallback subcategories for other categories
-        setSubcategories(fallbackSubcategories.map(sub => ({
-          id: Math.random(),
-          category_id: Number(categoryId),
-          name_en: sub.name,
-          name_am: sub.name, // Use English name as fallback for Amharic too
-          description: `Learn ${sub.name.toLowerCase()}`,
-          image_url: null, // No image URL for fallback subcategories
-          order_index: Math.random(),
-          is_active: true,
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString()
-        })));
-      }
+      // Don't set fallback subcategories - let the error state handle it
     } finally {
       setLoading(false);
     }
   };
 
   const handleSubcategoryPress = (subcategory: KGSubcategory) => {
-    const subcategoryName = getSubcategoryName(subcategory, i18n.language);
+    const subcategoryName = getSubcategoryNameByLanguage(subcategory, i18n.language);
     router.push(`/kg-category/instructions?category=${subcategoryName}&subcategoryId=${subcategory.id}&hasSubcategories=false`);
   };
 
@@ -158,112 +125,186 @@ export default function KGSubcategoriesScreen() {
     ? (i18n.language === 'am' ? categoryData.name_am : categoryData.name_en)
     : (categoryName as string || 'Category');
 
+  const headerAnimatedStyle = useAnimatedStyle(() => {
+    return {
+      transform: [{ scale: headerScale.value }],
+    };
+  });
+
+  const cardsAnimatedStyle = useAnimatedStyle(() => {
+    return {
+      opacity: cardsOpacity.value,
+      transform: [{ translateY: cardsTranslateY.value }],
+    };
+  });
+
+  const floatingAnimatedStyle = useAnimatedStyle(() => {
+    const translateY = interpolate(
+      floatingAnimation.value,
+      [0, 1],
+      [0, -10],
+      Extrapolate.CLAMP
+    );
+    
+    return {
+      transform: [{ translateY }],
+    };
+  });
+
   return (
     <View style={[
       styles.container, 
       { 
         paddingTop: insets.top,
-        backgroundColor: isDarkMode ? '#000000' : colors.background
+        backgroundColor: colors.background
       }
     ]}>
-      <View style={[
+      {/* Header */}
+      <Animated.View style={[
         styles.header, 
-        { backgroundColor: isDarkMode ? '#000000' : colors.background }
+        { backgroundColor: colors.background },
+        headerAnimatedStyle
       ]}>
-        <TouchableOpacity 
+        <TouchableOpacity
           style={styles.backButton}
-          onPress={handleBackPress}
+          onPress={() => router.back()}
         >
           <IconSymbol name="chevron.left" size={24} color={colors.text} />
         </TouchableOpacity>
-        <Text style={[styles.headerTitle, { color: colors.text }]}>
-          {displayCategoryName}
-        </Text>
+        <View style={styles.headerCenter}>
+          <Text style={[styles.headerTitle, { color: colors.text }]}>
+            {categoryName}
+          </Text>
+          <Text style={[styles.headerSubtitle, { color: colors.text + '80' }]}>
+            Choose your learning path!
+          </Text>
+        </View>
         <View style={styles.headerRight}>
           <LanguageToggle colors={colors} />
-          <ProfileAvatar colors={colors} />
         </View>
-      </View>
+      </Animated.View>
 
-      <View style={[
-        styles.contentHeader, 
-        { backgroundColor: isDarkMode ? '#000000' : colors.background }
-      ]}>
-        <Text style={[styles.welcomeText, { color: colors.text }]}>
-          {t('kg.subcategories.welcome', { category: displayCategoryName })}
-        </Text>
-        <Text style={[styles.subText, { color: colors.text + '80' }]}>
-          {t('kg.subcategories.subtitle', 'Choose a topic to start learning')}
-        </Text>
-      </View>
-
+      {/* Scrollable Content */}
       <ScrollView 
-        contentContainerStyle={styles.cardsContainer}
+        style={styles.scrollView} 
+        contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
-        {loading ? (
-          <View style={styles.loadingContainer}>
-            <ActivityIndicator size="large" color={colors.tint} />
-            <Text style={[styles.loadingText, { color: colors.text }]}>
-              {t('common.loading', 'Loading subcategories...')}
+        {/* Welcome Section */}
+        <Animated.View style={[styles.welcomeSection, floatingAnimatedStyle]}>
+          <LinearGradient
+            colors={[colors.tint, colors.tint + 'CC']}
+            style={[styles.welcomeGradient, { 
+              borderRadius: STYLE_CONFIG.welcome.borderRadius,
+              shadowOffset: STYLE_CONFIG.welcome.shadowOffset,
+              shadowOpacity: STYLE_CONFIG.welcome.shadowOpacity,
+              shadowRadius: STYLE_CONFIG.welcome.shadowRadius,
+              elevation: STYLE_CONFIG.welcome.elevation
+            }]}
+          >
+            <View style={styles.welcomeIconContainer}>
+              <Text style={styles.welcomeEmoji}>🌟</Text>
+            </View>
+            <Text style={styles.welcomeTitle}>
+              {t('kg.subcategories.welcome', 'Ready to Explore!')}
+            </Text>
+            <Text style={styles.welcomeSubtitle}>
+              {t('kg.subcategories.subtitle', 'Pick a subcategory and start learning!')}
+            </Text>
+            <View style={styles.sparklesContainer}>
+              <Text style={styles.sparkle}>✨</Text>
+              <Text style={styles.sparkle}>⭐</Text>
+              <Text style={styles.sparkle}>🎯</Text>
+            </View>
+          </LinearGradient>
+        </Animated.View>
+
+        {/* Subcategories */}
+        <Animated.View style={[styles.subcategoriesContainer, cardsAnimatedStyle]}>
+          <View style={styles.subcategoriesHeader}>
+            <Text style={[styles.subcategoriesTitle, { color: colors.text }]}>
+              {t('kg.subcategories.title', 'Choose Your Learning Adventure!')}
+            </Text>
+            <Text style={[styles.subcategoriesSubtitle, { color: colors.text + '80' }]}>
+              Pick a topic and start your amazing journey!
             </Text>
           </View>
-        ) : error ? (
-          <View style={styles.errorContainer}>
-            <Text style={[styles.errorText, { color: colors.text }]}>
-              {error}
-            </Text>
-            <TouchableOpacity
-              style={[styles.retryButton, { backgroundColor: colors.tint }]}
-              onPress={fetchSubcategories}
-            >
-              <Text style={styles.retryButtonText}>
-                {t('common.retry', 'Retry')}
-              </Text>
-            </TouchableOpacity>
-          </View>
-        ) : subcategories.length === 0 ? (
-          <View style={styles.emptyContainer}>
-            <IconSymbol name="rectangle.stack" size={64} color={colors.text + '40'} />
-            <Text style={[styles.emptyTitle, { color: colors.text }]}>
-              {t('kg.subcategories.empty.title', 'No Subcategories Available')}
-            </Text>
-            <Text style={[styles.emptyDescription, { color: colors.text + '80' }]}>
-              {t('kg.subcategories.empty.description', 'Subcategories for this topic are not available yet. Please check back later.')}
-            </Text>
-            <TouchableOpacity
-              style={[styles.backToCategoriesButton, { backgroundColor: colors.tint }]}
-              onPress={handleBackPress}
-            >
-              <Text style={styles.backToCategoriesButtonText}>
-                {t('kg.subcategories.empty.backToCategories', 'Back to Categories')}
-              </Text>
-            </TouchableOpacity>
-          </View>
-        ) : (
-          subcategories.map((subcategory) => {
-            const subcategoryName = getSubcategoryName(subcategory, i18n.language);
-            return (
-              <TouchableOpacity
-                key={subcategory.id}
-                style={[styles.card, { backgroundColor: isDarkMode ? '#2C2C2E' : '#FFFFFF' }]}
-                onPress={() => handleSubcategoryPress(subcategory)}
-              >
-                <RemoteImage
-                  remoteUrl={subcategory.image_url}
-                  fallbackSource={{ uri: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=400&fit=crop&crop=center' }}
-                  style={styles.categoryImage}
-                  resizeMode="cover"
-                />
-                <View style={styles.overlay}>
-                  <Text style={styles.cardText}>
-                    {t(`kg.subcategories.${subcategoryName}`, subcategoryName)}
+          
+          <View style={styles.cardsContainer}>
+            {loading ? (
+              <View style={styles.loadingContainer}>
+                <Text style={styles.loadingEmoji}>🎯</Text>
+                <ActivityIndicator size="large" color={colors.tint} />
+                <Text style={[styles.loadingText, { color: colors.text }]}>
+                  {t('common.loading', 'Loading subcategories...')}
+                </Text>
+              </View>
+            ) : error ? (
+              <View style={styles.errorContainer}>
+                <Text style={styles.errorEmoji}>🤔</Text>
+                <IconSymbol name="questionmark.circle.fill" size={48} color={colors.tint} />
+                <Text style={[styles.errorText, { color: colors.text }]}>
+                  {error}
+                </Text>
+                <TouchableOpacity
+                  style={[styles.retryButton, { backgroundColor: colors.tint }]}
+                  onPress={fetchSubcategories}
+                >
+                  <Text style={styles.retryEmoji}>🔄</Text>
+                  <IconSymbol name="chevron.right" size={20} color="#FFFFFF" />
+                  <Text style={styles.retryButtonText}>
+                    {t('common.retry', 'Retry')}
                   </Text>
-                </View>
-              </TouchableOpacity>
-            );
-          })
-        )}
+                </TouchableOpacity>
+              </View>
+            ) : (
+              subcategories.map((subcategory, index) => {
+                const subcategoryName = getSubcategoryNameByLanguage(subcategory, i18n.language);
+                const subcategoryConfig = getSubcategoryConfig(subcategoryName, isDarkMode);
+                const imageSource = getSubcategoryImageSource(subcategory.image_url, subcategoryConfig.defaultImageUrl);
+                
+                return (
+                  <TouchableOpacity
+                    key={subcategory.id}
+                    style={[styles.cardContainer, { 
+                      borderRadius: STYLE_CONFIG.card.borderRadius,
+                      shadowOffset: STYLE_CONFIG.card.shadowOffset,
+                      shadowOpacity: STYLE_CONFIG.card.shadowOpacity,
+                      shadowRadius: STYLE_CONFIG.card.shadowRadius,
+                      elevation: STYLE_CONFIG.card.elevation
+                    }]}
+                    onPress={() => {
+                      router.push(`/kg-category/instructions?category=${categoryName}&categoryId=${categoryId}&subcategory=${subcategoryName}&subcategoryId=${subcategory.id}&hasSubcategories=true`);
+                    }}
+                  >
+                    <LinearGradient
+                      colors={subcategoryConfig.colors}
+                      style={[styles.cardGradient, { borderRadius: STYLE_CONFIG.card.borderRadius }]}
+                    >
+                      <View style={[styles.cardContent, { aspectRatio: STYLE_CONFIG.card.aspectRatio }]}>
+                        <View style={styles.cardEmojiContainer}>
+                          <Text style={styles.cardEmoji}>{subcategoryConfig.emoji}</Text>
+                        </View>
+                        <CategoryImage
+                          imageUrl={subcategory.image_url}
+                          fallbackUrl={DEFAULT_SUBCATEGORY_IMAGE_URL}
+                          style={styles.subcategoryImage}
+                          cacheKey={`subcategory_${subcategory.id}`}
+                          preset="subcategory"
+                        />
+                        <View style={[styles.cardOverlay, { borderBottomLeftRadius: STYLE_CONFIG.card.borderRadius, borderBottomRightRadius: STYLE_CONFIG.card.borderRadius }]}>
+                          <Text style={styles.cardText}>
+                            {t(`kg.subcategories.${subcategoryName}`, subcategoryName)}
+                          </Text>
+                        </View>
+                      </View>
+                    </LinearGradient>
+                  </TouchableOpacity>
+                );
+              })
+            )}
+          </View>
+        </Animated.View>
       </ScrollView>
     </View>
   );
@@ -274,41 +315,82 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   header: {
-    height: 60,
     flexDirection: 'row',
-    alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 15,
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    paddingVertical: 15,
   },
   backButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+    width: 44,
+    height: 44,
+    borderRadius: 22,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: 'rgba(0,0,0,0.1)',
+  },
+  headerCenter: {
+    flex: 1,
+    alignItems: 'center',
+    marginHorizontal: 16,
   },
   headerTitle: {
     fontSize: 20,
     fontWeight: 'bold',
-    flex: 1,
+    textAlign: 'center',
+    marginBottom: 2,
+  },
+  headerSubtitle: {
+    fontSize: 14,
     textAlign: 'center',
   },
   headerRight: {
     flexDirection: 'row',
     alignItems: 'center',
   },
-  contentHeader: {
+  welcomeSection: {
+    paddingHorizontal: 20,
+    marginBottom: 20,
+  },
+  welcomeGradient: {
     padding: 20,
     alignItems: 'center',
+    shadowColor: '#000',
   },
-  welcomeText: {
-    fontSize: 24,
+  welcomeIconContainer: {
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  welcomeTitle: {
+    fontSize: 22,
     fontWeight: 'bold',
-    marginBottom: 8,
+    color: '#FFFFFF',
     textAlign: 'center',
+    marginBottom: 4,
   },
-  subText: {
+  welcomeSubtitle: {
+    fontSize: 16,
+    color: '#FFFFFF',
+    textAlign: 'center',
+    opacity: 0.9,
+  },
+  subcategoriesContainer: {
+    flex: 1,
+  },
+  subcategoriesHeader: {
+    padding: 20,
+  },
+  subcategoriesTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    textAlign: 'center',
+    marginBottom: 20,
+  },
+  subcategoriesSubtitle: {
     fontSize: 16,
     textAlign: 'center',
   },
@@ -318,40 +400,56 @@ const styles = StyleSheet.create({
     flexWrap: 'wrap',
     justifyContent: 'space-between',
   },
-  card: {
+  cardContainer: {
     width: '48%',
-    aspectRatio: 1,
-    borderRadius: 12,
-    overflow: 'hidden',
     marginBottom: 16,
+    overflow: 'hidden',
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
   },
-  categoryImage: {
+  cardGradient: {
+    overflow: 'hidden',
+  },
+  cardContent: {
+    position: 'relative',
+  },
+  subcategoryImage: {
     width: '100%',
     height: '100%',
     resizeMode: 'cover',
   },
-  overlay: {
+  cardOverlay: {
     position: 'absolute',
     bottom: 0,
     left: 0,
     right: 0,
-    padding: 12,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    padding: 16,
+    backgroundColor: 'rgba(0, 0, 0, 0.75)',
     alignItems: 'center',
     justifyContent: 'center',
+    minHeight: 80,
   },
   cardText: {
     color: '#FFFFFF',
-    fontSize: 14,
-    fontWeight: '600',
+    fontSize: 20,
+    fontWeight: 'bold',
     textAlign: 'center',
+    textShadowColor: 'rgba(0, 0, 0, 0.8)',
+    textShadowOffset: { width: 0, height: 2 },
+    textShadowRadius: 4,
+    letterSpacing: 0.5,
+    lineHeight: 24,
   },
-
+  playIndicator: {
+    position: 'absolute',
+    top: 8,
+    right: 8,
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
   loadingContainer: {
     flex: 1,
     justifyContent: 'center',
@@ -373,46 +471,98 @@ const styles = StyleSheet.create({
   errorText: {
     fontSize: 16,
     textAlign: 'center',
+    marginTop: 16,
     marginBottom: 20,
   },
   retryButton: {
-    paddingHorizontal: 24,
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 20,
     paddingVertical: 12,
-    borderRadius: 8,
+    borderRadius: 25,
+    gap: 8,
   },
   retryButtonText: {
     color: '#FFFFFF',
     fontSize: 16,
     fontWeight: '600',
   },
-  emptyContainer: {
-    flex: 1,
+  retryEmoji: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#FFFFFF',
+  },
+  welcomeEmoji: {
+    fontSize: 32,
+    fontWeight: 'bold',
+    color: '#FFFFFF',
+  },
+  loadingEmoji: {
+    fontSize: 32,
+    fontWeight: 'bold',
+    color: '#FFFFFF',
+  },
+  errorEmoji: {
+    fontSize: 32,
+    fontWeight: 'bold',
+    color: '#FFFFFF',
+  },
+  playEmoji: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#FFFFFF',
+  },
+  cardEmojiContainer: {
+    position: 'absolute',
+    top: 8,
+    left: 8,
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    backgroundColor: 'rgba(0, 0, 0, 0.6)',
     justifyContent: 'center',
     alignItems: 'center',
-    paddingVertical: 50,
-    paddingHorizontal: 20,
   },
-  emptyTitle: {
-    fontSize: 20,
+  cardEmoji: {
+    fontSize: 16,
     fontWeight: 'bold',
-    marginTop: 16,
-    marginBottom: 8,
-    textAlign: 'center',
-  },
-  emptyDescription: {
-    fontSize: 16,
-    textAlign: 'center',
-    marginBottom: 24,
-    lineHeight: 24,
-  },
-  backToCategoriesButton: {
-    paddingHorizontal: 24,
-    paddingVertical: 12,
-    borderRadius: 8,
-  },
-  backToCategoriesButtonText: {
     color: '#FFFFFF',
+  },
+  sparkle: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#FFFFFF',
+  },
+  sparklesContainer: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginTop: 12,
+  },
+  scrollView: {
+    flex: 1,
+  },
+  scrollContent: {
+    paddingBottom: 20,
+  },
+  subcategoryBadge: {
+    position: 'absolute',
+    top: 12,
+    left: 12,
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: 'rgba(255, 255, 255, 0.95)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 3,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 4,
+  },
+  subcategoryBadgeEmoji: {
     fontSize: 16,
-    fontWeight: '600',
   },
 }); 

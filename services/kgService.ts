@@ -45,6 +45,31 @@ export interface KGSubcategoriesResponse {
   message?: string;
 }
 
+export interface KGQuestionChoice {
+  id: number;
+  text_en: string;
+  text_am: string;
+  is_correct: boolean;
+}
+
+export interface KGQuestion {
+  id: number;
+  image_url: string;
+  image_alt: string;
+  choices: KGQuestionChoice[];
+}
+
+export interface KGQuestionsResponse {
+  success: boolean;
+  category: {
+    id: number;
+    name_en: string;
+    name_am: string;
+  };
+  questions: KGQuestion[];
+  message?: string;
+}
+
 /**
  * Fetch KG categories from the API
  * @returns Promise<KGCategory[]> - Array of KG categories
@@ -169,6 +194,51 @@ export const getKGSubcategories = async (categoryId: number): Promise<{category:
     };
   } catch (error) {
     console.error('Error fetching KG subcategories:', error);
+    throw error;
+  }
+};
+
+/**
+ * Fetch questions for a specific KG category
+ * @param categoryId - The ID of the category to fetch questions for
+ * @returns Promise<{category: any, questions: KGQuestion[]}> - The category and questions data
+ */
+export const getKGQuestions = async (categoryId: number): Promise<{category: any, questions: KGQuestion[]}> => {
+  try {
+    const token = await getAuthToken();
+    if (!token) {
+      throw new Error('No authentication token found. Please login again.');
+    }
+
+    const response = await fetch(`${BASE_URL}/kg/questions?category_id=${categoryId}`, {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+      },
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => null);
+      throw new Error(
+        errorData?.message || 
+        `Failed to fetch KG questions. Status: ${response.status}`
+      );
+    }
+
+    const data: KGQuestionsResponse = await response.json();
+    
+    if (!data.success || !Array.isArray(data.questions)) {
+      throw new Error('Invalid response format from server');
+    }
+
+    return {
+      category: data.category,
+      questions: data.questions
+    };
+  } catch (error) {
+    console.error('Error fetching KG questions:', error);
     throw error;
   }
 }; 

@@ -1,6 +1,5 @@
 import { getAuthToken } from '@/utils/authStorage';
 import { BASE_URL as BASE_URL_CONSTANT } from '@/config/constants';
-import kgMCQData from '@/data/kgMCQData.json';
 
 const BASE_URL = `${BASE_URL_CONSTANT}/api`;
 
@@ -87,9 +86,20 @@ export const getMCQData = async (gradeId: string): Promise<MCQData> => {
     // Format the grade ID to match API expectations (e.g., "grade 6" -> "grade-6")
     const formattedGradeId = gradeId.toLowerCase().replace(/\s+/g, '-');
 
-    // For Kindergarten, use the local picture MCQ data without authentication
+    // For Kindergarten, we'll handle this differently - we'll use the API for specific categories
     if (formattedGradeId === 'grade-kg') {
-      return kgMCQData;
+      // Return a placeholder structure that will be handled by the KG-specific components
+      return {
+        grades: [{
+          id: 'grade-kg',
+          name: 'Kindergarten',
+          subjects: [{
+            id: 'general',
+            name: 'General Knowledge',
+            chapters: []
+          }]
+        }]
+      };
     }
 
     // For other grades, require authentication

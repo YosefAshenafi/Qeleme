@@ -1,5 +1,5 @@
 import React from 'react';
-import { StyleSheet, TouchableOpacity, ScrollView, View, Dimensions } from 'react-native';
+import { StyleSheet, TouchableOpacity, ScrollView, View, Dimensions, Text } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useTheme } from '@/contexts/ThemeContext';
@@ -11,6 +11,16 @@ import { IconSymbol } from '@/components/ui/IconSymbol';
 import { LanguageToggle } from '@/components/ui/LanguageToggle';
 import { useTranslation } from 'react-i18next';
 import { useRouter, useLocalSearchParams } from 'expo-router';
+import Animated, { 
+  useAnimatedStyle, 
+  useSharedValue, 
+  withSpring,
+  withRepeat,
+  withSequence,
+  withTiming,
+  interpolate,
+  Extrapolate
+} from 'react-native-reanimated';
 
 const { width } = Dimensions.get('window');
 
@@ -19,30 +29,97 @@ export default function KGCategoryInstructions() {
   const { isDarkMode } = useTheme();
   const colors = getColors(isDarkMode);
   const { t } = useTranslation();
-  const { category } = useLocalSearchParams();
+  const { category, categoryId } = useLocalSearchParams();
+
+  // Animation values
+  const headerScale = useSharedValue(0);
+  const contentOpacity = useSharedValue(0);
+  const contentTranslateY = useSharedValue(50);
+  const floatingAnimation = useSharedValue(0);
+  const instructionScale = useSharedValue(0);
+
+  React.useEffect(() => {
+    // Start animations
+    headerScale.value = withSpring(1, { damping: 15, stiffness: 100 });
+    contentOpacity.value = withTiming(1, { duration: 800 });
+    contentTranslateY.value = withSpring(0, { damping: 15, stiffness: 100 });
+    
+    // Floating animation
+    floatingAnimation.value = withRepeat(
+      withSequence(
+        withTiming(1, { duration: 2000 }),
+        withTiming(0, { duration: 2000 })
+      ),
+      -1,
+      true
+    );
+
+    // Instruction animations with delay
+    setTimeout(() => {
+      instructionScale.value = withSpring(1, { damping: 15, stiffness: 100 });
+    }, 300);
+  }, []);
 
   const handleStart = () => {
     // Since this screen is only used for categories without subcategories,
     // always navigate directly to MCQ screen
     router.push({
       pathname: '/screens/PictureMCQScreen',
-      params: { category }
+      params: { category, categoryId }
     });
   };
 
+  const headerAnimatedStyle = useAnimatedStyle(() => {
+    return {
+      transform: [{ scale: headerScale.value }],
+    };
+  });
+
+  const contentAnimatedStyle = useAnimatedStyle(() => {
+    return {
+      opacity: contentOpacity.value,
+      transform: [{ translateY: contentTranslateY.value }],
+    };
+  });
+
+  const floatingAnimatedStyle = useAnimatedStyle(() => {
+    const translateY = interpolate(
+      floatingAnimation.value,
+      [0, 1],
+      [0, -10],
+      Extrapolate.CLAMP
+    );
+    
+    return {
+      transform: [{ translateY }],
+    };
+  });
+
+  const instructionAnimatedStyle = useAnimatedStyle(() => {
+    return {
+      transform: [{ scale: instructionScale.value }],
+    };
+  });
+
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+    <SafeAreaView style={[styles.container, { backgroundColor: isDarkMode ? '#000000' : '#F8F9FA' }]}>
       <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent}>
-        <View style={styles.header}>
+        {/* Header */}
+        <Animated.View style={[styles.header, headerAnimatedStyle]}>
           <TouchableOpacity 
-            style={styles.backButton}
+            style={[styles.backButton, { backgroundColor: colors.tint + '20' }]}
             onPress={() => router.back()}
           >
-            <IconSymbol name="chevron.left.forwardslash.chevron.right" size={24} color={colors.text} />
+            <Text style={styles.backEmoji}>⬅️</Text>
           </TouchableOpacity>
-          <ThemedText style={styles.headerTitle}>
-            {t(`kg.categories.${category}`, category as string)}
-          </ThemedText>
+          <View style={styles.headerTextContainer}>
+            <ThemedText style={styles.headerTitle}>
+              {t(`kg.categories.${category}`, category as string)} 📚
+            </ThemedText>
+            <ThemedText style={styles.headerSubtitle}>
+              {t('kg.instructions.subtitle', "Let's learn something new!")} ✨
+            </ThemedText>
+          </View>
           <View style={styles.headerRight}>
             <LanguageToggle colors={colors} />
             <TouchableOpacity 
@@ -52,77 +129,98 @@ export default function KGCategoryInstructions() {
               <IconSymbol name="person.fill" size={24} color={colors.tint} />
             </TouchableOpacity>
           </View>
-        </View>
+        </Animated.View>
 
-        <LinearGradient
-          colors={[colors.tint, colors.tint + 'CC']}
-          style={styles.headerGradient}
-        >
-          <View style={styles.iconContainer}>
-            <IconSymbol 
-              name="house.fill" 
-              size={40} 
-              color="#FFFFFF" 
-            />
-          </View>
-          <ThemedText style={styles.subtitleText}>
-            {t('kg.instructions.subtitle', "Let's learn something new!")}
+        {/* Welcome Section */}
+        <Animated.View style={[styles.welcomeSection, floatingAnimatedStyle, contentAnimatedStyle]}>
+          <LinearGradient
+            colors={[colors.tint, colors.tint + 'CC']}
+            style={styles.welcomeGradient}
+          >
+            <View style={styles.welcomeIconContainer}>
+              <Text style={styles.welcomeEmoji}>🎯</Text>
+            </View>
+            <ThemedText style={styles.welcomeTitle}>
+              {t('kg.instructions.subtitle', "Let's learn something new!")} 🎉
+            </ThemedText>
+            <ThemedText style={styles.welcomeSubtitle}>
+              {t('kg.instructions.getReady', 'Get ready for an exciting learning adventure!')} 🚀
+            </ThemedText>
+            <View style={styles.sparklesContainer}>
+              <Text style={styles.sparkle}>✨</Text>
+              <Text style={styles.sparkle}>🎨</Text>
+              <Text style={styles.sparkle}>🎯</Text>
+            </View>
+          </LinearGradient>
+        </Animated.View>
+
+        {/* Instructions */}
+        <Animated.View style={[styles.instructionsContainer, instructionAnimatedStyle]}>
+          <ThemedText style={[styles.instructionsTitle, { color: colors.text }]}>
+            🎮 {t('kg.instructions.howToPlay', 'How to Play')} 🎮
           </ThemedText>
-        </LinearGradient>
-
-        <View style={styles.instructionsContainer}>
+          
           <View style={[styles.instructionItem, { backgroundColor: colors.tint + '15' }]}>
-            <View style={styles.instructionIcon}>
-              <IconSymbol name="photo" size={24} color={colors.tint} />
+            <View style={[styles.instructionIcon, { backgroundColor: colors.tint + '30' }]}>
+              <Text style={styles.instructionEmoji}>👀</Text>
             </View>
             <View style={styles.instructionContent}>
-              <ThemedText style={styles.instructionTitle}>
-                {t('kg.instructions.look.title', 'Look Carefully')}
+              <ThemedText style={[styles.instructionTitle, { color: colors.text }]}>
+                {t('kg.instructions.look.title', 'Look Carefully')} 👁️
               </ThemedText>
-              <ThemedText style={styles.instructionDescription}>
-                {t('kg.instructions.look.description', 'Take your time to look at the pictures and understand what they show.')}
+              <ThemedText style={[styles.instructionDescription, { color: colors.text + 'CC' }]}>
+                {t('kg.instructions.look.description', 'Take your time to look at the pictures and understand what they show.')} 🔍
               </ThemedText>
             </View>
           </View>
 
           <View style={[styles.instructionItem, { backgroundColor: colors.tint + '15' }]}>
-            <View style={styles.instructionIcon}>
-              <IconSymbol name="checkmark.circle.fill" size={24} color={colors.tint} />
+            <View style={[styles.instructionIcon, { backgroundColor: colors.tint + '30' }]}>
+              <Text style={styles.instructionEmoji}>✅</Text>
             </View>
             <View style={styles.instructionContent}>
-              <ThemedText style={styles.instructionTitle}>
-                {t('kg.instructions.choose.title', 'Choose Wisely')}
+              <ThemedText style={[styles.instructionTitle, { color: colors.text }]}>
+                {t('kg.instructions.choose.title', 'Choose Wisely')} 🎯
               </ThemedText>
-              <ThemedText style={styles.instructionDescription}>
-                {t('kg.instructions.choose.description', 'Select the correct answer from the options given.')}
+              <ThemedText style={[styles.instructionDescription, { color: colors.text + 'CC' }]}>
+                {t('kg.instructions.choose.description', 'Select the correct answer from the options given.')} 🎲
               </ThemedText>
             </View>
           </View>
 
           <View style={[styles.instructionItem, { backgroundColor: colors.tint + '15' }]}>
-            <View style={styles.instructionIcon}>
-              <IconSymbol name="message.fill" size={24} color={colors.tint} />
+            <View style={[styles.instructionIcon, { backgroundColor: colors.tint + '30' }]}>
+              <Text style={styles.instructionEmoji}>🎉</Text>
             </View>
             <View style={styles.instructionContent}>
-              <ThemedText style={styles.instructionTitle}>
-                {t('kg.instructions.haveFun.title', 'Have Fun!')}
+              <ThemedText style={[styles.instructionTitle, { color: colors.text }]}>
+                {t('kg.instructions.haveFun.title', 'Have Fun!')} 😊
               </ThemedText>
-              <ThemedText style={styles.instructionDescription}>
-                {t('kg.instructions.haveFun.description', 'Learning is fun! Enjoy the process and celebrate your progress.')}
+              <ThemedText style={[styles.instructionDescription, { color: colors.text + 'CC' }]}>
+                {t('kg.instructions.haveFun.description', 'Learning is fun! Enjoy the process and celebrate your progress.')} 🌟
               </ThemedText>
             </View>
           </View>
-        </View>
+        </Animated.View>
 
-        <TouchableOpacity
-          style={[styles.startButton, { backgroundColor: colors.tint }]}
-          onPress={handleStart}
-        >
-          <IconSymbol name="paperplane.fill" size={24} color="#FFFFFF" style={styles.startButtonIcon} />
-          <ThemedText style={styles.startButtonText}>
-            {t('kg.instructions.start', 'Start Learning')}
-          </ThemedText>
-        </TouchableOpacity>
+        {/* Start Button */}
+        <Animated.View style={[styles.startButtonContainer, contentAnimatedStyle]}>
+          <TouchableOpacity
+            style={[styles.startButton, { backgroundColor: colors.tint }]}
+            onPress={handleStart}
+          >
+            <LinearGradient
+              colors={[colors.tint, colors.tint + 'DD']}
+              style={styles.startButtonGradient}
+            >
+              <Text style={styles.startEmoji}>🚀</Text>
+              <IconSymbol name="paperplane.fill" size={24} color="#FFFFFF" style={styles.startButtonIcon} />
+              <ThemedText style={styles.startButtonText}>
+                {t('kg.instructions.start', 'Start Learning')} 🎯
+              </ThemedText>
+            </LinearGradient>
+          </TouchableOpacity>
+        </Animated.View>
       </ScrollView>
     </SafeAreaView>
   );
@@ -136,70 +234,101 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   scrollContent: {
-    paddingTop: 0,
+    paddingBottom: 40,
   },
   header: {
     flexDirection: 'row',
-    alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    backgroundColor: 'transparent',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    paddingVertical: 15,
   },
   backButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+    width: 44,
+    height: 44,
+    borderRadius: 22,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: 'rgba(0,0,0,0.1)',
+  },
+  headerTextContainer: {
+    flex: 1,
+    alignItems: 'center',
+    marginHorizontal: 16,
   },
   headerTitle: {
     fontSize: 20,
     fontWeight: 'bold',
+    textAlign: 'center',
+    marginBottom: 2,
+  },
+  headerSubtitle: {
+    fontSize: 14,
+    textAlign: 'center',
+    opacity: 0.8,
   },
   headerRight: {
     flexDirection: 'row',
     alignItems: 'center',
   },
   profileIconContainer: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+    width: 44,
+    height: 44,
+    borderRadius: 22,
     justifyContent: 'center',
     alignItems: 'center',
-    marginLeft: 10,
   },
-  headerGradient: {
-    padding: 20,
-    paddingTop: 10,
+  welcomeSection: {
+    paddingHorizontal: 20,
+    marginBottom: 30,
+  },
+  welcomeGradient: {
+    borderRadius: 20,
+    padding: 24,
     alignItems: 'center',
-    borderBottomLeftRadius: 30,
-    borderBottomRightRadius: 30,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 8,
+    elevation: 8,
   },
-  iconContainer: {
+  welcomeIconContainer: {
     width: 80,
     height: 80,
     borderRadius: 40,
-    backgroundColor: 'rgba(255,255,255,0.2)',
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 16,
   },
-  subtitleText: {
-    fontSize: 22,
+  welcomeTitle: {
+    fontSize: 24,
+    fontWeight: 'bold',
     color: '#FFFFFF',
-    opacity: 0.9,
     textAlign: 'center',
+    marginBottom: 8,
+  },
+  welcomeSubtitle: {
+    fontSize: 16,
+    color: '#FFFFFF',
+    textAlign: 'center',
+    opacity: 0.9,
   },
   instructionsContainer: {
-    padding: 15,
+    paddingHorizontal: 20,
+    marginBottom: 30,
+  },
+  instructionsTitle: {
+    fontSize: 22,
+    fontWeight: 'bold',
+    textAlign: 'center',
+    marginBottom: 24,
   },
   instructionItem: {
     flexDirection: 'row',
-    marginBottom: 25,
-    padding: 15,
-    borderRadius: 15,
+    alignItems: 'center',
+    padding: 20,
+    borderRadius: 16,
+    marginBottom: 16,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
@@ -207,13 +336,12 @@ const styles = StyleSheet.create({
     elevation: 3,
   },
   instructionIcon: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: 'rgba(0,0,0,0.05)',
+    width: 56,
+    height: 56,
+    borderRadius: 28,
     justifyContent: 'center',
     alignItems: 'center',
-    marginRight: 12,
+    marginRight: 16,
   },
   instructionContent: {
     flex: 1,
@@ -221,34 +349,63 @@ const styles = StyleSheet.create({
   instructionTitle: {
     fontSize: 18,
     fontWeight: 'bold',
-    marginBottom: 8,
-    color: '#333',
+    marginBottom: 6,
   },
   instructionDescription: {
-    fontSize: 16,
-    color: '#666',
-    lineHeight: 24,
+    fontSize: 14,
+    lineHeight: 20,
+  },
+  startButtonContainer: {
+    paddingHorizontal: 20,
   },
   startButton: {
-    flexDirection: 'row',
-    margin: 15,
-    padding: 18,
     borderRadius: 25,
+    overflow: 'hidden',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+    elevation: 8,
+  },
+  startButtonGradient: {
+    flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 4,
-    elevation: 5,
+    padding: 20,
   },
   startButtonIcon: {
-    marginRight: 8,
+    marginRight: 12,
   },
   startButtonText: {
-    fontSize: 24,
+    fontSize: 20,
     fontWeight: 'bold',
     color: '#FFFFFF',
+  },
+  backEmoji: {
+    fontSize: 24,
+    fontWeight: 'bold',
+  },
+  welcomeEmoji: {
+    fontSize: 40,
+    fontWeight: 'bold',
+  },
+  sparkle: {
+    fontSize: 24,
+    fontWeight: 'bold',
+  },
+  sparklesContainer: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginTop: 16,
+  },
+  startEmoji: {
+    fontSize: 40,
+    fontWeight: 'bold',
+  },
+  instructionEmoji: {
+    fontSize: 24,
+    fontWeight: 'bold',
   },
 });
 

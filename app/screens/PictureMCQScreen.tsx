@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { StyleSheet, TouchableOpacity, ScrollView, View, Dimensions, Image, Modal } from 'react-native';
+import { StyleSheet, TouchableOpacity, ScrollView, View, Dimensions, Image, Modal, Text, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import { router, useLocalSearchParams } from 'expo-router';
@@ -25,18 +25,10 @@ import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 import { IconSymbol } from '@/components/ui/IconSymbol';
 import { ProfileAvatar } from '@/components/ui/ProfileAvatar';
-import kgQuestionsData from '@/data/kgMCQData.json';
 import { LanguageToggle } from '@/components/ui/LanguageToggle';
+import { getKGQuestions, KGQuestion } from '@/services/kgService';
 
-// Image mapping object
-const imageMapping: { [key: string]: any } = {
-  'lion.png': require('../../assets/images/questions/lion.png'),
-  'dolphin.png': require('../../assets/images/questions/dolphin.png'),
-  'penguin.png': require('../../assets/images/questions/penguin.png'),
-  'panda.png': require('../../assets/images/questions/panda.png'),
-  'cheetah.png': require('../../assets/images/questions/cheetah.png'),
-  // Add more image mappings here as needed
-};
+// No local image mapping needed - we'll use remote images from the API
 
 interface Option {
   id: string;
@@ -51,30 +43,6 @@ interface Question {
   options: Option[];
   explanation: string;
 }
-
-interface Chapter {
-  id: string;
-  name: string;
-  questions: Question[];
-}
-
-interface Subject {
-  id: string;
-  name: string;
-  chapters: Chapter[];
-}
-
-interface Grade {
-  id: string;
-  name: string;
-  subjects: Subject[];
-}
-
-interface PictureMCQData {
-  grades: Grade[];
-}
-
-const typedPictureQuestionsData = kgQuestionsData as PictureMCQData;
 
 interface PictureMCQScreenProps {
   onBackToInstructions: () => void;
@@ -98,10 +66,50 @@ export default function PictureMCQScreen({ onBackToInstructions }: PictureMCQScr
   const [hoveredOption, setHoveredOption] = useState<string | null>(null);
   const [droppedOption, setDroppedOption] = useState<string | null>(null);
   const [showResult, setShowResult] = useState(false);
+  const [questions, setQuestions] = useState<Question[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const { t } = useTranslation();
 
-  // Get the first grade's first subject's first chapter's questions
-  const questions = typedPictureQuestionsData.grades[0]?.subjects[0]?.chapters[0]?.questions || [];
+  // Transform API questions to the expected format
+  const transformQuestions = (apiQuestions: KGQuestion[]): Question[] => {
+    return apiQuestions.map((apiQuestion, index) => ({
+      id: apiQuestion.id,
+      question: `What is shown in this image?`,
+      image: apiQuestion.image_url,
+      options: apiQuestion.choices.map((choice, choiceIndex) => ({
+        id: String.fromCharCode(65 + choiceIndex), // A, B, C, D...
+        text: choice.text_en, // Use English text for now
+        isCorrect: choice.is_correct
+      })),
+      explanation: `This is a ${apiQuestion.image_alt}.`
+    }));
+  };
+
+  // Fetch questions from API
+  const fetchQuestions = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      const categoryId = params.categoryId as string;
+      if (!categoryId) {
+        throw new Error('Category ID is required');
+      }
+
+      const { questions: apiQuestions } = await getKGQuestions(parseInt(categoryId));
+      console.log('Raw API questions:', apiQuestions); // DEBUG LOG
+      const transformedQuestions = transformQuestions(apiQuestions);
+      console.log('Fetched and transformed questions:', transformedQuestions); // DEBUG LOG
+      setQuestions(transformedQuestions);
+    } catch (err) {
+      console.error('Error fetching KG questions:', err);
+      setError(err instanceof Error ? err.message : 'Failed to fetch questions');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const currentQuestion = questions[currentQuestionIndex];
   const isFirstQuestion = currentQuestionIndex === 0;
   const isLastQuestion = currentQuestionIndex === questions.length - 1;
@@ -266,6 +274,11 @@ export default function PictureMCQScreen({ onBackToInstructions }: PictureMCQScr
     checkPhoneNumber();
   }, [params]);
 
+  // Fetch questions when component mounts
+  useEffect(() => {
+    fetchQuestions();
+  }, []);
+
   const handleNextQuestion = () => {
     if (!currentQuestion) return;
     if (currentQuestionIndex < questions.length - 1) {
@@ -346,6 +359,48 @@ export default function PictureMCQScreen({ onBackToInstructions }: PictureMCQScr
               <ThemedText style={styles.pictureHomeButtonText}>{t('mcq.pictureQuiz.goToRegularQuestions')}</ThemedText>
               <IconSymbol name="house.fill" size={24} color="#4CAF50" />
             </TouchableOpacity>
+          </ThemedView>
+        </SafeAreaView>
+      </GestureHandlerRootView>
+    );
+  }
+
+  if (loading) {
+    return (
+      <GestureHandlerRootView style={{ flex: 1 }}>
+        <SafeAreaView style={[styles.safeArea, { backgroundColor: isDarkMode ? '#000000' : '#FFFFFF' }]}>
+          <Header title={t('mcq.pictureQuiz.title')} />
+          <ThemedView style={[styles.container, { backgroundColor: isDarkMode ? '#000000' : '#FFFFFF' }]}>
+            <ThemedView style={[styles.formContainer, { backgroundColor: isDarkMode ? '#000000' : '#FFFFFF' }]}>
+              <ActivityIndicator size="large" color={colors.tint} />
+              <ThemedText style={[styles.formTitle, { color: colors.tint }]}>
+                {t('common.loading', 'Loading questions...')}
+              </ThemedText>
+            </ThemedView>
+          </ThemedView>
+        </SafeAreaView>
+      </GestureHandlerRootView>
+    );
+  }
+
+  if (error) {
+    return (
+      <GestureHandlerRootView style={{ flex: 1 }}>
+        <SafeAreaView style={[styles.safeArea, { backgroundColor: isDarkMode ? '#000000' : '#FFFFFF' }]}>
+          <Header title={t('mcq.pictureQuiz.title')} />
+          <ThemedView style={[styles.container, { backgroundColor: isDarkMode ? '#000000' : '#FFFFFF' }]}>
+            <ThemedView style={[styles.formContainer, { backgroundColor: isDarkMode ? '#000000' : '#FFFFFF' }]}>
+              <ThemedText style={[styles.formTitle, { color: colors.tint }]}>
+                ❌ {error}
+              </ThemedText>
+              <TouchableOpacity
+                style={[styles.pictureButton, styles.pictureHomeButton]}
+                onPress={fetchQuestions}
+              >
+                <ThemedText style={styles.pictureHomeButtonText}>{t('common.retry', 'Retry')}</ThemedText>
+                <IconSymbol name="chevron.right" size={24} color="#4CAF50" />
+              </TouchableOpacity>
+            </ThemedView>
           </ThemedView>
         </SafeAreaView>
       </GestureHandlerRootView>
@@ -479,43 +534,68 @@ export default function PictureMCQScreen({ onBackToInstructions }: PictureMCQScr
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
-      <SafeAreaView style={[styles.safeArea, { backgroundColor: isDarkMode ? '#000000' : '#FFFFFF' }]}>
-        <View style={[styles.header, { backgroundColor: colors.background }]}>
+      <SafeAreaView style={[styles.safeArea, { backgroundColor: isDarkMode ? '#000000' : '#F8F9FA' }]}>
+        <View style={[styles.header, { backgroundColor: isDarkMode ? '#000000' : '#F8F9FA' }]}>
           <TouchableOpacity 
-            style={styles.backButton}
+            style={[styles.backButton, { backgroundColor: colors.tint + '20' }]}
             onPress={handleGoToInstructions}
           >
-            <IconSymbol name="house.fill" size={24} color={colors.text} />
+            <IconSymbol name="house.fill" size={24} color={colors.tint} />
           </TouchableOpacity>
-          <ThemedText style={styles.headerTitle}>
-            {t('mcq.pictureQuiz.title')}
-          </ThemedText>
+          <View style={styles.headerTextContainer}>
+            <ThemedText style={[styles.headerTitle, { color: colors.text }]}>
+              🎨 {t('mcq.pictureQuiz.title', 'Picture Quiz')} 🎨
+            </ThemedText>
+            <ThemedText style={[styles.headerSubtitle, { color: colors.text + '80' }]}>
+              {t('mcq.pictureQuiz.subtitle', 'Let\'s learn with pictures!')} 🖼️
+            </ThemedText>
+          </View>
           <View style={styles.headerRight}>
             <LanguageToggle colors={colors} />
             <ProfileAvatar colors={colors} />
           </View>
         </View>
-        <ThemedView style={[styles.container, { backgroundColor: isDarkMode ? '#000000' : '#FFFFFF' }]}>
+        <ThemedView style={[styles.container, { backgroundColor: isDarkMode ? '#000000' : '#F8F9FA' }]}>
           <ScrollView style={styles.scrollView}>
             <View style={styles.progressContainer}>
-              <View style={[styles.progressBar, { backgroundColor: isDarkMode ? '#2C2C2E' : '#E0E0E0' }]}>
-                <View style={[styles.progressFill, { backgroundColor: '#6B54AE' }]} />
-              </View>
-              <View style={styles.progressLabels}>
-                <View style={styles.questionLabelContainer}>
-                  <ThemedText style={[styles.progressText, { color: '#6B54AE' }]}>
-                    {t('mcq.question')} {currentQuestionIndex + 1} {t('mcq.of')} {questions.length}
-                  </ThemedText>
-                </View>
-              </View>
+              <LinearGradient
+                colors={[colors.tint, colors.tint + 'DD']}
+                style={styles.progressGradient}
+              >
+                                  <View style={styles.progressContent}>
+                    <View style={styles.progressBarContainer}>
+                      <View style={[styles.progressBar, { backgroundColor: 'rgba(255, 255, 255, 0.3)' }]}>
+                        <View 
+                          style={[
+                            styles.progressFill, 
+                            { 
+                              backgroundColor: '#FFFFFF',
+                              width: `${((currentQuestionIndex + 1) / questions.length) * 100}%`
+                            }
+                          ]} 
+                        />
+                      </View>
+                    </View>
+                    <View style={styles.progressLabels}>
+                      <ThemedText style={styles.progressText}>
+                        🎯 {t('mcq.question', 'Question')} {currentQuestionIndex + 1} {t('mcq.of', 'of')} {questions.length} 🎯
+                      </ThemedText>
+                    </View>
+                  </View>
+              </LinearGradient>
             </View>
 
             {currentQuestion && (
               <>
                 <View style={styles.questionContainer}>
-                  <ThemedText style={[styles.questionText, { color: colors.text }]}>
-                    {currentQuestion.question}
-                  </ThemedText>
+                  <LinearGradient
+                    colors={[colors.tint + '20', colors.tint + '10']}
+                    style={styles.questionGradient}
+                  >
+                    <ThemedText style={[styles.questionText, { color: colors.text }]}>
+                      🤔 {currentQuestion.question} 🤔
+                    </ThemedText>
+                  </LinearGradient>
                 </View>
 
                 <GestureDetector gesture={imagePan}>
@@ -523,11 +603,11 @@ export default function PictureMCQScreen({ onBackToInstructions }: PictureMCQScr
                     style={[
                       styles.imageContainer,
                       imageAnimatedStyle,
-                      { backgroundColor: isDarkMode ? '#1C1C1E' : '#F5F5F5' }
+                      { backgroundColor: isDarkMode ? '#1C1C1E' : '#FFFFFF' }
                     ]}
                   >
                     <Image
-                      source={imageMapping[currentQuestion.image]}
+                      source={{ uri: currentQuestion.image }}
                       style={styles.questionImage}
                       resizeMode="contain"
                     />
@@ -537,16 +617,16 @@ export default function PictureMCQScreen({ onBackToInstructions }: PictureMCQScr
                 {/* Celebration Animation */}
                 <Animated.View style={[styles.celebrationContainer, celebrationAnimatedStyle]}>
                   <View style={[styles.celebrationContent, { backgroundColor: isDarkMode ? 'rgba(28, 28, 30, 0.9)' : 'rgba(255, 255, 255, 0.9)' }]}>
-                    <IconSymbol name="trophy.fill" size={80} color="#4CAF50" />
-                    <ThemedText style={styles.celebrationText}>{t('mcq.correct')}</ThemedText>
+                    <Text style={styles.celebrationEmoji}>🎉</Text>
+                    <ThemedText style={styles.celebrationText}>{t('mcq.correct')} 🎯</ThemedText>
                   </View>
                 </Animated.View>
 
                 {/* Incorrect Animation */}
                 <Animated.View style={[styles.incorrectContainer, incorrectAnimatedStyle]}>
                   <View style={[styles.incorrectContent, { backgroundColor: isDarkMode ? 'rgba(28, 28, 30, 0.9)' : 'rgba(255, 255, 255, 0.9)' }]}>
-                    <IconSymbol name="xmark.circle.fill" size={80} color="#F44336" />
-                    <ThemedText style={styles.incorrectText}>{t('mcq.incorrect')}</ThemedText>
+                    <Text style={styles.incorrectEmoji}>😅</Text>
+                    <ThemedText style={styles.incorrectText}>{t('mcq.incorrect')} 💪</ThemedText>
                   </View>
                 </Animated.View>
 
@@ -642,18 +722,35 @@ const styles = StyleSheet.create({
   },
   progressContainer: {
     marginBottom: 20,
+    paddingHorizontal: 20,
+  },
+  progressGradient: {
+    borderRadius: 16,
+    padding: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  progressContent: {
+    alignItems: 'center',
+  },
+  progressBarContainer: {
+    width: '100%',
+    marginBottom: 8,
   },
   progressBar: {
-    height: 8,
-    backgroundColor: '#E0E0E0',
-    borderRadius: 4,
+    height: 12,
+    backgroundColor: 'rgba(255, 255, 255, 0.3)',
+    borderRadius: 6,
     overflow: 'hidden',
     marginBottom: 8,
   },
   progressFill: {
     height: '100%',
-    backgroundColor: '#6B54AE',
-    borderRadius: 4,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 6,
   },
   progressLabels: {
     flexDirection: 'row',
@@ -666,27 +763,44 @@ const styles = StyleSheet.create({
     borderRadius: 16,
   },
   progressText: {
-    color: '#6B54AE',
+    color: '#FFFFFF',
     fontSize: 14,
     fontWeight: '600',
   },
   questionContainer: {
     marginBottom: 20,
+    paddingHorizontal: 20,
+  },
+  questionGradient: {
+    borderRadius: 16,
+    padding: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
   },
   questionText: {
-    fontSize: 24,
-    lineHeight: 32,
+    fontSize: 22,
+    lineHeight: 30,
+    fontWeight: '600',
+    textAlign: 'center',
   },
   imageContainer: {
     width: '100%',
-    height: 200,
+    height: 250,
     marginBottom: 20,
-    borderRadius: 12,
+    borderRadius: 16,
     overflow: 'hidden',
-    backgroundColor: '#F5F5F5',
+    backgroundColor: '#FFFFFF',
     alignItems: 'center',
     justifyContent: 'center',
     zIndex: 2,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 8,
+    elevation: 8,
   },
   questionImage: {
     width: '100%',
@@ -696,20 +810,20 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     marginBottom: 20,
-    paddingHorizontal: 10,
+    paddingHorizontal: 20,
     gap: 16,
   },
   optionContainer: {
     width: '48%',
-    minHeight: 80,
-    borderRadius: 12,
+    minHeight: 100,
+    borderRadius: 16,
     overflow: 'hidden',
-    elevation: 2,
+    elevation: 4,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.2,
-    shadowRadius: 3,
-    borderWidth: 1,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.15,
+    shadowRadius: 6,
+    borderWidth: 2,
     borderColor: '#E0E0E0',
     backgroundColor: '#FFFFFF',
   },
@@ -732,10 +846,11 @@ const styles = StyleSheet.create({
     padding: 12,
   },
   optionText: {
-    fontSize: 16,
+    fontSize: 18,
     color: '#333333',
     textAlign: 'center',
     flexWrap: 'wrap',
+    fontWeight: '600',
   },
   correctText: {
     color: '#2E7D32',
@@ -1067,16 +1182,31 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: 10,
+    justifyContent: 'space-between',
+    paddingHorizontal: 20,
+    paddingVertical: 15,
   },
   backButton: {
-    padding: 10,
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  headerTextContainer: {
+    flex: 1,
+    alignItems: 'center',
+    marginHorizontal: 16,
   },
   headerTitle: {
-    flex: 1,
-    textAlign: 'center',
-    fontSize: 24,
+    fontSize: 20,
     fontWeight: 'bold',
+    textAlign: 'center',
+    marginBottom: 2,
+  },
+  headerSubtitle: {
+    fontSize: 14,
+    textAlign: 'center',
   },
   headerRight: {
     flexDirection: 'row',
@@ -1090,5 +1220,13 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     marginLeft: 10,
+  },
+  celebrationEmoji: {
+    fontSize: 80,
+    marginBottom: 10,
+  },
+  incorrectEmoji: {
+    fontSize: 80,
+    marginBottom: 10,
   },
 }); 

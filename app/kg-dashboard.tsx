@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, StyleSheet, ActivityIndicator, Alert } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, StyleSheet, ActivityIndicator, Alert, Dimensions } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { useTheme } from '@/contexts/ThemeContext';
@@ -9,39 +9,30 @@ import { LanguageToggle } from '@/components/ui/LanguageToggle';
 import { IconSymbol } from '@/components/ui/IconSymbol';
 import { useAuth } from '@/contexts/AuthContext';
 import { ProfileAvatar } from '@/components/ui/ProfileAvatar';
-import { RemoteImage } from '@/components/ui/RemoteImage';
+import { CategoryImage } from '@/components/ui/CategoryImage';
 import { getKGCategories, KGCategory } from '@/services/kgService';
+import { LinearGradient } from 'expo-linear-gradient';
+import { imagePreloader } from '@/utils/imagePreloader';
+import Animated, { 
+  useAnimatedStyle, 
+  useSharedValue, 
+  withSpring,
+  withRepeat,
+  withSequence,
+  withTiming,
+  interpolate,
+  Extrapolate
+} from 'react-native-reanimated';
+import { 
+  getCategoryConfig, 
+  getCategoryImageSource, 
+  getCategoryNameByLanguage,
+  ANIMATION_CONFIG,
+  STYLE_CONFIG,
+  DEFAULT_CATEGORY_IMAGE_URL
+} from '@/constants/KGCategories';
 
-// Fallback categories in case API fails
-const fallbackCategories = [
-  { name: 'Animals' },
-  { name: 'Colors' },
-  { name: 'Numbers' },
-  { name: 'Shapes' },
-  { name: 'Fruits' },
-  { name: 'Vegetables' },
-  { name: 'Family' },
-  { name: 'Body Parts' },
-  { name: 'Clothes' },
-  { name: 'Weather' },
-  { name: 'Transport' },
-  { name: 'Food' },
-  { name: 'School' },
-  { name: 'Toys' },
-];
-
-// Helper function to get category image
-const getCategoryImage = (categoryName: string, imageUrl?: string | null) => {
-  // Default Unsplash image for categories without image_url
-  const defaultImageUrl = 'https://images.unsplash.com/photo-1503676260728-1c00da094a0b?w=400&h=400&fit=crop&crop=center';
-  
-  return imageUrl ? { uri: imageUrl } : { uri: defaultImageUrl };
-};
-
-// Helper function to get category name based on current language
-const getCategoryName = (category: KGCategory, currentLanguage: string) => {
-  return currentLanguage === 'am' ? category.name_am : category.name_en;
-};
+const { width } = Dimensions.get('window');
 
 export default function KGDashboard() {
   const insets = useSafeAreaInsets();
@@ -55,8 +46,29 @@ export default function KGDashboard() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  // Animation values
+  const headerScale = useSharedValue(0);
+  const cardsOpacity = useSharedValue(0);
+  const cardsTranslateY = useSharedValue(50);
+  const floatingAnimation = useSharedValue(0);
+
   useEffect(() => {
     fetchCategories();
+    
+    // Start animations using configuration
+    headerScale.value = withSpring(1, ANIMATION_CONFIG.header);
+    cardsOpacity.value = withTiming(1, ANIMATION_CONFIG.cards.timing);
+    cardsTranslateY.value = withSpring(0, ANIMATION_CONFIG.cards.spring);
+    
+    // Floating animation
+    floatingAnimation.value = withRepeat(
+      withSequence(
+        withTiming(1, { duration: ANIMATION_CONFIG.floating.duration }),
+        withTiming(0, { duration: ANIMATION_CONFIG.floating.duration })
+      ),
+      -1,
+      true
+    );
   }, []);
 
   const fetchCategories = async () => {
@@ -65,115 +77,206 @@ export default function KGDashboard() {
       setError(null);
       const apiCategories = await getKGCategories();
       setCategories(apiCategories);
+      
+      // Temporarily disable preloading to fix image loading issues
+      // const imageUrls = apiCategories
+      //   .map(category => category.image_url)
+      //   .filter(url => url) as string[];
+      
+      // if (imageUrls.length > 0) {
+      //   // Preload images with different priorities
+      //   const visibleImages = imageUrls.slice(0, 4); // First 4 images get high priority
+      //   const remainingImages = imageUrls.slice(4);
+      
+      //   if (visibleImages.length > 0) {
+      //     imagePreloader.preloadImages(visibleImages, 'high');
+      //   }
+      
+      //   if (remainingImages.length > 0) {
+      //     imagePreloader.preloadImages(remainingImages, 'low');
+      //   }
+      // }
     } catch (err) {
       console.error('Failed to fetch KG categories:', err);
       setError(err instanceof Error ? err.message : 'Failed to load categories');
-      // Use fallback categories if API fails
-      setCategories(fallbackCategories.map(cat => ({
-        id: Math.random(),
-        name_en: cat.name,
-        name_am: cat.name, // Use English name as fallback for Amharic too
-        image_url: null, // No image URL for fallback categories
-        has_subcategories: false,
-        order_index: Math.random(),
-        is_active: true,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
-      })));
     } finally {
       setLoading(false);
     }
   };
+
+  const headerAnimatedStyle = useAnimatedStyle(() => {
+    return {
+      transform: [{ scale: headerScale.value }],
+    };
+  });
+
+  const cardsAnimatedStyle = useAnimatedStyle(() => {
+    return {
+      opacity: cardsOpacity.value,
+      transform: [{ translateY: cardsTranslateY.value }],
+    };
+  });
+
+  const floatingAnimatedStyle = useAnimatedStyle(() => {
+    const translateY = interpolate(
+      floatingAnimation.value,
+      [0, 1],
+      [0, -10],
+      Extrapolate.CLAMP
+    );
+    
+    return {
+      transform: [{ translateY }],
+    };
+  });
 
   return (
     <View style={[
       styles.container, 
       { 
         paddingTop: insets.top,
-        backgroundColor: isDarkMode ? '#000000' : colors.background
+        backgroundColor: colors.background
       }
     ]}>
-      <View style={[
+      {/* Header */}
+      <Animated.View style={[
         styles.header, 
-        { backgroundColor: isDarkMode ? '#000000' : colors.background }
+        { backgroundColor: colors.background },
+        headerAnimatedStyle
       ]}>
+        <View style={styles.headerLeft}>
+        </View>
         <View style={styles.headerRight}>
           <LanguageToggle colors={colors} />
           <ProfileAvatar colors={colors} />
         </View>
-      </View>
+      </Animated.View>
 
-      <View style={[
-        styles.contentHeader, 
-        { backgroundColor: isDarkMode ? '#000000' : colors.background }
-      ]}>
-        <Text style={[styles.welcomeText, { color: colors.text }]}>
-          {t('kg.welcome', { name: user?.fullName || '' })}
-        </Text>
-        <Text style={[styles.subText, { color: colors.text + '80' }]}>
-          {t('kg.subtitle')}
-        </Text>
-      </View>
-
+      {/* Scrollable Content */}
       <ScrollView 
-        contentContainerStyle={styles.cardsContainer}
+        style={styles.scrollView} 
+        contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
-        {loading ? (
-          <View style={styles.loadingContainer}>
-            <ActivityIndicator size="large" color={colors.tint} />
-            <Text style={[styles.loadingText, { color: colors.text }]}>
-              {t('common.loading', 'Loading categories...')}
+        {/* Welcome Section */}
+        <Animated.View style={[styles.welcomeSection, floatingAnimatedStyle]}>
+          <LinearGradient
+            colors={[colors.tint, colors.tint + 'CC']}
+            style={[styles.welcomeGradient, { 
+              borderRadius: STYLE_CONFIG.welcome.borderRadius,
+              shadowOffset: STYLE_CONFIG.welcome.shadowOffset,
+              shadowOpacity: STYLE_CONFIG.welcome.shadowOpacity,
+              shadowRadius: STYLE_CONFIG.welcome.shadowRadius,
+              elevation: STYLE_CONFIG.welcome.elevation
+            }]}
+          >
+            <View style={styles.welcomeIconContainer}>
+              <Text style={styles.welcomeEmoji}>🌟</Text>
+            </View>
+            <Text style={styles.welcomeTitle}>
+              {t('kg.welcome', { name: user?.fullName || '' })}
             </Text>
-          </View>
-        ) : error ? (
-          <View style={styles.errorContainer}>
-            <Text style={[styles.errorText, { color: colors.text }]}>
-              {error}
+            <Text style={styles.welcomeSubtitle}>
+              {t('kg.subtitle')} {t('kg.letsHaveFun', 'Let\'s have fun learning!')}
             </Text>
-            <TouchableOpacity
-              style={[styles.retryButton, { backgroundColor: colors.tint }]}
-              onPress={fetchCategories}
-            >
-              <Text style={styles.retryButtonText}>
-                {t('common.retry', 'Retry')}
-              </Text>
-            </TouchableOpacity>
-          </View>
-        ) : (
-          categories.map((category) => {
-            const categoryName = getCategoryName(category, i18n.language);
-            const image = getCategoryImage(categoryName, category.image_url);
-            return (
-              <TouchableOpacity
-                key={category.id}
-                style={[styles.card, { backgroundColor: isDarkMode ? '#2C2C2E' : '#FFFFFF' }]}
-                onPress={() => {
-                  if (category.has_subcategories) {
-                    // Navigate directly to subcategories screen
-                    router.push(`/kg-subcategories?categoryId=${category.id}&categoryName=${categoryName}`);
-                  } else {
-                    // Navigate to instructions screen for categories without subcategories
-                    router.push(`/kg-category/instructions?category=${categoryName}&categoryId=${category.id}&hasSubcategories=false`);
-                  }
-                }}
-              >
-                <RemoteImage
-                  remoteUrl={category.image_url}
-                  fallbackSource={{ uri: 'https://images.unsplash.com/photo-1503676260728-1c00da094a0b?w=400&h=400&fit=crop&crop=center' }}
-                  style={styles.categoryImage}
-                  resizeMode="cover"
-                />
-                <View style={styles.overlay}>
-                  <Text style={styles.cardText}>
-                    {t(`kg.categories.${categoryName}`, categoryName)}
-                  </Text>
-                </View>
+            <View style={styles.sparklesContainer}>
+              <Text style={styles.sparkle}>✨</Text>
+              <Text style={styles.sparkle}>⭐</Text>
+              <Text style={styles.sparkle}>🎯</Text>
+            </View>
+          </LinearGradient>
+        </Animated.View>
 
-              </TouchableOpacity>
-            );
-          })
-        )}
+        {/* Categories */}
+        <Animated.View style={[styles.categoriesContainer, cardsAnimatedStyle]}>
+          <View style={styles.categoriesHeader}>
+            <Text style={[styles.categoriesTitle, { color: colors.text }]}>
+              {t('kg.categories.title', 'Choose Your Learning Adventure!')}
+            </Text>
+            <Text style={[styles.categoriesSubtitle, { color: colors.text + '80' }]}>
+              {t('kg.categories.subtitle', 'Pick a topic and start your amazing journey!')}
+            </Text>
+          </View>
+          
+          <View style={styles.cardsContainer}>
+            {loading ? (
+              <View style={styles.loadingContainer}>
+                <Text style={styles.loadingEmoji}>🎯</Text>
+                <ActivityIndicator size="large" color={colors.tint} />
+                <Text style={[styles.loadingText, { color: colors.text }]}>
+                  {t('common.loading', 'Loading categories...')}
+                </Text>
+              </View>
+            ) : error ? (
+              <View style={styles.errorContainer}>
+                <Text style={styles.errorEmoji}>🤔</Text>
+                <IconSymbol name="questionmark.circle.fill" size={48} color={colors.tint} />
+                <Text style={[styles.errorText, { color: colors.text }]}>
+                  {error}
+                </Text>
+                <TouchableOpacity
+                  style={[styles.retryButton, { backgroundColor: colors.tint }]}
+                  onPress={fetchCategories}
+                >
+                  <Text style={styles.retryEmoji}>🔄</Text>
+                  <IconSymbol name="chevron.right" size={20} color="#FFFFFF" />
+                  <Text style={styles.retryButtonText}>
+                    {t('common.retry', 'Retry')}
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            ) : (
+              categories.map((category, index) => {
+                const categoryName = getCategoryNameByLanguage(category, i18n.language);
+                const categoryConfig = getCategoryConfig(categoryName, isDarkMode);
+                const imageSource = getCategoryImageSource(category.image_url, categoryConfig.defaultImageUrl);
+                
+                return (
+                  <TouchableOpacity
+                    key={category.id}
+                    style={[styles.cardContainer, { 
+                      borderRadius: STYLE_CONFIG.card.borderRadius,
+                      shadowOffset: STYLE_CONFIG.card.shadowOffset,
+                      shadowOpacity: STYLE_CONFIG.card.shadowOpacity,
+                      shadowRadius: STYLE_CONFIG.card.shadowRadius,
+                      elevation: STYLE_CONFIG.card.elevation
+                    }]}
+                    onPress={() => {
+                      if (category.has_subcategories) {
+                        router.push(`/kg-subcategories?categoryId=${category.id}&categoryName=${categoryName}`);
+                      } else {
+                        router.push(`/kg-category/instructions?category=${categoryName}&categoryId=${category.id}&hasSubcategories=false`);
+                      }
+                    }}
+                  >
+                    <LinearGradient
+                      colors={categoryConfig.colors}
+                      style={[styles.cardGradient, { borderRadius: STYLE_CONFIG.card.borderRadius }]}
+                    >
+                      <View style={[styles.cardContent, { aspectRatio: STYLE_CONFIG.card.aspectRatio }]}>
+                        <View style={styles.cardEmojiContainer}>
+                          <Text style={styles.cardEmoji}>{categoryConfig.emoji}</Text>
+                        </View>
+                        <CategoryImage
+                          imageUrl={category.image_url}
+                          fallbackUrl={DEFAULT_CATEGORY_IMAGE_URL}
+                          style={styles.categoryImage}
+                          cacheKey={`category_${category.id}`}
+                          preset="category"
+                        />
+                        <View style={[styles.cardOverlay, { borderBottomLeftRadius: STYLE_CONFIG.card.borderRadius, borderBottomRightRadius: STYLE_CONFIG.card.borderRadius }]}>
+                          <Text style={styles.cardText}>
+                            {t(`kg.categories.${categoryName}`, categoryName)}
+                          </Text>
+                        </View>
+                      </View>
+                    </LinearGradient>
+                  </TouchableOpacity>
+                );
+              })
+            )}
+          </View>
+        </Animated.View>
       </ScrollView>
     </View>
   );
@@ -183,44 +286,76 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
+  scrollView: {
+    flex: 1,
+  },
+  scrollContent: {
+    paddingBottom: 20,
+  },
   header: {
-    height: 60,
     flexDirection: 'row',
-    justifyContent: 'flex-end',
+    justifyContent: 'space-between',
     alignItems: 'center',
-    paddingHorizontal: 15,
+    paddingHorizontal: 20,
+    paddingVertical: 15,
+  },
+  headerLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
   },
   headerRight: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginTop: 10,
   },
-  profileIconContainer: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginLeft: 10,
+  welcomeSection: {
+    paddingTop: 20,
+    paddingHorizontal: 20,
+    marginBottom: 20,
   },
-  contentHeader: {
+  welcomeGradient: {
     padding: 20,
     alignItems: 'center',
+    shadowColor: '#000',
   },
-  logoImage: {
-    width: 120,
-    height: 120,
-    marginBottom: 16,
+  welcomeIconContainer: {
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 12,
   },
-  welcomeText: {
+  welcomeTitle: {
     fontSize: 24,
     fontWeight: 'bold',
-    marginBottom: 8,
+    color: '#FFFFFF',
     textAlign: 'center',
+    marginBottom: 4,
   },
-  subText: {
+  welcomeSubtitle: {
+    fontSize: 16,
+    color: '#FFFFFF',
+    textAlign: 'center',
+    opacity: 0.9,
+  },
+  categoriesContainer: {
+    flex: 1,
+  },
+  categoriesHeader: {
+    padding: 20,
+  },
+  categoriesTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    textAlign: 'center',
+    marginBottom: 20,
+  },
+  categoriesSubtitle: {
     fontSize: 16,
     textAlign: 'center',
+    opacity: 0.8,
   },
   cardsContainer: {
     padding: 16,
@@ -228,44 +363,65 @@ const styles = StyleSheet.create({
     flexWrap: 'wrap',
     justifyContent: 'space-between',
   },
-  card: {
+  cardContainer: {
     width: '48%',
-    aspectRatio: 1,
-    borderRadius: 12,
-    overflow: 'hidden',
     marginBottom: 16,
+    overflow: 'hidden',
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
+  },
+  cardGradient: {
+    overflow: 'hidden',
+  },
+  cardContent: {
+    position: 'relative',
   },
   categoryImage: {
     width: '100%',
     height: '100%',
     resizeMode: 'cover',
   },
-  overlay: {
+  cardOverlay: {
     position: 'absolute',
     bottom: 0,
     left: 0,
     right: 0,
-    padding: 12,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    padding: 16,
+    backgroundColor: 'rgba(0, 0, 0, 0.75)',
     alignItems: 'center',
     justifyContent: 'center',
+    minHeight: 80,
   },
   cardText: {
     color: '#FFFFFF',
-    fontSize: 14,
-    fontWeight: '600',
+    fontSize: 20,
+    fontWeight: 'bold',
     textAlign: 'center',
+    textShadowColor: 'rgba(0, 0, 0, 0.8)',
+    textShadowOffset: { width: 0, height: 2 },
+    textShadowRadius: 4,
+    letterSpacing: 0.5,
+    lineHeight: 24,
+  },
+  subcategoryIndicator: {
+    position: 'absolute',
+    top: 8,
+    right: 8,
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   loadingContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
     paddingVertical: 50,
+  },
+  loadingEmoji: {
+    fontSize: 48,
+    marginBottom: 16,
   },
   loadingText: {
     marginTop: 16,
@@ -279,30 +435,83 @@ const styles = StyleSheet.create({
     paddingVertical: 50,
     paddingHorizontal: 20,
   },
+  errorEmoji: {
+    fontSize: 48,
+    marginBottom: 16,
+  },
   errorText: {
     fontSize: 16,
     textAlign: 'center',
+    marginTop: 16,
     marginBottom: 20,
   },
   retryButton: {
-    paddingHorizontal: 24,
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 20,
     paddingVertical: 12,
-    borderRadius: 8,
+    borderRadius: 25,
+    gap: 8,
+  },
+  retryEmoji: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontWeight: '600',
   },
   retryButtonText: {
     color: '#FFFFFF',
     fontSize: 16,
     fontWeight: '600',
   },
-  subcategoryIndicator: {
+  welcomeEmoji: {
+    fontSize: 48,
+  },
+  cardEmojiContainer: {
     position: 'absolute',
     top: 12,
-    right: 12,
-    width: 24,
-    height: 24,
-    borderRadius: 12,
-    backgroundColor: 'rgba(0, 0, 0, 0.6)',
+    left: 12,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: 'rgba(255, 255, 255, 0.9)',
     justifyContent: 'center',
     alignItems: 'center',
+    zIndex: 3,
+  },
+  cardEmoji: {
+    fontSize: 20,
+  },
+  playEmoji: {
+    fontSize: 16,
+  },
+  sparklesContainer: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginTop: 12,
+  },
+  sparkle: {
+    fontSize: 24,
+    marginHorizontal: 4,
+  },
+  categoryBadge: {
+    position: 'absolute',
+    top: 12,
+    left: 12,
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: 'rgba(255, 255, 255, 0.95)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 3,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 4,
+  },
+  categoryBadgeEmoji: {
+    fontSize: 18,
   },
 }); 
