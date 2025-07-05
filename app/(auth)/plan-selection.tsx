@@ -169,15 +169,60 @@ export default function PlanSelectionScreen() {
       if (isFreePlan) {
         // For free plans, register directly without payment
         
+        // Validate that grade is present for student registration
+        if (userData.role === 'student' && !userData.grade) {
+          console.error('Grade is missing from userData:', userData);
+          Alert.alert(
+            'Grade Required',
+            'Please select your grade before proceeding. You will be redirected to the signup screen.',
+            [
+              {
+                text: 'OK',
+                onPress: () => router.replace('/(auth)/signup'),
+                style: 'default'
+              }
+            ],
+            {
+              cancelable: false
+            }
+          );
+          return;
+        }
+
+        // For parent registration, validate that children have grades
+        if (userData.role === 'parent') {
+          const childrenWithoutGrades = userData.childrenData?.filter((child: any) => !child.grade) || [];
+          if (childrenWithoutGrades.length > 0) {
+            console.error('Children missing grades:', childrenWithoutGrades);
+            Alert.alert(
+              'Grade Required',
+              'Please select grades for all children before proceeding. You will be redirected to the signup screen.',
+              [
+                {
+                  text: 'OK',
+                  onPress: () => router.replace('/(auth)/signup'),
+                  style: 'default'
+                }
+              ],
+              {
+                cancelable: false
+              }
+            );
+            return;
+          }
+        }
+        
         const endpoint = `${BASE_URL}/api/auth/register/student`;
         const requestBody = {
           name: userData.fullName,
           username: userData.username,
           password: userData.password,
-          grade: userData.grade.toLowerCase(),
+          grade: userData.grade === 'KG' ? 'grade kg' : `grade ${userData.grade}`,
           phoneNumber: userData.phoneNumber?.replace('+251', '').replace(/^9/, '09') || userData.phoneNumber,
           Plan: selectedPlan.name
         };
+
+        console.log('Sending registration request:', requestBody);
 
         const response = await fetch(endpoint, {
           method: 'POST',
@@ -192,7 +237,8 @@ export default function PlanSelectionScreen() {
         const data = await response.json();
 
         if (!response.ok) {
-          throw new Error(data.message || 'Failed to register user');
+          console.error('Registration failed:', data);
+          throw new Error(data.message || data.error || 'Failed to register user');
         }
         
         Alert.alert(
