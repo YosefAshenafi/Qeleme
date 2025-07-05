@@ -112,15 +112,27 @@ export default function MCQScreen() {
     return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
   };
 
+  // Helper function to normalize grade strings and extract the number
+  const normalizeGrade = (gradeString: string | undefined): string => {
+    if (!gradeString) return '6'; // default
+    return gradeString.replace(/^grade\s*/i, '').trim();
+  };
+
+  // Helper function to get grade number from grade string
+  const getGradeNumber = (gradeString: string | undefined): number => {
+    const normalized = normalizeGrade(gradeString);
+    return parseInt(normalized) || 6; // default to 6 if parsing fails
+  };
+
   // Function to check if exam type selection is needed
   const needsExamTypeSelection = (grade: Grade | null) => {
     if (!grade) return false;
     
     // Get the grade number from the user's profile if available
-    const userGradeNumber = user?.grade ? parseInt(user.grade) : null;
+    const userGradeNumber = getGradeNumber(user?.grade);
     
     // If we have the user's grade, use that
-    if (userGradeNumber !== null) {
+    if (userGradeNumber !== 6) { // 6 is our default, so if it's not 6, we have a real grade
       // Only show exam type selection for grades 6, 8, and 12
       return [6, 8, 12].includes(userGradeNumber);
     }
@@ -134,12 +146,24 @@ export default function MCQScreen() {
   const fetchMCQData = async () => {
     setLoading(true);
     setError(null);
-    try {
-      // If no grade is selected, use the user's grade or default to grade-6
-      const userGrade = user?.grade ? `grade-${user.grade}` : 'grade-6';
-      const gradeToFetch = selectedGrade?.id || userGrade;
-      
-      const data = await getMCQData(gradeToFetch);
+    
+    // If no grade is selected, use the user's grade or default to grade-6
+    // Normalize the user's grade to ensure it's in the correct format
+    // This prevents issues where user.grade might already contain "grade" prefix
+    // (e.g., "Grade 6" from server) which would create "grade-Grade-6" when concatenated
+    const normalizedGradeNumber = normalizeGrade(user?.grade);
+    const userGrade = `grade-${normalizedGradeNumber}`;
+    console.log('🔧 Grade Normalization:', {
+      originalGrade: user?.grade,
+      extractedNumber: normalizedGradeNumber,
+      normalizedGrade: userGrade
+    });
+    const gradeToFetch = selectedGrade?.id || userGrade;
+    console.log('🔧 Final Grade to Fetch:', gradeToFetch);
+    
+
+    getMCQData(gradeToFetch).then(data => {
+      console.log('DATA:', data);
       
       // Reset selections first
       setSelectedSubject('');
@@ -157,11 +181,12 @@ export default function MCQScreen() {
       if (selectedGrade && !needsExamTypeSelection(selectedGrade)) {
         setSelectedExamType('mcq');
       }
-    } catch (error) {
+    }).catch(error => {
+      console.log('ERROR:', error);
       setError(error instanceof Error ? error.message : 'Failed to load MCQ data');
-    } finally {
+    }).finally(() => {
       setLoading(false);
-    }
+    });
   };
 
   // Add useEffect to handle initial data loading and grade changes
@@ -183,7 +208,8 @@ export default function MCQScreen() {
     }
     
     try {
-      const gradeNumber = parseInt(user.grade);
+      // Normalize the grade to extract just the number
+      const gradeNumber = getGradeNumber(user.grade);
       
       if (![6, 8, 12].includes(gradeNumber)) {
         setError('National exams are only available for grades 6, 8, and 12');
@@ -448,7 +474,7 @@ export default function MCQScreen() {
 
       try {
         // Use the user's grade number directly since we've already validated it
-        const gradeNumber = parseInt(user?.grade || '');
+        const gradeNumber = getGradeNumber(user?.grade);
         console.log('📊 National Exam Parameters:', {
           gradeNumber,
           year: selectedYear,
@@ -498,7 +524,7 @@ export default function MCQScreen() {
 
       try {
         // Use the user's grade number directly
-        const gradeNumber = parseInt(user?.grade || '');
+        const gradeNumber = getGradeNumber(user?.grade);
         
         // Get the subject ID from the selected subject
         const subjectId = selectedSubject;

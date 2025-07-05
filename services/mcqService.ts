@@ -109,16 +109,23 @@ export const getMCQData = async (gradeId: string): Promise<MCQData> => {
     }
 
     // Extract just the number from the grade ID (e.g., "grade-5" -> "5")
+    console.log('FORMATTED GRADE ID:', formattedGradeId);
     const gradeNumber = formattedGradeId.split('-')[1];
     
     // Use the correct API endpoint format with gradeLevelId
+    console.log('GRADE NUMBER:', gradeNumber);
     const response = await fetch(`${BASE_URL}/mcq?gradeLevelId=${gradeNumber}`, {
       method: 'GET',
       headers: {
         'Authorization': `Bearer ${token}`,
+        'Accept': 'application/json',
         'Content-Type': 'application/json',
+        'Cache-Control': 'no-cache',
+        'Pragma': 'no-cache',
       },
     });
+
+    // console.log('RESPONSE:', response);
 
     let rawData: any;
     try {
@@ -173,7 +180,10 @@ export const getNationalExamQuestions = async (
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${token}`,
+          'Accept': 'application/json',
           'Content-Type': 'application/json',
+          'Cache-Control': 'no-cache',
+          'Pragma': 'no-cache',
         },
       }
     );
@@ -233,7 +243,10 @@ export const getNationalExamAvailable = async (gradeNumber: number): Promise<Nat
       method: 'GET',
       headers: {
         'Authorization': `Bearer ${token}`,
+        'Accept': 'application/json',
         'Content-Type': 'application/json',
+        'Cache-Control': 'no-cache',
+        'Pragma': 'no-cache',
       },
     });
 
