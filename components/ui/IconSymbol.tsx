@@ -38,6 +38,9 @@ const MAPPING = {
   'xmark.circle.fill': 'close',
   'globe': 'language',
   'checkmark.circle.fill': 'check-circle',
+  'info.circle.fill': 'info',
+  'app.badge': 'apps',
+  'hand.raised.fill': 'security',
 } as const;
 
 export type IconSymbolName = keyof typeof MAPPING;

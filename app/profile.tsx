@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Animated, RefreshControl, Alert } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Animated, RefreshControl, Alert, Linking } from 'react-native';
 import { useColorScheme } from '../hooks/useColorScheme';
 import { Colors } from '../constants/Colors';
 import { IconSymbol, IconSymbolName } from '../components/ui/IconSymbol';
@@ -16,6 +16,7 @@ import { useTranslation } from 'react-i18next';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { LanguageToggle } from '../components/ui/LanguageToggle';
 import { BASE_URL } from '../config/constants';
+import Constants from 'expo-constants';
 
 interface AccordionItemProps {
   title: string;
@@ -32,6 +33,8 @@ type MenuItem = {
   content?: React.ReactNode;
   action?: () => void;
   customContent?: React.ReactNode;
+  showChevron?: boolean;
+  subtitle?: string;
 };
 
 const AccordionItem: React.FC<AccordionItemProps> = ({ title, icon, children, isOpen, onToggle, colors }) => {
@@ -171,6 +174,18 @@ export default function ProfileScreen() {
     paymentPlan: user?.paymentPlan ? getPaymentPlanWithMonth(user.paymentPlan) : getPaymentPlanWithMonth(t('profile.paymentPlan', { defaultValue: 'Free Plan' })),
   }), [t, i18n.language, user]);
 
+  const capitalizeName = (name: string) => {
+    return name.split(' ').map(word => 
+      word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
+    ).join(' ');
+  };
+
+  const handleOpenLink = (url: string) => {
+    Linking.openURL(url).catch(err => {
+      Alert.alert('Error', 'Could not open link');
+    });
+  };
+
   const menuItems: MenuItem[] = React.useMemo(() => [
     { 
       title: t('profile.accountSettings'),
@@ -184,6 +199,28 @@ export default function ProfileScreen() {
         toggleTheme();
       },
       content: <ThemeChooser colors={colors} />
+    },
+    { 
+      title: t('profile.about', { defaultValue: 'About Qelem' }),
+      icon: 'info.circle.fill' as const,
+      action: () => {
+        Alert.alert(
+          t('profile.about', { defaultValue: 'About Qelem' }),
+          t('profile.aboutInfo', { defaultValue: 'Qelem is an innovative educational platform designed to enhance learning through interactive content, personalized experiences, and comprehensive progress tracking.' })
+        );
+      }
+    },
+    { 
+      title: t('profile.version', { defaultValue: 'App Version' }),
+      icon: 'app.badge' as const,
+      subtitle: Constants.expoConfig?.version || '1.0.0',
+      showChevron: false,
+      action: () => {
+        Alert.alert(
+          t('profile.version', { defaultValue: 'App Version' }),
+          `Version ${Constants.expoConfig?.version || '1.0.0'}`
+        );
+      }
     },
     { 
       title: t('profile.resetApp'),
@@ -255,7 +292,9 @@ export default function ProfileScreen() {
               <IconSymbol name="person.fill" size={32} color={colors.tint} />
             </View>
             <View style={styles.userInfoText}>
-              <Text style={[styles.userName, { color: colors.text }]}>{profileData.englishName}</Text>
+              <Text style={[styles.userName, { color: colors.text }]}>
+                {capitalizeName(profileData.englishName)}
+              </Text>
               <Text style={[styles.userUsername, { color: colors.text + '80' }]}>{profileData.username}</Text>
               <View style={styles.userBadges}>
                 <View style={[styles.userBadge, { backgroundColor: colors.tint + '20' }]}>
@@ -298,9 +337,18 @@ export default function ProfileScreen() {
                       <View style={[styles.menuIconContainer, { backgroundColor: colors.tint + '15' }]}>
                         <IconSymbol name={item.icon} size={20} color={colors.tint} />
                       </View>
-                      <Text style={[styles.menuItemText, { color: colors.text }]}>{item.title}</Text>
+                      <View style={styles.menuTextContainer}>
+                        <Text style={[styles.menuItemText, { color: colors.text }]}>{item.title}</Text>
+                        {item.subtitle && (
+                          <Text style={[styles.menuItemSubtitle, { color: colors.text + '60' }]}>
+                            {item.subtitle}
+                          </Text>
+                        )}
+                      </View>
                     </View>
-                    <IconSymbol name="chevron.right" size={16} color={colors.text + '60'} />
+                    {item.showChevron !== false && (
+                      <IconSymbol name="chevron.right" size={16} color={colors.text + '60'} />
+                    )}
                   </TouchableOpacity>
                 ) : (
                   <AccordionItem
@@ -439,6 +487,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 12,
+    flex: 1,
   },
   menuIconContainer: {
     width: 36,
@@ -447,9 +496,16 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
+  menuTextContainer: {
+    flex: 1,
+  },
   menuItemText: {
     fontSize: 16,
     fontWeight: '500',
+  },
+  menuItemSubtitle: {
+    fontSize: 12,
+    marginTop: 2,
   },
   accordionItem: {
     borderRadius: 12,
