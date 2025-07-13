@@ -27,18 +27,11 @@ export function ImageSkeleton({
   useEffect(() => {
     if (animated) {
       const shimmerAnimation = Animated.loop(
-        Animated.sequence([
-          Animated.timing(shimmerAnim, {
-            toValue: 1,
-            duration: 1500,
-            useNativeDriver: true,
-          }),
-          Animated.timing(shimmerAnim, {
-            toValue: 0,
-            duration: 1500,
-            useNativeDriver: true,
-          }),
-        ])
+        Animated.timing(shimmerAnim, {
+          toValue: 1,
+          duration: 1200,
+          useNativeDriver: true,
+        })
       );
 
       shimmerAnimation.start();
@@ -51,7 +44,7 @@ export function ImageSkeleton({
 
   const shimmerTranslateX = shimmerAnim.interpolate({
     inputRange: [0, 1],
-    outputRange: [-200, 200],
+    outputRange: [-150, 150],
   });
 
   const backgroundColor = isDarkMode ? '#2a2a2a' : '#f0f0f0';

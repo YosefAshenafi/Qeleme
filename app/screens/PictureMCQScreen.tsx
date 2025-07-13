@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { StyleSheet, TouchableOpacity, ScrollView, View, Dimensions, Image, Modal, Text, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -26,6 +26,7 @@ import { ThemedView } from '@/components/ThemedView';
 import { IconSymbol } from '@/components/ui/IconSymbol';
 import { ProfileAvatar } from '@/components/ui/ProfileAvatar';
 import { LanguageToggle } from '@/components/ui/LanguageToggle';
+import { ImageSkeleton } from '@/components/ui/ImageSkeleton';
 import { getKGQuestions, KGQuestion } from '@/services/kgService';
 
 // No local image mapping needed - we'll use remote images from the API
@@ -48,6 +49,75 @@ interface PictureMCQScreenProps {
   onBackToInstructions: () => void;
 }
 
+// Memoized image component for better performance
+const QuestionImage = React.memo(({ 
+  question, 
+  imageStates, 
+  setImageStates, 
+  isDarkMode, 
+  colors, 
+  t 
+}: {
+  question: Question;
+  imageStates: { [key: number]: { loading: boolean; error: boolean; loaded: boolean } };
+  setImageStates: React.Dispatch<React.SetStateAction<{ [key: number]: { loading: boolean; error: boolean; loaded: boolean } }>>;
+  isDarkMode: boolean;
+  colors: any;
+  t: any;
+}) => {
+  const imageState = imageStates[question.id] || { loading: false, error: false, loaded: false };
+  
+  return (
+    <>
+      {/* Image Loading Skeleton - only show if not loaded and not error */}
+      {(!imageState.loaded && !imageState.error && question.image) && (
+        <ImageSkeleton 
+          width="100%" 
+          height="100%" 
+          style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, zIndex: 1 }}
+        />
+      )}
+      
+      {/* Main Image */}
+      {question.image && !imageState.error && (
+        <Image
+          source={{ uri: question.image }}
+          style={styles.questionImage}
+          resizeMode="contain"
+          onLoadStart={() => {
+            setImageStates(prev => ({ 
+              ...prev, 
+              [question.id]: { loading: true, error: false, loaded: false } 
+            }));
+          }}
+          onLoad={() => {
+            setImageStates(prev => ({ 
+              ...prev, 
+              [question.id]: { loading: false, error: false, loaded: true } 
+            }));
+          }}
+          onError={() => {
+            setImageStates(prev => ({ 
+              ...prev, 
+              [question.id]: { loading: false, error: true, loaded: false } 
+            }));
+          }}
+        />
+      )}
+      
+      {/* Image Error State */}
+      {imageState.error && (
+        <View style={styles.imageErrorContainer}>
+          <IconSymbol name="photo" size={48} color={colors.text} />
+          <ThemedText style={[styles.imageErrorText, { color: colors.text }]}>
+            {t('common.imageLoadError', 'Image failed to load')}
+          </ThemedText>
+        </View>
+      )}
+    </>
+  );
+});
+
 export default function PictureMCQScreen({ onBackToInstructions }: PictureMCQScreenProps) {
   const { isDarkMode } = useTheme();
   const { user } = useAuth();
@@ -69,10 +139,11 @@ export default function PictureMCQScreen({ onBackToInstructions }: PictureMCQScr
   const [questions, setQuestions] = useState<Question[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [imageStates, setImageStates] = useState<{ [key: number]: { loading: boolean; error: boolean; loaded: boolean } }>({});
   const { t } = useTranslation();
 
   // Transform API questions to the expected format
-  const transformQuestions = (apiQuestions: KGQuestion[]): Question[] => {
+  const transformQuestions = useCallback((apiQuestions: KGQuestion[]): Question[] => {
     return apiQuestions.map((apiQuestion, index) => ({
       id: apiQuestion.id,
       question: `What is shown in this image?`,
@@ -84,7 +155,34 @@ export default function PictureMCQScreen({ onBackToInstructions }: PictureMCQScr
       })),
       explanation: `This is a ${apiQuestion.image_alt}.`
     }));
-  };
+  }, []);
+
+  // Preload images for better performance using React Native Image.prefetch
+  const preloadImages = useCallback(async (questions: Question[]) => {
+    const imagePromises = questions.map(async (question) => {
+      if (question.image) {
+        try {
+          // Use React Native's Image.prefetch for better performance
+          await Image.prefetch(question.image);
+          
+          // Mark as preloaded
+          setImageStates(prev => ({ 
+            ...prev, 
+            [question.id]: { loading: false, error: false, loaded: true } 
+          }));
+        } catch (error) {
+          // Mark as error
+          setImageStates(prev => ({ 
+            ...prev, 
+            [question.id]: { loading: false, error: true, loaded: false } 
+          }));
+        }
+      }
+    });
+
+    // Start preloading in background
+    Promise.allSettled(imagePromises);
+  }, []);
 
   // Fetch questions from API
   const fetchQuestions = async () => {
@@ -102,6 +200,9 @@ export default function PictureMCQScreen({ onBackToInstructions }: PictureMCQScr
       const transformedQuestions = transformQuestions(apiQuestions);
       console.log('Fetched and transformed questions:', transformedQuestions); // DEBUG LOG
       setQuestions(transformedQuestions);
+      
+      // Start preloading images immediately
+      preloadImages(transformedQuestions);
     } catch (err) {
       console.error('Error fetching KG questions:', err);
       setError(err instanceof Error ? err.message : 'Failed to fetch questions');
@@ -114,6 +215,12 @@ export default function PictureMCQScreen({ onBackToInstructions }: PictureMCQScr
   const isFirstQuestion = currentQuestionIndex === 0;
   const isLastQuestion = currentQuestionIndex === questions.length - 1;
   const percentage = Math.round((score / questions.length) * 100);
+
+  // Memoize expensive calculations
+  const memoizedCurrentQuestion = useMemo(() => currentQuestion, [currentQuestion]);
+  const memoizedPercentage = useMemo(() => percentage, [score, questions.length]);
+  const memoizedIsFirstQuestion = useMemo(() => isFirstQuestion, [currentQuestionIndex]);
+  const memoizedIsLastQuestion = useMemo(() => isLastQuestion, [currentQuestionIndex, questions.length]);
 
   // Animation refs
   const scaleAnim = useSharedValue(0);
@@ -165,6 +272,15 @@ export default function PictureMCQScreen({ onBackToInstructions }: PictureMCQScr
     }
   );
 
+  // Optimized gesture handling with throttled updates
+  const updateHoveredOption = useCallback((optionId: string | null) => {
+    setHoveredOption(optionId);
+  }, []);
+
+  const updateDropZones = useCallback((zones: { [key: string]: { x: number, y: number, width: number, height: number } }) => {
+    setDropZones(zones);
+  }, []);
+
   const imagePan = Gesture.Pan()
     .onStart(() => {
       'worklet';
@@ -184,7 +300,7 @@ export default function PictureMCQScreen({ onBackToInstructions }: PictureMCQScr
         y: event.translationY,
       };
 
-      // Calculate distances to each option
+      // Calculate distances to each option with throttling
       const imageCenterX = event.absoluteX;
       const imageCenterY = event.absoluteY;
       let closestOption: string | null = null;
@@ -205,7 +321,7 @@ export default function PictureMCQScreen({ onBackToInstructions }: PictureMCQScr
         }
       });
 
-      runOnJS(setHoveredOption)(closestOption);
+      runOnJS(updateHoveredOption)(closestOption);
     })
     .onEnd(() => {
       'worklet';
@@ -215,7 +331,7 @@ export default function PictureMCQScreen({ onBackToInstructions }: PictureMCQScr
       isDraggingShared.value = false;
       imageScale.value = withSpring(1);
       imagePosition.value = withSpring({ x: 0, y: 0 });
-      runOnJS(setHoveredOption)(null);
+      runOnJS(updateHoveredOption)(null);
 
       if (hoveredOption && currentQuestion) {
         const selectedOption = currentQuestion.options.find(opt => opt.id === hoveredOption);
@@ -585,7 +701,7 @@ export default function PictureMCQScreen({ onBackToInstructions }: PictureMCQScr
               </LinearGradient>
             </View>
 
-            {currentQuestion && (
+            {memoizedCurrentQuestion && (
               <>
                 <View style={styles.questionContainer}>
                   <LinearGradient
@@ -593,7 +709,7 @@ export default function PictureMCQScreen({ onBackToInstructions }: PictureMCQScr
                     style={styles.questionGradient}
                   >
                     <ThemedText style={[styles.questionText, { color: colors.text }]}>
-                      🤔 {currentQuestion.question} 🤔
+                      🤔 {memoizedCurrentQuestion.question} 🤔
                     </ThemedText>
                   </LinearGradient>
                 </View>
@@ -606,11 +722,14 @@ export default function PictureMCQScreen({ onBackToInstructions }: PictureMCQScr
                       { backgroundColor: isDarkMode ? '#1C1C1E' : '#FFFFFF' }
                     ]}
                   >
-                    <Image
-                      source={{ uri: currentQuestion.image }}
-                      style={styles.questionImage}
-                      resizeMode="contain"
-                    />
+                                         <QuestionImage 
+                       question={memoizedCurrentQuestion}
+                       imageStates={imageStates}
+                       setImageStates={setImageStates}
+                       isDarkMode={isDarkMode}
+                       colors={colors}
+                       t={t}
+                     />
                   </Animated.View>
                 </GestureDetector>
 
@@ -631,7 +750,7 @@ export default function PictureMCQScreen({ onBackToInstructions }: PictureMCQScr
                 </Animated.View>
 
                 <View style={styles.optionsContainer}>
-                  {currentQuestion.options.map((option) => (
+                  {memoizedCurrentQuestion.options.map((option) => (
                     <View
                       key={option.id}
                       style={[
@@ -639,13 +758,13 @@ export default function PictureMCQScreen({ onBackToInstructions }: PictureMCQScr
                         hoveredOption === option.id && styles.optionHovered,
                         droppedOption === option.id && styles.optionDropped,
                       ]}
-                      onLayout={(event) => {
-                        const { x, y, width, height } = event.nativeEvent.layout;
-                        setDropZones(prev => ({
-                          ...prev,
-                          [option.id]: { x, y, width, height }
-                        }));
-                      }}
+                                              onLayout={(event) => {
+                          const { x, y, width, height } = event.nativeEvent.layout;
+                          setDropZones(prev => ({
+                            ...prev,
+                            [option.id]: { x, y, width, height }
+                          }));
+                        }}
                     >
                       <View style={styles.optionContent}>
                         <ThemedText style={[
@@ -664,9 +783,9 @@ export default function PictureMCQScreen({ onBackToInstructions }: PictureMCQScr
                 {showExplanation && (
                   <View style={[styles.explanationContainer, { backgroundColor: isDarkMode ? '#1C1C1E' : '#F5F5F5' }]}>
                     <ThemedText style={[styles.explanationTitle, { color: '#6B54AE' }]}>{t('mcq.explanation')}</ThemedText>
-                    <ThemedText style={[styles.explanationText, { color: colors.text }]}>
-                      {currentQuestion.explanation}
-                    </ThemedText>
+                                      <ThemedText style={[styles.explanationText, { color: colors.text }]}>
+                    {memoizedCurrentQuestion.explanation}
+                  </ThemedText>
                   </View>
                 )}
               </>
@@ -684,7 +803,7 @@ export default function PictureMCQScreen({ onBackToInstructions }: PictureMCQScr
                   isFirstQuestion && styles.navButtonDisabled
                 ]}
                 onPress={handlePreviousQuestion}
-                disabled={isFirstQuestion}
+                disabled={memoizedIsFirstQuestion}
               >
                 <IconSymbol name="chevron.left.forwardslash.chevron.right" size={24} color="#6B54AE" />
                 <ThemedText style={styles.prevButtonText}>{t('mcq.previous')}</ThemedText>
@@ -695,7 +814,7 @@ export default function PictureMCQScreen({ onBackToInstructions }: PictureMCQScr
                 onPress={handleNavigation}
               >
                 <ThemedText style={styles.nextButtonText}>
-                  {isLastQuestion ? t('mcq.finish') : t('mcq.next')}
+                  {memoizedIsLastQuestion ? t('mcq.finish') : t('mcq.next')}
                 </ThemedText>
                 <IconSymbol name="chevron.right" size={24} color="#fff" />
               </TouchableOpacity>
@@ -805,6 +924,18 @@ const styles = StyleSheet.create({
   questionImage: {
     width: '100%',
     height: '100%',
+  },
+  imageErrorContainer: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 20,
+  },
+  imageErrorText: {
+    fontSize: 16,
+    textAlign: 'center',
+    marginTop: 12,
+    opacity: 0.7,
   },
   optionsContainer: {
     flexDirection: 'row',

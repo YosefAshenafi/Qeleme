@@ -367,6 +367,7 @@ export default {
     back: 'Back',
     loading: 'Loading...',
     retry: 'Retry',
+    imageLoadError: 'Image failed to load',
   },
   mcq: {
     question: 'Question',

@@ -363,6 +363,7 @@ export default {
     back: 'ተመለስ',
     loading: 'በማዘዋወር ላይ...',
     retry: 'እንደገና ይሞክሩ',
+    imageLoadError: 'ምስሉ ለመጫን አልተቻለም',
   },
   mcq: {
     question: 'ጥያቄ',
