@@ -96,12 +96,21 @@ export default function HomeScreen() {
   const [reportCards, setReportCards] = useState<ReportCard[]>([]);
   const [mcqBooks, setMcqBooks] = useState<BookItem[]>([]);
   const [flashcardBooks, setFlashcardBooks] = useState<BookItem[]>([]);
+  const [isMCQLoading, setIsMCQLoading] = useState(false);
+  const [isFlashcardLoading, setIsFlashcardLoading] = useState(false);
 
   // Check if user is KG student
   const isKGStudent = typeof user?.grade === 'string' && user.grade.toLowerCase().includes('kg');
 
   // Fetch real book data from API for non-KG students
   const fetchBooksFromAPI = async (type: 'mcq' | 'flashcard') => {
+    // Set loading state
+    if (type === 'mcq') {
+      setIsMCQLoading(true);
+    } else {
+      setIsFlashcardLoading(true);
+    }
+    
     try {
       const gradeNumber = user?.grade?.replace(/[^0-9]/g, '') || '6';
       
@@ -126,15 +135,43 @@ export default function HomeScreen() {
         const flashcardData = await getFlashcardStructure(gradeNumber);
         if (flashcardData && flashcardData.length > 0) {
           const grade = flashcardData[0];
-          const books: BookItem[] = grade.subjects.map((subject: any, index: number) => ({
-            id: `flashcard-${subject.id}`,
-            title: subject.name,
-            subtitle: `Grade ${gradeNumber}`,
-            image_url: subject.image_url || '', // Use API image_url if available
-            subject: subject.name,
-            grade: gradeNumber,
-            progress: Math.floor(Math.random() * 100)
-          }));
+          
+          // Get MCQ books to use as fallback for images
+          let mcqBooksForFallback: BookItem[] = [];
+          try {
+            const mcqData = await getMCQData(`grade-${gradeNumber}`);
+            if (mcqData.grades && mcqData.grades.length > 0) {
+              const mcqGrade = mcqData.grades[0];
+              mcqBooksForFallback = mcqGrade.subjects.map((subject: any) => ({
+                id: `mcq-${subject.id}`,
+                title: subject.name,
+                subtitle: `Grade ${gradeNumber}`,
+                image_url: subject.image_url || '',
+                subject: subject.name,
+                grade: gradeNumber,
+                progress: Math.floor(Math.random() * 100)
+              }));
+            }
+          } catch (mcqError) {
+            console.log('Failed to fetch MCQ data for flashcard fallback:', mcqError);
+          }
+          
+          const books: BookItem[] = grade.subjects.map((subject: any, index: number) => {
+            // Try to find matching MCQ subject for image fallback
+            const matchingMCQ = mcqBooksForFallback.find(mcqBook => 
+              mcqBook.subject.toLowerCase() === subject.name.toLowerCase()
+            );
+            
+            return {
+              id: `flashcard-${subject.id}`,
+              title: subject.name,
+              subtitle: `Grade ${gradeNumber}`,
+              image_url: subject.image_url || matchingMCQ?.image_url || '', // Use flashcard image first, then MCQ image as fallback
+              subject: subject.name,
+              grade: gradeNumber,
+              progress: Math.floor(Math.random() * 100)
+            };
+          });
           setFlashcardBooks(books);
         }
       }
@@ -160,6 +197,13 @@ export default function HomeScreen() {
         setMcqBooks(fallbackBooks);
       } else {
         setFlashcardBooks(fallbackBooks);
+      }
+    } finally {
+      // Reset loading state
+      if (type === 'mcq') {
+        setIsMCQLoading(false);
+      } else {
+        setIsFlashcardLoading(false);
       }
     }
   };
@@ -206,6 +250,8 @@ export default function HomeScreen() {
         await loadRecentActivities();
         if (!isKGStudent) {
           await loadReportData();
+          await fetchBooksFromAPI('mcq');
+          await fetchBooksFromAPI('flashcard');
         }
       };
       loadData();
@@ -240,7 +286,12 @@ export default function HomeScreen() {
         }
       }
 
-      await Promise.all([loadRecentActivities(), !isKGStudent ? loadReportData() : Promise.resolve()]);
+      await Promise.all([
+        loadRecentActivities(), 
+        !isKGStudent ? loadReportData() : Promise.resolve(),
+        !isKGStudent ? fetchBooksFromAPI('mcq') : Promise.resolve(),
+        !isKGStudent ? fetchBooksFromAPI('flashcard') : Promise.resolve()
+      ]);
     } catch (error) {
       // Silently handle refresh error
     }
@@ -535,28 +586,28 @@ export default function HomeScreen() {
         <ThemedView style={[styles.container, { backgroundColor: colors.background }]}>
           {/* Motivational Quote Section */}
           <ThemedView style={[styles.quoteSection, { 
-            backgroundColor: isDarkMode ? colors.card : '#F5F5F5'
+            backgroundColor: colors.tint
           }]}>
             {isLoading ? (
               <View style={styles.quoteSkeleton}>
-                <View style={[styles.quoteSkeletonLine, { backgroundColor: colors.text + '20' }]} />
-                <View style={[styles.quoteSkeletonLine, { backgroundColor: colors.text + '20' }]} />
-                <View style={[styles.quoteSkeletonLineShort, { backgroundColor: colors.text + '20' }]} />
-                <View style={[styles.quoteSkeletonAuthor, { backgroundColor: colors.text + '20' }]} />
+                <View style={[styles.quoteSkeletonLine, { backgroundColor: 'rgba(255, 255, 255, 0.3)' }]} />
+                <View style={[styles.quoteSkeletonLine, { backgroundColor: 'rgba(255, 255, 255, 0.3)' }]} />
+                <View style={[styles.quoteSkeletonLineShort, { backgroundColor: 'rgba(255, 255, 255, 0.3)' }]} />
+                <View style={[styles.quoteSkeletonAuthor, { backgroundColor: 'rgba(255, 255, 255, 0.3)' }]} />
                 <Animated.View 
                   style={[
                     styles.shimmer,
                     getShimmerStyle(),
-                    { backgroundColor: colors.text + '10' }
+                    { backgroundColor: 'rgba(255, 255, 255, 0.2)' }
                   ]} 
                 />
               </View>
             ) : (
               <Animated.View style={{ opacity: fadeAnim }}>
-                <ThemedText style={[styles.quoteText, { color: colors.text }]}>
+                <ThemedText style={[styles.quoteText, { color: '#FFFFFF' }]}>
                   "{t(`home.motivationalQuotes.${quoteIndex}.quote`)}"
                 </ThemedText>
-                <ThemedText style={[styles.quoteAuthor, { color: colors.text + '80' }]}>
+                <ThemedText style={[styles.quoteAuthor, { color: 'rgba(255, 255, 255, 0.8)' }]}>
                   - {t(`home.motivationalQuotes.${quoteIndex}.author`)}
                 </ThemedText>
               </Animated.View>
@@ -634,28 +685,40 @@ export default function HomeScreen() {
                     </ThemedText>
                   </TouchableOpacity>
                 </View>
-                <ScrollView 
-                  horizontal 
-                  showsHorizontalScrollIndicator={false}
-                  contentContainerStyle={styles.bookCarouselContainer}
-                >
-                  {mcqBooks.map((book, index) => {
-                    const coverData = getBookCover(book.subject);
-                    return (
-                      <BookCover
-                        key={book.id}
-                        title={book.title}
-                        subtitle={book.subtitle}
-                        coverColor={coverData.coverColor}
-                        coverGradient={coverData.coverGradient}
-                        icon={coverData.icon as any}
-                        imageUrl={book.image_url}
-                        onPress={() => handleBookPress('mcq', book)}
-                        questionCount={Math.floor(Math.random() * 50) + 10}
-                      />
-                    );
-                  })}
-                </ScrollView>
+                {isMCQLoading ? (
+                  <View style={styles.bookCarouselSkeleton}>
+                    {[1, 2, 3, 4].map((index) => (
+                      <View key={index} style={styles.bookSkeletonItem}>
+                        <View style={[styles.bookSkeletonCover, { backgroundColor: colors.text + '20' }]} />
+                        <View style={[styles.bookSkeletonTitle, { backgroundColor: colors.text + '20' }]} />
+                        <View style={[styles.bookSkeletonSubtitle, { backgroundColor: colors.text + '20' }]} />
+                      </View>
+                    ))}
+                  </View>
+                ) : (
+                  <ScrollView 
+                    horizontal 
+                    showsHorizontalScrollIndicator={false}
+                    contentContainerStyle={styles.bookCarouselContainer}
+                  >
+                    {mcqBooks.map((book, index) => {
+                      const coverData = getBookCover(book.subject);
+                      return (
+                        <BookCover
+                          key={book.id}
+                          title={book.title}
+                          subtitle={book.subtitle}
+                          coverColor={coverData.coverColor}
+                          coverGradient={coverData.coverGradient}
+                          icon={coverData.icon as any}
+                          imageUrl={book.image_url}
+                          onPress={() => handleBookPress('mcq', book)}
+                          questionCount={Math.floor(Math.random() * 50) + 10}
+                        />
+                      );
+                    })}
+                  </ScrollView>
+                )}
               </ThemedView>
 
               {/* Flashcard Books Carousel */}
@@ -670,28 +733,40 @@ export default function HomeScreen() {
                     </ThemedText>
                   </TouchableOpacity>
                 </View>
-                <ScrollView 
-                  horizontal 
-                  showsHorizontalScrollIndicator={false}
-                  contentContainerStyle={styles.bookCarouselContainer}
-                >
-                  {flashcardBooks.map((book, index) => {
-                    const coverData = getBookCover(book.subject);
-                    return (
-                      <BookCover
-                        key={book.id}
-                        title={book.title}
-                        subtitle={book.subtitle}
-                        coverColor={coverData.coverColor}
-                        coverGradient={coverData.coverGradient}
-                        icon={coverData.icon as any}
-                        imageUrl={book.image_url}
-                        onPress={() => handleBookPress('flashcard', book)}
-                        flashcardCount={Math.floor(Math.random() * 30) + 5}
-                      />
-                    );
-                  })}
-                </ScrollView>
+                {isFlashcardLoading ? (
+                  <View style={styles.bookCarouselSkeleton}>
+                    {[1, 2, 3, 4].map((index) => (
+                      <View key={index} style={styles.bookSkeletonItem}>
+                        <View style={[styles.bookSkeletonCover, { backgroundColor: colors.text + '20' }]} />
+                        <View style={[styles.bookSkeletonTitle, { backgroundColor: colors.text + '20' }]} />
+                        <View style={[styles.bookSkeletonSubtitle, { backgroundColor: colors.text + '20' }]} />
+                      </View>
+                    ))}
+                  </View>
+                ) : (
+                  <ScrollView 
+                    horizontal 
+                    showsHorizontalScrollIndicator={false}
+                    contentContainerStyle={styles.bookCarouselContainer}
+                  >
+                    {flashcardBooks.map((book, index) => {
+                      const coverData = getBookCover(book.subject);
+                      return (
+                        <BookCover
+                          key={book.id}
+                          title={book.title}
+                          subtitle={book.subtitle}
+                          coverColor={coverData.coverColor}
+                          coverGradient={coverData.coverGradient}
+                          icon={coverData.icon as any}
+                          imageUrl={book.image_url}
+                          onPress={() => handleBookPress('flashcard', book)}
+                          flashcardCount={Math.floor(Math.random() * 30) + 5}
+                        />
+                      );
+                    })}
+                  </ScrollView>
+                )}
               </ThemedView>
             </>
           )}
@@ -1201,5 +1276,31 @@ const styles = StyleSheet.create({
     fontSize: 9,
     fontWeight: '600',
     minWidth: 20,
+  },
+  bookCarouselSkeleton: {
+    flexDirection: 'row',
+    paddingHorizontal: 16,
+    gap: 16,
+  },
+  bookSkeletonItem: {
+    width: BOOK_CARD_WIDTH,
+    alignItems: 'center',
+  },
+  bookSkeletonCover: {
+    width: BOOK_CARD_WIDTH - 10,
+    height: 140,
+    borderRadius: 8,
+    marginBottom: 8,
+  },
+  bookSkeletonTitle: {
+    width: '80%',
+    height: 16,
+    borderRadius: 4,
+    marginBottom: 4,
+  },
+  bookSkeletonSubtitle: {
+    width: '60%',
+    height: 12,
+    borderRadius: 3,
   },
 }); 
