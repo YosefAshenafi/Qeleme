@@ -15,6 +15,7 @@ export default {
     noActivity: 'No recent activity. Start learning!',
     goto: 'Go to Home Screen',
     quickActions: {
+      title: 'Quick Actions',
       mcq: {
         title: 'Practice MCQ',
         subtitle: 'Test your knowledge'
@@ -56,6 +57,22 @@ export default {
           currentStreak: "Current Streak",
           bestStreak: "Best Streak"
         }
+      },
+      learningStreak: {
+        title: "Learning Streak",
+        subtitle: "Days of consistent learning",
+        stats: {
+          currentStreak: "Current Streak",
+          bestStreak: "Best Streak"
+        }
+      },
+      studyFocus: {
+        title: "Study Focus",
+        subtitle: "Your learning patterns",
+        stats: {
+          topSubject: "Top Subject",
+          hoursPerSubject: "Hours per Subject"
+        }
       }
     },
     recentActivity: {
@@ -70,6 +87,7 @@ export default {
       homework: 'Homework',
       study: 'Study Session'
     },
+    seeAll: 'See All',
     activityDetails: {
       completed: 'Completed',
       inProgress: 'In Progress',

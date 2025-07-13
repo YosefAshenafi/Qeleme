@@ -15,6 +15,7 @@ export default {
     noActivity: 'ምንም የቅርብ እንቅስቃሴ የለም። መማር ይጀምሩ!',
     goto: 'ወደ መግቢያ ይመለሱ',
     quickActions: {
+      title: 'ፈጣን እርምጃዎች',
       mcq: {
         title: 'ምርጫ ልምምድ',
         subtitle: 'ዕውቀትዎን ይፈትሹ'
@@ -56,6 +57,22 @@ export default {
           currentStreak: "የአሁኑ ተከታታይነት",
           bestStreak: "ምርጥ ተከታታይነት"
         }
+      },
+      learningStreak: {
+        title: "የትምህርት ተከታታይነት",
+        subtitle: "የተከታተለ ቀናት",
+        stats: {
+          currentStreak: "የአሁኑ ተከታታይነት",
+          bestStreak: "ምርጥ ተከታታይነት"
+        }
+      },
+      studyFocus: {
+        title: "የትምህርት ያተኩራል",
+        subtitle: "የመማሪያ ንድፍዎ",
+        stats: {
+          topSubject: "የተሻለ መጽሐፍ",
+          hoursPerSubject: "በመጽሐፍ ሰዓታት"
+        }
       }
     },
     recentActivity: {
@@ -70,6 +87,7 @@ export default {
       homework: 'የቤት ስራ',
       study: 'የትምህርት ክፍለ ጊዜ'
     },
+    seeAll: 'ሁሉንም ይመልከቱ',
     activityDetails: {
       completed: 'ተጠናቅቋል',
       inProgress: 'በሂደት ላይ',

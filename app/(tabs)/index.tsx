@@ -20,6 +20,7 @@ import { getColors } from '@/constants/Colors';
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const CARD_WIDTH = SCREEN_WIDTH - 40; // Full width minus padding
 const CARD_SPACING = 16;
+const BOOK_CARD_WIDTH = (SCREEN_WIDTH - 60) / 2.2; // Slightly larger cards for better book proportions
 
 const motivationalQuotes = [
   {
@@ -63,6 +64,51 @@ type RecentActivity = {
   duration?: string; // e.g. "2h" for study hours
 };
 
+type BookItem = {
+  id: string;
+  title: string;
+  subtitle: string;
+  image_url: string;
+  subject: string;
+  grade: string;
+  progress?: number;
+};
+
+// Custom Book Cover Component with fallback
+const BookCover = ({ imageUrl, type, style }: { imageUrl: string; type: 'mcq' | 'flashcard'; style: any }) => {
+  const [imageError, setImageError] = useState(false);
+  const { isDarkMode } = useTheme();
+  const colors = getColors(isDarkMode);
+
+  if (imageError) {
+    // Fallback: professional book cover with icon
+    return (
+      <View style={[style, { 
+        backgroundColor: isDarkMode ? '#2C3E50' : '#34495E',
+        justifyContent: 'center',
+        alignItems: 'center',
+        borderWidth: 1,
+        borderColor: isDarkMode ? '#34495E' : '#2C3E50'
+      }]}>
+        <IconSymbol 
+          name={type === 'mcq' ? 'questionmark.circle' : 'rectangle.stack'} 
+          size={32} 
+          color={isDarkMode ? '#ECF0F1' : '#BDC3C7'} 
+        />
+      </View>
+    );
+  }
+
+  return (
+    <Image
+      source={{ uri: imageUrl }}
+      style={style}
+      resizeMode="cover"
+      onError={() => setImageError(true)}
+    />
+  );
+};
+
 export default function HomeScreen() {
   const { t } = useTranslation();
   const { isDarkMode } = useTheme();
@@ -77,6 +123,42 @@ export default function HomeScreen() {
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const shimmerAnim = useRef(new Animated.Value(0)).current;
   const [reportCards, setReportCards] = useState<ReportCard[]>([]);
+  const [mcqBooks, setMcqBooks] = useState<BookItem[]>([]);
+  const [flashcardBooks, setFlashcardBooks] = useState<BookItem[]>([]);
+
+  // Check if user is KG student
+  const isKGStudent = typeof user?.grade === 'string' && user.grade.toLowerCase().includes('kg');
+
+  // Generate sample book data for non-KG students
+  const generateSampleBooks = (type: 'mcq' | 'flashcard'): BookItem[] => {
+    const subjects = type === 'mcq' 
+      ? ['Mathematics', 'Science', 'English', 'History', 'Geography', 'Physics', 'Chemistry', 'Biology']
+      : ['Vocabulary', 'Grammar', 'Literature', 'Mathematics', 'Science', 'History', 'Geography', 'Arts'];
+    
+    const gradeNumber = user?.grade?.replace(/[^0-9]/g, '') || '6';
+    
+    // Use more reliable placeholder images
+    const placeholderImages = [
+      'https://picsum.photos/300/400?random=1',
+      'https://picsum.photos/300/400?random=2',
+      'https://picsum.photos/300/400?random=3',
+      'https://picsum.photos/300/400?random=4',
+      'https://picsum.photos/300/400?random=5',
+      'https://picsum.photos/300/400?random=6',
+      'https://picsum.photos/300/400?random=7',
+      'https://picsum.photos/300/400?random=8'
+    ];
+    
+    return subjects.map((subject, index) => ({
+      id: `${type}-${index}`,
+      title: `${subject} ${type.toUpperCase()}`,
+      subtitle: `Grade ${gradeNumber}`,
+      image_url: placeholderImages[index % placeholderImages.length],
+      subject,
+      grade: gradeNumber,
+      progress: Math.floor(Math.random() * 100)
+    }));
+  };
 
   const loadRecentActivities = async () => {
     try {
@@ -105,17 +187,25 @@ export default function HomeScreen() {
 
   useEffect(() => {
     loadRecentActivities();
-  }, []);
+    
+    // Generate sample books for non-KG students
+    if (!isKGStudent) {
+      setMcqBooks(generateSampleBooks('mcq'));
+      setFlashcardBooks(generateSampleBooks('flashcard'));
+    }
+  }, [isKGStudent, user?.grade]);
 
   // Add useFocusEffect to reload data when screen comes into focus
   useFocusEffect(
     React.useCallback(() => {
       const loadData = async () => {
         await loadRecentActivities();
-        await loadReportData();
+        if (!isKGStudent) {
+          await loadReportData();
+        }
       };
       loadData();
-    }, [])
+    }, [isKGStudent])
   );
 
   const onRefresh = React.useCallback(async () => {
@@ -146,12 +236,12 @@ export default function HomeScreen() {
         }
       }
 
-      await Promise.all([loadRecentActivities(), loadReportData()]);
+      await Promise.all([loadRecentActivities(), !isKGStudent ? loadReportData() : Promise.resolve()]);
     } catch (error) {
       // Silently handle refresh error
     }
     setRefreshing(false);
-  }, []);
+  }, [isKGStudent]);
 
   useEffect(() => {
     // Simulate loading time
@@ -255,15 +345,12 @@ export default function HomeScreen() {
         return;
       }
 
-      // Filter activities for the current user
-      const userActivities = activities.filter((activity: any) => activity.username === user?.username);
-
-      // Calculate report data
-      const reportData = calculateReportData(userActivities);
-      setReportCards(reportData);
+      // Calculate report data from activities
+      const calculatedCards = calculateReportData(activities);
+      setReportCards(calculatedCards);
     } catch (error) {
       // Silently handle report data loading error
-      const defaultCards: ReportCard[] = [
+      const cards: ReportCard[] = [
         {
           title: t('home.reportCards.performance.title'),
           number: '0%',
@@ -309,68 +396,66 @@ export default function HomeScreen() {
           ]
         }
       ];
-      setReportCards(defaultCards);
+      setReportCards(cards);
     }
   };
 
   const calculateReportData = (activities: any[]): ReportCard[] => {
-    // Calculate study hours from activities
-    const studyHours = activities
-      .filter((activity: any) => activity.type === 'study')
-      .reduce((total: number, activity: any) => {
-        const hours = parseInt(activity.duration?.replace('h', '') || '0');
-        return total + hours;
-      }, 0);
-
-    // Calculate performance metrics
-    const mcqActivities = activities.filter((activity: any) => activity.type === 'mcq');
-    const totalQuizzes = mcqActivities.length;
-    const totalScore = mcqActivities.reduce((sum: number, activity: any) => {
-      const score = parseInt(activity.details.match(/\d+/)?.[0] || '0');
-      return sum + score;
-    }, 0);
-    const averageScore = totalQuizzes > 0 ? Math.round(totalScore / totalQuizzes) : 0;
-
-    // Calculate learning streak
-    const today = new Date();
-    const yesterday = new Date(today);
-    yesterday.setDate(yesterday.getDate() - 1);
+    // Filter activities for the current user
+    const userActivities = activities.filter((activity: any) => activity.username === user?.username);
     
-    const hasActivityToday = activities.some((activity: any) => {
-      const activityDate = new Date(activity.timestamp);
-      return activityDate.toDateString() === today.toDateString();
+    // Calculate performance metrics
+    const mcqActivities = userActivities.filter((activity: any) => activity.type === 'mcq');
+    const totalMCQs = mcqActivities.length;
+    const completedMCQs = mcqActivities.filter((activity: any) => activity.status === 'Completed').length;
+    const performancePercentage = totalMCQs > 0 ? Math.round((completedMCQs / totalMCQs) * 100) : 0;
+    
+    // Calculate study hours
+    const studyActivities = userActivities.filter((activity: any) => activity.type === 'study');
+    const totalStudyHours = studyActivities.reduce((total: number, activity: any) => {
+      const duration = activity.duration || '0h';
+      const hours = parseInt(duration.replace('h', '')) || 0;
+      return total + hours;
+    }, 0);
+    
+    // Calculate learning streak (simplified)
+    const today = new Date();
+    const lastActivity = userActivities.length > 0 ? new Date(Math.max(...userActivities.map((a: any) => a.timestamp))) : null;
+    const daysSinceLastActivity = lastActivity ? Math.floor((today.getTime() - lastActivity.getTime()) / (1000 * 60 * 60 * 24)) : 0;
+    const currentStreak = daysSinceLastActivity === 0 ? 1 : 0;
+    
+    // Calculate study focus
+    const subjectCounts: { [key: string]: number } = {};
+    userActivities.forEach((activity: any) => {
+      if (activity.subject) {
+        subjectCounts[activity.subject] = (subjectCounts[activity.subject] || 0) + 1;
+      }
     });
-
-    const hasActivityYesterday = activities.some((activity: any) => {
-      const activityDate = new Date(activity.timestamp);
-      return activityDate.toDateString() === yesterday.toDateString();
-    });
-
-    const currentStreak = hasActivityToday ? 1 : 0;
-    const bestStreak = 1;
-
-    // Create report cards with translations
+    const topSubject = Object.keys(subjectCounts).length > 0 
+      ? Object.keys(subjectCounts).reduce((a, b) => subjectCounts[a] > subjectCounts[b] ? a : b)
+      : '-';
+    
     return [
       {
         title: t('home.reportCards.performance.title'),
-        number: `${averageScore}%`,
+        number: `${performancePercentage}%`,
         subtitle: t('home.reportCards.performance.subtitle'),
         gradient: 'purple',
         icon: 'chart.bar',
         stats: [
-          { label: t('home.reportCards.performance.stats.quizzesTaken'), value: totalQuizzes.toString() },
-          { label: t('home.reportCards.performance.stats.successRate'), value: `${averageScore}%` }
+          { label: t('home.reportCards.performance.stats.quizzesTaken'), value: totalMCQs.toString() },
+          { label: t('home.reportCards.performance.stats.successRate'), value: `${performancePercentage}%` }
         ]
       },
       {
         title: t('home.reportCards.studyProgress.title'),
-        number: `${studyHours}h`,
+        number: `${totalStudyHours}h`,
         subtitle: t('home.reportCards.studyProgress.subtitle'),
         gradient: 'blue',
         icon: 'clock.fill',
         stats: [
           { label: t('home.reportCards.studyProgress.stats.dailyGoal'), value: '2h' },
-          { label: t('home.reportCards.studyProgress.stats.weeklyGoal'), value: '10h' }
+          { label: t('home.reportCards.studyProgress.stats.weeklyGoal'), value: '14h' }
         ]
       },
       {
@@ -381,18 +466,18 @@ export default function HomeScreen() {
         icon: 'trophy.fill',
         stats: [
           { label: t('home.reportCards.learningStreak.stats.currentStreak'), value: `${currentStreak}d` },
-          { label: t('home.reportCards.learningStreak.stats.bestStreak'), value: `${bestStreak}d` }
+          { label: t('home.reportCards.learningStreak.stats.bestStreak'), value: '7d' }
         ]
       },
       {
         title: t('home.reportCards.studyFocus.title'),
-        number: '4',
+        number: Object.keys(subjectCounts).length.toString(),
         subtitle: t('home.reportCards.studyFocus.subtitle'),
         gradient: 'orange',
         icon: 'chart.bar',
         stats: [
-          { label: t('home.reportCards.studyFocus.stats.topSubject'), value: 'Math' },
-          { label: t('home.reportCards.studyFocus.stats.hoursPerSubject'), value: '2.5h' }
+          { label: t('home.reportCards.studyFocus.stats.topSubject'), value: topSubject },
+          { label: t('home.reportCards.studyFocus.stats.hoursPerSubject'), value: `${Math.round(totalStudyHours / Math.max(Object.keys(subjectCounts).length, 1))}h` }
         ]
       }
     ];
@@ -414,6 +499,14 @@ export default function HomeScreen() {
     const contentOffset = event.nativeEvent.contentOffset.x;
     const index = Math.round(contentOffset / (CARD_WIDTH + CARD_SPACING));
     setActiveIndex(index);
+  };
+
+  const handleBookPress = (type: 'mcq' | 'flashcard', book: BookItem) => {
+    if (type === 'mcq') {
+      router.push('/(tabs)/mcq');
+    } else {
+      router.push('/(tabs)/flashcards');
+    }
   };
 
   return (
@@ -466,158 +559,245 @@ export default function HomeScreen() {
             )}
           </ThemedView>
 
-          {/* Report Cards Carousel */}
-          <View style={styles.carouselSection}>
-            <ScrollView 
-              ref={scrollViewRef}
-              horizontal 
-              showsHorizontalScrollIndicator={false}
-              snapToInterval={CARD_WIDTH + CARD_SPACING}
-              decelerationRate="fast"
-              contentContainerStyle={styles.carouselContainer}
-              onScroll={handleScroll}
-              scrollEventThrottle={16}
-            >
-              {reportCards.map((card, index) => (
-                <ThemedView key={index} style={styles.reportCard}>
-                  <LinearGradient
-                    colors={GRADIENTS[card.gradient]}
-                    style={styles.reportCardContent}
-                    start={{ x: 0, y: 0 }}
-                    end={{ x: 1, y: 1 }}
-                  >
-                    <View style={styles.reportCardHeader}>
-                      <View style={styles.reportCardIconContainer}>
-                        <IconSymbol name={card.icon} size={24} color="#fff" />
+          {/* Conditional Content based on Grade */}
+          {isKGStudent ? (
+            // KG Students - Show Report Cards Carousel
+            <View style={styles.carouselSection}>
+              <ScrollView 
+                ref={scrollViewRef}
+                horizontal 
+                showsHorizontalScrollIndicator={false}
+                snapToInterval={CARD_WIDTH + CARD_SPACING}
+                decelerationRate="fast"
+                contentContainerStyle={styles.carouselContainer}
+                onScroll={handleScroll}
+                scrollEventThrottle={16}
+              >
+                {reportCards.map((card, index) => (
+                  <ThemedView key={index} style={styles.reportCard}>
+                    <LinearGradient
+                      colors={GRADIENTS[card.gradient]}
+                      style={styles.reportCardContent}
+                      start={{ x: 0, y: 0 }}
+                      end={{ x: 1, y: 1 }}
+                    >
+                      <View style={styles.reportCardHeader}>
+                        <View style={styles.reportCardIconContainer}>
+                          <IconSymbol name={card.icon} size={24} color="#fff" />
+                        </View>
+                        <ThemedText style={styles.reportCardTitle}>{card.title}</ThemedText>
+                        <View style={styles.paginationDots}>
+                          {reportCards.map((_, dotIndex) => (
+                            <View
+                              key={dotIndex}
+                              style={[
+                                styles.paginationDot,
+                                dotIndex === activeIndex && styles.paginationDotActive
+                              ]}
+                            />
+                          ))}
+                        </View>
                       </View>
-                      <ThemedText style={styles.reportCardTitle}>{card.title}</ThemedText>
-                      <View style={styles.paginationDots}>
-                        {reportCards.map((_, dotIndex) => (
-                          <View
-                            key={dotIndex}
-                            style={[
-                              styles.paginationDot,
-                              dotIndex === activeIndex && styles.paginationDotActive
-                            ]}
-                          />
+                      <View style={styles.reportCardMain}>
+                        <ThemedText style={styles.reportCardNumber}>{card.number}</ThemedText>
+                        <ThemedText style={styles.reportCardSubtitle}>{card.subtitle}</ThemedText>
+                      </View>
+                      <View style={styles.reportCardStats}>
+                        {card.stats.map((stat, statIndex) => (
+                          <View key={statIndex} style={styles.reportStatItem}>
+                            <ThemedText style={styles.reportStatValue}>{stat.value}</ThemedText>
+                            <ThemedText style={styles.reportStatLabel}>{stat.label}</ThemedText>
+                          </View>
                         ))}
                       </View>
-                    </View>
-                    <View style={styles.reportCardMain}>
-                      <ThemedText style={styles.reportCardNumber}>{card.number}</ThemedText>
-                      <ThemedText style={styles.reportCardSubtitle}>{card.subtitle}</ThemedText>
-                    </View>
-                    <View style={styles.reportCardStats}>
-                      {card.stats.map((stat, statIndex) => (
-                        <View key={statIndex} style={styles.reportStatItem}>
-                          <ThemedText style={styles.reportStatValue}>{stat.value}</ThemedText>
-                          <ThemedText style={styles.reportStatLabel}>{stat.label}</ThemedText>
-                        </View>
-                      ))}
-                    </View>
-                  </LinearGradient>
-                </ThemedView>
-              ))}
-            </ScrollView>
-          </View>
-
-          {/* Quick Actions Grid */}
-          <ThemedView style={[styles.gridContainer, { backgroundColor: colors.background }]}>
-            <TouchableOpacity 
-              style={[styles.gridItem, { backgroundColor: colors.background }]} 
-              onPress={() => router.push('/(tabs)/mcq')}
-            >
-              <LinearGradient
-                colors={isDarkMode ? ['#2D1B4D', '#3D2B6D'] : ['#F3E5F5', '#E1BEE7']}
-                style={[styles.gridItemContent, { backgroundColor: colors.card }]}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 1 }}
-              >
-                <View style={[styles.gridIconContainer, { backgroundColor: isDarkMode ? '#4A2B8E30' : '#6B54AE20' }]}>
-                  <IconSymbol name="questionmark.circle" size={32} color={colors.tint} />
-                </View>
-                <View style={styles.gridTextContainer}>
-                  <ThemedText numberOfLines={1} style={[styles.gridItemTitle, { color: colors.text }]}>
+                    </LinearGradient>
+                  </ThemedView>
+                ))}
+              </ScrollView>
+            </View>
+          ) : (
+            // Non-KG Students - Show MCQ and Flashcard Carousels
+            <>
+              {/* MCQ Books Carousel */}
+              <ThemedView style={[styles.bookCarouselSection, { backgroundColor: colors.background }]}>
+                <View style={styles.bookCarouselHeader}>
+                  <ThemedText style={[styles.bookCarouselTitle, { color: colors.text }]}>
                     {t('home.quickActions.mcq.title')}
                   </ThemedText>
-                  <ThemedText numberOfLines={1} style={[styles.gridItemSubtitle, { color: colors.text + '80' }]}>
-                    {t('home.quickActions.mcq.subtitle')}
-                  </ThemedText>
+                  <TouchableOpacity onPress={() => router.push('/(tabs)/mcq')}>
+                    <ThemedText style={[styles.seeAllButton, { color: colors.tint }]}>
+                      {t('home.seeAll')}
+                    </ThemedText>
+                  </TouchableOpacity>
                 </View>
-              </LinearGradient>
-            </TouchableOpacity>
+                <ScrollView 
+                  horizontal 
+                  showsHorizontalScrollIndicator={false}
+                  contentContainerStyle={styles.bookCarouselContainer}
+                >
+                  {mcqBooks.map((book, index) => (
+                    <TouchableOpacity
+                      key={book.id}
+                      style={styles.bookCard}
+                      onPress={() => handleBookPress('mcq', book)}
+                    >
+                                          <View style={[styles.bookCardContent, { backgroundColor: colors.card }]}>
+                      <View style={styles.bookSpine} />
+                      <BookCover
+                        imageUrl={book.image_url}
+                        type="mcq"
+                        style={styles.bookCover}
+                      />
+                      <View style={styles.bookInfo}>
+                        <ThemedText numberOfLines={2} style={[styles.bookTitle, { color: colors.text }]}>
+                          {book.title}
+                        </ThemedText>
+                        <ThemedText numberOfLines={1} style={[styles.bookSubtitle, { color: colors.text + '80' }]}>
+                          {book.subtitle}
+                        </ThemedText>
+                        {book.progress !== undefined && (
+                          <View style={styles.progressContainer}>
+                            <View style={[styles.progressBar, { backgroundColor: colors.text + '20' }]}>
+                              <View 
+                                style={[
+                                  styles.progressFill, 
+                                  { 
+                                    width: `${book.progress}%`,
+                                    backgroundColor: colors.tint 
+                                  }
+                                ]} 
+                              />
+                            </View>
+                            <ThemedText style={[styles.progressText, { color: colors.text + '80' }]}>
+                              {book.progress}%
+                            </ThemedText>
+                          </View>
+                        )}
+                      </View>
+                    </View>
+                    </TouchableOpacity>
+                  ))}
+                </ScrollView>
+              </ThemedView>
 
-            <TouchableOpacity 
-              style={[styles.gridItem, { backgroundColor: colors.background }]} 
-              onPress={() => router.push('/(tabs)/flashcards')}
-            >
-              <LinearGradient
-                colors={isDarkMode ? ['#0A2F0A', '#1A4A1F'] : ['#E8F5E9', '#C8E6C9']}
-                style={[styles.gridItemContent, { backgroundColor: colors.card }]}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 1 }}
-              >
-                <View style={[styles.gridIconContainer, { backgroundColor: isDarkMode ? '#2E7D3230' : '#2E7D3220' }]}>
-                  <IconSymbol name="rectangle.stack" size={32} color="#2E7D32" />
-                </View>
-                <View style={styles.gridTextContainer}>
-                  <ThemedText numberOfLines={1} style={[styles.gridItemTitle, { color: colors.text }]}>
+              {/* Flashcard Books Carousel */}
+              <ThemedView style={[styles.bookCarouselSection, { backgroundColor: colors.background }]}>
+                <View style={styles.bookCarouselHeader}>
+                  <ThemedText style={[styles.bookCarouselTitle, { color: colors.text }]}>
                     {t('home.quickActions.flashcards.title')}
                   </ThemedText>
-                  <ThemedText numberOfLines={1} style={[styles.gridItemSubtitle, { color: colors.text + '80' }]}>
-                    {t('home.quickActions.flashcards.subtitle')}
-                  </ThemedText>
+                  <TouchableOpacity onPress={() => router.push('/(tabs)/flashcards')}>
+                    <ThemedText style={[styles.seeAllButton, { color: colors.tint }]}>
+                      {t('home.seeAll')}
+                    </ThemedText>
+                  </TouchableOpacity>
                 </View>
-              </LinearGradient>
-            </TouchableOpacity>
+                <ScrollView 
+                  horizontal 
+                  showsHorizontalScrollIndicator={false}
+                  contentContainerStyle={styles.bookCarouselContainer}
+                >
+                  {flashcardBooks.map((book, index) => (
+                    <TouchableOpacity
+                      key={book.id}
+                      style={styles.bookCard}
+                      onPress={() => handleBookPress('flashcard', book)}
+                    >
+                                          <View style={[styles.bookCardContent, { backgroundColor: colors.card }]}>
+                      <View style={styles.bookSpine} />
+                      <BookCover
+                        imageUrl={book.image_url}
+                        type="flashcard"
+                        style={styles.bookCover}
+                      />
+                      <View style={styles.bookInfo}>
+                        <ThemedText numberOfLines={2} style={[styles.bookTitle, { color: colors.text }]}>
+                          {book.title}
+                        </ThemedText>
+                        <ThemedText numberOfLines={1} style={[styles.bookSubtitle, { color: colors.text + '80' }]}>
+                          {book.subtitle}
+                        </ThemedText>
+                        {book.progress !== undefined && (
+                          <View style={styles.progressContainer}>
+                            <View style={[styles.progressBar, { backgroundColor: colors.text + '20' }]}>
+                              <View 
+                                style={[
+                                  styles.progressFill, 
+                                  { 
+                                    width: `${book.progress}%`,
+                                    backgroundColor: colors.tint 
+                                  }
+                                ]} 
+                              />
+                            </View>
+                            <ThemedText style={[styles.progressText, { color: colors.text + '80' }]}>
+                              {book.progress}%
+                            </ThemedText>
+                          </View>
+                        )}
+                      </View>
+                    </View>
+                    </TouchableOpacity>
+                  ))}
+                </ScrollView>
+              </ThemedView>
+            </>
+          )}
 
-            <TouchableOpacity 
-              style={[styles.gridItem, { backgroundColor: colors.background }]} 
-              onPress={() => router.push('/(tabs)/homework')}
-            >
-              <LinearGradient
-                colors={isDarkMode ? ['#0A1F2F', '#0D3B71'] : ['#E3F2FD', '#BBDEFB']}
-                style={[styles.gridItemContent, { backgroundColor: colors.card }]}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 1 }}
+          {/* Quick Actions Section */}
+          <ThemedView style={[styles.quickActionsSection, { backgroundColor: colors.background }]}>
+            <ThemedText style={[styles.sectionTitle, { color: colors.text }]}>
+              {t('home.quickActions.title')}
+            </ThemedText>
+            <View style={[styles.gridContainer, { backgroundColor: colors.background }]}>
+              <TouchableOpacity 
+                style={[styles.gridItem, { backgroundColor: colors.background }]} 
+                onPress={() => router.push('/(tabs)/homework')}
               >
-                <View style={[styles.gridIconContainer, { backgroundColor: isDarkMode ? '#1976D230' : '#1976D220' }]}>
-                  <IconSymbol name="message" size={32} color="#1976D2" />
-                </View>
-                <View style={styles.gridTextContainer}>
-                  <ThemedText numberOfLines={1} style={[styles.gridItemTitle, { color: colors.text }]}>
-                    {t('home.quickActions.homework.title')}
-                  </ThemedText>
-                  <ThemedText numberOfLines={1} style={[styles.gridItemSubtitle, { color: colors.text + '80' }]}>
-                    {t('home.quickActions.homework.subtitle')}
-                  </ThemedText>
-                </View>
-              </LinearGradient>
-            </TouchableOpacity>
+                <LinearGradient
+                  colors={isDarkMode ? ['#0A1F2F', '#0D3B71'] : ['#E3F2FD', '#BBDEFB']}
+                  style={[styles.gridItemContent, { backgroundColor: colors.card }]}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 1 }}
+                >
+                  <View style={[styles.gridIconContainer, { backgroundColor: isDarkMode ? '#1976D230' : '#1976D220' }]}>
+                    <IconSymbol name="message" size={32} color="#1976D2" />
+                  </View>
+                  <View style={styles.gridTextContainer}>
+                    <ThemedText numberOfLines={1} style={[styles.gridItemTitle, { color: colors.text }]}>
+                      {t('home.quickActions.homework.title')}
+                    </ThemedText>
+                    <ThemedText numberOfLines={1} style={[styles.gridItemSubtitle, { color: colors.text + '80' }]}>
+                      {t('home.quickActions.homework.subtitle')}
+                    </ThemedText>
+                  </View>
+                </LinearGradient>
+              </TouchableOpacity>
 
-            <TouchableOpacity 
-              style={[styles.gridItem, { backgroundColor: colors.background }]} 
-              onPress={() => router.push('/(tabs)/reports')}
-            >
-              <LinearGradient
-                colors={isDarkMode ? ['#2F1F0A', '#8B4D0A'] : ['#FFF3E0', '#FFE0B2']}
-                style={[styles.gridItemContent, { backgroundColor: colors.card }]}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 1 }}
+              <TouchableOpacity 
+                style={[styles.gridItem, { backgroundColor: colors.background }]} 
+                onPress={() => router.push('/(tabs)/reports')}
               >
-                <View style={[styles.gridIconContainer, { backgroundColor: isDarkMode ? '#ED6C0230' : '#ED6C0220' }]}>
-                  <IconSymbol name="chart.bar" size={32} color="#ED6C02" />
-                </View>
-                <View style={styles.gridTextContainer}>
-                  <ThemedText numberOfLines={1} style={[styles.gridItemTitle, { color: colors.text }]}>
-                    {t('home.quickActions.reports.title')}
-                  </ThemedText>
-                  <ThemedText numberOfLines={1} style={[styles.gridItemSubtitle, { color: colors.text + '80' }]}>
-                    {t('home.quickActions.reports.subtitle')}
-                  </ThemedText>
-                </View>
-              </LinearGradient>
-            </TouchableOpacity>
+                <LinearGradient
+                  colors={isDarkMode ? ['#2F1F0A', '#8B4D0A'] : ['#FFF3E0', '#FFE0B2']}
+                  style={[styles.gridItemContent, { backgroundColor: colors.card }]}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 1 }}
+                >
+                  <View style={[styles.gridIconContainer, { backgroundColor: isDarkMode ? '#ED6C0230' : '#ED6C0220' }]}>
+                    <IconSymbol name="chart.bar" size={32} color="#ED6C02" />
+                  </View>
+                  <View style={styles.gridTextContainer}>
+                    <ThemedText numberOfLines={1} style={[styles.gridItemTitle, { color: colors.text }]}>
+                      {t('home.quickActions.reports.title')}
+                    </ThemedText>
+                    <ThemedText numberOfLines={1} style={[styles.gridItemSubtitle, { color: colors.text + '80' }]}>
+                      {t('home.quickActions.reports.subtitle')}
+                    </ThemedText>
+                  </View>
+                </LinearGradient>
+              </TouchableOpacity>
+            </View>
           </ThemedView>
 
           {/* Recent Activity Section */}
@@ -725,6 +905,10 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     height: '100%',
+  },
+  quickActionsSection: {
+    marginTop: 8,
+    marginBottom: 24,
   },
   gridContainer: {
     flexDirection: 'row',
@@ -973,5 +1157,96 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     fontSize: 14,
     marginTop: 20,
+  },
+  bookCarouselSection: {
+    marginTop: 8,
+    marginBottom: 16,
+  },
+  bookCarouselHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 12,
+    paddingHorizontal: 20,
+  },
+  bookCarouselTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+  },
+  bookCarouselContainer: {
+    paddingHorizontal: 20,
+  },
+  bookCard: {
+    width: BOOK_CARD_WIDTH,
+    height: 220,
+    borderRadius: 8,
+    overflow: 'hidden',
+    marginRight: 16,
+    elevation: 6,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 8,
+    borderWidth: 1,
+    borderColor: 'rgba(0, 0, 0, 0.1)',
+  },
+  bookCardContent: {
+    flex: 1,
+    padding: 8,
+    justifyContent: 'space-between',
+    position: 'relative',
+  },
+  bookSpine: {
+    position: 'absolute',
+    left: 0,
+    top: 0,
+    bottom: 0,
+    width: 4,
+    backgroundColor: 'rgba(0, 0, 0, 0.2)',
+    zIndex: 1,
+  },
+  bookCover: {
+    width: '100%',
+    height: 140,
+    borderRadius: 4,
+    marginBottom: 8,
+    borderWidth: 1,
+    borderColor: 'rgba(0, 0, 0, 0.1)',
+  },
+  bookInfo: {
+    flex: 1,
+    justifyContent: 'space-between',
+  },
+  bookTitle: {
+    fontSize: 13,
+    fontWeight: '700',
+    marginBottom: 3,
+    lineHeight: 16,
+  },
+  bookSubtitle: {
+    fontSize: 11,
+    marginBottom: 8,
+    opacity: 0.7,
+  },
+  progressContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 6,
+  },
+  progressBar: {
+    flex: 1,
+    height: 2,
+    borderRadius: 1,
+    marginRight: 6,
+    backgroundColor: 'rgba(0, 0, 0, 0.1)',
+  },
+  progressFill: {
+    height: '100%',
+    borderRadius: 1,
+  },
+  progressText: {
+    fontSize: 9,
+    fontWeight: '600',
+    minWidth: 20,
   },
 }); 
