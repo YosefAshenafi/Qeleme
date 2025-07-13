@@ -8,6 +8,7 @@ import { useState, useEffect, useRef } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
+import { useAuth } from '@/contexts/AuthContext';
 
 import { Header } from '@/components/Header';
 import { ThemedText } from '@/components/ThemedText';
@@ -18,8 +19,21 @@ const { width: SCREEN_WIDTH } = Dimensions.get('window');
 export default function ReportsScreen() {
   const { t, i18n } = useTranslation();
   const { isDarkMode } = useTheme();
+  const { user } = useAuth();
   const colors = getColors(isDarkMode);
   const [refreshing, setRefreshing] = useState(false);
+  const [stats, setStats] = useState([
+    { label: t('profile.stats.mcqsCompleted'), value: '0', icon: 'questionmark.circle.fill' as const },
+    { label: t('profile.stats.flashcardsClicked'), value: '0', icon: 'rectangle.stack.fill' as const },
+    { label: t('profile.stats.homeworkQuestions'), value: '0', icon: 'message.fill' as const },
+    { label: t('profile.stats.studyHours'), value: '0', icon: 'clock.fill' as const },
+  ]);
+
+  const [kgStats, setKgStats] = useState([
+    { label: t('profile.stats.pictureQuestions'), value: '0', icon: 'photo' as const },
+    { label: t('profile.stats.cardGroups'), value: '0', icon: 'rectangle.stack.fill' as const },
+  ]);
+
   const [reportData, setReportData] = useState({
     overallProgress: {
       percentage: 75,
@@ -80,6 +94,23 @@ export default function ReportsScreen() {
   const [isInfoExpanded, setIsInfoExpanded] = useState(false);
   const animatedHeight = useRef(new Animated.Value(0)).current;
   const animatedRotate = useRef(new Animated.Value(0)).current;
+
+  // Update stats when language changes
+  useEffect(() => {
+    if (typeof user?.grade === 'string' && user.grade.toLowerCase().includes('kg')) {
+      setKgStats([
+        { label: t('profile.stats.pictureQuestions'), value: '0', icon: 'photo' as const },
+        { label: t('profile.stats.cardGroups'), value: '0', icon: 'rectangle.stack.fill' as const },
+      ]);
+    } else {
+      setStats([
+        { label: t('profile.stats.mcqsCompleted'), value: '0', icon: 'questionmark.circle.fill' as const },
+        { label: t('profile.stats.flashcardsClicked'), value: '0', icon: 'rectangle.stack.fill' as const },
+        { label: t('profile.stats.homeworkQuestions'), value: '0', icon: 'message.fill' as const },
+        { label: t('profile.stats.studyHours'), value: '0', icon: 'clock.fill' as const },
+      ]);
+    }
+  }, [t, i18n.language, user?.grade]);
 
   useEffect(() => {
     loadReportData();
@@ -173,6 +204,36 @@ export default function ReportsScreen() {
         }
       >
         <ThemedView style={[styles.container, { backgroundColor: colors.background }]}>
+          {/* Progress Stats Section */}
+          <ThemedView style={[styles.statsSection, { backgroundColor: colors.background }]}>
+            <ThemedText style={[styles.sectionTitle, { color: colors.text }]}>
+              {t('reports.progressStats.title', { defaultValue: 'Your Progress' })}
+            </ThemedText>
+            <View style={styles.statsGrid}>
+              {typeof user?.grade === 'string' && user.grade.toLowerCase().includes('kg') ? (
+                kgStats.map((stat, index) => (
+                  <View key={index} style={[styles.statCard, { backgroundColor: colors.card }]}>
+                    <View style={[styles.statIconContainer, { backgroundColor: colors.tint + '15' }]}>
+                      <IconSymbol name={stat.icon} size={24} color={colors.tint} />
+                    </View>
+                    <ThemedText style={[styles.statValue, { color: colors.text }]}>{stat.value}</ThemedText>
+                    <ThemedText style={[styles.statLabel, { color: colors.text + '80' }]}>{stat.label}</ThemedText>
+                  </View>
+                ))
+              ) : (
+                stats.map((stat, index) => (
+                  <View key={index} style={[styles.statCard, { backgroundColor: colors.card }]}>
+                    <View style={[styles.statIconContainer, { backgroundColor: colors.tint + '15' }]}>
+                      <IconSymbol name={stat.icon} size={24} color={colors.tint} />
+                    </View>
+                    <ThemedText style={[styles.statValue, { color: colors.text }]}>{stat.value}</ThemedText>
+                    <ThemedText style={[styles.statLabel, { color: colors.text + '80' }]}>{stat.label}</ThemedText>
+                  </View>
+                ))
+              )}
+            </View>
+          </ThemedView>
+
           {/* Overall Progress Card */}
           <ThemedView style={[styles.card, { backgroundColor: colors.background }]}>
             <LinearGradient
@@ -333,6 +394,52 @@ const styles = StyleSheet.create({
     padding: 20,
     gap: 20,
   },
+  statsSection: {
+    marginBottom: 20,
+  },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    marginBottom: 16,
+  },
+  statsGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 12,
+  },
+  statCard: {
+    flex: 1,
+    minWidth: '45%',
+    padding: 16,
+    borderRadius: 12,
+    alignItems: 'center',
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 1,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  statIconContainer: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 8,
+  },
+  statValue: {
+    fontSize: 20,
+    fontWeight: '700',
+    marginBottom: 4,
+  },
+  statLabel: {
+    fontSize: 12,
+    textAlign: 'center',
+    fontWeight: '500',
+  },
   card: {
     borderRadius: 20,
     overflow: 'hidden',
@@ -383,50 +490,8 @@ const styles = StyleSheet.create({
   statItem: {
     alignItems: 'center',
   },
-  statValue: {
-    fontSize: 24,
-    fontWeight: '600',
-    color: '#fff',
-    marginBottom: 4,
-  },
-  statLabel: {
-    fontSize: 14,
-    color: 'rgba(255, 255, 255, 0.8)',
-  },
   section: {
     gap: 16,
-  },
-  sectionTitle: {
-    fontSize: 20,
-    fontWeight: '600',
-    marginBottom: 8,
-  },
-  subjectCard: {
-    borderRadius: 12,
-    padding: 16,
-    gap: 8,
-  },
-  subjectHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  subjectName: {
-    fontSize: 16,
-    fontWeight: '500',
-  },
-  subjectScore: {
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  progressBar: {
-    height: 8,
-    borderRadius: 4,
-    overflow: 'hidden',
-  },
-  progressFill: {
-    height: '100%',
-    borderRadius: 4,
   },
   activityCard: {
     flexDirection: 'row',

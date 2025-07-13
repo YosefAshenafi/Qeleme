@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, Animated, RefreshControl, Alert } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Animated, RefreshControl, Alert } from 'react-native';
 import { useColorScheme } from '../hooks/useColorScheme';
 import { Colors } from '../constants/Colors';
 import { IconSymbol, IconSymbolName } from '../components/ui/IconSymbol';
@@ -13,12 +13,9 @@ import { useTheme } from '../contexts/ThemeContext';
 import { useAuth } from '../contexts/AuthContext';
 import { LanguageSelector } from '../components/LanguageSelector';
 import { useTranslation } from 'react-i18next';
-import * as ImagePicker from 'expo-image-picker';
-import * as ImageManipulator from 'expo-image-manipulator';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { LanguageToggle } from '../components/ui/LanguageToggle';
 import { BASE_URL } from '../config/constants';
-import { ProfileAvatar } from '../components/ui/ProfileAvatar';
 
 interface AccordionItemProps {
   title: string;
@@ -81,37 +78,8 @@ export default function ProfileScreen() {
   const { logout, user, login } = useAuth();
   const { t, i18n } = useTranslation();
   const [openAccordion, setOpenAccordion] = useState<string | null>(null);
-  const [profileImage, setProfileImage] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
   const colors = getColors(isDarkMode);
-  const [stats, setStats] = useState([
-    { label: t('profile.stats.mcqsCompleted'), value: '0', icon: 'questionmark.circle.fill' as const },
-    { label: t('profile.stats.flashcardsClicked'), value: '0', icon: 'rectangle.stack.fill' as const },
-    { label: t('profile.stats.homeworkQuestions'), value: '0', icon: 'message.fill' as const },
-    { label: t('profile.stats.studyHours'), value: '0', icon: 'clock.fill' as const },
-  ]);
-
-  const [kgStats, setKgStats] = useState([
-    { label: t('profile.stats.pictureQuestions'), value: '0', icon: 'photo' as const },
-    { label: t('profile.stats.cardGroups'), value: '0', icon: 'rectangle.stack.fill' as const },
-  ]);
-
-  // Update stats when language changes
-  useEffect(() => {
-    if (typeof user?.grade === 'string' && user.grade.toLowerCase().includes('kg')) {
-      setKgStats([
-        { label: t('profile.stats.pictureQuestions'), value: '0', icon: 'photo' as const },
-        { label: t('profile.stats.cardGroups'), value: '0', icon: 'rectangle.stack.fill' as const },
-      ]);
-    } else {
-      setStats([
-        { label: t('profile.stats.mcqsCompleted'), value: stats[0].value, icon: 'questionmark.circle.fill' as const },
-        { label: t('profile.stats.flashcardsClicked'), value: stats[1].value, icon: 'rectangle.stack.fill' as const },
-        { label: t('profile.stats.homeworkQuestions'), value: stats[2].value, icon: 'message.fill' as const },
-        { label: t('profile.stats.studyHours'), value: stats[3].value, icon: 'clock.fill' as const },
-      ]);
-    }
-  }, [t, i18n.language]);
 
   const onRefresh = React.useCallback(async () => {
     setRefreshing(true);
@@ -129,104 +97,11 @@ export default function ProfileScreen() {
         const updatedUserData = await response.json();
         await login(updatedUserData);
       }
-
-      await Promise.all([
-        loadProfileImage(),
-        loadStats()
-      ]);
     } catch (error) {
       // Silently handle refresh error
     }
     setRefreshing(false);
   }, []);
-
-  useEffect(() => {
-    loadProfileImage();
-    loadStats();
-  }, [t]);
-
-  const loadProfileImage = async () => {
-    try {
-      const imageUri = await AsyncStorage.getItem('profileImage');
-      if (imageUri) {
-        setProfileImage(imageUri);
-      }
-    } catch (error) {
-      // Silently handle profile image loading error
-    }
-  };
-
-  const loadStats = async () => {
-    try {
-      // Always set zeros for all stats
-      setStats([
-        { label: t('profile.stats.mcqsCompleted'), value: '0', icon: 'questionmark.circle.fill' as const },
-        { label: t('profile.stats.flashcardsClicked'), value: '0', icon: 'rectangle.stack.fill' as const },
-        { label: t('profile.stats.homeworkQuestions'), value: '0', icon: 'message.fill' as const },
-        { label: t('profile.stats.studyHours'), value: '0', icon: 'clock.fill' as const },
-      ]);
-    } catch (error) {
-      // Set zeros for all stats on error
-      setStats([
-        { label: t('profile.stats.mcqsCompleted'), value: '0', icon: 'questionmark.circle.fill' as const },
-        { label: t('profile.stats.flashcardsClicked'), value: '0', icon: 'rectangle.stack.fill' as const },
-        { label: t('profile.stats.homeworkQuestions'), value: '0', icon: 'message.fill' as const },
-        { label: t('profile.stats.studyHours'), value: '0', icon: 'clock.fill' as const },
-      ]);
-    }
-  };
-
-  const pickImage = async () => {
-    try {
-      // Request permission
-      const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-      if (status !== 'granted') {
-        alert(t('profile.errors.imagePermission'));
-        return;
-      }
-
-      // Pick the image
-      const result = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: ImagePicker.MediaTypeOptions.Images,
-        allowsEditing: true,
-        aspect: [1, 1],
-        quality: 0.8,
-        base64: true,
-      });
-
-      if (!result.canceled) {
-        // Resize the image to 100x100
-        const resizedImage = await ImageManipulator.manipulateAsync(
-          result.assets[0].uri,
-          [{ resize: { width: 100, height: 100 } }],
-          { compress: 0.8, format: ImageManipulator.SaveFormat.JPEG, base64: true }
-        );
-
-        const base64Image = `data:image/jpeg;base64,${resizedImage.base64}`;
-        
-        // Send to API
-        const response = await fetch(`${BASE_URL}/api/profile/${user?.id}/image`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${await AsyncStorage.getItem('@auth_token')}`
-          },
-          body: JSON.stringify({ image: base64Image })
-        });
-
-        if (response.ok) {
-          // Save the image URI locally
-          await AsyncStorage.setItem('profileImage', resizedImage.uri);
-          setProfileImage(resizedImage.uri);
-          Alert.alert(t('profile.success'), t('profile.imageUpdated'));
-        } else {
-          throw new Error('Failed to upload image');
-        }
-      }
-    } catch (error) {
-      alert(t('profile.errors.imagePicking'));
-    }
-  };
 
   const getBilingualDate = (date: Date) => {
     const monthNames: Record<string, Record<string, string>> = {
@@ -345,16 +220,25 @@ export default function ProfileScreen() {
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
       <StatusBar style="light" backgroundColor={colors.tint} />
+      
+      {/* Clean Header */}
       <View style={[styles.header, { backgroundColor: colors.tint }]}>
         <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
           <IconSymbol name="chevron.right" size={24} color={colors.background} style={{ transform: [{ rotate: '180deg' }] }} />
         </TouchableOpacity>
+        <View style={styles.headerCenter}>
+          <Text style={[styles.headerTitle, { color: colors.background }]}>
+            {t('profile.title', { defaultValue: 'Settings' })}
+          </Text>
+        </View>
         <View style={styles.headerRight}>
           <LanguageToggle colors={{ card: colors.background, text: colors.tint }} />
         </View>
       </View>
+
       <ScrollView 
         style={styles.scrollView}
+        contentContainerStyle={styles.scrollContent}
         refreshControl={
           <RefreshControl
             refreshing={refreshing}
@@ -364,86 +248,75 @@ export default function ProfileScreen() {
           />
         }
       >
-        {/* Profile Header */}
-        <View style={[styles.profileHeader, { backgroundColor: colors.tint }]}>
-          <View style={styles.profileImageContainer}>
-            <ProfileAvatar 
-              size={120}
-              showEditButton={true}
-              onPress={pickImage}
-              colors={colors}
-            />
-          </View>
-          <Text style={[styles.englishName, { color: colors.background }]}>{profileData.englishName}</Text>
-          <Text style={[styles.email, { color: colors.background }]}>{profileData.username}</Text>
-          <View style={styles.roleContainer}>
-            <Text style={[styles.role, { color: colors.background }]}>{profileData.role}</Text>
-            <Text style={[styles.grade, { color: colors.background }]}>{profileData.grade}</Text>
+        {/* User Info Card */}
+        <View style={[styles.userInfoCard, { backgroundColor: colors.card }]}>
+          <View style={styles.userInfoHeader}>
+            <View style={[styles.userAvatar, { backgroundColor: colors.tint + '20' }]}>
+              <IconSymbol name="person.fill" size={32} color={colors.tint} />
+            </View>
+            <View style={styles.userInfoText}>
+              <Text style={[styles.userName, { color: colors.text }]}>{profileData.englishName}</Text>
+              <Text style={[styles.userUsername, { color: colors.text + '80' }]}>{profileData.username}</Text>
+              <View style={styles.userBadges}>
+                <View style={[styles.userBadge, { backgroundColor: colors.tint + '20' }]}>
+                  <Text style={[styles.userBadgeText, { color: colors.tint }]}>{profileData.role}</Text>
+                </View>
+                <View style={[styles.userBadge, { backgroundColor: colors.tint + '20' }]}>
+                  <Text style={[styles.userBadgeText, { color: colors.tint }]}>{profileData.grade}</Text>
+                </View>
+              </View>
+            </View>
           </View>
         </View>
 
-        {/* Stats Section - Show different stats for KG students */}
-        <View style={styles.statsContainer}>
-          {typeof user?.grade === 'string' && user.grade.toLowerCase().includes('kg') ? (
-            kgStats.map((stat, index) => (
-              <View key={index} style={[styles.statCard, { backgroundColor: colors.card }]}>
-                <IconSymbol name={stat.icon} size={24} color={colors.tint} />
-                <Text style={[styles.statValue, { color: colors.text }]}>{stat.value}</Text>
-                <Text style={[styles.statLabel, { color: colors.text }]}>{stat.label}</Text>
-              </View>
-            ))
-          ) : (
-            stats.map((stat, index) => (
-              <View key={index} style={[styles.statCard, { backgroundColor: colors.card }]}>
-                <IconSymbol name={stat.icon} size={24} color={colors.tint} />
-                <Text style={[styles.statValue, { color: colors.text }]}>{stat.value}</Text>
-                <Text style={[styles.statLabel, { color: colors.text }]}>{stat.label}</Text>
-              </View>
-            ))
-          )}
-        </View>
-
-        {/* Menu Items */}
-        <View style={styles.menuContainer}>
-          {menuItems.map((item, index) => (
-            item.customContent ? (
-              <TouchableOpacity
-                key={index}
-                style={[styles.menuItem, { backgroundColor: colors.card }]}
-                onPress={item.action}
-                accessibilityLabel={`Switch to ${isDarkMode ? 'light' : 'dark'} theme`}
-                accessibilityRole="switch"
-                accessibilityState={{ selected: isDarkMode }}
-              >
-                {item.customContent}
-              </TouchableOpacity>
-            ) : (
-              item.action ? (
+        {/* Settings Menu */}
+        <View style={styles.settingsContainer}>
+          <Text style={[styles.sectionTitle, { color: colors.text }]}>
+            {t('profile.settings.title', { defaultValue: 'Settings' })}
+          </Text>
+          <View style={styles.menuContainer}>
+            {menuItems.map((item, index) => (
+              item.customContent ? (
                 <TouchableOpacity
                   key={index}
                   style={[styles.menuItem, { backgroundColor: colors.card }]}
                   onPress={item.action}
+                  accessibilityLabel={`Switch to ${isDarkMode ? 'light' : 'dark'} theme`}
+                  accessibilityRole="switch"
+                  accessibilityState={{ selected: isDarkMode }}
                 >
-                  <View style={styles.menuItemLeft}>
-                    <IconSymbol name={item.icon} size={24} color={colors.tint} />
-                    <Text style={[styles.menuItemText, { color: colors.text }]}>{item.title}</Text>
-                  </View>
-                  <IconSymbol name="chevron.right" size={20} color={colors.text} />
+                  {item.customContent}
                 </TouchableOpacity>
               ) : (
-                <AccordionItem
-                  key={index}
-                  title={item.title}
-                  icon={item.icon}
-                  isOpen={openAccordion === item.title}
-                  onToggle={() => handleAccordionToggle(item.title)}
-                  colors={colors}
-                >
-                  {item.content}
-                </AccordionItem>
+                item.action ? (
+                  <TouchableOpacity
+                    key={index}
+                    style={[styles.menuItem, { backgroundColor: colors.card }]}
+                    onPress={item.action}
+                  >
+                    <View style={styles.menuItemLeft}>
+                      <View style={[styles.menuIconContainer, { backgroundColor: colors.tint + '15' }]}>
+                        <IconSymbol name={item.icon} size={20} color={colors.tint} />
+                      </View>
+                      <Text style={[styles.menuItemText, { color: colors.text }]}>{item.title}</Text>
+                    </View>
+                    <IconSymbol name="chevron.right" size={16} color={colors.text + '60'} />
+                  </TouchableOpacity>
+                ) : (
+                  <AccordionItem
+                    key={index}
+                    title={item.title}
+                    icon={item.icon}
+                    isOpen={openAccordion === item.title}
+                    onToggle={() => handleAccordionToggle(item.title)}
+                    colors={colors}
+                  >
+                    {item.content}
+                  </AccordionItem>
+                )
               )
-            )
-          ))}
+            ))}
+          </View>
         </View>
       </ScrollView>
     </View>
@@ -458,141 +331,121 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    padding: 15,
-    paddingTop: 50,
+    padding: 20,
+    paddingTop: 60,
+    paddingBottom: 20,
+  },
+  headerCenter: {
+    flex: 1,
+    alignItems: 'center',
+    marginHorizontal: 20,
+  },
+  headerTitle: {
+    fontSize: 20,
+    fontWeight: '700',
+  },
+  backButton: {
+    padding: 8,
+    borderRadius: 8,
+  },
+  headerRight: {
+    flexDirection: 'row',
+    alignItems: 'center',
   },
   scrollView: {
     flex: 1,
   },
-  backButton: {
-    padding: 5,
+  scrollContent: {
+    paddingBottom: 40,
   },
-  profileHeader: {
+  userInfoCard: {
+    margin: 20,
+    marginTop: 10,
     padding: 20,
-    alignItems: 'center',
-    borderBottomLeftRadius: 30,
-    borderBottomRightRadius: 30,
+    borderRadius: 16,
     shadowColor: "#000",
     shadowOffset: {
       width: 0,
       height: 2,
     },
     shadowOpacity: 0.1,
-    shadowRadius: 3.84,
-    elevation: 5,
+    shadowRadius: 8,
+    elevation: 4,
   },
-  profileImageContainer: {
-    position: 'relative',
-    marginBottom: 15,
-  },
-  profileImage: {
-    width: 120,
-    height: 120,
-    borderRadius: 60,
-    borderWidth: 4,
-    borderColor: 'white',
-  },
-  profileEditButton: {
-    position: 'absolute',
-    bottom: 0,
-    right: 0,
-    backgroundColor: 'white',
-    borderRadius: 12,
-    shadowColor: "#000",
-    shadowOffset: {
-      width: 0,
-      height: 1,
-    },
-    shadowOpacity: 0.2,
-    shadowRadius: 1.41,
-    elevation: 2,
-  },
-  name: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    marginBottom: 5,
-  },
-  englishName: {
-    fontSize: 20,
-    fontWeight: '500',
-    marginBottom: 5,
-  },
-  email: {
-    fontSize: 16,
-    marginBottom: 10,
-  },
-  roleContainer: {
+  userInfoHeader: {
     flexDirection: 'row',
-    gap: 10,
-  },
-  role: {
-    fontSize: 16,
-    fontWeight: '500',
-  },
-  grade: {
-    fontSize: 16,
-    fontWeight: '500',
-  },
-  statsContainer: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    padding: 15,
-    gap: 15,
-    borderBottomWidth: 1,
-    borderBottomColor: 'rgba(0,0,0,0.1)',
-    marginBottom: 10,
-  },
-  statCard: {
-    flex: 1,
-    minWidth: '45%',
-    padding: 15,
-    borderRadius: 15,
     alignItems: 'center',
-    gap: 5,
-    borderWidth: 1,
-    borderColor: 'rgba(0,0,0,0.1)',
-    shadowColor: "#000",
-    shadowOffset: {
-      width: 0,
-      height: 1,
-    },
-    shadowOpacity: 0.1,
-    shadowRadius: 2.22,
-    elevation: 3,
   },
-  statValue: {
-    fontSize: 24,
-    fontWeight: 'bold',
+  userAvatar: {
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 16,
   },
-  statLabel: {
+  userInfoText: {
+    flex: 1,
+  },
+  userName: {
+    fontSize: 18,
+    fontWeight: '600',
+    marginBottom: 4,
+  },
+  userUsername: {
     fontSize: 14,
-    textAlign: 'center',
+    marginBottom: 8,
+  },
+  userBadges: {
+    flexDirection: 'row',
+    gap: 8,
+  },
+  userBadge: {
+    paddingHorizontal: 12,
+    paddingVertical: 4,
+    borderRadius: 12,
+  },
+  userBadgeText: {
+    fontSize: 12,
+    fontWeight: '500',
+  },
+  settingsContainer: {
+    marginHorizontal: 20,
+  },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    marginBottom: 16,
   },
   menuContainer: {
-    padding: 15,
-    gap: 10,
+    gap: 8,
   },
   menuItem: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    padding: 15,
+    padding: 16,
     borderRadius: 12,
-    borderWidth: 1,
-    borderColor: 'rgba(0,0,0,0.1)',
     shadowColor: "#000",
     shadowOffset: {
       width: 0,
       height: 1,
     },
     shadowOpacity: 0.1,
-    shadowRadius: 2.22,
-    elevation: 3,
+    shadowRadius: 4,
+    elevation: 2,
   },
   menuItemLeft: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 15,
+    gap: 12,
+  },
+  menuIconContainer: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   menuItemText: {
     fontSize: 16,
@@ -601,34 +454,32 @@ const styles = StyleSheet.create({
   accordionItem: {
     borderRadius: 12,
     overflow: 'hidden',
-    borderWidth: 1,
-    borderColor: 'rgba(0,0,0,0.1)',
     shadowColor: "#000",
     shadowOffset: {
       width: 0,
       height: 1,
     },
     shadowOpacity: 0.1,
-    shadowRadius: 2.22,
-    elevation: 3,
+    shadowRadius: 4,
+    elevation: 2,
   },
   accordionHeader: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    padding: 15,
+    padding: 16,
   },
   accordionHeaderLeft: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 15,
+    gap: 12,
   },
   accordionTitle: {
     fontSize: 16,
     fontWeight: '500',
   },
   accordionContent: {
-    padding: 15,
+    padding: 16,
     borderTopWidth: 1,
     borderTopColor: 'rgba(0,0,0,0.1)',
   },
@@ -641,7 +492,7 @@ const styles = StyleSheet.create({
   themeMenuLeft: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 15,
+    gap: 12,
   },
   themeToggleWrapper: {
     paddingHorizontal: 12,
@@ -651,18 +502,5 @@ const styles = StyleSheet.create({
   themeToggleText: {
     fontSize: 14,
     fontWeight: '500',
-  },
-  profileImagePlaceholder: {
-    width: 120,
-    height: 120,
-    borderRadius: 60,
-    borderWidth: 4,
-    borderColor: 'white',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  headerRight: {
-    flexDirection: 'row',
-    alignItems: 'center',
   },
 }); 
