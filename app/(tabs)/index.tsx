@@ -1,4 +1,4 @@
-import { StyleSheet, ScrollView, TouchableOpacity, Animated, View, Image, Dimensions, RefreshControl } from 'react-native';
+import { StyleSheet, ScrollView, TouchableOpacity, Animated, View, Dimensions, RefreshControl } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -16,6 +16,8 @@ import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 import { useTheme } from '@/contexts/ThemeContext';
 import { getColors } from '@/constants/Colors';
+import { BookCover } from '@/components/ui/BookCover';
+import { getBookCover } from '@/services/bookCoverService';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const CARD_WIDTH = SCREEN_WIDTH - 40; // Full width minus padding
@@ -74,40 +76,7 @@ type BookItem = {
   progress?: number;
 };
 
-// Custom Book Cover Component with fallback
-const BookCover = ({ imageUrl, type, style }: { imageUrl: string; type: 'mcq' | 'flashcard'; style: any }) => {
-  const [imageError, setImageError] = useState(false);
-  const { isDarkMode } = useTheme();
-  const colors = getColors(isDarkMode);
 
-  if (imageError) {
-    // Fallback: professional book cover with icon
-    return (
-      <View style={[style, { 
-        backgroundColor: isDarkMode ? '#2C3E50' : '#34495E',
-        justifyContent: 'center',
-        alignItems: 'center',
-        borderWidth: 1,
-        borderColor: isDarkMode ? '#34495E' : '#2C3E50'
-      }]}>
-        <IconSymbol 
-          name={type === 'mcq' ? 'questionmark.circle' : 'rectangle.stack'} 
-          size={32} 
-          color={isDarkMode ? '#ECF0F1' : '#BDC3C7'} 
-        />
-      </View>
-    );
-  }
-
-  return (
-    <Image
-      source={{ uri: imageUrl }}
-      style={style}
-      resizeMode="cover"
-      onError={() => setImageError(true)}
-    />
-  );
-};
 
 export default function HomeScreen() {
   const { t } = useTranslation();
@@ -132,28 +101,16 @@ export default function HomeScreen() {
   // Generate sample book data for non-KG students
   const generateSampleBooks = (type: 'mcq' | 'flashcard'): BookItem[] => {
     const subjects = type === 'mcq' 
-      ? ['Mathematics', 'Science', 'English', 'History', 'Geography', 'Physics', 'Chemistry', 'Biology']
+      ? ['Mathematics', 'Physics', 'Chemistry', 'Biology', 'English', 'Amharic', 'History', 'Geography']
       : ['Vocabulary', 'Grammar', 'Literature', 'Mathematics', 'Science', 'History', 'Geography', 'Arts'];
     
     const gradeNumber = user?.grade?.replace(/[^0-9]/g, '') || '6';
     
-    // Use more reliable placeholder images
-    const placeholderImages = [
-      'https://picsum.photos/300/400?random=1',
-      'https://picsum.photos/300/400?random=2',
-      'https://picsum.photos/300/400?random=3',
-      'https://picsum.photos/300/400?random=4',
-      'https://picsum.photos/300/400?random=5',
-      'https://picsum.photos/300/400?random=6',
-      'https://picsum.photos/300/400?random=7',
-      'https://picsum.photos/300/400?random=8'
-    ];
-    
     return subjects.map((subject, index) => ({
       id: `${type}-${index}`,
-      title: `${subject} ${type.toUpperCase()}`,
+      title: subject,
       subtitle: `Grade ${gradeNumber}`,
-      image_url: placeholderImages[index % placeholderImages.length],
+      image_url: '', // No longer needed with new BookCover component
       subject,
       grade: gradeNumber,
       progress: Math.floor(Math.random() * 100)
@@ -503,9 +460,25 @@ export default function HomeScreen() {
 
   const handleBookPress = (type: 'mcq' | 'flashcard', book: BookItem) => {
     if (type === 'mcq') {
-      router.push('/(tabs)/mcq');
+      router.push({
+        pathname: '/(tabs)/mcq',
+        params: {
+          selectedSubject: book.subject,
+          selectedBookTitle: book.title,
+          selectedBookSubtitle: book.subtitle,
+          selectedBookType: 'mcq'
+        }
+      });
     } else {
-      router.push('/(tabs)/flashcards');
+      router.push({
+        pathname: '/(tabs)/flashcards',
+        params: {
+          selectedSubject: book.subject,
+          selectedBookTitle: book.title,
+          selectedBookSubtitle: book.subtitle,
+          selectedBookType: 'flashcard'
+        }
+      });
     }
   };
 
@@ -635,48 +608,21 @@ export default function HomeScreen() {
                   showsHorizontalScrollIndicator={false}
                   contentContainerStyle={styles.bookCarouselContainer}
                 >
-                  {mcqBooks.map((book, index) => (
-                    <TouchableOpacity
-                      key={book.id}
-                      style={styles.bookCard}
-                      onPress={() => handleBookPress('mcq', book)}
-                    >
-                                          <View style={[styles.bookCardContent, { backgroundColor: colors.card }]}>
-                      <View style={styles.bookSpine} />
+                  {mcqBooks.map((book, index) => {
+                    const coverData = getBookCover(book.subject);
+                    return (
                       <BookCover
-                        imageUrl={book.image_url}
-                        type="mcq"
-                        style={styles.bookCover}
+                        key={book.id}
+                        title={book.title}
+                        subtitle={book.subtitle}
+                        coverColor={coverData.coverColor}
+                        coverGradient={coverData.coverGradient}
+                        icon={coverData.icon as any}
+                        onPress={() => handleBookPress('mcq', book)}
+                        questionCount={Math.floor(Math.random() * 50) + 10}
                       />
-                      <View style={styles.bookInfo}>
-                        <ThemedText numberOfLines={2} style={[styles.bookTitle, { color: colors.text }]}>
-                          {book.title}
-                        </ThemedText>
-                        <ThemedText numberOfLines={1} style={[styles.bookSubtitle, { color: colors.text + '80' }]}>
-                          {book.subtitle}
-                        </ThemedText>
-                        {book.progress !== undefined && (
-                          <View style={styles.progressContainer}>
-                            <View style={[styles.progressBar, { backgroundColor: colors.text + '20' }]}>
-                              <View 
-                                style={[
-                                  styles.progressFill, 
-                                  { 
-                                    width: `${book.progress}%`,
-                                    backgroundColor: colors.tint 
-                                  }
-                                ]} 
-                              />
-                            </View>
-                            <ThemedText style={[styles.progressText, { color: colors.text + '80' }]}>
-                              {book.progress}%
-                            </ThemedText>
-                          </View>
-                        )}
-                      </View>
-                    </View>
-                    </TouchableOpacity>
-                  ))}
+                    );
+                  })}
                 </ScrollView>
               </ThemedView>
 
@@ -697,48 +643,21 @@ export default function HomeScreen() {
                   showsHorizontalScrollIndicator={false}
                   contentContainerStyle={styles.bookCarouselContainer}
                 >
-                  {flashcardBooks.map((book, index) => (
-                    <TouchableOpacity
-                      key={book.id}
-                      style={styles.bookCard}
-                      onPress={() => handleBookPress('flashcard', book)}
-                    >
-                                          <View style={[styles.bookCardContent, { backgroundColor: colors.card }]}>
-                      <View style={styles.bookSpine} />
+                  {flashcardBooks.map((book, index) => {
+                    const coverData = getBookCover(book.subject);
+                    return (
                       <BookCover
-                        imageUrl={book.image_url}
-                        type="flashcard"
-                        style={styles.bookCover}
+                        key={book.id}
+                        title={book.title}
+                        subtitle={book.subtitle}
+                        coverColor={coverData.coverColor}
+                        coverGradient={coverData.coverGradient}
+                        icon={coverData.icon as any}
+                        onPress={() => handleBookPress('flashcard', book)}
+                        flashcardCount={Math.floor(Math.random() * 30) + 5}
                       />
-                      <View style={styles.bookInfo}>
-                        <ThemedText numberOfLines={2} style={[styles.bookTitle, { color: colors.text }]}>
-                          {book.title}
-                        </ThemedText>
-                        <ThemedText numberOfLines={1} style={[styles.bookSubtitle, { color: colors.text + '80' }]}>
-                          {book.subtitle}
-                        </ThemedText>
-                        {book.progress !== undefined && (
-                          <View style={styles.progressContainer}>
-                            <View style={[styles.progressBar, { backgroundColor: colors.text + '20' }]}>
-                              <View 
-                                style={[
-                                  styles.progressFill, 
-                                  { 
-                                    width: `${book.progress}%`,
-                                    backgroundColor: colors.tint 
-                                  }
-                                ]} 
-                              />
-                            </View>
-                            <ThemedText style={[styles.progressText, { color: colors.text + '80' }]}>
-                              {book.progress}%
-                            </ThemedText>
-                          </View>
-                        )}
-                      </View>
-                    </View>
-                    </TouchableOpacity>
-                  ))}
+                    );
+                  })}
                 </ScrollView>
               </ThemedView>
             </>
@@ -1174,7 +1093,8 @@ const styles = StyleSheet.create({
     fontWeight: '700',
   },
   bookCarouselContainer: {
-    paddingHorizontal: 20,
+    paddingHorizontal: 16,
+    gap: 16,
   },
   bookCard: {
     width: BOOK_CARD_WIDTH,
