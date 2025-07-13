@@ -504,28 +504,28 @@ export default function HomeScreen() {
         <ThemedView style={[styles.container, { backgroundColor: colors.background }]}>
           {/* Motivational Quote Section */}
           <ThemedView style={[styles.quoteSection, { 
-            backgroundColor: isDarkMode ? colors.card : '#F5F5F5'
+            backgroundColor: isDarkMode ? '#2A1F4A' : '#F0EDF7'
           }]}>
             {isLoading ? (
               <View style={styles.quoteSkeleton}>
-                <View style={[styles.quoteSkeletonLine, { backgroundColor: colors.text + '20' }]} />
-                <View style={[styles.quoteSkeletonLine, { backgroundColor: colors.text + '20' }]} />
-                <View style={[styles.quoteSkeletonLineShort, { backgroundColor: colors.text + '20' }]} />
-                <View style={[styles.quoteSkeletonAuthor, { backgroundColor: colors.text + '20' }]} />
+                <View style={[styles.quoteSkeletonLine, { backgroundColor: isDarkMode ? '#8B6BCE' + '30' : '#6B54AE' + '30' }]} />
+                <View style={[styles.quoteSkeletonLine, { backgroundColor: isDarkMode ? '#8B6BCE' + '30' : '#6B54AE' + '30' }]} />
+                <View style={[styles.quoteSkeletonLineShort, { backgroundColor: isDarkMode ? '#8B6BCE' + '30' : '#6B54AE' + '30' }]} />
+                <View style={[styles.quoteSkeletonAuthor, { backgroundColor: isDarkMode ? '#8B6BCE' + '30' : '#6B54AE' + '30' }]} />
                 <Animated.View 
                   style={[
                     styles.shimmer,
                     getShimmerStyle(),
-                    { backgroundColor: colors.text + '10' }
+                    { backgroundColor: isDarkMode ? '#8B6BCE' + '20' : '#6B54AE' + '20' }
                   ]} 
                 />
               </View>
             ) : (
               <Animated.View style={{ opacity: fadeAnim }}>
-                <ThemedText style={[styles.quoteText, { color: colors.text }]}>
+                <ThemedText style={[styles.quoteText, { color: isDarkMode ? '#E8E4F2' : '#2D1B69' }]}>
                   "{t(`home.motivationalQuotes.${quoteIndex}.quote`)}"
                 </ThemedText>
-                <ThemedText style={[styles.quoteAuthor, { color: colors.text + '80' }]}>
+                <ThemedText style={[styles.quoteAuthor, { color: isDarkMode ? '#B8A9D9' : '#6B54AE' }]}>
                   - {t(`home.motivationalQuotes.${quoteIndex}.author`)}
                 </ThemedText>
               </Animated.View>
