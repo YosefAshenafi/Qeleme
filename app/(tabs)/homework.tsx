@@ -6,6 +6,7 @@ import { useTheme } from '@/contexts/ThemeContext';
 import { getColors } from '@/constants/Colors';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useTranslation } from 'react-i18next';
+import Markdown from 'react-native-markdown-display';
 
 import { Header } from '@/components/Header';
 import { ThemedText } from '@/components/ThemedText';
@@ -29,6 +30,194 @@ type RecentActivity = {
   timestamp: number;
   details: string;
   status: string;
+};
+
+// Function to check if text contains markdown
+const containsMarkdown = (text: string): boolean => {
+  const markdownPatterns = [
+    /^#{1,6}\s/, // Headers
+    /\*\*.*\*\*/, // Bold
+    /\*.*\*/, // Italic
+    /`.*`/, // Inline code
+    /```[\s\S]*```/, // Code blocks
+    /^[-*+]\s/, // Bullet lists
+    /^\d+\.\s/, // Numbered lists
+    /^>\s/, // Blockquotes
+    /\[.*\]\(.*\)/, // Links
+    /^\|.*\|$/, // Tables
+    /^---$/, // Horizontal rules
+  ];
+  
+  return markdownPatterns.some(pattern => pattern.test(text));
+};
+
+// Custom Markdown Renderer Component
+const MarkdownRenderer = ({ text, isUser, colors }: { text: string; isUser: boolean; colors: any }) => {
+  const markdownStyles = {
+    body: {
+      color: isUser ? '#fff' : colors.text,
+      fontSize: 16,
+      lineHeight: 24,
+    },
+    heading1: {
+      color: isUser ? '#fff' : colors.text,
+      fontSize: 24,
+      fontWeight: 'bold' as const,
+      marginTop: 16,
+      marginBottom: 8,
+    },
+    heading2: {
+      color: isUser ? '#fff' : colors.text,
+      fontSize: 20,
+      fontWeight: 'bold' as const,
+      marginTop: 12,
+      marginBottom: 6,
+    },
+    heading3: {
+      color: isUser ? '#fff' : colors.text,
+      fontSize: 18,
+      fontWeight: 'bold' as const,
+      marginTop: 10,
+      marginBottom: 5,
+    },
+    heading4: {
+      color: isUser ? '#fff' : colors.text,
+      fontSize: 16,
+      fontWeight: 'bold' as const,
+      marginTop: 8,
+      marginBottom: 4,
+    },
+    heading5: {
+      color: isUser ? '#fff' : colors.text,
+      fontSize: 14,
+      fontWeight: 'bold' as const,
+      marginTop: 6,
+      marginBottom: 3,
+    },
+    heading6: {
+      color: isUser ? '#fff' : colors.text,
+      fontSize: 12,
+      fontWeight: 'bold' as const,
+      marginTop: 4,
+      marginBottom: 2,
+    },
+    paragraph: {
+      color: isUser ? '#fff' : colors.text,
+      fontSize: 16,
+      lineHeight: 24,
+      marginBottom: 8,
+    },
+    strong: {
+      fontWeight: 'bold' as const,
+      color: isUser ? '#fff' : colors.text,
+    },
+    em: {
+      fontStyle: 'italic' as const,
+      color: isUser ? '#fff' : colors.text,
+    },
+    code_inline: {
+      backgroundColor: isUser ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.1)',
+      color: isUser ? '#fff' : colors.text,
+      paddingHorizontal: 4,
+      paddingVertical: 2,
+      borderRadius: 4,
+      fontFamily: 'monospace',
+      fontSize: 14,
+    },
+    code_block: {
+      backgroundColor: isUser ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.05)',
+      color: isUser ? '#fff' : colors.text,
+      padding: 12,
+      borderRadius: 8,
+      fontFamily: 'monospace',
+      fontSize: 14,
+      marginVertical: 8,
+      borderWidth: 1,
+      borderColor: isUser ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.1)',
+    },
+    blockquote: {
+      borderLeftWidth: 4,
+      borderLeftColor: isUser ? 'rgba(255, 255, 255, 0.3)' : colors.tint,
+      paddingLeft: 12,
+      marginVertical: 8,
+      backgroundColor: isUser ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.02)',
+      paddingVertical: 8,
+      paddingRight: 8,
+    },
+    bullet_list: {
+      marginVertical: 8,
+    },
+    ordered_list: {
+      marginVertical: 8,
+    },
+    list_item: {
+      color: isUser ? '#fff' : colors.text,
+      fontSize: 16,
+      lineHeight: 24,
+      marginBottom: 4,
+    },
+    link: {
+      color: isUser ? '#87CEEB' : colors.tint,
+      textDecorationLine: 'underline' as const,
+    },
+    table: {
+      borderWidth: 1,
+      borderColor: isUser ? 'rgba(255, 255, 255, 0.2)' : colors.border,
+      borderRadius: 8,
+      marginVertical: 8,
+    },
+    thead: {
+      backgroundColor: isUser ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.05)',
+    },
+    th: {
+      color: isUser ? '#fff' : colors.text,
+      fontWeight: 'bold' as const,
+      padding: 8,
+      borderBottomWidth: 1,
+      borderBottomColor: isUser ? 'rgba(255, 255, 255, 0.2)' : colors.border,
+    },
+    td: {
+      color: isUser ? '#fff' : colors.text,
+      padding: 8,
+      borderBottomWidth: 1,
+      borderBottomColor: isUser ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.05)',
+    },
+    hr: {
+      backgroundColor: isUser ? 'rgba(255, 255, 255, 0.2)' : colors.border,
+      height: 1,
+      marginVertical: 16,
+    },
+    fence: {
+      backgroundColor: isUser ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.05)',
+      color: isUser ? '#fff' : colors.text,
+      padding: 12,
+      borderRadius: 8,
+      fontFamily: 'monospace',
+      fontSize: 14,
+      marginVertical: 8,
+      borderWidth: 1,
+      borderColor: isUser ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.1)',
+    },
+  };
+
+  // If no markdown detected, render as plain text for better performance
+  if (!containsMarkdown(text)) {
+    return (
+      <ThemedText style={{
+        color: isUser ? '#fff' : colors.text,
+        fontSize: 16,
+        lineHeight: 24,
+      }}>
+        {text}
+      </ThemedText>
+    );
+  }
+
+  return (
+    <Markdown style={markdownStyles}>
+      {text}
+    </Markdown>
+  );
 };
 
 export default function HomeworkScreen() {
@@ -127,7 +316,7 @@ export default function HomeworkScreen() {
       const apiMessages: ChatMessage[] = [
         {
           role: 'system',
-          content: 'You are a helpful homework assistant. Provide clear, educational explanations and guide students to understand concepts rather than just giving answers.'
+          content: 'You are a helpful homework assistant. Provide clear, educational explanations and guide students to understand concepts rather than just giving answers. Use markdown formatting to make your responses more readable and organized. Use headings (###), bold text (**bold**), italic text (*italic*), code blocks (```), bullet points (-), and numbered lists (1.) to structure your responses clearly.'
         },
         {
           role: 'user',
@@ -244,20 +433,17 @@ export default function HomeworkScreen() {
                       resizeMode="cover"
                     />
                   )}
-                  <ThemedText style={[
-                    styles.messageText,
-                    message.isUser 
-                      ? [styles.userMessageText, { color: '#fff' }]
-                      : [styles.botMessageText, { color: colors.text }]
-                  ]}>
-                    {message.text}
-                  </ThemedText>
+                  <MarkdownRenderer 
+                    text={message.text}
+                    isUser={message.isUser}
+                    colors={colors}
+                  />
                 </ThemedView>
               ))}
               {isLoading && (
                 <ThemedView style={[styles.messageContainer, styles.botMessage, { backgroundColor: colors.cardAlt }]}>
                   <View style={styles.thinkingContainer}>
-                    <ThemedText style={[styles.messageText, styles.botMessageText, { color: colors.text }]}>
+                    <ThemedText style={[styles.messageText, { color: colors.text }]}>
                       {t('homework.thinking')}
                     </ThemedText>
                     <Animated.View style={styles.dotsContainer}>
@@ -392,8 +578,8 @@ const styles = StyleSheet.create({
     paddingBottom: 100,
   },
   messageContainer: {
-    maxWidth: '80%',
-    padding: 12,
+    maxWidth: '85%',
+    padding: 16,
     borderRadius: 12,
     gap: 8,
     width: 'auto',
@@ -410,8 +596,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
     flexShrink: 1,
   },
-  userMessageText: {},
-  botMessageText: {},
   messageImage: {
     width: 250,
     height: 200,
