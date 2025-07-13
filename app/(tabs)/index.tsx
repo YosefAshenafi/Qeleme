@@ -18,6 +18,8 @@ import { useTheme } from '@/contexts/ThemeContext';
 import { getColors } from '@/constants/Colors';
 import { BookCover } from '@/components/ui/BookCover';
 import { getBookCover } from '@/services/bookCoverService';
+import { getMCQData } from '@/services/mcqService';
+import { getFlashcardStructure } from '@/services/flashcardService';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const CARD_WIDTH = SCREEN_WIDTH - 40; // Full width minus padding
@@ -98,23 +100,68 @@ export default function HomeScreen() {
   // Check if user is KG student
   const isKGStudent = typeof user?.grade === 'string' && user.grade.toLowerCase().includes('kg');
 
-  // Generate sample book data for non-KG students
-  const generateSampleBooks = (type: 'mcq' | 'flashcard'): BookItem[] => {
-    const subjects = type === 'mcq' 
-      ? ['Mathematics', 'Physics', 'Chemistry', 'Biology', 'English', 'Amharic', 'History', 'Geography']
-      : ['Vocabulary', 'Grammar', 'Literature', 'Mathematics', 'Science', 'History', 'Geography', 'Arts'];
-    
-    const gradeNumber = user?.grade?.replace(/[^0-9]/g, '') || '6';
-    
-    return subjects.map((subject, index) => ({
-      id: `${type}-${index}`,
-      title: subject,
-      subtitle: `Grade ${gradeNumber}`,
-      image_url: '', // No longer needed with new BookCover component
-      subject,
-      grade: gradeNumber,
-      progress: Math.floor(Math.random() * 100)
-    }));
+  // Fetch real book data from API for non-KG students
+  const fetchBooksFromAPI = async (type: 'mcq' | 'flashcard') => {
+    try {
+      const gradeNumber = user?.grade?.replace(/[^0-9]/g, '') || '6';
+      
+      if (type === 'mcq') {
+        // Fetch MCQ data
+        const mcqData = await getMCQData(`grade-${gradeNumber}`);
+        if (mcqData.grades && mcqData.grades.length > 0) {
+          const grade = mcqData.grades[0];
+          const books: BookItem[] = grade.subjects.map((subject: any, index: number) => ({
+            id: `mcq-${subject.id}`,
+            title: subject.name,
+            subtitle: `Grade ${gradeNumber}`,
+            image_url: subject.image_url || '', // Use API image_url if available
+            subject: subject.name,
+            grade: gradeNumber,
+            progress: Math.floor(Math.random() * 100)
+          }));
+          setMcqBooks(books);
+        }
+      } else {
+        // Fetch flashcard data
+        const flashcardData = await getFlashcardStructure(gradeNumber);
+        if (flashcardData && flashcardData.length > 0) {
+          const grade = flashcardData[0];
+          const books: BookItem[] = grade.subjects.map((subject: any, index: number) => ({
+            id: `flashcard-${subject.id}`,
+            title: subject.name,
+            subtitle: `Grade ${gradeNumber}`,
+            image_url: subject.image_url || '', // Use API image_url if available
+            subject: subject.name,
+            grade: gradeNumber,
+            progress: Math.floor(Math.random() * 100)
+          }));
+          setFlashcardBooks(books);
+        }
+      }
+    } catch (error) {
+      console.log(`Failed to fetch ${type} books from API:`, error);
+      // Fallback to sample data if API fails
+      const fallbackSubjects = type === 'mcq' 
+        ? ['Mathematics', 'Physics', 'Chemistry', 'Biology', 'English', 'Amharic', 'History', 'Geography']
+        : ['Vocabulary', 'Grammar', 'Literature', 'Mathematics', 'Science', 'History', 'Geography', 'Arts'];
+      
+      const gradeNumber = user?.grade?.replace(/[^0-9]/g, '') || '6';
+      const fallbackBooks: BookItem[] = fallbackSubjects.map((subject, index) => ({
+        id: `${type}-${index}`,
+        title: subject,
+        subtitle: `Grade ${gradeNumber}`,
+        image_url: '',
+        subject,
+        grade: gradeNumber,
+        progress: Math.floor(Math.random() * 100)
+      }));
+      
+      if (type === 'mcq') {
+        setMcqBooks(fallbackBooks);
+      } else {
+        setFlashcardBooks(fallbackBooks);
+      }
+    }
   };
 
   const loadRecentActivities = async () => {
@@ -145,10 +192,10 @@ export default function HomeScreen() {
   useEffect(() => {
     loadRecentActivities();
     
-    // Generate sample books for non-KG students
+    // Fetch real books from API for non-KG students
     if (!isKGStudent) {
-      setMcqBooks(generateSampleBooks('mcq'));
-      setFlashcardBooks(generateSampleBooks('flashcard'));
+      fetchBooksFromAPI('mcq');
+      fetchBooksFromAPI('flashcard');
     }
   }, [isKGStudent, user?.grade]);
 
@@ -460,25 +507,9 @@ export default function HomeScreen() {
 
   const handleBookPress = (type: 'mcq' | 'flashcard', book: BookItem) => {
     if (type === 'mcq') {
-      router.push({
-        pathname: '/(tabs)/mcq',
-        params: {
-          selectedSubject: book.subject,
-          selectedBookTitle: book.title,
-          selectedBookSubtitle: book.subtitle,
-          selectedBookType: 'mcq'
-        }
-      });
+      router.push('/(tabs)/mcq');
     } else {
-      router.push({
-        pathname: '/(tabs)/flashcards',
-        params: {
-          selectedSubject: book.subject,
-          selectedBookTitle: book.title,
-          selectedBookSubtitle: book.subtitle,
-          selectedBookType: 'flashcard'
-        }
-      });
+      router.push('/(tabs)/flashcards');
     }
   };
 
@@ -504,28 +535,28 @@ export default function HomeScreen() {
         <ThemedView style={[styles.container, { backgroundColor: colors.background }]}>
           {/* Motivational Quote Section */}
           <ThemedView style={[styles.quoteSection, { 
-            backgroundColor: isDarkMode ? '#2A1F4A' : '#F0EDF7'
+            backgroundColor: isDarkMode ? colors.card : '#F5F5F5'
           }]}>
             {isLoading ? (
               <View style={styles.quoteSkeleton}>
-                <View style={[styles.quoteSkeletonLine, { backgroundColor: isDarkMode ? '#8B6BCE' + '30' : '#6B54AE' + '30' }]} />
-                <View style={[styles.quoteSkeletonLine, { backgroundColor: isDarkMode ? '#8B6BCE' + '30' : '#6B54AE' + '30' }]} />
-                <View style={[styles.quoteSkeletonLineShort, { backgroundColor: isDarkMode ? '#8B6BCE' + '30' : '#6B54AE' + '30' }]} />
-                <View style={[styles.quoteSkeletonAuthor, { backgroundColor: isDarkMode ? '#8B6BCE' + '30' : '#6B54AE' + '30' }]} />
+                <View style={[styles.quoteSkeletonLine, { backgroundColor: colors.text + '20' }]} />
+                <View style={[styles.quoteSkeletonLine, { backgroundColor: colors.text + '20' }]} />
+                <View style={[styles.quoteSkeletonLineShort, { backgroundColor: colors.text + '20' }]} />
+                <View style={[styles.quoteSkeletonAuthor, { backgroundColor: colors.text + '20' }]} />
                 <Animated.View 
                   style={[
                     styles.shimmer,
                     getShimmerStyle(),
-                    { backgroundColor: isDarkMode ? '#8B6BCE' + '20' : '#6B54AE' + '20' }
+                    { backgroundColor: colors.text + '10' }
                   ]} 
                 />
               </View>
             ) : (
               <Animated.View style={{ opacity: fadeAnim }}>
-                <ThemedText style={[styles.quoteText, { color: isDarkMode ? '#E8E4F2' : '#2D1B69' }]}>
+                <ThemedText style={[styles.quoteText, { color: colors.text }]}>
                   "{t(`home.motivationalQuotes.${quoteIndex}.quote`)}"
                 </ThemedText>
-                <ThemedText style={[styles.quoteAuthor, { color: isDarkMode ? '#B8A9D9' : '#6B54AE' }]}>
+                <ThemedText style={[styles.quoteAuthor, { color: colors.text + '80' }]}>
                   - {t(`home.motivationalQuotes.${quoteIndex}.author`)}
                 </ThemedText>
               </Animated.View>
@@ -618,6 +649,7 @@ export default function HomeScreen() {
                         coverColor={coverData.coverColor}
                         coverGradient={coverData.coverGradient}
                         icon={coverData.icon as any}
+                        imageUrl={book.image_url}
                         onPress={() => handleBookPress('mcq', book)}
                         questionCount={Math.floor(Math.random() * 50) + 10}
                       />
@@ -653,6 +685,7 @@ export default function HomeScreen() {
                         coverColor={coverData.coverColor}
                         coverGradient={coverData.coverGradient}
                         icon={coverData.icon as any}
+                        imageUrl={book.image_url}
                         onPress={() => handleBookPress('flashcard', book)}
                         flashcardCount={Math.floor(Math.random() * 30) + 5}
                       />

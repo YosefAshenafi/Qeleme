@@ -1,5 +1,5 @@
 import React from 'react';
-import { StyleSheet, TouchableOpacity, View, Dimensions } from 'react-native';
+import { StyleSheet, TouchableOpacity, View, Dimensions, Image } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { ThemedText } from '../ThemedText';
 import { ThemedView } from '../ThemedView';
@@ -15,6 +15,7 @@ interface BookCoverProps {
   coverColor?: string;
   coverGradient?: readonly [string, string, ...string[]];
   icon?: IconSymbolName;
+  imageUrl?: string;
   onPress: () => void;
   isSelected?: boolean;
   disabled?: boolean;
@@ -28,12 +29,19 @@ export const BookCover: React.FC<BookCoverProps> = ({
   coverColor = '#4A90E2',
   coverGradient = ['#4A90E2', '#357ABD'] as const,
   icon = 'doc.text.fill',
+  imageUrl,
   onPress,
   isSelected = false,
   disabled = false,
   flashcardCount,
   questionCount,
 }) => {
+  const [imageError, setImageError] = React.useState(false);
+  
+  // Reset image error when imageUrl changes
+  React.useEffect(() => {
+    setImageError(false);
+  }, [imageUrl]);
   return (
     <TouchableOpacity
       style={[
@@ -46,37 +54,56 @@ export const BookCover: React.FC<BookCoverProps> = ({
       activeOpacity={0.8}
     >
       <ThemedView style={[styles.bookCover, { backgroundColor: coverColor }]}>
-        <LinearGradient
-          colors={coverGradient}
-          style={StyleSheet.absoluteFill}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 1 }}
-        />
+        {imageUrl && !imageError ? (
+          <Image 
+            source={{ uri: imageUrl }} 
+            style={StyleSheet.absoluteFill}
+            resizeMode="cover"
+            onError={() => {
+              console.log('Failed to load image:', imageUrl);
+              setImageError(true);
+            }}
+          />
+        ) : (
+          <LinearGradient
+            colors={coverGradient}
+            style={StyleSheet.absoluteFill}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+          />
+        )}
+        
+        {/* Semi-transparent overlay for better text readability when image is present */}
+        {imageUrl && !imageError && (
+          <View style={styles.imageOverlay} />
+        )}
         
         {/* Book spine effect */}
         <View style={styles.bookSpine} />
         
-        {/* Book content */}
-        <View style={styles.bookContent}>
-          <IconSymbol name={icon} size={32} color="#FFFFFF" style={styles.bookIcon} />
-          <ThemedText style={styles.bookTitle} numberOfLines={2}>
-            {title}
-          </ThemedText>
-          {subtitle && (
-            <ThemedText style={styles.bookSubtitle} numberOfLines={1}>
-              {subtitle}
+        {/* Book content - only show when no image or image failed to load */}
+        {(!imageUrl || imageError) && (
+          <View style={styles.bookContent}>
+            <IconSymbol name={icon} size={32} color="#FFFFFF" style={styles.bookIcon} />
+            <ThemedText style={styles.bookTitle} numberOfLines={2}>
+              {title}
             </ThemedText>
-          )}
-          
-          {/* Content count badge */}
-          {(flashcardCount !== undefined || questionCount !== undefined) && (
-            <View style={styles.countBadge}>
-              <ThemedText style={styles.countText}>
-                {flashcardCount !== undefined ? `${flashcardCount} cards` : `${questionCount} questions`}
+            {subtitle && (
+              <ThemedText style={styles.bookSubtitle} numberOfLines={1}>
+                {subtitle}
               </ThemedText>
-            </View>
-          )}
-        </View>
+            )}
+            
+            {/* Content count badge */}
+            {(flashcardCount !== undefined || questionCount !== undefined) && (
+              <View style={styles.countBadge}>
+                <ThemedText style={styles.countText}>
+                  {flashcardCount !== undefined ? `${flashcardCount} cards` : `${questionCount} questions`}
+                </ThemedText>
+              </View>
+            )}
+          </View>
+        )}
         
         {/* Book pages effect */}
         <View style={styles.bookPages} />
@@ -129,6 +156,14 @@ const styles = StyleSheet.create({
   },
   bookIcon: {
     marginBottom: 12,
+  },
+  imageOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(0, 0, 0, 0.3)',
   },
   bookTitle: {
     fontSize: 14,
