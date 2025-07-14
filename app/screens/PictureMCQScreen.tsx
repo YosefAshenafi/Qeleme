@@ -342,6 +342,7 @@ export default function PictureMCQScreen({ onBackToInstructions }: PictureMCQScr
           if (selectedOption.isCorrect) {
             // Simplified score update
             runOnJS(setScore)(score + 1);
+            runOnJS(setShowCelebration)(true);
             
             // Celebration animation
             celebrationScale.value = withSequence(
@@ -354,6 +355,7 @@ export default function PictureMCQScreen({ onBackToInstructions }: PictureMCQScr
             );
           } else {
             // Incorrect animation
+            runOnJS(setShowWrongAnswer)(true);
             incorrectScale.value = withSequence(
               withSpring(1, { damping: 8 }),
               withTiming(0, { duration: 1000 })
@@ -404,6 +406,7 @@ export default function PictureMCQScreen({ onBackToInstructions }: PictureMCQScr
       setShowCelebration(false);
       setShowWrongAnswer(false);
       setDroppedOption(null);
+      setHoveredOption(null);
     }
   };
 
@@ -416,6 +419,7 @@ export default function PictureMCQScreen({ onBackToInstructions }: PictureMCQScr
       setShowCelebration(false);
       setShowWrongAnswer(false);
       setDroppedOption(null);
+      setHoveredOption(null);
     }
   };
 
@@ -428,6 +432,7 @@ export default function PictureMCQScreen({ onBackToInstructions }: PictureMCQScr
     setScore(0);
     setShowResult(false);
     setDroppedOption(null);
+    setHoveredOption(null);
   };
 
   const handleGoToInstructions = () => {
@@ -438,6 +443,9 @@ export default function PictureMCQScreen({ onBackToInstructions }: PictureMCQScr
     setShowResult(false);
     setScore(0);
     setDroppedOption(null);
+    setHoveredOption(null);
+    setShowCelebration(false);
+    setShowWrongAnswer(false);
     // Navigate to the KG dashboard instead of regular MCQ
     router.push('/kg-dashboard');
   };
@@ -458,6 +466,17 @@ export default function PictureMCQScreen({ onBackToInstructions }: PictureMCQScr
       handleNextQuestion();
     }
   };
+
+  // Auto-advance to next question after showing celebration/incorrect animation
+  useEffect(() => {
+    if (selectedAnswer && (showCelebration || showWrongAnswer)) {
+      const timer = setTimeout(() => {
+        handleNavigation();
+      }, 2000); // Wait 2 seconds to show the animation
+
+      return () => clearTimeout(timer);
+    }
+  }, [selectedAnswer, showCelebration, showWrongAnswer, isLastQuestion]);
 
   if (!isAuthorized) {
     return (
@@ -812,6 +831,7 @@ export default function PictureMCQScreen({ onBackToInstructions }: PictureMCQScr
               <TouchableOpacity
                 style={[styles.navButton, styles.nextButton]}
                 onPress={handleNavigation}
+                testID="next-button"
               >
                 <ThemedText style={styles.nextButtonText}>
                   {memoizedIsLastQuestion ? t('mcq.finish') : t('mcq.next')}
