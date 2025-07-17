@@ -943,7 +943,7 @@ export default function MCQScreen() {
                           onPress={() => setShowSubjectDropdown(false)}
                         >
                           <ThemedView style={[styles.modalContent, { backgroundColor: colors.background }]}>
-                            <ScrollView>
+                            <ScrollView showsVerticalScrollIndicator={false}>
                               {selectedExamType === 'national' ? (
                                 availableSubjects.map((subject) => (
                                   <TouchableOpacity
@@ -1010,7 +1010,7 @@ export default function MCQScreen() {
                             onPress={() => setShowYearDropdown(false)}
                           >
                             <ThemedView style={[styles.modalContent, { backgroundColor: colors.background }]}>
-                              <ScrollView>
+                              <ScrollView showsVerticalScrollIndicator={false}>
                                 {availableYears.map((year) => (
                                   <TouchableOpacity
                                     key={year}
@@ -1080,7 +1080,7 @@ export default function MCQScreen() {
                             onPress={() => setShowChapterDropdown(false)}
                           >
                             <ThemedView style={[styles.modalContent, { backgroundColor: colors.background }]}>
-                              <ScrollView>
+                              <ScrollView showsVerticalScrollIndicator={false}>
                                 {selectedSubjectData?.chapters?.map((chapter: Chapter) => (
                                   <TouchableOpacity
                                     key={chapter.id}
@@ -1170,7 +1170,7 @@ export default function MCQScreen() {
                 </View>
               </View>
 
-              <ScrollView ref={scrollViewRef} style={styles.scrollView}>
+              <ScrollView ref={scrollViewRef} style={styles.scrollView} showsVerticalScrollIndicator={false}>
                 <View style={styles.progressTimeContainer}>
                   <View style={styles.progressContainer}>
                     <View style={[styles.progressBar, { backgroundColor: colors.cardAlt }]}>
@@ -1233,11 +1233,11 @@ export default function MCQScreen() {
                   </View>
                 )}
 
-                {showExplanation && (
+                {showExplanation && currentQuestion?.explanation && currentQuestion.explanation.trim() !== '' && currentQuestion.explanation !== 'No explanation available' && (
                   <View ref={explanationRef} style={[styles.explanationContainer, { backgroundColor: colors.cardAlt }]}>
                     <ThemedText style={[styles.explanationTitle, { color: colors.tint }]}>Explanation:</ThemedText>
                     <ThemedText style={[styles.explanationText, { color: colors.text }]}>
-                      {currentQuestion?.explanation || 'No explanation available'}
+                      {currentQuestion.explanation}
                     </ThemedText>
                   </View>
                 )}
@@ -1265,7 +1265,7 @@ export default function MCQScreen() {
               </ScrollView>
             </>
           ) : (
-            <ScrollView>
+            <ScrollView showsVerticalScrollIndicator={false}>
               <View style={[styles.resultCard, { backgroundColor: colors.card }]}>
                 <LinearGradient
                   colors={[colors.cardGradientStart, colors.cardGradientEnd]}

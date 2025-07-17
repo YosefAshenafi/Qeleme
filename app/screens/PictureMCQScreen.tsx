@@ -607,7 +607,7 @@ export default function PictureMCQScreen({ onBackToInstructions }: PictureMCQScr
             colors={['#6B54AE', '#4CAF50']}
             style={styles.resultGradientContainer}
           >
-            <ScrollView style={styles.scrollView}>
+            <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
               <Animated.View style={[styles.resultContainer]}>
                 <View style={styles.resultContent}>
                   {/* Trophy Icon */}
@@ -706,7 +706,7 @@ export default function PictureMCQScreen({ onBackToInstructions }: PictureMCQScr
           </View>
         </View>
         <ThemedView style={[styles.container, { backgroundColor: isDarkMode ? '#000000' : '#F8F9FA' }]}>
-          <ScrollView style={styles.scrollView}>
+          <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
             <View style={styles.progressContainer}>
               <LinearGradient
                 colors={[colors.tint, colors.tint + 'DD']}
@@ -814,12 +814,12 @@ export default function PictureMCQScreen({ onBackToInstructions }: PictureMCQScr
                   ))}
                 </View>
 
-                {showExplanation && (
+                {showExplanation && memoizedCurrentQuestion?.explanation && memoizedCurrentQuestion.explanation.trim() !== '' && memoizedCurrentQuestion.explanation !== 'No explanation available' && (
                   <View style={[styles.explanationContainer, { backgroundColor: isDarkMode ? '#1C1C1E' : '#F5F5F5' }]}>
                     <ThemedText style={[styles.explanationTitle, { color: '#6B54AE' }]}>{t('mcq.explanation')}</ThemedText>
-                                      <ThemedText style={[styles.explanationText, { color: colors.text }]}>
-                    {memoizedCurrentQuestion.explanation}
-                  </ThemedText>
+                    <ThemedText style={[styles.explanationText, { color: colors.text }]}>
+                      {memoizedCurrentQuestion.explanation}
+                    </ThemedText>
                   </View>
                 )}
               </>
