@@ -392,7 +392,7 @@ export default {
       title: 'የምስል ፈተና',
       subtitle: 'በምስሎች ዕውቀትዎን ይፈትሹ',
       startQuiz: 'ፈተና ይጀምሩ',
-      goToRegularQuestions: 'ወደ መደበኛ ጥያቄዎች ይሂዱ',
+      goToRegularQuestions: 'ወደ ዋናው ማውጫ ይሂዱ',
       goToInstructions: 'ወደ መመሪያዎች ይሂዱ',
       unauthorizedText: 'ይህን ባህሪ ለመጠቀም ፈቃድ ያስፈልግዎታል።',
       noQuestionsAvailable: 'ለዚህ ክፍል ጥያቄዎች አልተዘጋጁም።',

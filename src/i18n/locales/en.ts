@@ -398,7 +398,7 @@ export default {
       title: 'Picture Quiz',
       subtitle: 'Test your knowledge with images',
       startQuiz: 'Start Quiz',
-      goToRegularQuestions: 'Go to Regular Questions',
+      goToRegularQuestions: 'Go to Homepage',
       goToInstructions: 'Go to Instructions',
       unauthorizedText: 'You need to be authorized to access this feature.',
       noQuestionsAvailable: 'No questions available for this grade yet.',
