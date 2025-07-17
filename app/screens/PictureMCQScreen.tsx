@@ -27,7 +27,7 @@ import { IconSymbol } from '@/components/ui/IconSymbol';
 import { ProfileAvatar } from '@/components/ui/ProfileAvatar';
 import { LanguageToggle } from '@/components/ui/LanguageToggle';
 import { ImageSkeleton } from '@/components/ui/ImageSkeleton';
-import { getKGQuestions, KGQuestion } from '@/services/kgService';
+import { getKGQuestions, getKGSubcategoryQuestions, KGQuestion } from '@/services/kgService';
 
 // No local image mapping needed - we'll use remote images from the API
 
@@ -191,12 +191,27 @@ export default function PictureMCQScreen({ onBackToInstructions }: PictureMCQScr
       setError(null);
       
       const categoryId = params.categoryId as string;
+      const subcategoryId = params.subcategoryId as string;
+      const isSubcategory = params.isSubcategory === 'true';
+      
       if (!categoryId) {
         throw new Error('Category ID is required');
       }
 
-      const { questions: apiQuestions } = await getKGQuestions(parseInt(categoryId));
-      console.log('Raw API questions:', apiQuestions); // DEBUG LOG
+      let apiQuestions: KGQuestion[];
+      
+      if (isSubcategory && subcategoryId) {
+        // Fetch questions for subcategory
+        const { questions } = await getKGSubcategoryQuestions(parseInt(subcategoryId));
+        apiQuestions = questions;
+        console.log('Raw API subcategory questions:', apiQuestions); // DEBUG LOG
+      } else {
+        // Fetch questions for main category
+        const { questions } = await getKGQuestions(parseInt(categoryId));
+        apiQuestions = questions;
+        console.log('Raw API category questions:', apiQuestions); // DEBUG LOG
+      }
+      
       const transformedQuestions = transformQuestions(apiQuestions);
       console.log('Fetched and transformed questions:', transformedQuestions); // DEBUG LOG
       setQuestions(transformedQuestions);

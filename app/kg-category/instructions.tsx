@@ -29,7 +29,7 @@ export default function KGCategoryInstructions() {
   const { isDarkMode } = useTheme();
   const colors = getColors(isDarkMode);
   const { t } = useTranslation();
-  const { category, categoryId } = useLocalSearchParams();
+  const { category, categoryId, subcategory, subcategoryId, hasSubcategories } = useLocalSearchParams();
 
   // Animation values
   const headerScale = useSharedValue(0);
@@ -61,12 +61,26 @@ export default function KGCategoryInstructions() {
   }, []);
 
   const handleStart = () => {
-    // Since this screen is only used for categories without subcategories,
-    // always navigate directly to MCQ screen
-    router.push({
-      pathname: '/screens/PictureMCQScreen',
-      params: { category, categoryId }
-    });
+    // Check if this is for a subcategory or main category
+    if (hasSubcategories === 'true' && subcategoryId) {
+      // Navigate to MCQ screen with subcategory parameters
+      router.push({
+        pathname: '/screens/PictureMCQScreen',
+        params: { 
+          category, 
+          categoryId, 
+          subcategory, 
+          subcategoryId,
+          isSubcategory: 'true'
+        }
+      });
+    } else {
+      // Navigate to MCQ screen with category parameters (existing behavior)
+      router.push({
+        pathname: '/screens/PictureMCQScreen',
+        params: { category, categoryId }
+      });
+    }
   };
 
   const headerAnimatedStyle = useAnimatedStyle(() => {
@@ -114,7 +128,10 @@ export default function KGCategoryInstructions() {
           </TouchableOpacity>
           <View style={styles.headerTextContainer}>
             <ThemedText style={styles.headerTitle}>
-              {t(`kg.categories.${category}`, category as string)} 📚
+              {hasSubcategories === 'true' && subcategory 
+                ? t(`kg.subcategories.${subcategory}`, subcategory as string)
+                : t(`kg.categories.${category}`, category as string)
+              } 📚
             </ThemedText>
             <ThemedText style={styles.headerSubtitle}>
               {t('kg.instructions.subtitle', "Let's learn something new!")} ✨

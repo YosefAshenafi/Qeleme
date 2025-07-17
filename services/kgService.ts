@@ -241,4 +241,49 @@ export const getKGQuestions = async (categoryId: number): Promise<{category: any
     console.error('Error fetching KG questions:', error);
     throw error;
   }
+};
+
+/**
+ * Fetch questions for a specific KG subcategory
+ * @param subcategoryId - The ID of the subcategory to fetch questions for
+ * @returns Promise<{subcategory: any, questions: KGQuestion[]}> - The subcategory and questions data
+ */
+export const getKGSubcategoryQuestions = async (subcategoryId: number): Promise<{subcategory: any, questions: KGQuestion[]}> => {
+  try {
+    const token = await getAuthToken();
+    if (!token) {
+      throw new Error('No authentication token found. Please login again.');
+    }
+
+    const response = await fetch(`${BASE_URL}/kg/questions?category_id=${subcategoryId}`, {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+      },
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => null);
+      throw new Error(
+        errorData?.message || 
+        `Failed to fetch KG subcategory questions. Status: ${response.status}`
+      );
+    }
+
+    const data: KGQuestionsResponse = await response.json();
+    
+    if (!data.success || !Array.isArray(data.questions)) {
+      throw new Error('Invalid response format from server');
+    }
+
+    return {
+      subcategory: data.category,
+      questions: data.questions
+    };
+  } catch (error) {
+    console.error('Error fetching KG subcategory questions:', error);
+    throw error;
+  }
 }; 
