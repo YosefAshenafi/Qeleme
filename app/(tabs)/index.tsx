@@ -557,6 +557,7 @@ export default function HomeScreen() {
   };
 
   const handleBookPress = (type: 'mcq' | 'flashcard', book: BookItem) => {
+    console.log('Book pressed:', { type, book });
     if (type === 'mcq') {
       // Pass the subject information to the MCQ screen
       router.push({
@@ -567,7 +568,14 @@ export default function HomeScreen() {
         }
       });
     } else {
-      router.push('/(tabs)/flashcards');
+      // Pass the subject information to the Flashcards screen
+      console.log('Navigating to flashcards with subject:', book.subject);
+      router.push({
+        pathname: '/(tabs)/flashcards',
+        params: {
+          preSelectedSubject: book.subject
+        }
+      });
     }
   };
 

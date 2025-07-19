@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { StyleSheet, TouchableOpacity, Dimensions, View, Modal, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { router } from 'expo-router';
+import { router, useLocalSearchParams } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import Animated, {
   useAnimatedStyle,
@@ -40,6 +40,11 @@ export default function FlashcardsScreen() {
   const { user } = useAuth();
   const { t } = useTranslation();
   const colors = getColors(isDarkMode);
+  const params = useLocalSearchParams();
+  
+  // Debug logging
+  console.log('Flashcards params:', params);
+  console.log('Pre-selected subject:', params.preSelectedSubject);
   
   const [selectedGradeId, setSelectedGradeId] = useState<string>('1');
   const [selectedGrade, setSelectedGrade] = useState<string>('');
@@ -55,6 +60,7 @@ export default function FlashcardsScreen() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [currentFlashcards, setCurrentFlashcards] = useState<Flashcard[]>([]);
+  const [hasAppliedPreSelection, setHasAppliedPreSelection] = useState(false);
 
   const revealAnimation = useSharedValue(0);
   const progressAnimation = useSharedValue(0);
@@ -103,12 +109,47 @@ export default function FlashcardsScreen() {
       const grade = flashcardsData[0];
       if (grade && grade.name) {
         setSelectedGrade(grade.name);
-        // Reset subject and chapter when grade changes
-        setSelectedSubject('');
-        setSelectedChapter('');
+        
+        // Handle pre-selected subject from route parameters
+        if (params.preSelectedSubject && !hasAppliedPreSelection) {
+          console.log('Looking for subject:', params.preSelectedSubject);
+          console.log('Available subjects:', grade.subjects?.map(s => s.name));
+          
+          // Try exact match first
+          let subject = grade.subjects?.find(s => 
+            s.name.toLowerCase() === (params.preSelectedSubject as string).toLowerCase()
+          );
+          
+          // If not found, try partial match
+          if (!subject) {
+            console.log('Exact match not found, trying partial match...');
+            subject = grade.subjects?.find(s => 
+              s.name.toLowerCase().includes((params.preSelectedSubject as string).toLowerCase()) ||
+              (params.preSelectedSubject as string).toLowerCase().includes(s.name.toLowerCase())
+            );
+          }
+          
+          console.log('Found subject:', subject);
+          if (subject) {
+            console.log('Setting selected subject to:', subject.id);
+            setSelectedSubject(subject.id);
+            setSelectedChapter(''); // Reset chapter when subject changes
+            setHasAppliedPreSelection(true);
+          } else {
+            console.log('Subject not found, resetting selection');
+            // Reset subject and chapter if pre-selected subject not found
+            setSelectedSubject('');
+            setSelectedChapter('');
+            setHasAppliedPreSelection(true);
+          }
+        } else if (!params.preSelectedSubject) {
+          // Reset subject and chapter when grade changes (no pre-selection)
+          setSelectedSubject('');
+          setSelectedChapter('');
+        }
       }
     }
-  }, [flashcardsData]);
+  }, [flashcardsData, params.preSelectedSubject, hasAppliedPreSelection]);
 
   // Reset chapter when subject changes
   useEffect(() => {
@@ -117,10 +158,17 @@ export default function FlashcardsScreen() {
     }
   }, [selectedSubject]);
 
+  // Reset pre-selection flag when parameters change
+  useEffect(() => {
+    setHasAppliedPreSelection(false);
+  }, [params.preSelectedSubject]);
+
   const selectedGradeData = selectedGrade && flashcardsData ? flashcardsData.find(g => g.name === selectedGrade) : null;
   const selectedSubjectData = selectedSubject && selectedGradeData && selectedGradeData.subjects
     ? selectedGradeData.subjects.find(s => s.id === selectedSubject)
     : null;
+  
+
   const selectedChapterData = selectedChapter && selectedSubjectData && selectedSubjectData.chapters
     ? selectedSubjectData.chapters.find(c => c.id === selectedChapter)
     : null;
