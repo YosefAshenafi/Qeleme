@@ -217,8 +217,8 @@ export default function MCQScreen() {
       const subjectId = params.preSelectedSubjectId as string;
       setSelectedSubject(subjectId);
       
-      // Show the chapter chooser interface
-      setShowChapterChooser(true);
+      // Don't show the chapter chooser interface - let user use regular dropdowns
+      // setShowChapterChooser(true);
       
       console.log('✅ Pre-selected subject set:', subjectId);
     }
