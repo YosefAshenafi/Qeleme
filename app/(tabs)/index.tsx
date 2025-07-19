@@ -558,7 +558,14 @@ export default function HomeScreen() {
 
   const handleBookPress = (type: 'mcq' | 'flashcard', book: BookItem) => {
     if (type === 'mcq') {
-      router.push('/(tabs)/mcq');
+      // Pass the subject information to the MCQ screen
+      router.push({
+        pathname: '/(tabs)/mcq',
+        params: {
+          preSelectedSubject: book.subject,
+          preSelectedSubjectId: book.id.replace('mcq-', '') // Extract the subject ID
+        }
+      });
     } else {
       router.push('/(tabs)/flashcards');
     }

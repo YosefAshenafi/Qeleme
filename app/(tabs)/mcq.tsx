@@ -63,6 +63,7 @@ export default function MCQScreen() {
   const [availableSubjects, setAvailableSubjects] = useState<string[]>([]);
   const [availableYears, setAvailableYears] = useState<number[]>([]);
   const [nationalExamQuestions, setNationalExamQuestions] = useState<NationalExamAPIResponse[]>([]);
+  const [showChapterChooser, setShowChapterChooser] = useState(false);
   
   // Timer states
   const [time, setTime] = useState(0);
@@ -200,6 +201,28 @@ export default function MCQScreen() {
       setSelectedExamType('mcq');
     }
   }, [selectedGrade]);
+
+  // Handle pre-selected subject from URL parameters
+  useEffect(() => {
+    if (params.preSelectedSubject && params.preSelectedSubjectId && mcqData) {
+      console.log('🎯 Pre-selected subject detected:', {
+        subject: params.preSelectedSubject,
+        subjectId: params.preSelectedSubjectId
+      });
+      
+      // Set the exam type to 'mcq' for regular MCQ
+      setSelectedExamType('mcq');
+      
+      // Find and set the pre-selected subject
+      const subjectId = params.preSelectedSubjectId as string;
+      setSelectedSubject(subjectId);
+      
+      // Show the chapter chooser interface
+      setShowChapterChooser(true);
+      
+      console.log('✅ Pre-selected subject set:', subjectId);
+    }
+  }, [params.preSelectedSubject, params.preSelectedSubjectId, mcqData]);
 
   // Function to fetch available national exam data
   const fetchNationalExamAvailable = async () => {
@@ -837,6 +860,96 @@ export default function MCQScreen() {
           </ThemedView>
         </ScrollView>
       </ThemedView>
+    );
+  }
+
+  // Chapter Chooser Interface - Show when subject is pre-selected from home page
+  if (showChapterChooser && selectedSubject && selectedSubjectData) {
+    return (
+      <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]}>
+        <View style={[styles.headerContainer, { backgroundColor: colors.background, borderBottomColor: colors.border }]}>
+          <TouchableOpacity
+            style={styles.backButton}
+            onPress={() => {
+              setShowChapterChooser(false);
+              setSelectedSubject('');
+              setSelectedChapter('');
+              // Reset to show the MCQ subject and chapter chooser
+              setSelectedExamType('mcq');
+              // Reset dropdown states
+              setShowSubjectDropdown(false);
+              setShowChapterDropdown(false);
+              setShowYearDropdown(false);
+            }}
+          >
+            <IconSymbol name="chevron.left" size={24} color={colors.tint} />
+          </TouchableOpacity>
+          <ThemedText style={[styles.headerTitle, { color: colors.text }]}>
+            Choose Chapter
+          </ThemedText>
+        </View>
+        
+        <ThemedView style={[styles.container, { backgroundColor: colors.background }]}>
+          <ThemedView style={[styles.formContainer, { backgroundColor: colors.background }]}>
+            {/* Subject Info */}
+            <ThemedView style={[styles.formGroup, { backgroundColor: colors.background }]}>
+              <ThemedText style={[styles.formLabel, { color: colors.tint }]}>
+                Selected Subject
+              </ThemedText>
+              <View style={[styles.selectedSubjectContainer, { backgroundColor: colors.cardAlt, borderColor: colors.border }]}>
+                <ThemedText style={[styles.selectedSubjectText, { color: colors.text }]}>
+                  {selectedSubjectData.name}
+                </ThemedText>
+                <IconSymbol name="checkmark.circle.fill" size={20} color={colors.tint} />
+              </View>
+            </ThemedView>
+
+            {/* Chapter Selection */}
+            <ThemedView style={[styles.formGroup, { backgroundColor: colors.background }]}>
+              <ThemedText style={[styles.formLabel, { color: colors.tint }]}>
+                Select Chapter
+              </ThemedText>
+              <ScrollView style={styles.chapterList} showsVerticalScrollIndicator={false}>
+                {selectedSubjectData.chapters?.map((chapter: Chapter) => (
+                  <TouchableOpacity
+                    key={chapter.id}
+                    style={[styles.chapterItem, { backgroundColor: colors.cardAlt, borderColor: colors.border }]}
+                    onPress={() => {
+                      setSelectedChapter(chapter.id);
+                      setShowChapterChooser(false);
+                      // Start the test after a short delay to ensure state is updated
+                      setTimeout(() => {
+                        handleStartTest();
+                      }, 100);
+                    }}
+                  >
+                    <View style={styles.chapterItemContent}>
+                      <View style={[styles.chapterIcon, { backgroundColor: colors.tint }]}>
+                        <IconSymbol name="doc.text.fill" size={20} color="#fff" />
+                      </View>
+                      <View style={styles.chapterTextContainer}>
+                        <ThemedText style={[styles.chapterTitle, { color: colors.text }]}>
+                          {chapter.name}
+                        </ThemedText>
+                        <ThemedText style={[styles.chapterSubtitle, { color: colors.text, opacity: 0.7 }]}>
+                          {Math.floor(Math.random() * 50) + 10} questions
+                        </ThemedText>
+                      </View>
+                    </View>
+                    <IconSymbol name="chevron.right" size={20} color={colors.tint} />
+                  </TouchableOpacity>
+                )) || (
+                  <View style={[styles.chapterItem, { backgroundColor: colors.cardAlt, borderColor: colors.border, justifyContent: 'center', alignItems: 'center' }]}>
+                    <ThemedText style={[styles.chapterTitle, { color: colors.text, opacity: 0.7 }]}>
+                      No chapters available
+                    </ThemedText>
+                  </View>
+                )}
+              </ScrollView>
+            </ThemedView>
+          </ThemedView>
+        </ThemedView>
+      </SafeAreaView>
     );
   }
 
@@ -1791,6 +1904,55 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: 20,
     fontWeight: '600',
+  },
+  // Chapter chooser styles
+  selectedSubjectContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    padding: 16,
+    borderRadius: 12,
+    borderWidth: 1,
+  },
+  selectedSubjectText: {
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  chapterList: {
+    maxHeight: 400,
+  },
+  chapterItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    padding: 16,
+    borderRadius: 12,
+    borderWidth: 1,
+    marginBottom: 12,
+  },
+  chapterItemContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
+  },
+  chapterIcon: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 12,
+  },
+  chapterTextContainer: {
+    flex: 1,
+  },
+  chapterTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    marginBottom: 4,
+  },
+  chapterSubtitle: {
+    fontSize: 14,
   },
 });
 
