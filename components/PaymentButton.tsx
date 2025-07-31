@@ -1,8 +1,8 @@
 // src/components/PaymentButton.tsx
 import React, { useState, useEffect } from 'react';
 import { View, Alert, ActivityIndicator, StyleSheet, TouchableOpacity, Dimensions, Modal, Platform } from 'react-native';
-import { initiatePayment, checkPaymentStatus } from '../services/santimPayService';
-import { PaymentButtonProps } from '../types/santimPay';
+import { initiatePayment, checkPaymentStatus } from '../services/chappaService';
+import { PaymentButtonProps } from '../types/chappa';
 import { WebView } from 'react-native-webview';
 import { BlurView } from 'expo-blur';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -23,15 +23,26 @@ const PaymentButton: React.FC<PaymentButtonProps> = ({
   const [paymentUrl, setPaymentUrl] = useState<string>('');
   const [orderId, setOrderId] = useState<string>('');
   const [customerPhone, setCustomerPhone] = useState<string>('');
+  const [customerEmail, setCustomerEmail] = useState<string>('');
+  const [customerName, setCustomerName] = useState<string>('');
 
   useEffect(() => {
-    const getPhoneNumber = async () => {
+    const getUserData = async () => {
       const phoneNumber = await AsyncStorage.getItem('userPhoneNumber');
+      const email = await AsyncStorage.getItem('userEmail');
+      const name = await AsyncStorage.getItem('userName');
+      
       if (phoneNumber) {
         setCustomerPhone(phoneNumber);
       }
+      if (email) {
+        setCustomerEmail(email);
+      }
+      if (name) {
+        setCustomerName(name);
+      }
     };
-    getPhoneNumber();
+    getUserData();
   }, []);
 
   const handlePayment = async (): Promise<void> => {
@@ -47,7 +58,7 @@ const PaymentButton: React.FC<PaymentButtonProps> = ({
       const newOrderId = `ORDER_${Date.now()}`;
       setOrderId(newOrderId);
 
-      const response = await initiatePayment(amount, newOrderId, customerPhone);
+      const response = await initiatePayment(amount, newOrderId, customerPhone, undefined, customerEmail, customerName);
       if (response.success && response.paymentUrl) {
         setPaymentUrl(response.paymentUrl);
         setShowWebView(true);

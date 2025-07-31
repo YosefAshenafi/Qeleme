@@ -5,7 +5,7 @@
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/logo/app-icon.png",
-    "scheme": "myapp",
+    "scheme": "qelem",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "extra": {

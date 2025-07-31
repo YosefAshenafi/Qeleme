@@ -24,6 +24,7 @@
     "@reduxjs/toolkit": "^2.6.1",
     "base64-js": "^1.5.1",
     "expo": "~52.0.38",
+    "expo-av": "^15.1.7",
     "expo-blur": "~14.0.3",
     "expo-checkbox": "^4.0.1",
     "expo-clipboard": "~7.0.1",

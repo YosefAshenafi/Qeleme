@@ -19,6 +19,7 @@ import Animated, {
   useAnimatedReaction,
 } from 'react-native-reanimated';
 import { useTranslation } from 'react-i18next';
+import { Video, ResizeMode } from 'expo-av';
 
 import { Header } from '@/components/Header';
 import { ThemedText } from '@/components/ThemedText';
@@ -127,8 +128,7 @@ export default function PictureMCQScreen({ onBackToInstructions }: PictureMCQScr
   const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null);
   const [showExplanation, setShowExplanation] = useState(false);
   const [score, setScore] = useState<number>(0);
-  const [showCelebration, setShowCelebration] = useState(false);
-  const [showWrongAnswer, setShowWrongAnswer] = useState(false);
+
   const [userPhoneNumber, setUserPhoneNumber] = useState<string | null>(null);
   const [isAuthorized, setIsAuthorized] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
@@ -244,12 +244,9 @@ export default function PictureMCQScreen({ onBackToInstructions }: PictureMCQScr
   const imageScale = useSharedValue(1);
   const isDraggingShared = useSharedValue(false);
   
-  // New animation values for celebration and incorrect
-  const celebrationScale = useSharedValue(0);
-  const celebrationOpacity = useSharedValue(0);
-  const incorrectScale = useSharedValue(0);
-  const incorrectOpacity = useSharedValue(0);
-  const incorrectRotation = useSharedValue(0);
+  // Video animation states
+  const [showCorrectVideo, setShowCorrectVideo] = useState(false);
+  const [showIncorrectVideo, setShowIncorrectVideo] = useState(false);
 
   const imageAnimatedStyle = useAnimatedStyle(() => {
     return {
@@ -261,24 +258,7 @@ export default function PictureMCQScreen({ onBackToInstructions }: PictureMCQScr
     };
   });
 
-  const celebrationAnimatedStyle = useAnimatedStyle(() => {
-    return {
-      transform: [
-        { scale: celebrationScale.value },
-      ],
-      opacity: celebrationOpacity.value,
-    };
-  });
 
-  const incorrectAnimatedStyle = useAnimatedStyle(() => {
-    return {
-      transform: [
-        { scale: incorrectScale.value },
-        { rotate: `${incorrectRotation.value * 10}deg` },
-      ],
-      opacity: incorrectOpacity.value,
-    };
-  });
 
   useAnimatedReaction(
     () => isDraggingShared.value,
@@ -357,32 +337,10 @@ export default function PictureMCQScreen({ onBackToInstructions }: PictureMCQScr
           if (selectedOption.isCorrect) {
             // Simplified score update
             runOnJS(setScore)(score + 1);
-            runOnJS(setShowCelebration)(true);
-            
-            // Celebration animation
-            celebrationScale.value = withSequence(
-              withSpring(1, { damping: 8 }),
-              withTiming(0, { duration: 1000 })
-            );
-            celebrationOpacity.value = withSequence(
-              withTiming(1, { duration: 300 }),
-              withTiming(0, { duration: 700 })
-            );
+            runOnJS(setShowCorrectVideo)(true);
           } else {
             // Incorrect animation
-            runOnJS(setShowWrongAnswer)(true);
-            incorrectScale.value = withSequence(
-              withSpring(1, { damping: 8 }),
-              withTiming(0, { duration: 1000 })
-            );
-            incorrectOpacity.value = withSequence(
-              withTiming(1, { duration: 300 }),
-              withTiming(0, { duration: 700 })
-            );
-            incorrectRotation.value = withSequence(
-              withSpring(1, { damping: 8 }),
-              withTiming(0, { duration: 1000 })
-            );
+            runOnJS(setShowIncorrectVideo)(true);
           }
         }
       }
@@ -413,15 +371,22 @@ export default function PictureMCQScreen({ onBackToInstructions }: PictureMCQScr
   }, []);
 
   const handleNextQuestion = () => {
-    if (!currentQuestion) return;
+    console.log('handleNextQuestion called', { currentQuestionIndex, questionsLength: questions.length });
+    if (!currentQuestion) {
+      console.log('No current question, returning');
+      return;
+    }
     if (currentQuestionIndex < questions.length - 1) {
+      console.log('Moving to next question', { from: currentQuestionIndex, to: currentQuestionIndex + 1 });
       setCurrentQuestionIndex(prev => prev + 1);
       setSelectedAnswer(null);
       setShowExplanation(false);
-      setShowCelebration(false);
-      setShowWrongAnswer(false);
+      setShowCorrectVideo(false);
+      setShowIncorrectVideo(false);
       setDroppedOption(null);
       setHoveredOption(null);
+    } else {
+      console.log('Already at last question');
     }
   };
 
@@ -431,8 +396,8 @@ export default function PictureMCQScreen({ onBackToInstructions }: PictureMCQScr
       setCurrentQuestionIndex(prev => prev - 1);
       setSelectedAnswer(null);
       setShowExplanation(false);
-      setShowCelebration(false);
-      setShowWrongAnswer(false);
+      setShowCorrectVideo(false);
+      setShowIncorrectVideo(false);
       setDroppedOption(null);
       setHoveredOption(null);
     }
@@ -442,8 +407,8 @@ export default function PictureMCQScreen({ onBackToInstructions }: PictureMCQScr
     setCurrentQuestionIndex(0);
     setSelectedAnswer(null);
     setShowExplanation(false);
-    setShowCelebration(false);
-    setShowWrongAnswer(false);
+    setShowCorrectVideo(false);
+    setShowIncorrectVideo(false);
     setScore(0);
     setShowResult(false);
     setDroppedOption(null);
@@ -459,8 +424,8 @@ export default function PictureMCQScreen({ onBackToInstructions }: PictureMCQScr
     setScore(0);
     setDroppedOption(null);
     setHoveredOption(null);
-    setShowCelebration(false);
-    setShowWrongAnswer(false);
+    setShowCorrectVideo(false);
+    setShowIncorrectVideo(false);
     // Navigate to the KG dashboard instead of regular MCQ
     router.push('/kg-dashboard');
   };
@@ -482,16 +447,30 @@ export default function PictureMCQScreen({ onBackToInstructions }: PictureMCQScr
     }
   };
 
-  // Auto-advance to next question after showing celebration/incorrect animation
+  // Auto-advance to next question after showing video animations
   useEffect(() => {
-    if (selectedAnswer && (showCelebration || showWrongAnswer)) {
+    if (selectedAnswer && (showCorrectVideo || showIncorrectVideo)) {
+      console.log('Auto-advance timer started', { currentQuestionIndex, questionsLength: questions.length });
       const timer = setTimeout(() => {
-        handleNavigation();
-      }, 2000); // Wait 2 seconds to show the animation
+        console.log('Auto-advance timer triggered', { currentQuestionIndex, questionsLength: questions.length });
+        // Hide videos first
+        setShowCorrectVideo(false);
+        setShowIncorrectVideo(false);
+        
+        if (currentQuestionIndex < questions.length - 1) {
+          console.log('Moving to next question');
+          handleNextQuestion();
+        } else {
+          console.log('Showing results');
+          setShowResult(true);
+        }
+      }, 3000); // Wait 4 seconds to show the video
 
       return () => clearTimeout(timer);
     }
-  }, [selectedAnswer, showCelebration, showWrongAnswer, isLastQuestion]);
+  }, [selectedAnswer, showCorrectVideo, showIncorrectVideo]);
+
+
 
   if (!isAuthorized) {
     return (
@@ -767,21 +746,43 @@ export default function PictureMCQScreen({ onBackToInstructions }: PictureMCQScr
                   </Animated.View>
                 </GestureDetector>
 
-                {/* Celebration Animation */}
-                <Animated.View style={[styles.celebrationContainer, celebrationAnimatedStyle]}>
-                  <View style={[styles.celebrationContent, { backgroundColor: isDarkMode ? 'rgba(28, 28, 30, 0.9)' : 'rgba(255, 255, 255, 0.9)' }]}>
-                    <Text style={styles.celebrationEmoji}>🎉</Text>
-                    <ThemedText style={styles.celebrationText}>{t('mcq.correct')} 🎯</ThemedText>
+                                {/* Correct Video Animation */}
+                {showCorrectVideo && (
+                  <View style={styles.inlineVideoContainer}>
+                    <Video
+                      source={require('@/assets/animations/correct.mp4')}
+                      style={styles.inlineVideo}
+                      shouldPlay
+                      isLooping={true}
+                      resizeMode={ResizeMode.CONTAIN}
+                      onPlaybackStatusUpdate={(status) => {
+                        if ('didJustFinish' in status && status.didJustFinish) {
+                          console.log('Correct video finished');
+                          // Don't hide the video - let the auto-advance timer handle it
+                        }
+                      }}
+                    />
                   </View>
-                </Animated.View>
+                )}
 
-                {/* Incorrect Animation */}
-                <Animated.View style={[styles.incorrectContainer, incorrectAnimatedStyle]}>
-                  <View style={[styles.incorrectContent, { backgroundColor: isDarkMode ? 'rgba(28, 28, 30, 0.9)' : 'rgba(255, 255, 255, 0.9)' }]}>
-                    <Text style={styles.incorrectEmoji}>😅</Text>
-                    <ThemedText style={styles.incorrectText}>{t('mcq.incorrect')} 💪</ThemedText>
+                {/* Incorrect Video Animation */}
+                {showIncorrectVideo && (
+                  <View style={styles.inlineVideoContainer}>
+                    <Video
+                      source={require('@/assets/animations/not-correct.mp4')}
+                      style={styles.inlineVideo}
+                      shouldPlay
+                      isLooping={true}
+                      resizeMode={ResizeMode.CONTAIN}
+                      onPlaybackStatusUpdate={(status) => {
+                        if ('didJustFinish' in status && status.didJustFinish) {
+                          console.log('Incorrect video finished');
+                          // Don't hide the video - let the auto-advance timer handle it
+                        }
+                      }}
+                    />
                   </View>
-                </Animated.View>
+                )}
 
                 <View style={styles.optionsContainer}>
                   {memoizedCurrentQuestion.options.map((option) => (
@@ -1387,12 +1388,16 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginLeft: 10,
   },
-  celebrationEmoji: {
-    fontSize: 80,
-    marginBottom: 10,
-  },
-  incorrectEmoji: {
-    fontSize: 80,
-    marginBottom: 10,
-  },
+      inlineVideoContainer: {
+      alignItems: 'center',
+      justifyContent: 'center',
+      marginVertical: -300,
+      paddingHorizontal: 20,
+      minHeight: 350,
+      zIndex: 1000,
+    },
+      inlineVideo: {
+      width: 300,
+      height: 300,
+    },
 }); 

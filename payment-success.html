@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Payment Success - Qelem</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .container {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            text-align: center;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            max-width: 400px;
+            width: 100%;
+        }
+        .success-icon {
+            font-size: 80px;
+            color: #10B981;
+            margin-bottom: 20px;
+        }
+        h1 {
+            color: #1F2937;
+            margin-bottom: 15px;
+            font-size: 28px;
+            font-weight: bold;
+            padding-top: 10px;
+        }
+        p {
+            color: #6B7280;
+            margin-bottom: 30px;
+            line-height: 1.6;
+        }
+        .button {
+            background: #7C3AED;
+            color: white;
+            padding: 15px 30px;
+            border-radius: 10px;
+            text-decoration: none;
+            display: inline-block;
+            font-weight: 600;
+            transition: background 0.3s;
+        }
+        .button:hover {
+            background: #6D28D9;
+        }
+        .loading {
+            display: none;
+            margin-top: 20px;
+        }
+        .order-details {
+            background: #F3F4F6;
+            border-radius: 10px;
+            padding: 15px;
+            margin: 20px 0;
+            font-size: 14px;
+            color: #6B7280;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="success-icon">✅</div>
+        <h1>Payment Successful!</h1>
+        <p>Your payment has been processed successfully. You can now access all premium features in the Qelem app.</p>
+        
+        <div class="order-details" id="orderDetails">
+            <!-- Order details will be populated by JavaScript -->
+        </div>
+        
+        <a href="qelem://payment-success" class="button" id="openApp">Open Qelem App</a>
+        
+        <div class="loading" id="loading">
+            <p>Redirecting to app...</p>
+        </div>
+    </div>
+
+    <script>
+        // Get URL parameters
+        const urlParams = new URLSearchParams(window.location.search);
+        const status = urlParams.get('status');
+        const txRef = urlParams.get('tx_ref');
+        const orderId = urlParams.get('orderId');
+        
+        console.log('Payment callback received:', { status, txRef, orderId });
+        
+        // Display order details if available
+        const orderDetailsElement = document.getElementById('orderDetails');
+        if (orderId) {
+            orderDetailsElement.innerHTML = `
+                <strong>Order ID:</strong> ${orderId}<br>
+                <strong>Transaction Reference:</strong> ${txRef || 'N/A'}<br>
+                <strong>Status:</strong> ${status || 'Success'}
+            `;
+        } else {
+            orderDetailsElement.style.display = 'none';
+        }
+        
+        // Function to open the app
+        function openApp() {
+            const appUrl = 'qelem://payment-success';
+            window.location.href = appUrl;
+        }
+        
+        // Auto-redirect to app after 2 seconds
+        setTimeout(() => {
+            document.getElementById('loading').style.display = 'block';
+            document.getElementById('openApp').style.display = 'none';
+            openApp();
+        }, 2000);
+        
+        // Handle manual button click
+        document.getElementById('openApp').addEventListener('click', function(e) {
+            e.preventDefault();
+            document.getElementById('loading').style.display = 'block';
+            document.getElementById('openApp').style.display = 'none';
+            openApp();
+        });
+        
+        // Fallback: if app doesn't open, redirect to app store or website
+        setTimeout(() => {
+            // Check if we're still on this page (app didn't open)
+            if (document.getElementById('loading').style.display === 'block') {
+                // Redirect to app store or website
+                window.location.href = 'https://qelem.com';
+            }
+        }, 4000);
+        
+        // Also try to open app immediately on page load
+        setTimeout(() => {
+            openApp();
+        }, 100);
+    </script>
+</body>
+</html> 

@@ -8,6 +8,7 @@ import { useTheme } from '@/contexts/ThemeContext';
 import { getColors } from '@/constants/Colors';
 import { useTranslation } from 'react-i18next';
 import { BASE_URL } from '../../config/constants';
+import { initiatePayment } from '../../services/chappaService';
 import { PaymentPlan } from '@/types/payment';
 
 import { ThemedText } from '@/components/ThemedText';
@@ -262,31 +263,28 @@ export default function PlanSelectionScreen() {
       // For paid plans, proceed with payment
       const amount = getTotalCostAsNumber();
 
-      // Directly initiate payment with Santim Pay
+      // Use Chappa service to initiate payment
       const orderId = `ORDER_${Date.now()}`;
 
-      const paymentResponse = await fetch('http://localhost:3000/api/payment/initiate', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          id: orderId,
-          amount: parseFloat(amount.toString()),
-          paymentReason: `Qelem Premium Subscription - ${selectedPlan.durationInMonths} months`,
-          successRedirectUrl: "https://santimpay.com",
-          failureRedirectUrl: "https://santimpay.com",
-          notifyUrl: "https://webhook.site/783a4514-3e30-4315-9c68-c8b41a743c9d",
-          phoneNumber: userData.phoneNumber, // Use full phone number with +251
-          cancelRedirectUrl: "https://santimpay.com",
-          merchantId: "1369cd04-2f77-4708-8ec9-0177c35935b3"
-        }),
-      });
+      console.log('Initiating payment with Chappa service');
+      console.log('Order ID:', orderId);
+      console.log('Amount:', parseFloat(amount.toString()));
+      console.log('Phone:', userData.phoneNumber);
 
-      const paymentData = await paymentResponse.json();
+      const paymentData = await initiatePayment(
+        parseFloat(amount.toString()),
+        orderId,
+        userData.phoneNumber,
+        selectedPlan.durationInMonths,
+        userData.email || 'customer@qelem.com',
+        userData.fullName
+      );
+      
+      console.log('Payment response:', paymentData);
+      console.log('Payment response status:', paymentData.success);
 
       if (paymentData.success && paymentData.paymentUrl) {
-        // Navigate to payment screen with the Santim Pay URL
+        // Navigate to payment screen with the Chappa URL
         router.push({
           pathname: '/(auth)/payment',
           params: {
@@ -299,6 +297,7 @@ export default function PlanSelectionScreen() {
           }
         });
       } else {
+        console.log('Payment failed:', paymentData);
         throw new Error(paymentData.error || 'Failed to initiate payment');
       }
 

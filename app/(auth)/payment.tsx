@@ -12,6 +12,7 @@ import { ThemedText } from '@/components/ThemedText';
 import { LanguageToggle } from '@/components/ui/LanguageToggle';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { WebView } from 'react-native-webview';
+import * as Linking from 'expo-linking';
 
 export default function PaymentScreen() {
   const { t } = useTranslation();
@@ -30,22 +31,67 @@ export default function PaymentScreen() {
   const [registrationCompleted, setRegistrationCompleted] = useState(false);
 
   useEffect(() => {
-    // Store phone number for PaymentButton component
+    // Store user data for PaymentButton component
     if (userData?.phoneNumber) {
       AsyncStorage.setItem('userPhoneNumber', userData.phoneNumber);
+    }
+    if (userData?.email) {
+      AsyncStorage.setItem('userEmail', userData.email);
+    }
+    if (userData?.fullName) {
+      AsyncStorage.setItem('userName', userData.fullName);
     }
     
     // Start polling for payment status
     if (orderId) {
       pollPaymentStatus(orderId);
     }
+
+    // Check initial URL for deep link
+    const checkInitialURL = async () => {
+      const initialURL = await Linking.getInitialURL();
+      if (initialURL && initialURL.includes('payment-success')) {
+        console.log('Initial URL contains payment-success:', initialURL);
+        setShowWebView(false);
+        setPaymentCompleted(true);
+        handlePaymentSuccess(parseFloat(amount), selectedPlanId);
+      }
+    };
+    
+    checkInitialURL();
+
+    // Set up deep link listener
+    const subscription = Linking.addEventListener('url', handleDeepLink);
+    
+    return () => {
+      subscription?.remove();
+    };
   }, [orderId]);
+
+  const handleDeepLink = (event: { url: string }) => {
+    console.log('Deep link received:', event.url);
+    
+    if (event.url.includes('payment-success')) {
+      console.log('Payment success deep link received');
+      setShowWebView(false);
+      setPaymentCompleted(true);
+      handlePaymentSuccess(parseFloat(amount), selectedPlanId);
+    }
+  };
 
   const pollPaymentStatus = async (orderId: string) => {
     // Poll for payment status every 5 seconds
     const interval = setInterval(async () => {
       try {
-        const response = await fetch(`http://localhost:3000/api/payment/status/${orderId}`);
+        const response = await fetch(`http://localhost:8080/verify`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            tx_ref: orderId
+          }),
+        });
         const data = await response.json();
         
         console.log('Payment status check:', data);
@@ -63,12 +109,15 @@ export default function PaymentScreen() {
         }
       } catch (error) {
         console.error('Payment status check error:', error);
+        // If the status endpoint is not available, we'll rely on the webhook callback
+        // Don't clear the interval, let it continue polling
       }
     }, 5000);
 
     // Clear interval after 5 minutes (timeout)
     setTimeout(() => {
       clearInterval(interval);
+      console.log('Payment status polling timed out');
     }, 300000);
   };
 
@@ -109,6 +158,7 @@ export default function PaymentScreen() {
       setShowSuccessModal(true);
 
     } catch (error: any) {
+      console.error('Registration error:', error);
       Alert.alert(t('common.error'), t('auth.errors.registrationFailed'));
     }
   };
@@ -119,8 +169,8 @@ export default function PaymentScreen() {
 
   const handleFinishButton = () => {
     setShowSuccessModal(false);
-    // Navigate to the main app
-    router.replace('/(tabs)');
+    // Navigate to the login page instead of the main app
+    router.replace('/(auth)/login');
   };
 
   if (showWebView && paymentUrl) {
@@ -145,16 +195,31 @@ export default function PaymentScreen() {
               source={{ uri: paymentUrl }}
               style={styles.webview}
               onNavigationStateChange={(navState) => {
-                // Navigation state change handling
+                console.log('WebView navigation state:', navState);
+                
+                // Check if the user has been redirected to the success page
+                if (navState.url.includes('payment-success') || navState.url.includes('trustechit.com/payment-success')) {
+                  console.log('Detected payment success page in WebView');
+                  setShowWebView(false);
+                  setPaymentCompleted(true);
+                  handlePaymentSuccess(parseFloat(amount), selectedPlanId);
+                }
+                
+                // Check if the user has been redirected to an error page
+                if (navState.url.includes('webhook.site') || navState.url.includes('error')) {
+                  console.log('Detected error page in WebView');
+                  setShowWebView(false);
+                  handlePaymentFailure();
+                }
               }}
               onLoadStart={() => {
-                // Load start handling
+                console.log('WebView load started');
               }}
               onLoadEnd={() => {
-                // Load end handling
+                console.log('WebView load ended');
               }}
               onError={(syntheticEvent) => {
-                // Error handling
+                console.error('WebView error:', syntheticEvent.nativeEvent);
               }}
             />
           </View>
@@ -246,7 +311,7 @@ export default function PaymentScreen() {
 
           <View style={styles.container}>
             <ThemedText style={styles.subtitle}>
-              Redirecting to Santim Pay...
+              Redirecting to Chappa...
             </ThemedText>
           </View>
         </View>
@@ -412,6 +477,7 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     marginBottom: 16,
     textAlign: 'center',
+    paddingTop: 10,
   },
   successMessage: {
     fontSize: 16,
