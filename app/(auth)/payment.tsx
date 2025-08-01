@@ -80,6 +80,8 @@ export default function PaymentScreen() {
   };
 
   const pollPaymentStatus = async (orderId: string) => {
+    console.log('Starting payment status polling for orderId:', orderId);
+    
     // Poll for payment status every 5 seconds
     const interval = setInterval(async () => {
       try {
@@ -96,13 +98,32 @@ export default function PaymentScreen() {
         
         console.log('Payment status check:', data);
         
-        // Check for both "COMPLETED" and "SUCCESS" status
-        if (data.success && (data.status?.status === 'COMPLETED' || data.data?.status === 'SUCCESS')) {
+        // Check for various success statuses
+        const isSuccess = data.success && (
+          data.status?.status === 'COMPLETED' || 
+          data.data?.status === 'SUCCESS' ||
+          data.status?.status === 'SUCCESS' ||
+          data.data?.status === 'COMPLETED' ||
+          data.status === 'SUCCESS' ||
+          data.status === 'COMPLETED'
+        );
+        
+        // Check for various failure statuses
+        const isFailed = data.success && (
+          data.status?.status === 'FAILED' || 
+          data.data?.status === 'FAILED' ||
+          data.status?.status === 'CANCELLED' ||
+          data.data?.status === 'CANCELLED'
+        );
+        
+        if (isSuccess) {
+          console.log('Payment completed successfully via polling');
           clearInterval(interval);
           setShowWebView(false);
           setPaymentCompleted(true);
           await handlePaymentSuccess(parseFloat(amount), selectedPlanId);
-        } else if (data.success && (data.status?.status === 'FAILED' || data.data?.status === 'FAILED')) {
+        } else if (isFailed) {
+          console.log('Payment failed via polling');
           clearInterval(interval);
           setShowWebView(false);
           handlePaymentFailure();
@@ -196,9 +217,13 @@ export default function PaymentScreen() {
               style={styles.webview}
               onNavigationStateChange={(navState) => {
                 console.log('WebView navigation state:', navState);
+                console.log('Current URL:', navState.url);
                 
                 // Check if the user has been redirected to the success page
-                if (navState.url.includes('payment-success') || navState.url.includes('trustechit.com/payment-success')) {
+                if (navState.url.includes('payment-success') || 
+                    navState.url.includes('trustechit.com/payment-success') ||
+                    navState.url.includes('success') ||
+                    navState.url.includes('completed')) {
                   console.log('Detected payment success page in WebView');
                   setShowWebView(false);
                   setPaymentCompleted(true);
@@ -206,7 +231,9 @@ export default function PaymentScreen() {
                 }
                 
                 // Check if the user has been redirected to an error page
-                if (navState.url.includes('webhook.site') || navState.url.includes('error')) {
+                if (navState.url.includes('webhook.site') || 
+                    navState.url.includes('error') ||
+                    navState.url.includes('failed')) {
                   console.log('Detected error page in WebView');
                   setShowWebView(false);
                   handlePaymentFailure();
@@ -229,7 +256,7 @@ export default function PaymentScreen() {
   }
 
   // Show success screen when payment is completed
-  if (paymentCompleted && registrationCompleted) {
+  if (paymentCompleted) {
     return (
       <LinearGradient
         colors={[colors.background, colors.background]}
@@ -524,6 +551,27 @@ const styles = StyleSheet.create({
     elevation: 3,
   },
   finishButtonText: {
+    color: '#FFFFFF',
+    fontSize: 18,
+    fontWeight: '600',
+  },
+  debugButton: {
+    width: '100%',
+    height: 56,
+    borderRadius: 12,
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+    marginTop: 16,
+  },
+  debugButtonText: {
     color: '#FFFFFF',
     fontSize: 18,
     fontWeight: '600',
