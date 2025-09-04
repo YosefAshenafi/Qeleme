@@ -958,17 +958,20 @@ export default function MCQScreen() {
         {/* Only show the MCQ header if NOT on the exam type selection page */}
         {!(selectedGrade && needsExamTypeSelection(selectedGrade) && !selectedExamType) && (
           <View style={[styles.headerContainer, { backgroundColor: colors.background, borderBottomColor: colors.border }]}>
-            <TouchableOpacity
-              style={styles.backButton}
-              onPress={() => {
-                setSelectedExamType(null);
-                setSelectedSubject('');
-                setSelectedChapter('');
-                setSelectedYear(null);
-              }}
-            >
-              <IconSymbol name="chevron.left" size={24} color={colors.tint} />
-            </TouchableOpacity>
+            {/* Only show back button for users who have national exam access */}
+            {selectedGrade && needsExamTypeSelection(selectedGrade) && (
+              <TouchableOpacity
+                style={styles.backButton}
+                onPress={() => {
+                  setSelectedExamType(null);
+                  setSelectedSubject('');
+                  setSelectedChapter('');
+                  setSelectedYear(null);
+                }}
+              >
+                <IconSymbol name="chevron.left" size={24} color={colors.tint} />
+              </TouchableOpacity>
+            )}
             <ThemedText style={[styles.headerTitle, { color: colors.text }]}>
               {selectedExamType === 'national' ? t('mcq.nationalExam') : t('mcq.mcqExam')}
             </ThemedText>
