@@ -1,7 +1,6 @@
 // src/services/chappaService.ts
 import { PaymentResponse, PaymentStatusResponse } from '../types/chappa';
-
-const CHAPPA_BASE_URL = 'http://localhost:8080';
+import { CHAPPA_BASE_URL } from '../config/constants';
 
 export const initiatePayment = async (
   amount: number,

@@ -366,6 +366,7 @@ export default {
     tryAgain: 'Try Again',
     back: 'Back',
     loading: 'Loading...',
+    processing: 'Processing...',
     retry: 'Retry',
     imageLoadError: 'Image failed to load',
   },
@@ -842,5 +843,12 @@ export default {
         }
       }
     }
+  },
+  payment: {
+    title: 'Payment',
+    subtitle: 'Redirecting to Chappa...',
+    amount: 'Amount: {{amount}}',
+    paymentMethod: 'Payment Method: {{paymentMethod}}',
+    orderId: 'Order ID: {{orderId}}',
   }
 }; 

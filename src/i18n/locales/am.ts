@@ -362,6 +362,7 @@ export default {
     tryAgain: 'እንደገና ይሞክሩ',
     back: 'ተመለስ',
     loading: 'በማዘዋወር ላይ...',
+    processing: 'በማዘዋወር ላይ...',
     retry: 'እንደገና ይሞክሩ',
     imageLoadError: 'ምስሉ ለመጫን አልተቻለም',
   },
@@ -843,5 +844,12 @@ export default {
         }
       }
     }
+  },
+  payment: {
+    title: 'ክፍያ',
+    subtitle: 'የክፍያ ዝውውር..',
+    amount: 'መጠን: {{amount}}',
+    paymentMethod: 'የክፍያ መንገድ: {{paymentMethod}}',
+    orderId: 'የማዘዣ ቁጥር: {{orderId}}',
   }
 }; 

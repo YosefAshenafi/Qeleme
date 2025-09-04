@@ -4,5 +4,5 @@ const getBaseUrl = () => {
 };
 
 export const BASE_URL = getBaseUrl();
-export const CHAPPA_BASE_URL = 'http://localhost:8080';
+export const CHAPPA_BASE_URL = 'https://api.qelem.net';
 export const OTP_BASE_URL = 'https://api.afromessage.com/api';

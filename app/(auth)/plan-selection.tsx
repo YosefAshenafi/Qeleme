@@ -1,4 +1,4 @@
-import { StyleSheet, TouchableOpacity, View, ScrollView, Alert, KeyboardAvoidingView, Platform } from 'react-native';
+import { StyleSheet, TouchableOpacity, View, ScrollView, Alert, KeyboardAvoidingView, Platform, ActivityIndicator } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -33,6 +33,7 @@ export default function PlanSelectionScreen() {
   const colors = getColors(isDarkMode);
   const [plans, setPlans] = useState<PaymentPlan[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isProcessingPayment, setIsProcessingPayment] = useState(false);
   const [selectedPlans, setSelectedPlans] = useState<SelectedPlan[]>([]);
   const params = useLocalSearchParams();
   const userData = params.userData ? JSON.parse(decodeURIComponent(params.userData as string)) : null;
@@ -156,6 +157,9 @@ export default function PlanSelectionScreen() {
       if (!selectedPlans.length) {
         throw new Error('No plan selected');
       }
+
+      // Set loading state to disable button
+      setIsProcessingPayment(true);
 
       const selectedPlanId = selectedPlans[0].plan;
       const selectedPlan = plans.find(p => getPlanId(p) === selectedPlanId);
@@ -306,6 +310,9 @@ export default function PlanSelectionScreen() {
         t('common.error'),
         error instanceof Error ? error.message : t('auth.errors.registrationFailed')
       );
+    } finally {
+      // Clear loading state
+      setIsProcessingPayment(false);
     }
   };
 
@@ -583,18 +590,28 @@ export default function PlanSelectionScreen() {
               <TouchableOpacity 
                 style={[
                   styles.continueButton,
-                  selectedPlans.length > 0 && styles.continueButtonActive
+                  selectedPlans.length > 0 && !isProcessingPayment && styles.continueButtonActive,
+                  isProcessingPayment && styles.continueButtonProcessing
                 ]}
                 onPress={handleContinue}
-                disabled={selectedPlans.length === 0}
+                disabled={selectedPlans.length === 0 || isProcessingPayment}
               >
                 <LinearGradient
-                  colors={['#4F46E5', '#7C3AED']}
+                  colors={isProcessingPayment ? ['#9CA3AF', '#6B7280'] : ['#4F46E5', '#7C3AED']}
                   style={styles.buttonGradient}
                 >
-                  <ThemedText style={styles.buttonText}>
-                    {getButtonText()}
-                  </ThemedText>
+                  {isProcessingPayment ? (
+                    <View style={styles.loadingContainer}>
+                      <ActivityIndicator size="small" color="#FFFFFF" style={styles.loadingIndicator} />
+                      <ThemedText style={styles.buttonText}>
+                        {t('common.processing')}
+                      </ThemedText>
+                    </View>
+                  ) : (
+                    <ThemedText style={styles.buttonText}>
+                      {getButtonText()}
+                    </ThemedText>
+                  )}
                 </LinearGradient>
               </TouchableOpacity>
             </View>
@@ -800,10 +817,21 @@ const styles = StyleSheet.create({
   continueButtonActive: {
     opacity: 1,
   },
+  continueButtonProcessing: {
+    opacity: 0.8,
+  },
   buttonGradient: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  loadingContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  loadingIndicator: {
+    marginRight: 8,
   },
   buttonText: {
     color: '#FFFFFF',

@@ -129,7 +129,6 @@ export default function PaymentScreen() {
           handlePaymentFailure();
         }
       } catch (error) {
-        console.error('Payment status check error:', error);
         // If the status endpoint is not available, we'll rely on the webhook callback
         // Don't clear the interval, let it continue polling
       }
