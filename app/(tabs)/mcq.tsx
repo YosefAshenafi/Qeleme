@@ -534,7 +534,6 @@ export default function MCQScreen() {
         startTimer();
         console.log('✅ National Exam Started Successfully');
       } catch (error) {
-        console.error('❌ National Exam Error:', error);
         setError('Failed to load national exam questions. Please try again.');
       }
     } else {
