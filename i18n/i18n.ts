@@ -13,15 +13,15 @@ const LANGUAGES = {
 const loadLanguage = async () => {
   try {
     const savedLanguage = await AsyncStorage.getItem('user-language');
-    // If no language is saved, set English as default and save it
+    // If no language is saved, set Amharic as default and save it
     if (!savedLanguage) {
-      await AsyncStorage.setItem('user-language', 'en');
-      return 'en';
+      await AsyncStorage.setItem('user-language', 'am');
+      return 'am';
     }
     return savedLanguage;
   } catch {
-    // If there's any error, default to English
-    return 'en';
+    // If there's any error, default to Amharic
+    return 'am';
   }
 };
 
@@ -44,7 +44,7 @@ export const initI18n = async () => {
           am: { translation: am },
         },
         lng: await loadLanguage(),
-        fallbackLng: 'en',
+        fallbackLng: 'am',
         interpolation: {
           escapeValue: false,
         },
