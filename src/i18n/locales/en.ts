@@ -557,7 +557,7 @@ export default {
   },
   welcome: {
     title: 'Welcome to Qelem',
-    subtitle: 'Empowering minds, one lesson at a time',
+    subtitle: 'If you are new, please sign up. If you already have an account, please sign in.',
     signIn: 'Sign In',
     signUp: 'Sign Up',
   },
