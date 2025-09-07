@@ -1,0 +1,44 @@
+PRIVACY POLICY FOR QELEM
+Last updated: September 5, 2024
+
+ABOUT QELEM
+Qelem is an educational platform designed to provide interactive learning experiences for students of all ages through multiple choice questions, flashcards, and homework assistance.
+
+INFORMATION WE COLLECT
+
+Camera and Photo Access:
+- Qelem requests camera permission to allow users to take photos for homework assignments, upload images from their device's photo library, and share visual content related to their learning.
+- IMPORTANT: We do not store, transmit, or share your photos with third parties. Photos are only used locally within the app for educational purposes.
+
+Other Information:
+- Account Information: Email address, phone number, and profile details you provide
+- Learning Data: Progress, scores, and educational content interactions
+- Device Information: Basic device information for app functionality
+
+HOW WE USE YOUR INFORMATION
+- Provide educational services and personalized learning experiences
+- Track your progress and learning achievements
+- Improve our app's functionality and user experience
+- Communicate with you about your account and our services
+
+INFORMATION SHARING
+We do not sell, trade, or share your personal information with third parties, except:
+- When required by law
+- To protect our rights and safety
+- With your explicit consent
+
+DATA SECURITY
+We implement appropriate security measures to protect your personal information against unauthorized access, alteration, disclosure, or destruction.
+
+CHILDREN'S PRIVACY
+Qelem is designed for educational use and may be used by children under parental supervision. We do not knowingly collect personal information from children under 13 without parental consent.
+
+CONTACT US
+If you have any questions about this Privacy Policy, please contact us at:
+- Email: privacy@qelem.com
+- Website: www.qelem.com
+
+CHANGES TO THIS POLICY
+We may update this Privacy Policy from time to time. We will notify you of any changes by posting the new Privacy Policy on this page and updating the "Last updated" date.
+
+By using Qelem, you agree to the collection and use of information in accordance with this Privacy Policy.

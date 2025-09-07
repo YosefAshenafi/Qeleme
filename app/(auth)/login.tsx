@@ -133,6 +133,7 @@ export default function LoginScreen() {
       } catch (error) {
         console.error('Login error:', error);
         if (error instanceof Error) {
+
           // Check if the error message is a translation key
           if (error.message.startsWith('login.error.')) {
             setError(t(error.message));

@@ -267,6 +267,7 @@ export default function HomeworkScreen() {
       allowsEditing: true,
       aspect: [4, 3],
       quality: 1,
+      allowsMultipleSelection: false,
     });
 
     if (!result.canceled) {

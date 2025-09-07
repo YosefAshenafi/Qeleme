@@ -8,21 +8,38 @@
     "scheme": "qelem",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
+    "description": "Qelem - Educational platform for interactive learning",
+    "privacy": "public",
+    "sdkVersion": "52.0.0",
     "extra": {
       "apiUrl": "https://api.qelem.com",
+      "router": {
+        "origin": false
+      },
+      "eas": {
+        "projectId": "7fb4acbe-6a5a-4e12-aaed-d221156f0fdc"
+      }
     },
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.yosefashenafi.Qelem",
       "icon": "./assets/images/logo/app-icon.png"
     },
-    "android": {
-      "adaptiveIcon": {
-        "foregroundImage": "./assets/images/logo/app-icon.png",
-        "backgroundColor": "#ffffff"
+          "android": {
+        "adaptiveIcon": {
+          "foregroundImage": "./assets/images/logo/app-icon.png",
+          "backgroundColor": "#ffffff"
+        },
+        "package": "com.yosefashenafi.Qelem",
+        "versionCode": 3,
+        "permissions": [
+          "android.permission.INTERNET",
+          "android.permission.ACCESS_NETWORK_STATE",
+          "android.permission.CAMERA",
+          "android.permission.READ_MEDIA_IMAGES"
+        ],
+        "playStoreUrl": "https://play.google.com/store/apps/details?id=com.yosefashenafi.Qelem"
       },
-      "package": "com.yosefashenafi.Qelem"
-    },
     "web": {
       "bundler": "metro",
       "output": "static",
