@@ -140,18 +140,17 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'flex-start',
     paddingHorizontal: 8,
-    paddingTop: 80,
   },
   logoContainer: {
-    width: width * 0.4,
-    height: width * 0.4,
+    width: width,
+    height: width,
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 40,
+    marginBottom: -100,
   },
   logoImage: {
-    width: '100%',
-    height: '100%',
+    width: '180%',
+    height: '180%',
   },
   textContainer: {
     alignItems: 'center',
