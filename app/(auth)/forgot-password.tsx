@@ -11,6 +11,7 @@ import { sendOTP, verifyOTP } from '@/utils/otpService';
 
 import { ThemedText } from '@/components/ThemedText';
 import { LanguageToggle } from '@/components/ui/LanguageToggle';
+import { PasswordInput } from '@/components/ui/PasswordInput';
 
 const { width, height } = Dimensions.get('window');
 
@@ -341,37 +342,27 @@ export default function ForgotPasswordScreen() {
   const renderResetStep = () => (
     <View style={styles.formContainer}>
       <View style={styles.inputWrapper}>
-        <View style={[styles.inputContainer, { backgroundColor: isDarkMode ? '#2C2C2E' : '#F9FAFB' }]}>
-          <Ionicons name="lock-closed-outline" size={20} color={isDarkMode ? '#A0A0A5' : '#6B7280'} style={styles.inputIcon} />
-          <TextInput
-            style={[styles.input, { color: colors.text }]}
-            placeholder={t('resetPassword.newPassword')}
-            placeholderTextColor={isDarkMode ? '#A0A0A5' : '#9CA3AF'}
-            value={newPassword}
-            onChangeText={(text) => {
-              setNewPassword(text);
-              if (error) setError('');
-            }}
-            secureTextEntry
-            editable={!isLoading}
-          />
-        </View>
+        <PasswordInput
+          value={newPassword}
+          onChangeText={(text) => {
+            setNewPassword(text);
+            if (error) setError('');
+          }}
+          placeholder={t('resetPassword.newPassword')}
+          editable={!isLoading}
+          textContentType="newPassword"
+        />
 
-        <View style={[styles.inputContainer, { backgroundColor: isDarkMode ? '#2C2C2E' : '#F9FAFB' }]}>
-          <Ionicons name="lock-closed-outline" size={20} color={isDarkMode ? '#A0A0A5' : '#6B7280'} style={styles.inputIcon} />
-          <TextInput
-            style={[styles.input, { color: colors.text }]}
-            placeholder={t('resetPassword.confirmPassword')}
-            placeholderTextColor={isDarkMode ? '#A0A0A5' : '#9CA3AF'}
-            value={confirmPassword}
-            onChangeText={(text) => {
-              setConfirmPassword(text);
-              if (error) setError('');
-            }}
-            secureTextEntry
-            editable={!isLoading}
-          />
-        </View>
+        <PasswordInput
+          value={confirmPassword}
+          onChangeText={(text) => {
+            setConfirmPassword(text);
+            if (error) setError('');
+          }}
+          placeholder={t('resetPassword.confirmPassword')}
+          editable={!isLoading}
+          textContentType="newPassword"
+        />
       </View>
 
       {error ? (

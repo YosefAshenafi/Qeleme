@@ -13,6 +13,7 @@ import { storeAuthData } from '@/utils/authStorage';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 import { LanguageToggle } from '@/components/ui/LanguageToggle';
+import { PasswordInput } from '@/components/ui/PasswordInput';
 import { BASE_URL } from '@/config/constants';
 
 
@@ -220,26 +221,17 @@ export default function LoginScreen() {
                   <ThemedText style={styles.errorText}>{errors.username}</ThemedText>
                 ) : null}
 
-                <View style={[
-                  styles.inputContainer, 
-                  errors.password ? styles.inputError : null,
-                  { backgroundColor: isDarkMode ? '#2C2C2E' : '#F9FAFB' }
-                ]}>
-                  <Ionicons name="lock-closed-outline" size={20} color={isDarkMode ? '#A0A0A5' : '#6B7280'} style={styles.inputIcon} />
-                  <TextInput
-                    style={[styles.input, { color: colors.text }]}
-                    placeholder={t('login.password.placeholder')}
-                    placeholderTextColor={isDarkMode ? '#A0A0A5' : '#9CA3AF'}
-                    value={password}
-                    onChangeText={(text) => {
-                      setPassword(text);
-                      if (errors.password) {
-                        setErrors(prev => ({ ...prev, password: '' }));
-                      }
-                    }}
-                    secureTextEntry
-                  />
-                </View>
+                <PasswordInput
+                  value={password}
+                  onChangeText={(text) => {
+                    setPassword(text);
+                    if (errors.password) {
+                      setErrors(prev => ({ ...prev, password: '' }));
+                    }
+                  }}
+                  placeholder={t('login.password.placeholder')}
+                  error={!!errors.password}
+                />
                 {errors.password ? (
                   <ThemedText style={styles.errorText}>{errors.password}</ThemedText>
                 ) : null}

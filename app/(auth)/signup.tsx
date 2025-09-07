@@ -15,6 +15,7 @@ import { BASE_URL } from '@/config/constants';
 
 import { ThemedText } from '@/components/ThemedText';
 import { LanguageToggle } from '@/components/ui/LanguageToggle';
+import { PasswordInput } from '@/components/ui/PasswordInput';
 
 interface ChildData {
   fullName: string;
@@ -332,39 +333,23 @@ export default function SignupScreen() {
                     </View>
                   </View>
 
-                  <View style={[styles.inputContainer, {
-                    backgroundColor: isDarkMode ? '#2C2C2E' : '#F9FAFB',
-                    borderColor: isDarkMode ? '#3C3C3E' : '#E5E7EB',
-                  }]}>
-                    <Ionicons name="lock-closed-outline" size={20} color={isDarkMode ? '#A0A0A5' : '#6B7280'} style={styles.inputIcon} />
-                    <TextInput
-                      style={[styles.input, { color: colors.text }]}
-                      placeholder={t('signup.password')}
-                      placeholderTextColor={isDarkMode ? '#A0A0A5' : '#9CA3AF'}
-                      value={password}
-                      onChangeText={setPassword}
-                      secureTextEntry
-                      autoCapitalize="none"
-                      textContentType="oneTimeCode"
-                      keyboardType="default"
-                      keyboardAppearance={isDarkMode ? 'dark' : 'light'}
-                    />
-                  </View>
+                  <PasswordInput
+                    value={password}
+                    onChangeText={setPassword}
+                    placeholder={t('signup.password')}
+                    autoCapitalize="none"
+                    textContentType="newPassword"
+                    keyboardType="default"
+                    keyboardAppearance={isDarkMode ? 'dark' : 'light'}
+                  />
 
-                  <View style={[styles.inputContainer, {
-                    backgroundColor: isDarkMode ? '#2C2C2E' : '#F9FAFB',
-                    borderColor: isDarkMode ? '#3C3C3E' : '#E5E7EB',
-                  }]}>
-                    <Ionicons name="lock-closed-outline" size={20} color={isDarkMode ? '#A0A0A5' : '#6B7280'} style={styles.inputIcon} />
-                    <TextInput
-                      style={[styles.input, { color: colors.text }]}
-                      placeholder={t('signup.confirmPassword')}
-                      placeholderTextColor={isDarkMode ? '#A0A0A5' : '#9CA3AF'}
-                      value={confirmPassword}
-                      onChangeText={setConfirmPassword}
-                      secureTextEntry
-                    />
-                  </View>
+                  <PasswordInput
+                    value={confirmPassword}
+                    onChangeText={setConfirmPassword}
+                    placeholder={t('signup.confirmPassword')}
+                    autoCapitalize="none"
+                    textContentType="newPassword"
+                  />
 
                   {role === 'parent' && numberOfChildren >= 1 ? (
                     childrenData.map((child, index) => (
@@ -412,44 +397,26 @@ export default function SignupScreen() {
                             <Ionicons name="close-circle" size={20} color="#F44336" style={styles.inputIcon} />
                           )}
                         </View>
-                        <View style={[styles.inputContainer, {
-                          backgroundColor: isDarkMode ? '#2C2C2E' : '#F9FAFB',
-                          borderColor: isDarkMode ? '#3C3C3E' : '#E5E7EB',
-                        }]}>
-                          <Ionicons name="lock-closed-outline" size={20} color={isDarkMode ? '#A0A0A5' : '#6B7280'} style={styles.inputIcon} />
-                          <TextInput
-                            style={[styles.input, { color: colors.text }]}
-                            placeholder={t('signup.password')}
-                            placeholderTextColor={isDarkMode ? '#A0A0A5' : '#9CA3AF'}
-                            value={child.password}
-                            onChangeText={(text) => handleChildPasswordChange(text, index)}
-                            secureTextEntry
-                            autoCapitalize="none"
-                            autoCorrect={false}
-                            textContentType="none"
-                            autoComplete="off"
-                            spellCheck={false}
-                          />
-                        </View>
-                        <View style={[styles.inputContainer, {
-                          backgroundColor: isDarkMode ? '#2C2C2E' : '#F9FAFB',
-                          borderColor: isDarkMode ? '#3C3C3E' : '#E5E7EB',
-                        }]}>
-                          <Ionicons name="lock-closed-outline" size={20} color={isDarkMode ? '#A0A0A5' : '#6B7280'} style={styles.inputIcon} />
-                          <TextInput
-                            style={[styles.input, { color: colors.text }]}
-                            placeholder={t('signup.confirmPassword')}
-                            placeholderTextColor={isDarkMode ? '#A0A0A5' : '#9CA3AF'}
-                            value={child.confirmPassword}
-                            onChangeText={(text) => handleChildConfirmPasswordChange(text, index)}
-                            secureTextEntry
-                            autoCapitalize="none"
-                            autoCorrect={false}
-                            textContentType="none"
-                            autoComplete="off"
-                            spellCheck={false}
-                          />
-                        </View>
+                        <PasswordInput
+                          value={child.password}
+                          onChangeText={(text) => handleChildPasswordChange(text, index)}
+                          placeholder={t('signup.password')}
+                          autoCapitalize="none"
+                          autoCorrect={false}
+                          textContentType="newPassword"
+                          autoComplete="off"
+                          spellCheck={false}
+                        />
+                        <PasswordInput
+                          value={child.confirmPassword}
+                          onChangeText={(text) => handleChildConfirmPasswordChange(text, index)}
+                          placeholder={t('signup.confirmPassword')}
+                          autoCapitalize="none"
+                          autoCorrect={false}
+                          textContentType="newPassword"
+                          autoComplete="off"
+                          spellCheck={false}
+                        />
                         <View style={[styles.inputContainer, {
                           backgroundColor: isDarkMode ? '#2C2C2E' : '#F9FAFB',
                           borderColor: isDarkMode ? '#3C3C3E' : '#E5E7EB',
