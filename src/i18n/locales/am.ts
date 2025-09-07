@@ -161,7 +161,7 @@ export default {
       invalidCredentials: 'የሚፈልጉትን መለያ ስም ያስገቡ',
       serverError: 'ትክክለኛ መለያ አላስገቡም'
     },
-    signIn: 'ግባ',
+    signIn: 'ይግቡ',
     forgotPassword: 'የይለፍ ቃልዎን ረስተዋል?',
     noAccount: 'መለያ የሎትም?',
     signUp: 'ይመዝገቡ'
@@ -512,7 +512,7 @@ export default {
     errors: {
       paymentFailed: 'ክፍያው አልተሳካም። እባክዎ እንደገና ይሞክሩ።',
     },
-    signIn: 'ግባ',
+    signIn: 'ይግቡ',
     signUp: 'ይመዝገቡ',
     email: 'ኢሜይል',
     password: 'የይለፍ ቃል',
@@ -614,9 +614,9 @@ export default {
     }
   },
   welcome: {
-    title: 'እንኳን ደህና መጡ ወደ ቀለም',
+    title: 'እንኳን ወደ ቀለም በደህና መጡ',
     subtitle: 'አእምሮዎን በእያንዳንዱ ትምህርት ያጠናክሩ',
-    signIn: 'ግባ',
+    signIn: 'ይግቡ',
     signUp: 'ይመዝገቡ',
   },
   onboarding: {
@@ -625,7 +625,7 @@ export default {
       subtitle: 'የሚፈልጉትን ቋንቋ ይምረጡ'
     },
     welcome: {
-      title: 'ወደ ቀለም እንኳን ደህና መጡ',
+      title: 'እንኳን ወደ ቀለም በደህና መጡ',
       subtitle: 'የእርስዎ የግል የትምህርት ባልደረባ',
       description: 'በተገለጸ የትምህርት ቁሳቁሶች እና በተግባራዊ ልምምዶች የትምህርት ጉዞዎን ይጀምሩ።'
     },

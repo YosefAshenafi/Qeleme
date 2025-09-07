@@ -85,7 +85,7 @@ export default function WelcomeScreen() {
                   backgroundColor: isDarkMode ? '#2C2C2E' : '#FFFFFF',
                   shadowColor: isDarkMode ? '#000' : '#4F46E5',
                 }]} 
-                onPress={handleSignIn}
+                onPress={handleSignUp}
                 activeOpacity={0.8}
               >
                 <LinearGradient
@@ -93,7 +93,7 @@ export default function WelcomeScreen() {
                   style={styles.buttonGradient}
                 >
                   <ThemedText style={styles.primaryButtonText}>
-                    {t('welcome.signIn')}
+                    {t('welcome.signUp')}
                   </ThemedText>
                 </LinearGradient>
               </TouchableOpacity>
@@ -103,11 +103,11 @@ export default function WelcomeScreen() {
                   backgroundColor: isDarkMode ? '#2C2C2E' : '#FFFFFF',
                   borderColor: isDarkMode ? '#3C3C3E' : '#E5E7EB',
                 }]} 
-                onPress={handleSignUp}
+                onPress={handleSignIn}
                 activeOpacity={0.8}
               >
                 <ThemedText style={[styles.secondaryButtonText, { color: colors.text }]}>
-                  {t('welcome.signUp')}
+                  {t('welcome.signIn')}
                 </ThemedText>
               </TouchableOpacity>
             </View>
@@ -127,7 +127,7 @@ const styles = StyleSheet.create({
   },
   container: {
     flex: 1,
-    padding: 24,
+    padding: 8,
   },
   languageToggleContainer: {
     position: 'absolute',
@@ -138,15 +138,16 @@ const styles = StyleSheet.create({
   content: {
     flex: 1,
     alignItems: 'center',
-    justifyContent: 'center',
-    paddingHorizontal: 20,
+    justifyContent: 'flex-start',
+    paddingHorizontal: 8,
+    paddingTop: 80,
   },
   logoContainer: {
-    width: width * 0.5,
-    height: width * 0.5,
+    width: width * 0.4,
+    height: width * 0.4,
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 30,
+    marginBottom: 40,
   },
   logoImage: {
     width: '100%',
@@ -154,8 +155,8 @@ const styles = StyleSheet.create({
   },
   textContainer: {
     alignItems: 'center',
-    marginBottom: 50,
-    paddingHorizontal: 20,
+    marginBottom: 60,
+    paddingHorizontal: 8,
   },
   welcomeText: {
     fontSize: 36,
@@ -173,8 +174,8 @@ const styles = StyleSheet.create({
   buttonContainer: {
     width: '100%',
     gap: 16,
-    paddingHorizontal: 20,
-    maxWidth: 350,
+    paddingHorizontal: 8,
+    maxWidth: 400,
     alignSelf: 'center',
   },
   primaryButton: {
