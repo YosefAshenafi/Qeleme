@@ -9,6 +9,11 @@
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "description": "Qelem - Educational platform for interactive learning",
+    "splash": {
+      "image": "./assets/images/logo/app-icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#ffffff"
+    },
     "privacy": "public",
     "sdkVersion": "52.0.0",
     "extra": {
@@ -23,11 +28,21 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.yosefashenafi.Qelem",
-      "icon": "./assets/images/logo/app-icon.png"
+      "icon": "./assets/images/logo/app-icon.png",
+      "splash": {
+        "image": "./assets/images/logo/app-icon.png",
+        "resizeMode": "contain",
+        "backgroundColor": "#ffffff"
+      }
     },
           "android": {
         "adaptiveIcon": {
           "foregroundImage": "./assets/images/logo/app-icon.png",
+          "backgroundColor": "#ffffff"
+        },
+        "splash": {
+          "image": "./assets/images/logo/app-icon.png",
+          "resizeMode": "contain",
           "backgroundColor": "#ffffff"
         },
         "package": "com.yosefashenafi.Qelem",
@@ -50,8 +65,8 @@
       [
         "expo-splash-screen",
         {
-          "image": "./assets/images/splash-icon.png",
-          "imageWidth": 200,
+          "image": "./assets/images/logo/app-icon.png",
+          "imageWidth": 150,
           "resizeMode": "contain",
           "backgroundColor": "#ffffff"
         }

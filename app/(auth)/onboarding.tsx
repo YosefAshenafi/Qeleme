@@ -79,12 +79,12 @@ export default function OnboardingScreen() {
       setCurrentStep(prev => prev + 1);
       progress.value = withSpring((currentStep + 2) / onboardingSteps.length);
     } else {
-      router.push('/(auth)/login');
+      router.push('/(auth)/welcome');
     }
   };
 
   const handleSkip = () => {
-    router.push('/(auth)/login');
+    router.push('/(auth)/welcome');
   };
 
   const handleDotPress = (index: number) => {

@@ -169,6 +169,12 @@ export default function LoginScreen() {
             ]}
           >
             <View style={styles.header}>
+              <TouchableOpacity 
+                style={styles.backButton}
+                onPress={() => router.push('/(auth)/welcome')}
+              >
+                <Ionicons name="arrow-back" size={24} color={isDarkMode ? '#A0A0A5' : '#1F2937'} />
+              </TouchableOpacity>
               <View style={styles.languageToggleContainer}>
                 <LanguageToggle colors={colors} />
               </View>
@@ -428,6 +434,13 @@ const styles = StyleSheet.create({
   },
   loginButtonDisabled: {
     opacity: 0.7,
+  },
+  backButton: {
+    position: 'absolute',
+    top: -20,
+    left: -20,
+    padding: 8,
+    zIndex: 1,
   },
   languageToggleContainer: {
     position: 'absolute',

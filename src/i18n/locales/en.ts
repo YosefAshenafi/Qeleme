@@ -555,6 +555,12 @@ export default {
       timeout: 'Request timed out. Please try again.',
     },
   },
+  welcome: {
+    title: 'Welcome to Qelem',
+    subtitle: 'Empowering minds, one lesson at a time',
+    signIn: 'Sign In',
+    signUp: 'Sign Up',
+  },
   onboarding: {
     language: {
       title: 'Choose Your Language',

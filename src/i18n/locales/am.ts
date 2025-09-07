@@ -613,6 +613,12 @@ export default {
       }
     }
   },
+  welcome: {
+    title: 'እንኳን ደህና መጡ ወደ ቀለም',
+    subtitle: 'አእምሮዎን በእያንዳንዱ ትምህርት ያጠናክሩ',
+    signIn: 'ግባ',
+    signUp: 'ይመዝገቡ',
+  },
   onboarding: {
     language: {
       title: 'ቋንቋዎን ይምረጡ',
