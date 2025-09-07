@@ -226,6 +226,17 @@ export default {
     verifySubtitle: 'Enter the verification code sent to your phone',
     resetSubtitle: 'Create a new password',
     backToLogin: 'Back to Login',
+    timer: {
+      text: 'Code expires in'
+    },
+    resend: {
+      text: 'Didn\'t receive the code?',
+      button: 'Resend Code'
+    },
+    send: {
+      text: 'Didn\'t receive the code?',
+      button: 'Send Code'
+    }
   },
   profile: {
     myProfile: 'My Profile',

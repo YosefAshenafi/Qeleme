@@ -138,6 +138,17 @@ export default {
     verifySubtitle: 'ወደ ስልክዎ የተላከውን የማረጋገጫ ኮድ ያስገቡ',
     resetSubtitle: 'አዲስ የይለፍ ቃል ይፍጠሩ',
     backToLogin: 'ወደ መግቢያ ይመለሱ',
+    timer: {
+      text: 'የኮዱ ደቂቃ የሚያልቅበት'
+    },
+    resend: {
+      text: 'ኮዱን አላገኙም?',
+      button: 'ዳግም ላክ'
+    },
+    send: {
+      text: 'ኮዱን አላገኙም?',
+      button: 'ኮድ ላክ'
+    }
   },
   login: {
     welcome: 'እንኳን በደህና መጡ',

@@ -19,14 +19,17 @@ export default function ForgotPasswordScreen() {
   const { isDarkMode } = useTheme();
   const colors = getColors(isDarkMode);
   const [phoneNumber, setPhoneNumber] = useState('');
-  const [verificationCode, setVerificationCode] = useState('');
+  const [otp, setOtp] = useState(['', '', '', '', '', '']);
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [step, setStep] = useState<'phone' | 'verify' | 'reset'>('phone');
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [timeLeft, setTimeLeft] = useState(300); // 5 minutes in seconds
+  const [canResend, setCanResend] = useState(false);
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const slideAnim = useRef(new Animated.Value(50)).current;
+  const inputRefs = useRef<Array<TextInput | null>>([]);
 
   useEffect(() => {
     Animated.parallel([
@@ -43,6 +46,30 @@ export default function ForgotPasswordScreen() {
     ]).start();
   }, []);
 
+  // Timer effect
+  useEffect(() => {
+    if (timeLeft > 0) {
+      const timer = setInterval(() => {
+        setTimeLeft((prevTime) => {
+          if (prevTime <= 1) {
+            setCanResend(true);
+            return 0;
+          }
+          return prevTime - 1;
+        });
+      }, 1000);
+
+      return () => clearInterval(timer);
+    }
+  }, [timeLeft]);
+
+  // Format time as MM:SS
+  const formatTime = (seconds: number): string => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+  };
+
   const handleSendCode = async () => {
     if (!phoneNumber.trim()) {
       setError('Please enter your phone number');
@@ -56,6 +83,8 @@ export default function ForgotPasswordScreen() {
       
       if (response.success) {
         setStep('verify');
+        setTimeLeft(300);
+        setCanResend(false);
       } else {
         setError(response.message || 'Failed to send verification code');
       }
@@ -66,7 +95,50 @@ export default function ForgotPasswordScreen() {
     }
   };
 
+  const handleOtpChange = (text: string, index: number) => {
+    const newOtp = [...otp];
+    newOtp[index] = text;
+    setOtp(newOtp);
+    setError(''); // Clear any previous error
+
+    // Move to next input if value is entered
+    if (text && index < 5) {
+      inputRefs.current[index + 1]?.focus();
+    }
+  };
+
+  const handleKeyPress = (e: any, index: number) => {
+    // Move to previous input on backspace if current input is empty
+    if (e.nativeEvent.key === 'Backspace' && !otp[index] && index > 0) {
+      inputRefs.current[index - 1]?.focus();
+    }
+  };
+
+  const handleResend = async () => {
+    if (phoneNumber && (canResend || timeLeft === 300) && !isLoading) {
+      try {
+        setIsLoading(true);
+        setError(''); // Clear any previous errors
+        
+        const response = await sendOTP(phoneNumber);
+        
+        if (response.success) {
+          // Start timer and disable resend
+          setTimeLeft(300);
+          setCanResend(false);
+        } else {
+          setError(response.message || 'Failed to send OTP');
+        }
+      } catch (error) {
+        setError('Failed to send OTP. Please try again.');
+      } finally {
+        setIsLoading(false);
+      }
+    }
+  };
+
   const handleVerifyCode = async () => {
+    const verificationCode = otp.join('');
     if (!verificationCode.trim()) {
       setError('Please enter the verification code');
       return;
@@ -109,11 +181,27 @@ export default function ForgotPasswordScreen() {
       setIsLoading(true);
       setError('');
       
-      // TODO: Implement actual password reset API call
-      // For now, simulate success
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      // TODO: Replace with actual API endpoint
+      const response = await fetch('YOUR_API_ENDPOINT_HERE/reset-password', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          phoneNumber: phoneNumber,
+          verificationCode: otp.join(''),
+          newPassword: newPassword,
+        }),
+      });
+
+      const data = await response.json();
       
-      router.replace('/(auth)/login');
+      if (response.ok && data.success) {
+        // Password reset successful
+        router.replace('/(auth)/login');
+      } else {
+        setError(data.message || 'Failed to reset password. Please try again.');
+      }
     } catch (error) {
       setError('Failed to reset password. Please try again.');
     } finally {
@@ -171,24 +259,37 @@ export default function ForgotPasswordScreen() {
 
   const renderVerifyStep = () => (
     <View style={styles.formContainer}>
-      <View style={styles.inputWrapper}>
-        <View style={[styles.inputContainer, { backgroundColor: isDarkMode ? '#2C2C2E' : '#F9FAFB' }]}>
-          <Ionicons name="key-outline" size={20} color={isDarkMode ? '#A0A0A5' : '#6B7280'} style={styles.inputIcon} />
+      <View style={styles.otpContainer}>
+        {otp.map((digit, index) => (
           <TextInput
-            style={[styles.input, { color: colors.text }]}
-            placeholder={t('resetPassword.verificationCode')}
-            placeholderTextColor={isDarkMode ? '#A0A0A5' : '#9CA3AF'}
-            value={verificationCode}
-            onChangeText={(text) => {
-              const numericValue = text.replace(/[^0-9]/g, '').slice(0, 6);
-              setVerificationCode(numericValue);
-              if (error) setError('');
-            }}
+            key={index}
+            ref={(ref) => (inputRefs.current[index] = ref)}
+            style={[
+              styles.otpInput,
+              {
+                backgroundColor: isDarkMode ? '#2C2C2E' : '#F9FAFB',
+                borderColor: error ? '#EF4444' : (isDarkMode ? '#3C3C3E' : '#E5E7EB'),
+                color: colors.text
+              }
+            ]}
+            value={digit}
+            onChangeText={(text) => handleOtpChange(text, index)}
+            onKeyPress={(e) => handleKeyPress(e, index)}
             keyboardType="number-pad"
-            maxLength={6}
+            maxLength={1}
+            selectTextOnFocus
+            autoFocus={index === 0}
+            placeholderTextColor={isDarkMode ? '#A0A0A5' : '#9CA3AF'}
             editable={!isLoading}
           />
-        </View>
+        ))}
+      </View>
+
+      {/* Timer Display */}
+      <View style={styles.timerContainer}>
+        <ThemedText style={[styles.timerText, { color: isDarkMode ? '#A0A0A5' : '#6B7280' }]}>
+          {t('resetPassword.timer.text')} {formatTime(timeLeft)}
+        </ThemedText>
       </View>
 
       {error ? (
@@ -210,6 +311,30 @@ export default function ForgotPasswordScreen() {
           </ThemedText>
         </LinearGradient>
       </TouchableOpacity>
+
+      <View style={styles.resendContainer}>
+        <ThemedText style={[styles.resendText, { color: isDarkMode ? '#A0A0A5' : '#6B7280' }]}>
+          {timeLeft === 300 ? t('resetPassword.send.text') : t('resetPassword.resend.text')}
+        </ThemedText>
+        <TouchableOpacity 
+          onPress={handleResend} 
+          disabled={(!canResend && timeLeft !== 300) || isLoading}
+          style={[
+            styles.resendButtonContainer,
+            ((!canResend && timeLeft !== 300) || isLoading) && { opacity: 0.5 }
+          ]}
+        >
+          <ThemedText style={[
+            styles.resendButton, 
+            { color: (canResend || timeLeft === 300) ? '#4F46E5' : (isDarkMode ? '#A0A0A5' : '#6B7280') }
+          ]}>
+            {isLoading ? t('common.loading') : 
+             timeLeft === 300 ? t('resetPassword.send.button') : 
+             canResend ? t('resetPassword.resend.button') : 
+             formatTime(timeLeft)}
+          </ThemedText>
+        </TouchableOpacity>
+      </View>
     </View>
   );
 
@@ -457,5 +582,46 @@ const styles = StyleSheet.create({
   },
   buttonDisabled: {
     opacity: 0.5,
+  },
+  otpContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 24,
+  },
+  otpInput: {
+    width: 50,
+    height: 60,
+    borderRadius: 12,
+    borderWidth: 1,
+    textAlign: 'center',
+    fontSize: 24,
+  },
+  timerContainer: {
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  timerText: {
+    fontSize: 14,
+    textAlign: 'center',
+  },
+  resendContainer: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginTop: 16,
+    gap: 8,
+  },
+  resendText: {
+    fontSize: 14,
+  },
+  resendButton: {
+    color: '#4F46E5',
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  resendButtonContainer: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 8,
   },
 }); 
