@@ -18,15 +18,15 @@ export default {
       title: 'ፈጣን እርምጃዎች',
       mcq: {
         title: 'ምርጫ ልምምድ',
-        subtitle: 'ዕውቀትዎን ይፈትሹ'
+        subtitle: 'ዕወቀትዎን ይለኩ!'
       },
       flashcards: {
         title: 'ፍላሽ ካርዶች',
-        subtitle: 'ዋና ጽንሰ-ሐሳቦችን ይገምግሙ'
+        subtitle: 'ቁልፍ ጽንሰ-ሀሳቦችን ይማሩ!'
       },
       homework: {
         title: 'የቤት ስራ እርዳታ',
-        subtitle: 'የባለሙያ እርዳታ ያግኙ'
+        subtitle: 'ሙያዊ እገዛ ያግኙ'
       },
       reports: {
         title: 'የእድገት ሪፖርት',
@@ -402,7 +402,7 @@ export default {
     of: 'ከ',
     pictureQuiz: {
       title: 'የምስል ፈተና',
-      subtitle: 'በምስሎች ዕውቀትዎን ይፈትሹ',
+      subtitle: 'በምስሎች ዕወቀትዎን ይለኩ!',
       startQuiz: 'ፈተና ይጀምሩ',
       goToRegularQuestions: 'ወደ ዋናው ማውጫ ይሂዱ',
       goToInstructions: 'ወደ መመሪያዎች ይሂዱ',
@@ -625,7 +625,7 @@ export default {
     }
   },
   welcome: {
-    title: 'እንኳን ወደ ቀለም በደህና መጡ',
+    title: 'እንኳን ወደ ቀለም በደህና መጡ!',
     subtitle: 'አዲስ ከሆኑ እባክዎ ይመዝገቡ። አስቀድመው መለያ ካለዎት እባክዎ በመለያዎ ይግቡ።',
     signIn: 'ይግቡ',
     signUp: 'ይመዝገቡ',
@@ -636,28 +636,28 @@ export default {
       subtitle: 'የሚፈልጉትን ቋንቋ ይምረጡ'
     },
     welcome: {
-      title: 'እንኳን ወደ ቀለም በደህና መጡ',
-      subtitle: 'የእርስዎ የግል የትምህርት ባልደረባ',
-      description: 'በተገለጸ የትምህርት ቁሳቁሶች እና በተግባራዊ ልምምዶች የትምህርት ጉዞዎን ያቀላጥፉ'
+      title: 'እንኳን ወደ ቀለም በደህና መጡ!',
+      subtitle: 'የግልዎ መማሪያ',
+      description: 'በተዋቀሩ የትምህርት እና የጥናት አጋዦች እንዲሁም በምቹ የመልመጃ ጥያቄዎች የዕውቀት ጉዞዎን ያበልጽጉ! '
     },
     mcq: {
-      title: 'በምርጫ ይለማመዱ',
-      subtitle: 'ዕውቀትዎን ይፈትሹ',
-      description: 'በጥያቄዎች እራስዎን ይፈትሹ እና እድገትዎን ይከታተሉ።'
+      title: 'የምርጫ ጥያቄዎችን ይመለሱ!',
+      subtitle: 'ዕወቀትዎን ይለኩ!',
+      description: 'ጥያቄዎችን እየመለሱ የዕውቀት እድገትዎን ይከታተሉ! '
     },
     flashcards: {
       title: 'በፍላሽ ካርዶች ይማሩ',
-      subtitle: 'ዋና ጽንሰ-ሐሳቦችን ይገምግሙ',
-      description: 'በተግባራዊ ፍላሽ ካርዶች ትምህርትዎን ለማጠናከር ይገልብጡ እና ይማሩ።'
+      subtitle: 'ቁልፍ ጽንሰ-ሀሳቦችን ይማሩ!',
+      description: 'ዕውቀትን ለማበልጸግ ፍላሽ ካርዶችን ይመልከቱ!'
     },
     homework: {
-      title: 'የቤት ስራ እርዳታ ያግኙ',
-      subtitle: 'የባለሙያ እርዳታ',
-      description: 'ከአስተማሪዎች ጋር ይገናኙ እና በየቤት ስራ ጥያቄዎችዎ ላይ እርዳታ ያግኙ።'
+      title: 'ለቤት ሥራ አጋዥ ይጠቀሙ!',
+      subtitle: 'ሙያዊ እገዛ! ',
+      description: 'የቤት ሥራ ጥያቄዎችን ለመመለስ የሚያግዝ የግል መማሪያ! '
     },
     skip: 'ይዝለሉ',
     next: 'ቀጣይ',
-    getStarted: 'ጀምር'
+    getStarted: 'ይጀምሩ'
   },
   subjects: {
     mathematics: {
