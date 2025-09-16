@@ -149,7 +149,7 @@ export default function PlanSelectionScreen() {
     // Check if it's a free plan (amount is 0 or durationInMonths is 999 for free)
     const isFreePlan = selectedPlan.amount === 0 || selectedPlan.durationInMonths === 999 || selectedPlan.durationInMonths === 0;
     
-    return isFreePlan ? 'Finish' : 'Pay';
+    return isFreePlan ? t('auth.planSelection.finish') : t('auth.planSelection.pay');
   };
 
   const handleContinue = async () => {

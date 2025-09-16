@@ -111,7 +111,7 @@ export default function SignupScreen() {
       checkUsernameAvailability(text);
     } else {
       setUsernameValid(null);
-      setUsernameError(text.length > 0 ? 'Username must be at least 5 characters' : '');
+      setUsernameError(text.length > 0 ? t('signup.errors.usernameMinLength') : '');
     }
   };
 
