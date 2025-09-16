@@ -3,6 +3,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useState, useRef, useEffect } from 'react';
 import * as ImagePicker from 'expo-image-picker';
 import { useTheme } from '@/contexts/ThemeContext';
+import { useAuth } from '@/contexts/AuthContext';
 import { getColors } from '@/constants/Colors';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Markdown from 'react-native-markdown-display';
@@ -13,6 +14,7 @@ import { ThemedView } from '@/components/ThemedView';
 import { IconSymbol } from '@/components/ui/IconSymbol';
 import { ProfileAvatar } from '@/components/ui/ProfileAvatar';
 import { getChatCompletion, imageToBase64, type ChatMessage } from '@/utils/openai';
+import ActivityTrackingService from '@/services/activityTrackingService';
 
 type Message = {
   id: string;
@@ -221,11 +223,13 @@ const MarkdownRenderer = ({ text, isUser, colors }: { text: string; isUser: bool
 
 export default function HomeworkScreen() {
   const { isDarkMode } = useTheme();
+  const { user } = useAuth();
   const colors = getColors(isDarkMode);
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputText, setInputText] = useState('');
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [sessionStartTime, setSessionStartTime] = useState<number | null>(null);
   const scrollViewRef = useRef<ScrollView>(null);
   const inputRef = useRef<TextInput>(null);
   const dotAnimation = useRef(new Animated.Value(0)).current;
@@ -275,6 +279,11 @@ export default function HomeworkScreen() {
 
   const handleSend = async () => {
     if ((!inputText.trim() && !selectedImage) || isLoading) return;
+
+    // Start session tracking if not already started
+    if (!sessionStartTime) {
+      setSessionStartTime(Date.now());
+    }
 
     const newMessage: Message = {
       id: Date.now().toString(),
@@ -337,33 +346,22 @@ export default function HomeworkScreen() {
         // Track homework activity
         const trackActivity = async () => {
           try {
-            const activity: RecentActivity = {
-              type: 'homework',
-              grade: 'grade-12', // You might want to make this dynamic based on user's grade
-              subject: 'General', // You might want to make this dynamic based on the subject
-              chapter: 'Homework Help',
-              timestamp: Date.now(),
-              details: 'Asked a homework question',
-              status: 'Completed'
-            };
+            const trackingService = ActivityTrackingService.getInstance();
+            await trackingService.initialize();
             
-            // Get existing activities
-            const existingActivities = await AsyncStorage.getItem('recentActivities');
-            let activities: RecentActivity[] = [];
+            const questionCount = inputText.trim().split('?').length; // Simple question count
+            const hasImage = !!selectedImage;
+            const responseTime = Date.now() - (sessionStartTime || Date.now());
             
-            if (existingActivities) {
-              activities = JSON.parse(existingActivities);
-            }
-            
-            // Add new activity and keep only last 20
-            activities.unshift(activity);
-            if (activities.length > 20) {
-              activities = activities.slice(0, 20);
-            }
-            
-            // Save updated activities
-            await AsyncStorage.setItem('recentActivities', JSON.stringify(activities));
+            await trackingService.trackHomeworkActivity({
+              grade: user?.grade || 'unknown',
+              subject: 'General', // Could be enhanced to detect subject from question
+              questionCount: questionCount,
+              hasImage: hasImage,
+              responseTime: Math.round(responseTime / 1000), // Convert to seconds
+            });
           } catch (error) {
+            console.error('Failed to track homework activity:', error);
             // Silently fail - activity tracking is not critical
           }
         };

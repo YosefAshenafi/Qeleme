@@ -29,6 +29,7 @@ import { ProfileAvatar } from '@/components/ui/ProfileAvatar';
 import { LanguageToggle } from '@/components/ui/LanguageToggle';
 import { ImageSkeleton } from '@/components/ui/ImageSkeleton';
 import { getKGQuestions, getKGSubcategoryQuestions, KGQuestion } from '@/services/kgService';
+import ActivityTrackingService from '@/services/activityTrackingService';
 
 // No local image mapping needed - we'll use remote images from the API
 
@@ -215,6 +216,7 @@ export default function PictureMCQScreen({ onBackToInstructions }: PictureMCQScr
       const transformedQuestions = transformQuestions(apiQuestions);
       console.log('Fetched and transformed questions:', transformedQuestions); // DEBUG LOG
       setQuestions(transformedQuestions);
+      setSessionStartTime(Date.now()); // Start tracking session time
       
       // Start preloading images immediately
       preloadImages(transformedQuestions);
@@ -247,6 +249,7 @@ export default function PictureMCQScreen({ onBackToInstructions }: PictureMCQScr
   // Video animation states
   const [showCorrectVideo, setShowCorrectVideo] = useState(false);
   const [showIncorrectVideo, setShowIncorrectVideo] = useState(false);
+  const [sessionStartTime, setSessionStartTime] = useState<number | null>(null);
 
   const imageAnimatedStyle = useAnimatedStyle(() => {
     return {
@@ -437,10 +440,33 @@ export default function PictureMCQScreen({ onBackToInstructions }: PictureMCQScr
     return t('mcq.results.message.keepLearning');
   };
 
-  const handleNavigation = () => {
+  const handleNavigation = async () => {
     if (!currentQuestion) return;
     const currentScore = Number(score) || 0; // Ensure score is a number
     if (isLastQuestion) {
+      // Track activity when quiz is completed
+      try {
+        const trackingService = ActivityTrackingService.getInstance();
+        await trackingService.initialize();
+        
+        const categoryId = parseInt(params.categoryId as string);
+        const categoryName = params.categoryName as string || 'Unknown Category';
+        const timeSpent = Date.now() - (sessionStartTime || Date.now());
+        
+        await trackingService.trackPictureMCQActivity({
+          grade: user?.grade || 'kg',
+          subject: categoryName,
+          categoryId: categoryId,
+          categoryName: categoryName,
+          questionsAnswered: questions.length,
+          correctAnswers: currentScore,
+          timeSpent: Math.round(timeSpent / 1000), // Convert to seconds
+        });
+      } catch (error) {
+        console.error('Failed to track picture MCQ activity:', error);
+        // Silently fail - activity tracking is not critical
+      }
+      
       setShowResult(true);
     } else {
       handleNextQuestion();

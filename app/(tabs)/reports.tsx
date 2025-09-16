@@ -9,6 +9,8 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '@/contexts/AuthContext';
+import { useFocusEffect } from '@react-navigation/native';
+import ActivityTrackingService, { UserStats } from '@/services/activityTrackingService';
 
 import { Header } from '@/components/Header';
 import { ThemedText } from '@/components/ThemedText';
@@ -22,6 +24,8 @@ export default function ReportsScreen() {
   const { user } = useAuth();
   const colors = getColors(isDarkMode);
   const [refreshing, setRefreshing] = useState(false);
+  const [userStats, setUserStats] = useState<UserStats | null>(null);
+  const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState([
     { label: t('profile.stats.mcqsCompleted'), value: '0', icon: 'questionmark.circle.fill' as const },
     { label: t('profile.stats.flashcardsClicked'), value: '0', icon: 'rectangle.stack.fill' as const },
@@ -36,115 +40,154 @@ export default function ReportsScreen() {
 
   const [reportData, setReportData] = useState({
     overallProgress: {
-      percentage: 75,
-      totalTopics: 20,
-      completedTopics: 15,
-      studyHours: 48,
+      percentage: 0,
+      totalTopics: 0,
+      completedTopics: 0,
+      studyHours: 0,
     },
     performance: {
-      averageScore: 85,
-      quizzesTaken: 60,
-      successRate: 88,
-      improvement: '+15%',
+      averageScore: 0,
+      quizzesTaken: 0,
+      successRate: 0,
+      improvement: '0%',
     },
     learningStreak: {
-      currentStreak: 12,
-      bestStreak: 25,
-      totalDaysActive: 90,
+      currentStreak: 0,
+      bestStreak: 0,
+      totalDaysActive: 0,
     },
-    subjectBreakdown: [
-      { subject: t('subjects.mathematics'), progress: 90, score: 95 },
-      { subject: t('subjects.physics'), progress: 85, score: 88 },
-      { subject: t('subjects.chemistry'), progress: 75, score: 80 },
-      { subject: t('subjects.biology'), progress: 70, score: 75 },
-    ],
-    recentActivity: [
-      {
-        type: 'quiz',
-        subject: t('subjects.mathematics'),
-        score: 95,
-        date: new Date().toLocaleDateString(i18n.language === 'am' ? 'am-ET' : 'en-US')
-      },
-      {
-        type: 'study',
-        subject: t('subjects.physics'),
-        duration: t('reports.duration', { hours: '2.5' }),
-        date: new Date(Date.now() - 86400000).toLocaleDateString(i18n.language === 'am' ? 'am-ET' : 'en-US')
-      },
-      {
-        type: 'homework',
-        subject: t('subjects.chemistry'),
-        status: t('reports.status.completed'),
-        date: new Date(Date.now() - 172800000).toLocaleDateString(i18n.language === 'am' ? 'am-ET' : 'en-US')
-      },
-      {
-        type: 'quiz',
-        subject: t('subjects.biology'),
-        score: 85,
-        date: new Date(Date.now() - 259200000).toLocaleDateString(i18n.language === 'am' ? 'am-ET' : 'en-US')
-      },
-      {
-        type: 'study',
-        subject: t('subjects.mathematics'),
-        duration: t('reports.duration', { hours: '3' }),
-        date: new Date(Date.now() - 345600000).toLocaleDateString(i18n.language === 'am' ? 'am-ET' : 'en-US')
-      }
-    ]
+    subjectBreakdown: [] as Array<{ subject: string; progress: number; score: number }>,
+    recentActivity: [] as Array<{
+      type: string;
+      subject: string;
+      score?: number;
+      duration?: string;
+      status?: string;
+      date: string;
+    }>,
   });
   const [isInfoExpanded, setIsInfoExpanded] = useState(false);
   const animatedHeight = useRef(new Animated.Value(0)).current;
   const animatedRotate = useRef(new Animated.Value(0)).current;
 
-  // Update stats when language changes
+  // Initialize tracking service
   useEffect(() => {
-    if (typeof user?.grade === 'string' && user.grade.toLowerCase().includes('kg')) {
-      setKgStats([
-        { label: t('profile.stats.pictureQuestions'), value: '0', icon: 'photo' as const },
-        { label: t('profile.stats.cardGroups'), value: '0', icon: 'rectangle.stack.fill' as const },
-      ]);
-    } else {
-      setStats([
-        { label: t('profile.stats.mcqsCompleted'), value: '0', icon: 'questionmark.circle.fill' as const },
-        { label: t('profile.stats.flashcardsClicked'), value: '0', icon: 'rectangle.stack.fill' as const },
-        { label: t('profile.stats.homeworkQuestions'), value: '0', icon: 'message.fill' as const },
-        { label: t('profile.stats.studyHours'), value: '0', icon: 'clock.fill' as const },
-      ]);
-    }
-  }, [t, i18n.language, user?.grade]);
-
-  useEffect(() => {
-    loadReportData();
-  }, [i18n.language, t]);
-
-  const loadReportData = () => {
-    // Initialize with zeros for all data
-    const sampleData = {
-      overallProgress: {
-        percentage: 0,
-        totalTopics: 0,
-        completedTopics: 0,
-        studyHours: 0,
-      },
-      performance: {
-        averageScore: 0,
-        quizzesTaken: 0,
-        successRate: 0,
-        improvement: '0%',
-      },
-      learningStreak: {
-        currentStreak: 0,
-        bestStreak: 0,
-        totalDaysActive: 0,
-      },
-      subjectBreakdown: [
-        { subject: t('subjects.mathematics'), progress: 0, score: 0 },
-        { subject: t('subjects.physics'), progress: 0, score: 0 },
-        { subject: t('subjects.chemistry'), progress: 0, score: 0 },
-        { subject: t('subjects.biology'), progress: 0, score: 0 },
-      ],
-      recentActivity: []
+    const initializeTracking = async () => {
+      try {
+        const trackingService = ActivityTrackingService.getInstance();
+        await trackingService.initialize();
+        const stats = trackingService.getStats();
+        setUserStats(stats);
+        setLoading(false);
+      } catch (error) {
+        console.error('Failed to initialize tracking service:', error);
+        setLoading(false);
+      }
     };
-    setReportData(sampleData);
+
+    initializeTracking();
+  }, []);
+
+  // Auto-refresh data when tab is focused
+  useFocusEffect(
+    React.useCallback(() => {
+      loadReportData();
+    }, [])
+  );
+
+  // Update stats when language changes or userStats changes
+  useEffect(() => {
+    if (userStats) {
+      const isKGStudent = typeof user?.grade === 'string' && user.grade.toLowerCase().includes('kg');
+      
+      if (isKGStudent) {
+        setKgStats([
+          { 
+            label: t('profile.stats.pictureQuestions'), 
+            value: userStats.activityTypeBreakdown.picture_mcq.count.toString(), 
+            icon: 'photo' as const 
+          },
+          { 
+            label: t('profile.stats.cardGroups'), 
+            value: userStats.activityTypeBreakdown.kg_question.count.toString(), 
+            icon: 'rectangle.stack.fill' as const 
+          },
+        ]);
+      } else {
+        setStats([
+          { 
+            label: t('profile.stats.mcqsCompleted'), 
+            value: userStats.activityTypeBreakdown.mcq.count.toString(), 
+            icon: 'questionmark.circle.fill' as const 
+          },
+          { 
+            label: t('profile.stats.flashcardsClicked'), 
+            value: userStats.activityTypeBreakdown.flashcard.count.toString(), 
+            icon: 'rectangle.stack.fill' as const 
+          },
+          { 
+            label: t('profile.stats.homeworkQuestions'), 
+            value: userStats.activityTypeBreakdown.homework.count.toString(), 
+            icon: 'message.fill' as const 
+          },
+          { 
+            label: t('profile.stats.studyHours'), 
+            value: `${Math.round(userStats.totalStudyTime / 60)}h`, 
+            icon: 'clock.fill' as const 
+          },
+        ]);
+      }
+
+      // Update report data with real statistics
+      const subjectBreakdown = Object.entries(userStats.subjectBreakdown).map(([subject, data]) => ({
+        subject: subject,
+        progress: Math.min(100, Math.round((data.questionsAnswered / Math.max(1, userStats.totalQuestionsAnswered)) * 100)),
+        score: data.averageScore
+      })).sort((a, b) => b.progress - a.progress);
+
+      const trackingService = ActivityTrackingService.getInstance();
+      const recentActivities = trackingService.getRecentActivities(5).map(activity => ({
+        type: activity.type,
+        subject: activity.subject,
+        score: activity.score,
+        duration: activity.duration ? `${Math.round(activity.duration)}m` : undefined,
+        status: activity.status === 'completed' ? t('reports.status.completed') : activity.status,
+        date: new Date(activity.timestamp).toLocaleDateString(i18n.language === 'am' ? 'am-ET' : 'en-US')
+      }));
+
+      setReportData({
+        overallProgress: {
+          percentage: Math.min(100, Math.round((userStats.totalQuestionsAnswered / Math.max(1, userStats.totalQuestionsAnswered)) * 100)),
+          totalTopics: Object.keys(userStats.subjectBreakdown).length,
+          completedTopics: Object.values(userStats.subjectBreakdown).filter(subject => subject.questionsAnswered > 0).length,
+          studyHours: Math.round(userStats.totalStudyTime / 60),
+        },
+        performance: {
+          averageScore: userStats.averageScore,
+          quizzesTaken: userStats.activityTypeBreakdown.mcq.count,
+          successRate: userStats.averageScore,
+          improvement: userStats.averageScore > 0 ? `+${userStats.averageScore}%` : '0%',
+        },
+        learningStreak: {
+          currentStreak: userStats.currentStreak,
+          bestStreak: userStats.bestStreak,
+          totalDaysActive: Math.ceil((Date.now() - userStats.lastActivityDate) / (1000 * 60 * 60 * 24)),
+        },
+        subjectBreakdown,
+        recentActivity: recentActivities
+      });
+    }
+  }, [t, i18n.language, user?.grade, userStats]);
+
+  const loadReportData = async () => {
+    try {
+      const trackingService = ActivityTrackingService.getInstance();
+      await trackingService.initialize();
+      const stats = trackingService.getStats();
+      setUserStats(stats);
+    } catch (error) {
+      console.error('Failed to load report data:', error);
+    }
   };
 
   const onRefresh = React.useCallback(async () => {
@@ -189,6 +232,19 @@ export default function ReportsScreen() {
     outputRange: ['0deg', '180deg'],
   });
 
+  if (loading) {
+    return (
+      <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]}>
+        <Header title={t('reports.title')} />
+        <View style={[styles.loadingContainer, { backgroundColor: colors.background }]}>
+          <ThemedText style={[styles.loadingText, { color: colors.text }]}>
+            {t('reports.loading', { defaultValue: 'Loading your progress...' })}
+          </ThemedText>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
   return (
     <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]}>
       <Header title={t('reports.title')} />
@@ -204,178 +260,210 @@ export default function ReportsScreen() {
         }
       >
         <ThemedView style={[styles.container, { backgroundColor: colors.background }]}>
-          {/* Progress Stats Section */}
-          <ThemedView style={[styles.statsSection, { backgroundColor: colors.background }]}>
-            <ThemedText style={[styles.sectionTitle, { color: colors.text }]}>
-              {t('reports.progressStats.title', { defaultValue: 'Your Progress' })}
-            </ThemedText>
-            <View style={styles.statsGrid}>
-              {typeof user?.grade === 'string' && user.grade.toLowerCase().includes('kg') ? (
-                kgStats.map((stat, index) => (
-                  <View key={index} style={[styles.statCard, { backgroundColor: colors.card }]}>
-                    <View style={[styles.statIconContainer, { backgroundColor: colors.tint + '15' }]}>
-                      <IconSymbol name={stat.icon} size={24} color={colors.tint} />
-                    </View>
-                    <ThemedText style={[styles.statValue, { color: colors.text }]}>{stat.value}</ThemedText>
-                    <ThemedText style={[styles.statLabel, { color: colors.text + '80' }]}>{stat.label}</ThemedText>
+          {/* Only show content if we have user stats */}
+          {userStats ? (
+            <>
+              {/* Progress Stats Section - Only show if there's actual data */}
+              {(userStats.totalActivities > 0 || userStats.totalStudyTime > 0) && (
+                <ThemedView style={[styles.statsSection, { backgroundColor: colors.background }]}>
+                  <ThemedText style={[styles.sectionTitle, { color: colors.text }]}>
+                    {t('reports.progressStats.title')}
+                  </ThemedText>
+                  <View style={styles.statsGrid}>
+                    {typeof user?.grade === 'string' && user.grade.toLowerCase().includes('kg') ? (
+                      kgStats.map((stat, index) => (
+                        <View key={index} style={[styles.statCard, { backgroundColor: colors.card }]}>
+                          <View style={[styles.statIconContainer, { backgroundColor: colors.tint + '15' }]}>
+                            <IconSymbol name={stat.icon} size={24} color={colors.tint} />
+                          </View>
+                          <ThemedText style={[styles.statValue, { color: colors.text }]}>{stat.value}</ThemedText>
+                          <ThemedText style={[styles.statLabel, { color: colors.text + '80' }]}>{stat.label}</ThemedText>
+                        </View>
+                      ))
+                    ) : (
+                      stats.map((stat, index) => (
+                        <View key={index} style={[styles.statCard, { backgroundColor: colors.card }]}>
+                          <View style={[styles.statIconContainer, { backgroundColor: colors.tint + '15' }]}>
+                            <IconSymbol name={stat.icon} size={24} color={colors.tint} />
+                          </View>
+                          <ThemedText style={[styles.statValue, { color: colors.text }]}>{stat.value}</ThemedText>
+                          <ThemedText style={[styles.statLabel, { color: colors.text + '80' }]}>{stat.label}</ThemedText>
+                        </View>
+                      ))
+                    )}
                   </View>
-                ))
-              ) : (
-                stats.map((stat, index) => (
-                  <View key={index} style={[styles.statCard, { backgroundColor: colors.card }]}>
-                    <View style={[styles.statIconContainer, { backgroundColor: colors.tint + '15' }]}>
-                      <IconSymbol name={stat.icon} size={24} color={colors.tint} />
-                    </View>
-                    <ThemedText style={[styles.statValue, { color: colors.text }]}>{stat.value}</ThemedText>
-                    <ThemedText style={[styles.statLabel, { color: colors.text + '80' }]}>{stat.label}</ThemedText>
-                  </View>
-                ))
+                </ThemedView>
               )}
-            </View>
-          </ThemedView>
 
-          {/* Overall Progress Card */}
-          <ThemedView style={[styles.card, { backgroundColor: colors.background }]}>
-            <LinearGradient
-              colors={gradients.purple}
-              style={styles.cardGradient}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 1 }}
-            >
-              <View style={styles.cardHeader}>
-                <View style={[styles.iconContainer, { backgroundColor: 'rgba(255, 255, 255, 0.2)' }]}>
-                  <IconSymbol name="message" size={24} color="#fff" />
-                </View>
-                <ThemedText style={styles.cardTitle}>{t('reports.overallProgress.title')}</ThemedText>
-              </View>
-              <View style={styles.progressContent}>
-                <ThemedText style={styles.progressPercentage}>
-                  {`${reportData.overallProgress.percentage}%`}
-                </ThemedText>
-                <View style={styles.progressStats}>
-                  <View style={styles.statItem}>
-                    <ThemedText style={styles.statValue}>
-                      {`${reportData.overallProgress.completedTopics}/${reportData.overallProgress.totalTopics} ${t('reports.overallProgress.topicsCompleted')}`}
-                    </ThemedText>
-                    <ThemedText style={styles.statLabel}>
-                      {`${reportData.overallProgress.studyHours} ${t('reports.overallProgress.studyHours')}`}
-                    </ThemedText>
-                  </View>
-                </View>
-              </View>
-            </LinearGradient>
-          </ThemedView>
+              {/* Overall Progress Card - Only show if there's actual progress */}
+              {userStats.totalQuestionsAnswered > 0 && (
+                <ThemedView style={[styles.card, { backgroundColor: colors.background }]}>
+                  <LinearGradient
+                    colors={gradients.purple}
+                    style={styles.cardGradient}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 1 }}
+                  >
+                    <View style={styles.cardHeader}>
+                      <View style={[styles.iconContainer, { backgroundColor: 'rgba(255, 255, 255, 0.2)' }]}>
+                        <IconSymbol name="message" size={24} color="#fff" />
+                      </View>
+                      <ThemedText style={styles.cardTitle}>{t('reports.overallProgress.title')}</ThemedText>
+                    </View>
+                    <View style={styles.progressContent}>
+                      <ThemedText style={styles.progressPercentage}>
+                        {`${reportData.overallProgress.percentage}%`}
+                      </ThemedText>
+                      <View style={styles.progressStats}>
+                        <View style={styles.statItem}>
+                          <ThemedText style={styles.statValue}>
+                            {`${reportData.overallProgress.completedTopics}/${reportData.overallProgress.totalTopics} ${t('reports.overallProgress.topicsCompleted')}`}
+                          </ThemedText>
+                          <ThemedText style={styles.statLabel}>
+                            {`${reportData.overallProgress.studyHours} ${t('reports.overallProgress.studyHours')}`}
+                          </ThemedText>
+                        </View>
+                      </View>
+                    </View>
+                  </LinearGradient>
+                </ThemedView>
+              )}
 
-          {/* Performance Metrics */}
-          <ThemedView style={[styles.card, { backgroundColor: colors.background }]}>
-            <LinearGradient
-              colors={gradients.green}
-              style={styles.cardGradient}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 1 }}
-            >
-              <View style={styles.cardHeader}>
-                <View style={[styles.iconContainer, { backgroundColor: 'rgba(255, 255, 255, 0.2)' }]}>
-                  <IconSymbol name="message.fill" size={24} color="#fff" />
-                </View>
-                <ThemedText style={styles.cardTitle}>{t('reports.performance.title')}</ThemedText>
-              </View>
-              <View style={styles.progressContent}>
-                <ThemedText style={styles.progressPercentage}>
-                  {`${reportData.performance.averageScore}%`}
-                </ThemedText>
-                <View style={styles.progressStats}>
-                  <View style={styles.statItem}>
-                    <ThemedText style={styles.statValue}>
-                      {`${reportData.performance.quizzesTaken} ${t('reports.performance.quizzesTaken')}`}
-                    </ThemedText>
-                    <ThemedText style={styles.statLabel}>
-                      {`${reportData.performance.successRate}% ${t('reports.performance.successRate')}`}
-                    </ThemedText>
-                  </View>
-                  <View style={styles.statItem}>
-                    <ThemedText style={styles.statValue}>
-                      {reportData.performance.improvement}
-                    </ThemedText>
-                    <ThemedText style={styles.statLabel}>
-                      {t('reports.performance.improvement')}
-                    </ThemedText>
-                  </View>
-                </View>
-              </View>
-            </LinearGradient>
-          </ThemedView>
+              {/* Performance Metrics - Only show if there are completed quizzes */}
+              {userStats.activityTypeBreakdown.mcq.count > 0 && (
+                <ThemedView style={[styles.card, { backgroundColor: colors.background }]}>
+                  <LinearGradient
+                    colors={gradients.green}
+                    style={styles.cardGradient}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 1 }}
+                  >
+                    <View style={styles.cardHeader}>
+                      <View style={[styles.iconContainer, { backgroundColor: 'rgba(255, 255, 255, 0.2)' }]}>
+                        <IconSymbol name="message.fill" size={24} color="#fff" />
+                      </View>
+                      <ThemedText style={styles.cardTitle}>{t('reports.performance.title')}</ThemedText>
+                    </View>
+                    <View style={styles.progressContent}>
+                      <ThemedText style={styles.progressPercentage}>
+                        {`${reportData.performance.averageScore}%`}
+                      </ThemedText>
+                      <View style={styles.progressStats}>
+                        <View style={styles.statItem}>
+                          <ThemedText style={styles.statValue}>
+                            {`${reportData.performance.quizzesTaken} ${t('reports.performance.quizzesTaken')}`}
+                          </ThemedText>
+                          <ThemedText style={styles.statLabel}>
+                            {`${reportData.performance.successRate}% ${t('reports.performance.successRate')}`}
+                          </ThemedText>
+                        </View>
+                        <View style={styles.statItem}>
+                          <ThemedText style={styles.statValue}>
+                            {reportData.performance.improvement}
+                          </ThemedText>
+                          <ThemedText style={styles.statLabel}>
+                            {t('reports.performance.improvement')}
+                          </ThemedText>
+                        </View>
+                      </View>
+                    </View>
+                  </LinearGradient>
+                </ThemedView>
+              )}
 
-          {/* Learning Streak */}
-          <ThemedView style={[styles.card, { backgroundColor: colors.background }]}>
-            <LinearGradient
-              colors={gradients.blue}
-              style={styles.cardGradient}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 1 }}
-            >
-              <View style={styles.cardHeader}>
-                <View style={[styles.iconContainer, { backgroundColor: 'rgba(255, 255, 255, 0.2)' }]}>
-                  <IconSymbol name="house.fill" size={24} color="#fff" />
-                </View>
-                <ThemedText style={styles.cardTitle}>{t('reports.learningStreak.title')}</ThemedText>
-              </View>
-              <View style={styles.progressContent}>
-                <ThemedText style={styles.progressPercentage}>
-                  {`${reportData.learningStreak.currentStreak} ${t('reports.learningStreak.currentStreak')}`}
-                </ThemedText>
-                <View style={styles.progressStats}>
-                  <View style={styles.statItem}>
-                    <ThemedText style={styles.statValue}>
-                      {`${reportData.learningStreak.bestStreak} ${t('reports.learningStreak.bestStreak')}`}
-                    </ThemedText>
-                    <ThemedText style={styles.statLabel}>
-                      {`${reportData.learningStreak.totalDaysActive} ${t('reports.learningStreak.totalDaysActive')}`}
-                    </ThemedText>
-                  </View>
-                </View>
-              </View>
-            </LinearGradient>
-          </ThemedView>
+              {/* Learning Streak - Only show if there's actual streak data */}
+              {userStats.currentStreak > 0 && (
+                <ThemedView style={[styles.card, { backgroundColor: colors.background }]}>
+                  <LinearGradient
+                    colors={gradients.blue}
+                    style={styles.cardGradient}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 1 }}
+                  >
+                    <View style={styles.cardHeader}>
+                      <View style={[styles.iconContainer, { backgroundColor: 'rgba(255, 255, 255, 0.2)' }]}>
+                        <IconSymbol name="house.fill" size={24} color="#fff" />
+                      </View>
+                      <ThemedText style={styles.cardTitle}>{t('reports.learningStreak.title')}</ThemedText>
+                    </View>
+                    <View style={styles.progressContent}>
+                      <ThemedText style={styles.progressPercentage}>
+                        {`${reportData.learningStreak.currentStreak} ${t('reports.learningStreak.currentStreak')}`}
+                      </ThemedText>
+                      <View style={styles.progressStats}>
+                        <View style={styles.statItem}>
+                          <ThemedText style={styles.statValue}>
+                            {`${reportData.learningStreak.bestStreak} ${t('reports.learningStreak.bestStreak')}`}
+                          </ThemedText>
+                          <ThemedText style={styles.statLabel}>
+                            {`${reportData.learningStreak.totalDaysActive} ${t('reports.learningStreak.totalDaysActive')}`}
+                          </ThemedText>
+                        </View>
+                      </View>
+                    </View>
+                  </LinearGradient>
+                </ThemedView>
+              )}
 
-          {/* Recent Activity */}
-          <ThemedView style={[styles.section, { backgroundColor: colors.background }]}>
-            {reportData.recentActivity.map((activity, index) => (
-              <ThemedView 
-                key={index} 
-                style={[styles.activityCard, { 
-                  backgroundColor: colors.cardAlt,
-                  borderColor: colors.border,
-                  borderWidth: isDarkMode ? 1 : 0
-                }]}
-              >
-                <View style={[styles.activityIcon, { 
-                  backgroundColor: isDarkMode ? 'rgba(107, 84, 174, 0.2)' : '#F3E5F5'
-                }]}>
-                  <IconSymbol 
-                    name={activity.type === 'quiz' ? 'message.fill' : 
-                          activity.type === 'study' ? 'house.fill' : 'message'} 
-                    size={24} 
-                    color={colors.tint}
-                  />
-                </View>
-                <View style={styles.activityContent}>
-                  <ThemedText style={[styles.activityTitle, { color: colors.text }]}>
-                    {activity.subject} - {t(`reports.recentActivity.${activity.type}`)}
+              {/* Recent Activity - Only show if there are recent activities */}
+              {reportData.recentActivity.length > 0 && (
+                <ThemedView style={[styles.section, { backgroundColor: colors.background }]}>
+                  <ThemedText style={[styles.sectionTitle, { color: colors.text }]}>
+                    {t('reports.recentActivity.title')}
                   </ThemedText>
-                  <ThemedText style={[styles.activitySubtitle, { color: colors.text }]}>
-                    {activity.score ? 
-                      `${activity.score}%` :
-                     activity.duration ? 
-                      activity.duration :
-                     activity.status ? 
-                      t('reports.recentActivity.completed') : ''}
-                  </ThemedText>
-                </View>
-              </ThemedView>
-            ))}
-          </ThemedView>
+                  {reportData.recentActivity.map((activity, index) => (
+                    <ThemedView 
+                      key={index} 
+                      style={[styles.activityCard, { 
+                        backgroundColor: colors.cardAlt,
+                        borderColor: colors.border,
+                        borderWidth: isDarkMode ? 1 : 0
+                      }]}
+                    >
+                      <View style={[styles.activityIcon, { 
+                        backgroundColor: isDarkMode ? 'rgba(107, 84, 174, 0.2)' : '#F3E5F5'
+                      }]}>
+                        <IconSymbol 
+                          name={activity.type === 'quiz' ? 'message.fill' : 
+                                activity.type === 'study' ? 'house.fill' : 'message'} 
+                          size={24} 
+                          color={colors.tint}
+                        />
+                      </View>
+                      <View style={styles.activityContent}>
+                        <ThemedText style={[styles.activityTitle, { color: colors.text }]}>
+                          {activity.subject} - {t(`reports.activityTypes.${activity.type}`, { defaultValue: activity.type })}
+                        </ThemedText>
+                        <ThemedText style={[styles.activitySubtitle, { color: colors.text }]}>
+                          {activity.score ? 
+                            `${activity.score}%` :
+                           activity.duration ? 
+                            activity.duration :
+                           activity.status ? 
+                            t('reports.recentActivity.completed') : ''}
+                        </ThemedText>
+                      </View>
+                    </ThemedView>
+                  ))}
+                </ThemedView>
+              )}
 
+              {/* Show message if no data available */}
+              {userStats.totalActivities === 0 && userStats.totalStudyTime === 0 && (
+                <ThemedView style={[styles.emptyState, { backgroundColor: colors.background }]}>
+                  <ThemedText style={[styles.emptyStateText, { color: colors.text }]}>
+                    {t('reports.noData', { defaultValue: 'Start learning to see your progress here!' })}
+                  </ThemedText>
+                </ThemedView>
+              )}
+            </>
+          ) : (
+            <ThemedView style={[styles.emptyState, { backgroundColor: colors.background }]}>
+              <ThemedText style={[styles.emptyStateText, { color: colors.text }]}>
+                {t('reports.noData', { defaultValue: 'Start learning to see your progress here!' })}
+              </ThemedText>
+            </ThemedView>
+          )}
         </ThemedView>
       </ScrollView>
     </SafeAreaView>
@@ -392,6 +480,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 20,
+    paddingBottom: 40,
     gap: 20,
   },
   statsSection: {
@@ -560,5 +649,28 @@ const styles = StyleSheet.create({
     fontSize: 14,
     lineHeight: 22,
     paddingLeft: 28,
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  loadingText: {
+    fontSize: 16,
+    textAlign: 'center',
+  },
+  emptyState: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 40,
+    minHeight: 200,
+  },
+  emptyStateText: {
+    fontSize: 16,
+    textAlign: 'center',
+    opacity: 0.7,
+    lineHeight: 24,
   },
 }); 

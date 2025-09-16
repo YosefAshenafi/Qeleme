@@ -321,6 +321,10 @@ export default {
   },
   reports: {
     title: 'ሪፖርቶች',
+    loading: 'የእድገትዎን በማዘዋወር ላይ...',
+    progressStats: {
+      title: 'የእርስዎ እድገት'
+    },
     overallProgress: {
       title: 'ጠቅላላ እድገት',
       topicsCompleted: 'የተጠናቀቁ ርዕሰ ጉዳዮች',
@@ -373,14 +377,19 @@ export default {
     activityTypes: {
       quiz: 'ፈተና',
       study: 'ትምህርት',
-      homework: 'የቤት ስራ'
+      homework: 'የቤት ስራ',
+      flashcard: 'ፍላሽ ካርዶች',
+      mcq: 'ምርጫ ፈተና',
+      kg_question: 'ኪጂ ጥያቄ',
+      picture_mcq: 'የምስል ፈተና'
     },
     status: {
       completed: 'ተጠናቅቋል'
     },
     duration: '{{hours}}ሰ',
     scoreFormat: '{{score}}%',
-    progressFormat: '{{progress}}% ተጠናቅቋል'
+    progressFormat: '{{progress}}% ተጠናቅቋል',
+    noData: 'የእድገትዎን ለማየት መማር ይጀምሩ!'
   },
   common: {
     error: 'ችግር',
@@ -446,7 +455,11 @@ export default {
         outstanding: 'በጣም ጥሩ! እርስዎ ኮከብ ነዎት!',
         great: 'በጣም ጥሩ! ይቀጥሉ!',
         good: 'ጥሩ ጥረት! የበለጠ ማድረግ ይችላሉ!',
-        keepLearning: 'ይለማመዱ! ይሻሻሉ!'
+        keepLearning: 'ይለማመዱ! ይሻሻሉ!',
+        genius: 'በጣም ጥሩ! እርስዎ ጎበዝ ነዎት!',
+        doingWell: 'በጣም ጥሩ! በጣም ደስ ይላል!',
+        notBad: 'ጥሩ አይደለም! ይለማመዱ!',
+        canDoBetter: 'ይማሩ! የበለጠ ማድረግ ይችላሉ!'
       },
       tryAgain: 'እንደገና ይሞክሩ',
       chooseAnotherSubject: 'ሌላ የትምህርት አይነት ይምረጡ'

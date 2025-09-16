@@ -17,6 +17,7 @@ import { ThemedText } from '../../components/ThemedText';
 import { ThemedView } from '../../components/ThemedView';
 import { IconSymbol } from '../../components/ui/IconSymbol';
 import { getMCQData, MCQData, Grade, Subject, Chapter, Question, Option, ExamType, getNationalExamQuestions, getNationalExamAvailable, NationalExamAPIResponse, getRegularMCQQuestions } from '../../services/mcqService';
+import ActivityTrackingService from '../../services/activityTrackingService';
 import PictureMCQScreen from '../screens/PictureMCQScreen';
 import PictureMCQInstructionScreen from '../screens/PictureMCQInstructionScreen';
 
@@ -358,10 +359,10 @@ export default function MCQScreen() {
   });
 
   const getMessage = () => {
-    if (percentage >= 90) return "Outstanding! You're a genius!";
-    if (percentage >= 70) return "Great job! You're doing well!";
-    if (percentage >= 50) return "Not bad! Keep practicing!";
-    return "Keep learning! You can do better!";
+    if (percentage >= 90) return t('mcq.results.message.genius');
+    if (percentage >= 70) return t('mcq.results.message.doingWell');
+    if (percentage >= 50) return t('mcq.results.message.notBad');
+    return t('mcq.results.message.canDoBetter');
   };
 
   const handleAnswerSelect = (answerId: string) => {
@@ -421,44 +422,35 @@ export default function MCQScreen() {
     }
   };
 
-  const handleResult = () => {
+  const handleResult = async () => {
     stopTimer();
     setShowResult(true);
     
-    // Track activity
-    const trackActivity = async () => {
-      try {
-        const activity: RecentActivity = {
-          type: 'mcq',
-          grade: selectedGrade?.id || '',
-          subject: selectedSubjectData?.name || '',
-          chapter: selectedChapterData?.name || '',
-          timestamp: Date.now(),
-          details: `Completed ${score} out of ${nationalExamQuestions.length} questions`
-        };
-        
-        // Get existing activities
-        const existingActivities = await AsyncStorage.getItem('recentActivities');
-        let activities: RecentActivity[] = [];
-        
-        if (existingActivities) {
-          activities = JSON.parse(existingActivities);
-        }
-        
-        // Add new activity and keep only last 20
-        activities.unshift(activity);
-        if (activities.length > 20) {
-          activities = activities.slice(0, 20);
-        }
-        
-        // Save updated activities
-        await AsyncStorage.setItem('recentActivities', JSON.stringify(activities));
-      } catch (error) {
-        // Silently fail - activity tracking is not critical
-      }
-    };
-    
-    trackActivity();
+    // Track activity using the new tracking service
+    try {
+      const trackingService = ActivityTrackingService.getInstance();
+      await trackingService.initialize();
+      
+      const totalQuestions = nationalExamQuestions.length;
+      const correctAnswers = score;
+      const timeSpent = time; // time in seconds
+      const scorePercentage = totalQuestions > 0 ? Math.round((correctAnswers / totalQuestions) * 100) : 0;
+      
+      await trackingService.trackMCQActivity({
+        grade: selectedGrade?.id || user?.grade || 'unknown',
+        subject: selectedSubjectData?.name || selectedSubject || 'unknown',
+        chapter: selectedChapterData?.name || selectedChapter,
+        examType: selectedExamType as 'national' | 'regular' | undefined,
+        year: selectedYear ? parseInt(selectedYear) : undefined,
+        questionsAnswered: totalQuestions,
+        correctAnswers: correctAnswers,
+        timeSpent: timeSpent,
+        score: scorePercentage,
+      });
+    } catch (error) {
+      console.error('Failed to track MCQ activity:', error);
+      // Silently fail - activity tracking is not critical
+    }
   };
 
   const handleRetry = () => {
@@ -840,7 +832,7 @@ export default function MCQScreen() {
               style={[styles.button, styles.retryButton, { backgroundColor: colors.tint, marginBottom: 12 }]}
               onPress={handleRetry}
             >
-              <ThemedText style={[styles.retryButtonText, { color: '#fff' }]}>Try Again</ThemedText>
+              <ThemedText style={[styles.retryButtonText, { color: '#fff' }]}>{t('mcq.results.tryAgain')}</ThemedText>
               <Ionicons name="refresh" size={24} color="#fff" />
             </TouchableOpacity>
             
@@ -854,7 +846,7 @@ export default function MCQScreen() {
                 fetchMCQData();
               }}
             >
-              <ThemedText style={[styles.homeButtonText, { color: colors.text }]}>Choose Another Subject</ThemedText>
+              <ThemedText style={[styles.homeButtonText, { color: colors.text }]}>{t('mcq.results.chooseAnotherSubject')}</ThemedText>
             </TouchableOpacity>
           </ThemedView>
         </ScrollView>
@@ -1394,7 +1386,7 @@ export default function MCQScreen() {
                 </View>
                 
                 <ThemedText style={[styles.scoreText, { color: colors.text }]}>
-                  {score}/{totalQuestions}
+                  {t('mcq.results.score', { score: score, total: totalQuestions })}
                 </ThemedText>
                 
                 <View style={[styles.percentageContainer, { backgroundColor: colors.cardAlt, borderColor: colors.border }]}>
@@ -1415,7 +1407,7 @@ export default function MCQScreen() {
                   style={[styles.button, styles.retryButton, { backgroundColor: colors.tint, marginBottom: 12 }]}
                   onPress={handleRetry}
                 >
-                  <ThemedText style={[styles.retryButtonText, { color: '#fff' }]}>Try Again</ThemedText>
+                  <ThemedText style={[styles.retryButtonText, { color: '#fff' }]}>{t('mcq.results.tryAgain')}</ThemedText>
                   <Ionicons name="refresh" size={24} color="#fff" />
                 </TouchableOpacity>
                 
@@ -1429,7 +1421,7 @@ export default function MCQScreen() {
                     fetchMCQData();
                   }}
                 >
-                  <ThemedText style={[styles.homeButtonText, { color: colors.text }]}>Choose Another Subject</ThemedText>
+                  <ThemedText style={[styles.homeButtonText, { color: colors.text }]}>{t('mcq.results.chooseAnotherSubject')}</ThemedText>
                 </TouchableOpacity>
               </ThemedView>
             </ScrollView>

@@ -127,6 +127,10 @@ export default {
   },
   reports: {
     title: 'Reports',
+    loading: 'Loading your progress...',
+    progressStats: {
+      title: 'Your Progress'
+    },
     overallProgress: {
       title: 'Overall Progress',
       topicsCompleted: 'Topics Completed',
@@ -176,14 +180,19 @@ export default {
     activityTypes: {
       quiz: 'Quiz',
       study: 'Study',
-      homework: 'Homework'
+      homework: 'Homework',
+      flashcard: 'Flashcards',
+      mcq: 'MCQ Quiz',
+      kg_question: 'KG Question',
+      picture_mcq: 'Picture Quiz'
     },
     status: {
       completed: 'Completed'
     },
     duration: '{{hours}}h',
     scoreFormat: '{{score}}%',
-    progressFormat: '{{progress}}% Completed'
+    progressFormat: '{{progress}}% Completed',
+    noData: 'Start learning to see your progress here!'
   },
   homework: {
     title: 'Homework Help',
@@ -454,7 +463,11 @@ export default {
         outstanding: 'Outstanding! You are a star!',
         great: 'Great job! Keep it up!',
         good: 'Good effort! You can do even better!',
-        keepLearning: 'Keep practicing! You will improve!'
+        keepLearning: 'Keep practicing! You will improve!',
+        genius: 'Outstanding! You\'re a genius!',
+        doingWell: 'Great job! You\'re doing well!',
+        notBad: 'Not bad! Keep practicing!',
+        canDoBetter: 'Keep learning! You can do better!'
       },
       tryAgain: 'Try Again',
       chooseAnotherSubject: 'Choose Another Subject'

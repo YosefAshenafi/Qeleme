@@ -22,6 +22,7 @@ import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 import { IconSymbol } from '@/components/ui/IconSymbol';
 import { getFlashcards, getFlashcardStructure, getFlashcardsForChapter, Grade, Subject, Chapter, Flashcard } from '@/services/flashcardService';
+import ActivityTrackingService from '@/services/activityTrackingService';
 
 interface RecentActivity {
   type: string;
@@ -61,6 +62,7 @@ export default function FlashcardsScreen() {
   const [error, setError] = useState<string | null>(null);
   const [currentFlashcards, setCurrentFlashcards] = useState<Flashcard[]>([]);
   const [hasAppliedPreSelection, setHasAppliedPreSelection] = useState(false);
+  const [sessionStartTime, setSessionStartTime] = useState<number | null>(null);
 
   const revealAnimation = useSharedValue(0);
   const progressAnimation = useSharedValue(0);
@@ -251,32 +253,42 @@ export default function FlashcardsScreen() {
       if (currentIndex + 1 === currentFlashcards.length - 1) {
         const trackActivity = async () => {
           try {
-            const activity: RecentActivity = {
-              type: 'flashcards',
-              grade: selectedGradeData?.name || '',
-              subject: selectedSubjectData?.name || '',
-              chapter: selectedChapterData?.name || '',
-              timestamp: Date.now(),
-              details: `Reviewed ${currentIndex + 1} out of ${currentFlashcards.length} flashcards`
-            };
+            const trackingService = ActivityTrackingService.getInstance();
+            await trackingService.initialize();
             
-            // Get existing activities
-            const existingActivities = await AsyncStorage.getItem('recentActivities');
-            let activities: RecentActivity[] = [];
+            const cardsReviewed = currentIndex + 1;
+            const cardsMastered = currentFlashcards.filter(card => card.isChecked).length;
+            const timeSpent = Date.now() - (sessionStartTime || Date.now()); // Approximate time spent
             
-            if (existingActivities) {
-              activities = JSON.parse(existingActivities);
-            }
+            // Get proper names for tracking
+            const gradeName = selectedGradeData?.name || selectedGrade || 'Unknown Grade';
+            const subjectName = selectedSubjectData?.name || selectedSubject || 'Unknown Subject';
+            const chapterName = selectedChapterData?.name || selectedChapter || 'Unknown Chapter';
             
-            // Add new activity and keep only last 20
-            activities.unshift(activity);
-            if (activities.length > 20) {
-              activities = activities.slice(0, 20);
-            }
+            console.log('Tracking flashcard activity:', {
+              grade: gradeName,
+              subject: subjectName,
+              chapter: chapterName,
+              cardsReviewed,
+              cardsMastered,
+              selectedGrade,
+              selectedSubject,
+              selectedChapter,
+              selectedGradeData: selectedGradeData?.name,
+              selectedSubjectData: selectedSubjectData?.name,
+              selectedChapterData: selectedChapterData?.name
+            });
             
-            // Save updated activities
-            await AsyncStorage.setItem('recentActivities', JSON.stringify(activities));
+            await trackingService.trackFlashcardActivity({
+              grade: gradeName,
+              subject: subjectName,
+              chapter: chapterName,
+              cardsReviewed: cardsReviewed,
+              cardsMastered: cardsMastered,
+              timeSpent: Math.round(timeSpent / 1000), // Convert to seconds
+            });
           } catch (error) {
+            console.error('Failed to track flashcard activity:', error);
             // Silently fail - activity tracking is not critical
           }
         };
@@ -330,6 +342,7 @@ export default function FlashcardsScreen() {
       
       // Set the current flashcards directly for immediate use
       setCurrentFlashcards(flashcards);
+      setSessionStartTime(Date.now()); // Start tracking session time
       
       // Update the state with the flashcards
       const updatedFlashcardsData = flashcardsData.map(g => {
