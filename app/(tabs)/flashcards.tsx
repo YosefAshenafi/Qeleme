@@ -428,10 +428,6 @@ export default function FlashcardsScreen() {
         <Header title={t('flashcards.title')} />
         <ThemedView style={[styles.container, { backgroundColor: colors.background }]}>
           <ThemedView style={[styles.formContainer, { backgroundColor: colors.background }]}>
-            <ThemedText style={[styles.formTitle, { color: colors.tint }]}>
-              {t('flashcards.selectSubjectAndChapter')}
-            </ThemedText>
-            
             <ThemedView style={[styles.formContent, { backgroundColor: colors.background }]}>
               {/* Subject Selection */}
               <ThemedView style={[styles.formGroup, { backgroundColor: colors.background }]}>

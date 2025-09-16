@@ -1,4 +1,4 @@
-import { Tabs, Redirect } from 'expo-router';
+import { Tabs, Redirect, usePathname } from 'expo-router';
 import React from 'react';
 import { Platform, TouchableOpacity, View, StyleSheet } from 'react-native';
 import { router } from 'expo-router';
@@ -17,6 +17,7 @@ export default function TabLayout() {
   const colors = getColors(isDarkMode);
   const { t } = useTranslation();
   const { user } = useAuth();
+  const pathname = usePathname();
 
   // Redirect KG students to KG dashboard
   if (typeof user?.grade === 'string' && user.grade.toLowerCase().includes('kg')) {
@@ -36,7 +37,7 @@ export default function TabLayout() {
         },
         headerRight: () => (
           <View style={[styles.headerRight, { marginTop: 10 }]}>
-            <LanguageToggle colors={colors} />
+            {pathname !== '/homework' && <LanguageToggle colors={colors} />}
             <TouchableOpacity 
               onPress={() => router.push('/profile')}
             >
