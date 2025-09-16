@@ -2,12 +2,14 @@ import React, { useState } from 'react';
 import { StyleSheet, TextInput, TouchableOpacity, View, TextInputProps } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '@/contexts/ThemeContext';
+import { ThemedText } from '@/components/ThemedText';
 
 interface PasswordInputProps {
   value: string;
   onChangeText: (text: string) => void;
   placeholder: string;
   error?: boolean;
+  errorMessage?: string;
   editable?: boolean;
   autoCapitalize?: TextInputProps['autoCapitalize'];
   autoCorrect?: boolean;
@@ -24,6 +26,7 @@ export const PasswordInput: React.FC<PasswordInputProps> = ({
   onChangeText,
   placeholder,
   error = false,
+  errorMessage,
   editable = true,
   autoCapitalize = 'none',
   autoCorrect = false,
@@ -42,51 +45,56 @@ export const PasswordInput: React.FC<PasswordInputProps> = ({
   };
 
   return (
-    <View style={[
-      styles.inputContainer,
-      error && styles.inputError,
-      { 
-        backgroundColor: isDarkMode ? '#2C2C2E' : '#F9FAFB',
-        borderColor: error ? '#EF4444' : (isDarkMode ? '#3C3C3E' : '#E5E7EB'),
-      },
-      style
-    ]}>
-      <Ionicons 
-        name="lock-closed-outline" 
-        size={20} 
-        color={isDarkMode ? '#A0A0A5' : '#6B7280'} 
-        style={styles.inputIcon} 
-      />
-      <TextInput
-        style={[
-          styles.input,
-          { color: isDarkMode ? '#FFFFFF' : '#1F2937' }
-        ]}
-        placeholder={placeholder}
-        placeholderTextColor={isDarkMode ? '#A0A0A5' : '#9CA3AF'}
-        value={value}
-        onChangeText={onChangeText}
-        secureTextEntry={!isPasswordVisible}
-        editable={editable}
-        autoCapitalize={autoCapitalize}
-        autoCorrect={autoCorrect}
-        textContentType={textContentType}
-        autoComplete={autoComplete}
-        spellCheck={spellCheck}
-        keyboardType={keyboardType}
-        keyboardAppearance={keyboardAppearance}
-      />
-      <TouchableOpacity
-        onPress={togglePasswordVisibility}
-        style={styles.eyeIconContainer}
-        activeOpacity={0.7}
-      >
-        <Ionicons
-          name={isPasswordVisible ? 'eye-off-outline' : 'eye-outline'}
-          size={20}
-          color={isDarkMode ? '#A0A0A5' : '#6B7280'}
+    <View>
+      <View style={[
+        styles.inputContainer,
+        error && styles.inputError,
+        { 
+          backgroundColor: isDarkMode ? '#2C2C2E' : '#F9FAFB',
+          borderColor: error ? '#EF4444' : (isDarkMode ? '#3C3C3E' : '#E5E7EB'),
+        },
+        style
+      ]}>
+        <Ionicons 
+          name="lock-closed-outline" 
+          size={20} 
+          color={isDarkMode ? '#A0A0A5' : '#6B7280'} 
+          style={styles.inputIcon} 
         />
-      </TouchableOpacity>
+        <TextInput
+          style={[
+            styles.input,
+            { color: isDarkMode ? '#FFFFFF' : '#1F2937' }
+          ]}
+          placeholder={placeholder}
+          placeholderTextColor={isDarkMode ? '#A0A0A5' : '#9CA3AF'}
+          value={value}
+          onChangeText={onChangeText}
+          secureTextEntry={!isPasswordVisible}
+          editable={editable}
+          autoCapitalize={autoCapitalize}
+          autoCorrect={autoCorrect}
+          textContentType={textContentType}
+          autoComplete={autoComplete}
+          spellCheck={spellCheck}
+          keyboardType={keyboardType}
+          keyboardAppearance={keyboardAppearance}
+        />
+        <TouchableOpacity
+          onPress={togglePasswordVisibility}
+          style={styles.eyeIconContainer}
+          activeOpacity={0.7}
+        >
+          <Ionicons
+            name={isPasswordVisible ? 'eye-off-outline' : 'eye-outline'}
+            size={20}
+            color={isDarkMode ? '#A0A0A5' : '#6B7280'}
+          />
+        </TouchableOpacity>
+      </View>
+      {errorMessage && (
+        <ThemedText style={[styles.errorText, { color: '#F44336' }]}>{errorMessage}</ThemedText>
+      )}
     </View>
   );
 };
@@ -117,5 +125,10 @@ const styles = StyleSheet.create({
   eyeIconContainer: {
     padding: 4,
     marginLeft: 8,
+  },
+  errorText: {
+    fontSize: 12,
+    marginTop: 4,
+    marginLeft: 4,
   },
 });

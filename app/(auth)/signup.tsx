@@ -53,6 +53,173 @@ export default function SignupScreen() {
   const [usernameValid, setUsernameValid] = useState<boolean | null>(null);
   const [usernameChecking, setUsernameChecking] = useState(false);
   const [usernameError, setUsernameError] = useState('');
+  const [validationErrors, setValidationErrors] = useState<{[key: string]: string}>({});
+
+  // Validation functions
+  const validateFullName = (name: string): string => {
+    if (!name || name.trim().length === 0) {
+      return t('signup.errors.fullNameRequired');
+    }
+    if (name.trim().length < 2) {
+      return t('signup.errors.fullNameMinLength');
+    }
+    // Check for valid characters (letters, spaces, and common punctuation)
+    const validNameRegex = /^[a-zA-Z\u1200-\u137F\s\-'\.]+$/;
+    if (!validNameRegex.test(name.trim())) {
+      return t('signup.errors.fullNameInvalid');
+    }
+    return '';
+  };
+
+  const validatePhoneNumber = (phone: string): string => {
+    if (!phone || phone.length === 0) {
+      return t('signup.errors.phoneRequired');
+    }
+    if (phone.length !== 9) {
+      return t('signup.errors.phoneInvalid');
+    }
+    if (!/^[0-9]{9}$/.test(phone)) {
+      return t('signup.errors.phoneInvalid');
+    }
+    // Check if it starts with valid Ethiopian mobile prefixes
+    const validPrefixes = ['9', '7', '8'];
+    if (!validPrefixes.includes(phone[0])) {
+      return t('signup.errors.phoneInvalidPrefix');
+    }
+    return '';
+  };
+
+  const validatePassword = (password: string): string => {
+    if (!password || password.length === 0) {
+      return t('signup.errors.passwordRequired');
+    }
+    if (password.length < 6) {
+      return t('signup.errors.passwordMinLength');
+    }
+    if (password.length > 50) {
+      return t('signup.errors.passwordMaxLength');
+    }
+    return '';
+  };
+
+  const validatePasswordConfirmation = (password: string, confirmPassword: string): string => {
+    if (!confirmPassword || confirmPassword.length === 0) {
+      return t('signup.errors.confirmPasswordRequired');
+    }
+    if (password !== confirmPassword) {
+      return t('signup.errors.passwordMismatch');
+    }
+    return '';
+  };
+
+  const validateUsername = (username: string): string => {
+    if (!username || username.length === 0) {
+      return t('signup.errors.usernameRequired');
+    }
+    if (username.length < 5) {
+      return t('signup.errors.usernameMinLength');
+    }
+    if (username.length > 20) {
+      return t('signup.errors.usernameMaxLength');
+    }
+    // Check for valid characters (letters, numbers, underscore, hyphen)
+    const validUsernameRegex = /^[a-zA-Z0-9_-]+$/;
+    if (!validUsernameRegex.test(username)) {
+      return t('signup.errors.usernameInvalid');
+    }
+    return '';
+  };
+
+  const validateGrade = (grade: Grade | ''): string => {
+    if (!grade) {
+      return t('signup.errors.gradeRequired');
+    }
+    return '';
+  };
+
+  const validateChildData = (child: ChildData, index: number): {[key: string]: string} => {
+    const errors: {[key: string]: string} = {};
+    
+    const fullNameError = validateFullName(child.fullName);
+    if (fullNameError) {
+      errors[`child${index}_fullName`] = fullNameError;
+    }
+
+    const usernameError = validateUsername(child.username);
+    if (usernameError) {
+      errors[`child${index}_username`] = usernameError;
+    }
+
+    const gradeError = validateGrade(child.grade);
+    if (gradeError) {
+      errors[`child${index}_grade`] = gradeError;
+    }
+
+    const passwordError = validatePassword(child.password);
+    if (passwordError) {
+      errors[`child${index}_password`] = passwordError;
+    }
+
+    const confirmPasswordError = validatePasswordConfirmation(child.password, child.confirmPassword);
+    if (confirmPasswordError) {
+      errors[`child${index}_confirmPassword`] = confirmPasswordError;
+    }
+
+    return errors;
+  };
+
+  const validateAllFields = (): {isValid: boolean, errors: {[key: string]: string}} => {
+    const errors: {[key: string]: string} = {};
+
+    // Validate main user fields
+    const fullNameError = validateFullName(fullName);
+    if (fullNameError) errors.fullName = fullNameError;
+
+    const phoneError = validatePhoneNumber(phoneNumber);
+    if (phoneError) errors.phoneNumber = phoneError;
+
+    const usernameError = validateUsername(username);
+    if (usernameError) errors.username = usernameError;
+
+    const passwordError = validatePassword(password);
+    if (passwordError) errors.password = passwordError;
+
+    const confirmPasswordError = validatePasswordConfirmation(password, confirmPassword);
+    if (confirmPasswordError) errors.confirmPassword = confirmPasswordError;
+
+    const gradeError = validateGrade(grade);
+    if (gradeError) errors.grade = gradeError;
+
+    // Validate children data if role is parent
+    if (role === 'parent') {
+      childrenData.forEach((child, index) => {
+        const childErrors = validateChildData(child, index);
+        Object.assign(errors, childErrors);
+      });
+    }
+
+    // Check if terms are accepted
+    if (!acceptTerms) {
+      errors.acceptTerms = t('signup.errors.acceptTerms');
+    }
+
+    // Check username availability
+    if (usernameValid === false) {
+      errors.username = t('signup.errors.usernameTaken');
+    }
+
+    // Check children usernames availability
+    childrenData.forEach((child, index) => {
+      if (child.usernameValid === false) {
+        errors[`child${index}_username`] = t('signup.errors.usernameTaken');
+      }
+    });
+
+    return {
+      isValid: Object.keys(errors).length === 0,
+      errors
+    };
+  };
 
   const handleGradeSelect = (value: string, childIndex?: number) => {
     if (childIndex !== undefined) {
@@ -185,8 +352,18 @@ export default function SignupScreen() {
   };
 
   const handleSignup = async () => {
-    // Reset error state
+    // Reset error states
     setError('');
+    setValidationErrors({});
+
+    // Validate all fields
+    const validation = validateAllFields();
+    
+    if (!validation.isValid) {
+      setValidationErrors(validation.errors);
+      setError(t('signup.errors.validationFailed'));
+      return;
+    }
 
     // Add country code to phone number for OTP service
     const fullPhoneNumber = `+251${phoneNumber}`;
@@ -217,7 +394,7 @@ export default function SignupScreen() {
         }
       });
     } catch (navigationError) {
-      setError('Failed to navigate to OTP screen. Please try again.');
+      setError(t('signup.errors.navigationFailed'));
     }
   };
 
@@ -266,7 +443,7 @@ export default function SignupScreen() {
                 <View style={styles.inputWrapper}>
                   <View style={[styles.inputContainer, {
                     backgroundColor: isDarkMode ? '#2C2C2E' : '#F9FAFB',
-                    borderColor: isDarkMode ? '#3C3C3E' : '#E5E7EB',
+                    borderColor: validationErrors.fullName ? '#F44336' : (isDarkMode ? '#3C3C3E' : '#E5E7EB'),
                   }]}>
                     <Ionicons name="person-outline" size={20} color={isDarkMode ? '#A0A0A5' : '#6B7280'} style={styles.inputIcon} />
                     <TextInput
@@ -277,10 +454,13 @@ export default function SignupScreen() {
                       onChangeText={handleFullNameChange}
                     />
                   </View>
+                  {validationErrors.fullName ? (
+                    <ThemedText style={[styles.errorText, { color: '#F44336' }]}>{validationErrors.fullName}</ThemedText>
+                  ) : null}
 
                   <View style={[styles.inputContainer, {
                     backgroundColor: isDarkMode ? '#2C2C2E' : '#F9FAFB',
-                    borderColor: isDarkMode ? '#3C3C3E' : '#E5E7EB',
+                    borderColor: (validationErrors.username || usernameError) ? '#F44336' : (isDarkMode ? '#3C3C3E' : '#E5E7EB'),
                   }]}>
                     <Ionicons name="at-outline" size={20} color={isDarkMode ? '#A0A0A5' : '#6B7280'} style={styles.inputIcon} />
                     <TextInput
@@ -306,13 +486,13 @@ export default function SignupScreen() {
                     )}
                   </View>
 
-                  {usernameError ? (
-                    <ThemedText style={[styles.errorText, { color: '#F44336' }]}>{usernameError}</ThemedText>
+                  {(validationErrors.username || usernameError) ? (
+                    <ThemedText style={[styles.errorText, { color: '#F44336' }]}>{validationErrors.username || usernameError}</ThemedText>
                   ) : null}
 
                   <View style={[styles.inputContainer, {
                     backgroundColor: isDarkMode ? '#2C2C2E' : '#F9FAFB',
-                    borderColor: isDarkMode ? '#3C3C3E' : '#E5E7EB',
+                    borderColor: validationErrors.phoneNumber ? '#F44336' : (isDarkMode ? '#3C3C3E' : '#E5E7EB'),
                   }]}>
                     <Ionicons name="call-outline" size={20} color={isDarkMode ? '#A0A0A5' : '#6B7280'} style={styles.inputIcon} />
                     <View style={styles.phoneInputContainer}>
@@ -332,6 +512,9 @@ export default function SignupScreen() {
                       />
                     </View>
                   </View>
+                  {validationErrors.phoneNumber ? (
+                    <ThemedText style={[styles.errorText, { color: '#F44336' }]}>{validationErrors.phoneNumber}</ThemedText>
+                  ) : null}
 
                   <PasswordInput
                     value={password}
@@ -341,6 +524,8 @@ export default function SignupScreen() {
                     textContentType="newPassword"
                     keyboardType="default"
                     keyboardAppearance={isDarkMode ? 'dark' : 'light'}
+                    error={!!validationErrors.password}
+                    errorMessage={validationErrors.password}
                   />
 
                   <PasswordInput
@@ -349,6 +534,8 @@ export default function SignupScreen() {
                     placeholder={t('signup.confirmPassword')}
                     autoCapitalize="none"
                     textContentType="newPassword"
+                    error={!!validationErrors.confirmPassword}
+                    errorMessage={validationErrors.confirmPassword}
                   />
 
                   {role === 'parent' && numberOfChildren >= 1 ? (
@@ -359,7 +546,7 @@ export default function SignupScreen() {
                         </ThemedText>
                         <View style={[styles.inputContainer, {
                           backgroundColor: isDarkMode ? '#2C2C2E' : '#F9FAFB',
-                          borderColor: isDarkMode ? '#3C3C3E' : '#E5E7EB',
+                          borderColor: validationErrors[`child${index}_fullName`] ? '#F44336' : (isDarkMode ? '#3C3C3E' : '#E5E7EB'),
                         }]}>
                           <Ionicons name="person-outline" size={20} color={isDarkMode ? '#A0A0A5' : '#6B7280'} style={styles.inputIcon} />
                           <TextInput
@@ -370,9 +557,12 @@ export default function SignupScreen() {
                             onChangeText={(text) => handleChildNameChange(text, index)}
                           />
                         </View>
+                        {validationErrors[`child${index}_fullName`] ? (
+                          <ThemedText style={[styles.errorText, { color: '#F44336' }]}>{validationErrors[`child${index}_fullName`]}</ThemedText>
+                        ) : null}
                         <View style={[styles.inputContainer, {
                           backgroundColor: isDarkMode ? '#2C2C2E' : '#F9FAFB',
-                          borderColor: isDarkMode ? '#3C3C3E' : '#E5E7EB',
+                          borderColor: validationErrors[`child${index}_username`] ? '#F44336' : (isDarkMode ? '#3C3C3E' : '#E5E7EB'),
                         }]}>
                           <Ionicons name="at-outline" size={20} color={isDarkMode ? '#A0A0A5' : '#6B7280'} style={styles.inputIcon} />
                           <TextInput
@@ -397,6 +587,9 @@ export default function SignupScreen() {
                             <Ionicons name="close-circle" size={20} color="#F44336" style={styles.inputIcon} />
                           )}
                         </View>
+                        {validationErrors[`child${index}_username`] ? (
+                          <ThemedText style={[styles.errorText, { color: '#F44336' }]}>{validationErrors[`child${index}_username`]}</ThemedText>
+                        ) : null}
                         <PasswordInput
                           value={child.password}
                           onChangeText={(text) => handleChildPasswordChange(text, index)}
@@ -406,6 +599,8 @@ export default function SignupScreen() {
                           textContentType="newPassword"
                           autoComplete="off"
                           spellCheck={false}
+                          error={!!validationErrors[`child${index}_password`]}
+                          errorMessage={validationErrors[`child${index}_password`]}
                         />
                         <PasswordInput
                           value={child.confirmPassword}
@@ -416,10 +611,12 @@ export default function SignupScreen() {
                           textContentType="newPassword"
                           autoComplete="off"
                           spellCheck={false}
+                          error={!!validationErrors[`child${index}_confirmPassword`]}
+                          errorMessage={validationErrors[`child${index}_confirmPassword`]}
                         />
                         <View style={[styles.inputContainer, {
                           backgroundColor: isDarkMode ? '#2C2C2E' : '#F9FAFB',
-                          borderColor: isDarkMode ? '#3C3C3E' : '#E5E7EB',
+                          borderColor: validationErrors[`child${index}_grade`] ? '#F44336' : (isDarkMode ? '#3C3C3E' : '#E5E7EB'),
                         }]}>
                           <Ionicons name="school-outline" size={20} color={isDarkMode ? '#A0A0A5' : '#6B7280'} style={styles.inputIcon} />
                           <TouchableOpacity 
@@ -432,12 +629,15 @@ export default function SignupScreen() {
                             <Ionicons name="chevron-down" size={20} color={isDarkMode ? '#A0A0A5' : '#6B7280'} />
                           </TouchableOpacity>
                         </View>
+                        {validationErrors[`child${index}_grade`] ? (
+                          <ThemedText style={[styles.errorText, { color: '#F44336' }]}>{validationErrors[`child${index}_grade`]}</ThemedText>
+                        ) : null}
                       </View>
                     ))
                   ) : role === 'student' ? (
                     <View style={[styles.inputContainer, {
                       backgroundColor: isDarkMode ? '#2C2C2E' : '#F9FAFB',
-                      borderColor: isDarkMode ? '#3C3C3E' : '#E5E7EB',
+                      borderColor: validationErrors.grade ? '#F44336' : (isDarkMode ? '#3C3C3E' : '#E5E7EB'),
                     }]}>
                       <Ionicons name="school-outline" size={20} color={isDarkMode ? '#A0A0A5' : '#6B7280'} style={styles.inputIcon} />
                       <TouchableOpacity 
@@ -450,6 +650,9 @@ export default function SignupScreen() {
                         <Ionicons name="chevron-down" size={20} color={isDarkMode ? '#A0A0A5' : '#6B7280'} />
                       </TouchableOpacity>
                     </View>
+                  ) : null}
+                  {validationErrors.grade ? (
+                    <ThemedText style={[styles.errorText, { color: '#F44336' }]}>{validationErrors.grade}</ThemedText>
                   ) : null}
                 </View>
 
@@ -473,6 +676,9 @@ export default function SignupScreen() {
                     </TouchableOpacity>
                   </View>
                 </View>
+                {validationErrors.acceptTerms ? (
+                  <ThemedText style={[styles.errorText, { color: '#F44336' }]}>{validationErrors.acceptTerms}</ThemedText>
+                ) : null}
 
                 <Modal
                   visible={showGradeModal}
