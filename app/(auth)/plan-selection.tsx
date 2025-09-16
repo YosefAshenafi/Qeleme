@@ -475,9 +475,6 @@ export default function PlanSelectionScreen() {
                 <LanguageToggle colors={colors} />
               </View>
               <ThemedText style={[styles.title, { color: colors.text }]}>{t('auth.planSelection.title')}</ThemedText>
-              <ThemedText style={[styles.subtitle, { color: colors.text + '80' }]}>
-                {t('auth.planSelection.subtitle')}
-              </ThemedText>
             </View>
 
             <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
@@ -711,9 +708,10 @@ const styles = StyleSheet.create({
     alignItems: 'flex-end',
   },
   planPrice: {
-    fontSize: 26,
+    fontSize: 28,
     fontWeight: '800',
     marginBottom: 6,
+    paddingTop: 10,
   },
   planDuration: {
     fontSize: 15,

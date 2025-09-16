@@ -203,9 +203,9 @@ export default {
       }
     },
     childrenSelection: {
-      title: 'ልጆችዎን ይጨምሩ',
+      title: 'ልጆችዎን ያስመዝግቡ',
       subtitle: 'ስንት ልጆች መመዝገብ ይፈልጋሉ?',
-      addChild: 'ልጅ ይጨምሩ',
+      addChild: 'ልጅ ያስመዝግቡ',
       child1: 'ልጅ 1',
       child2: 'ልጅ 2',
       child3: 'ልጅ 3',
