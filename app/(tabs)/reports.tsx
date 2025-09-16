@@ -295,81 +295,6 @@ export default function ReportsScreen() {
                 </ThemedView>
               )}
 
-              {/* Overall Progress Card - Only show if there's actual progress */}
-              {userStats.totalQuestionsAnswered > 0 && (
-                <ThemedView style={[styles.card, { backgroundColor: colors.background }]}>
-                  <LinearGradient
-                    colors={gradients.purple}
-                    style={styles.cardGradient}
-                    start={{ x: 0, y: 0 }}
-                    end={{ x: 1, y: 1 }}
-                  >
-                    <View style={styles.cardHeader}>
-                      <View style={[styles.iconContainer, { backgroundColor: 'rgba(255, 255, 255, 0.2)' }]}>
-                        <IconSymbol name="message" size={24} color="#fff" />
-                      </View>
-                      <ThemedText style={styles.cardTitle}>{t('reports.overallProgress.title')}</ThemedText>
-                    </View>
-                    <View style={styles.progressContent}>
-                      <ThemedText style={styles.progressPercentage}>
-                        {`${reportData.overallProgress.percentage}%`}
-                      </ThemedText>
-                      <View style={styles.progressStats}>
-                        <View style={styles.statItem}>
-                          <ThemedText style={styles.statValue}>
-                            {`${reportData.overallProgress.completedTopics}/${reportData.overallProgress.totalTopics} ${t('reports.overallProgress.topicsCompleted')}`}
-                          </ThemedText>
-                          <ThemedText style={styles.statLabel}>
-                            {`${reportData.overallProgress.studyHours} ${t('reports.overallProgress.studyHours')}`}
-                          </ThemedText>
-                        </View>
-                      </View>
-                    </View>
-                  </LinearGradient>
-                </ThemedView>
-              )}
-
-              {/* Performance Metrics - Only show if there are completed quizzes */}
-              {userStats.activityTypeBreakdown.mcq.count > 0 && (
-                <ThemedView style={[styles.card, { backgroundColor: colors.background }]}>
-                  <LinearGradient
-                    colors={gradients.green}
-                    style={styles.cardGradient}
-                    start={{ x: 0, y: 0 }}
-                    end={{ x: 1, y: 1 }}
-                  >
-                    <View style={styles.cardHeader}>
-                      <View style={[styles.iconContainer, { backgroundColor: 'rgba(255, 255, 255, 0.2)' }]}>
-                        <IconSymbol name="message.fill" size={24} color="#fff" />
-                      </View>
-                      <ThemedText style={styles.cardTitle}>{t('reports.performance.title')}</ThemedText>
-                    </View>
-                    <View style={styles.progressContent}>
-                      <ThemedText style={styles.progressPercentage}>
-                        {`${reportData.performance.averageScore}%`}
-                      </ThemedText>
-                      <View style={styles.progressStats}>
-                        <View style={styles.statItem}>
-                          <ThemedText style={styles.statValue}>
-                            {`${reportData.performance.quizzesTaken} ${t('reports.performance.quizzesTaken')}`}
-                          </ThemedText>
-                          <ThemedText style={styles.statLabel}>
-                            {`${reportData.performance.successRate}% ${t('reports.performance.successRate')}`}
-                          </ThemedText>
-                        </View>
-                        <View style={styles.statItem}>
-                          <ThemedText style={styles.statValue}>
-                            {reportData.performance.improvement}
-                          </ThemedText>
-                          <ThemedText style={styles.statLabel}>
-                            {t('reports.performance.improvement')}
-                          </ThemedText>
-                        </View>
-                      </View>
-                    </View>
-                  </LinearGradient>
-                </ThemedView>
-              )}
 
               {/* Learning Streak - Only show if there's actual streak data */}
               {userStats.currentStreak > 0 && (
@@ -447,6 +372,28 @@ export default function ReportsScreen() {
                   ))}
                 </ThemedView>
               )}
+
+              {/* Coming Soon Message - Always visible */}
+              <ThemedView style={[styles.card, { backgroundColor: colors.background }]}>
+                <LinearGradient
+                  colors={gradients.purple}
+                  style={styles.cardGradient}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 1 }}
+                >
+                  <View style={styles.cardHeader}>
+                    <View style={[styles.iconContainer, { backgroundColor: 'rgba(255, 255, 255, 0.2)' }]}>
+                      <IconSymbol name="clock.fill" size={24} color="#fff" />
+                    </View>
+                    <ThemedText style={styles.cardTitle}>{t('reports.comingSoon')}</ThemedText>
+                  </View>
+                  <View style={styles.progressContent}>
+                    <ThemedText style={[styles.comingSoonText, { color: '#fff' }]}>
+                      {t('reports.comingSoonDescription')}
+                    </ThemedText>
+                  </View>
+                </LinearGradient>
+              </ThemedView>
 
               {/* Show message if no data available */}
               {userStats.totalActivities === 0 && userStats.totalStudyTime === 0 && (
@@ -672,5 +619,11 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     opacity: 0.7,
     lineHeight: 24,
+  },
+  comingSoonText: {
+    fontSize: 16,
+    textAlign: 'center',
+    lineHeight: 24,
+    opacity: 0.9,
   },
 }); 

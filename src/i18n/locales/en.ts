@@ -192,7 +192,9 @@ export default {
     duration: '{{hours}}h',
     scoreFormat: '{{score}}%',
     progressFormat: '{{progress}}% Completed',
-    noData: 'Start learning to see your progress here!'
+    noData: 'Start learning to see your progress here!',
+    comingSoon: 'More reports coming soon!',
+    comingSoonDescription: 'We are working on additional analytics and insights for your learning journey.'
   },
   homework: {
     title: 'Homework Help',

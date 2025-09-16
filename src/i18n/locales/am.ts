@@ -389,7 +389,9 @@ export default {
     duration: '{{hours}}ሰ',
     scoreFormat: '{{score}}%',
     progressFormat: '{{progress}}% ተጠናቅቋል',
-    noData: 'የእድገትዎን ለማየት መማር ይጀምሩ!'
+    noData: 'የእድገትዎን ለማየት መማር ይጀምሩ!',
+    comingSoon: 'ተጨማሪ ሪፖርቶች በመሰራት ላይ!',
+    comingSoonDescription: 'ለእርስዎ የትምህርት ጉዞ ተጨማሪ ትንታኔዎችን እና ሪፖርቶችን በቅርቡ ይጠብቁ።'
   },
   common: {
     error: 'ችግር',
