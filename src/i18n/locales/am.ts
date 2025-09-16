@@ -467,6 +467,15 @@ export default {
       chooseAnotherSubject: 'ሌላ የትምህርት አይነት ይምረጡ'
     },
     selectAnswer: 'እባክዎ ከመቀጠልዎ በፊት መልስ ይምረጡ',
+    noSubjectsFound: {
+      title: 'ለክፍልዎ የትምህርት አይነቶች አልተገኙም',
+      description: 'ለ{{gradeName}} ክፍል የትምህርት አይነቶች ማግኘት አልቻልንም። ይህ ሊሆን የቻለው:',
+      reasons: {
+        accountUpdate: 'መለያዎ በትክክለኛው ክፍል ሊስተካከል ይፈልጋል',
+        serverUnavailable: 'አገልግሎቱ በጊዜያዊ ሁኔታ አይገኝም',
+        contentBeingAdded: 'ለክፍልዎ ይዘት አሁንም በመጨመር ላይ ነው'
+      }
+    }
   },
   flashcards: {
     title: "ፍላሽ ካርዶች",

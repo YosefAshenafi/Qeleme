@@ -475,6 +475,15 @@ export default {
       chooseAnotherSubject: 'Choose Another Subject'
     },
     selectAnswer: 'Please select an answer before proceeding',
+    noSubjectsFound: {
+      title: 'No subjects found for your grade',
+      description: 'We couldn\'t find any subjects for grade {{gradeName}}. This could be because:',
+      reasons: {
+        accountUpdate: 'Your account might need to be updated with the correct grade',
+        serverUnavailable: 'The server is temporarily unavailable',
+        contentBeingAdded: 'Content for your grade is still being added'
+      }
+    }
   },
   flashcards: {
     title: "Flashcards",

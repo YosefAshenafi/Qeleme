@@ -698,26 +698,26 @@ export default function MCQScreen() {
           <View style={{ alignItems: 'center', marginBottom: 20 }}>
             <Ionicons name="warning-outline" size={60} color={colors.warning} />
             <ThemedText style={{ color: colors.error, fontWeight: 'bold', fontSize: 18, marginTop: 10, textAlign: 'center' }}>
-              No subjects found for your grade
+              {t('mcq.noSubjectsFound.title')}
             </ThemedText>
           </View>
           
           <ThemedText style={{ color: colors.text, marginBottom: 20, textAlign: 'center', lineHeight: 22 }}>
-            We couldn't find any subjects for grade {selectedGradeData?.name}. This could be because:
+            {t('mcq.noSubjectsFound.description', { gradeName: selectedGradeData?.name })}
           </ThemedText>
           
           <View style={{ marginBottom: 20, paddingHorizontal: 10 }}>
             <View style={{ flexDirection: 'row', marginBottom: 10 }}>
               <ThemedText style={{ color: colors.text, marginRight: 5 }}>•</ThemedText>
-              <ThemedText style={{ color: colors.text, flex: 1 }}>Your account might need to be updated with the correct grade</ThemedText>
+              <ThemedText style={{ color: colors.text, flex: 1 }}>{t('mcq.noSubjectsFound.reasons.accountUpdate')}</ThemedText>
             </View>
             <View style={{ flexDirection: 'row', marginBottom: 10 }}>
               <ThemedText style={{ color: colors.text, marginRight: 5 }}>•</ThemedText>
-              <ThemedText style={{ color: colors.text, flex: 1 }}>The server is temporarily unavailable</ThemedText>
+              <ThemedText style={{ color: colors.text, flex: 1 }}>{t('mcq.noSubjectsFound.reasons.serverUnavailable')}</ThemedText>
             </View>
             <View style={{ flexDirection: 'row', marginBottom: 10 }}>
               <ThemedText style={{ color: colors.text, marginRight: 5 }}>•</ThemedText>
-              <ThemedText style={{ color: colors.text, flex: 1 }}>Content for your grade is still being added</ThemedText>
+              <ThemedText style={{ color: colors.text, flex: 1 }}>{t('mcq.noSubjectsFound.reasons.contentBeingAdded')}</ThemedText>
             </View>
           </View>
           
