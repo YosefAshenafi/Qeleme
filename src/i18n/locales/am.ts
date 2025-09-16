@@ -504,7 +504,6 @@ export default {
     }
   },
   profile: {
-    title: 'መገለጫ',
     stats: {
       mcqsCompleted: 'የተጠናቀቁ ምርጫዎች',
       flashcardsClicked: 'የተጫኑ ፍላሽ ካርዶች',
@@ -532,6 +531,20 @@ export default {
     joinDateValue: 'ጥር 2024',
     englishName: 'ዮሴፍ አሸናፊ',
     email: 'yosefashenafi7@gmail.com',
+    accountSettingsLabels: {
+      fullName: 'ሙሉ ስም',
+      username: 'መለያ ስም',
+      role: 'ሚና',
+      grade: 'ክፍል',
+      joined: 'የተቀላቀሉት',
+      paymentPlan: 'የክፍያ እቅድ'
+    },
+    save: 'አስቀምጥ',
+    edit: 'አርትዑ',
+    title: 'ቅንብሮች',
+    about: 'ስለ ቀለም',
+    aboutInfo: 'ቀለም በመስተጣበቅ የተማሪዎችን ትምህርት ለማሻሻል የተቀየረ የትምህርት መድረክ ነው። በመስተጣበቅ የተሞላ ይዘት፣ የተገላገለ ልምዶች እና የተሟላ የሂደት መከታተያ በኩል ትምህርትን ለማሻሻል የተቀየረ ነው።',
+    version: 'የመተግበሪያ ሥሪት'
   },
   auth: {
     errors: {

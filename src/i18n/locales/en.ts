@@ -266,6 +266,20 @@ export default {
       homeworkQuestions: 'Homework Questions',
       studyHours: 'Study Hours',
     },
+    accountSettingsLabels: {
+      fullName: 'Full Name',
+      username: 'Username',
+      role: 'Role',
+      grade: 'Grade',
+      joined: 'Joined',
+      paymentPlan: 'Payment Plan'
+    },
+    save: 'Save',
+    edit: 'Edit',
+    title: 'Settings',
+    about: 'About Qelem',
+    aboutInfo: 'Qelem is an innovative educational platform designed to enhance learning through interactive content, personalized experiences, and comprehensive progress tracking.',
+    version: 'App Version'
   },
   auth: {
     errors: {

@@ -201,23 +201,23 @@ export default function ProfileScreen() {
       content: <ThemeChooser colors={colors} />
     },
     { 
-      title: t('profile.about', { defaultValue: 'About Qelem' }),
+      title: t('profile.about'),
       icon: 'info.circle.fill' as const,
       action: () => {
         Alert.alert(
-          t('profile.about', { defaultValue: 'About Qelem' }),
-          t('profile.aboutInfo', { defaultValue: 'Qelem is an innovative educational platform designed to enhance learning through interactive content, personalized experiences, and comprehensive progress tracking.' })
+          'About Qelem',
+          'Qelem is an innovative educational platform designed to enhance learning through interactive content, personalized experiences, and comprehensive progress tracking.'
         );
       }
     },
     { 
-      title: t('profile.version', { defaultValue: 'App Version' }),
+      title: t('profile.version'),
       icon: 'app.badge' as const,
       subtitle: Constants.expoConfig?.version || '1.0.0',
       showChevron: false,
       action: () => {
         Alert.alert(
-          t('profile.version', { defaultValue: 'App Version' }),
+          t('profile.version'),
           `Version ${Constants.expoConfig?.version || '1.0.0'}`
         );
       }
@@ -265,7 +265,7 @@ export default function ProfileScreen() {
         </TouchableOpacity>
         <View style={styles.headerCenter}>
           <Text style={[styles.headerTitle, { color: colors.background }]}>
-            {t('profile.title', { defaultValue: 'Settings' })}
+            {t('profile.title')}
           </Text>
         </View>
         <View style={styles.headerRight}>
