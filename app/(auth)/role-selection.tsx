@@ -78,9 +78,6 @@ export default function RoleSelectionScreen() {
               <ThemedText style={[styles.title, { color: colors.text }]}>
                 {t('signup.roleSelection.title')}
               </ThemedText>
-              <ThemedText style={[styles.subtitle, { color: colors.text + '80' }]}>
-                {t('signup.roleSelection.subtitle')}
-              </ThemedText>
             </View>
           </View>
 
@@ -252,10 +249,11 @@ const styles = StyleSheet.create({
   roleCard: {
     padding: 24,
     borderRadius: 20,
-    borderWidth: 1,
+    borderWidth: 3,
     flexDirection: 'row',
     gap: 20,
     backgroundColor: '#FFFFFF',
+    borderColor: '#E5E7EB',
   },
   roleIconContainer: {
     width: 80,

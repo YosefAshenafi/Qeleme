@@ -179,7 +179,6 @@ export default function PaymentScreen() {
 
     } catch (error: any) {
       console.error('Registration error:', error);
-      Alert.alert(t('common.error'), t('auth.errors.registrationFailed'));
     }
   };
 

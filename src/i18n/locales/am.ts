@@ -152,7 +152,7 @@ export default {
   },
   login: {
     welcome: 'እንኳን በደህና መጡ',
-    subtitle: 'አእምሮዎን በእያንዳንዱ ትምህርት ያጠናክሩ',
+    subtitle: 'አእምሮዎን በእያንዳንዱ ትምህርት ያበለጽጉ!',
     username: {
       label: 'መለያ ስም',
       placeholder: 'መለያ ስምዎን ያስገቡ',
@@ -179,26 +179,26 @@ export default {
   },
   signup: {
     title: 'አካውንት ይፍጠሩ',
-    subtitle: 'የእኛን ማህበረሰብ ይቀላቀሉ',
+    subtitle: 'ቀለምን ይቀላቀሉ',
     roleSelection: {
-      title: 'እርሶ ማንዎት?',
+      title: 'ይመዝገቡ',
       subtitle: 'በቀለም እንዴት መጠቀም እንደሚፈልጉ ይምረጡ',
       student: {
         title: 'ተማሪ',
         description: 'መማር እና መለማመድ እፈልጋለሁ',
         features: {
-          materials: 'የጥናት ቁሳቁሶችን ይድረሱ',
+          materials: 'የጥናት አጋዦችን ያግኙ!',
           practice: 'ጥያቄዎችን ይለማመዱ',
-          progress: 'የጥናት እድገት ይከታተሉ'
+          progress: 'የጥናት እድገትዎን ይከታተሉ'
         }
       },
       parent: {
         title: 'ወላጅ',
         description: 'የልጆቼን መማር መከታተል እፈልጋለሁ',
         features: {
-          monitor: 'የጥናት እድገት ይከታተሉ',
-          manage: 'ልጆችን ይመራሉ',
-          updates: 'የዛሬ ዜና ያግኙ'
+          monitor: 'የጥናት እድገታቸውን ይከታተሉ',
+          manage: 'ልጆችዎን ይከታተሉ',
+          updates: 'አዳዲስ መረጃዎችን ይከታተሉ'
         }
       }
     },

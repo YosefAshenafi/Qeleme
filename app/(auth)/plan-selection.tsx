@@ -306,10 +306,7 @@ export default function PlanSelectionScreen() {
       }
 
     } catch (error) {
-      Alert.alert(
-        t('common.error'),
-        error instanceof Error ? error.message : t('auth.errors.registrationFailed')
-      );
+      console.error('Payment failed:', error);
     } finally {
       // Clear loading state
       setIsProcessingPayment(false);

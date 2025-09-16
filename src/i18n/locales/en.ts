@@ -496,9 +496,9 @@ export default {
   },
   signup: {
     title: 'Create Account',
-    subtitle: 'Join our community',
+    subtitle: 'Join Qelem',
     roleSelection: {
-      title: 'Select Your Role',
+      title: 'Register',
       subtitle: 'Choose how you want to use Qelem',
       student: {
         title: 'Student',
