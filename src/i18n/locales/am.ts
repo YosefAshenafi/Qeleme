@@ -11,13 +11,13 @@ export default {
   },
   home: {
     welcome: 'እንኳን ደህና መጡ {{name}}!',
-    subtitle: 'ዛሬ አዲስ ነገር እንማር!',
+    subtitle: 'ዛሬ አዲስ ነገር ለመማር ዝግጁ ኖት?',
     noActivity: 'ምንም የቅርብ እንቅስቃሴ የለም። መማር ይጀምሩ!',
     goto: 'ወደ መግቢያ ይመለሱ',
     quickActions: {
       title: 'ፈጣን እርምጃዎች',
       mcq: {
-        title: 'ምርጫ ልምምድ',
+        title: 'የምርጫ ጥያቄዎች',
         subtitle: 'ዕወቀትዎን ይለኩ!'
       },
       flashcards: {
@@ -92,7 +92,7 @@ export default {
       completed: 'ተጠናቅቋል',
       inProgress: 'በሂደት ላይ',
       grade: 'ደረጃ',
-      subject: 'መጽሀፍ',
+      subject: 'የትምህርት አይነት',
       chapter: 'ምዕራፍ',
       duration: '{hours}ሰ',
       questions: {
@@ -264,7 +264,7 @@ export default {
   },
   kg: {
     welcome: 'እንኳን ደህና መጡ {{name}}!',
-    subtitle: 'ዛሬ አዲስ ነገር እንማር!',
+    subtitle: 'ዛሬ አዲስ ነገር ለመማር ዝግጁ ኖት?',
     categories: {
       // Fallback categories
       'Animals': 'እንስሳት',
@@ -292,7 +292,7 @@ export default {
       'Foods': 'ምግቦች'
     },
     instructions: {
-      subtitle: 'አዲስ ነገር እንማር!',
+      subtitle: 'አዲስ ነገር ለመማር ዝግጁ ኖት?',
       look: {
         title: 'በጥንቃቄ ተመልከት',
         description: 'ለምስሎቹ ጊዜ ይውሰዱ እና ምን እንደሚያሳዩ ይረዱ።'
@@ -394,12 +394,12 @@ export default {
   mcq: {
     question: 'ጥያቄ',
     title: 'ምርጫ',
-    selectSubject: 'መጽሀፍ እና ምዕራፍ ይምረጡ',
-    subject: 'መጽሀፍ',
+    selectSubject: 'የትምህርት አይነት ይምረጡ',
+    subject: 'የትምህርት አይነት',
     chapter: 'ምዕራፍ',
     selectChapter: 'ምዕራፍ ይምረጡ',
-    selectSubjectAndChapter: 'መጽሀፍ እና ምዕራፍ ይምረጡ',
-    selectSubjectPlaceholder: 'መጽሀፍ ይምረጡ',
+    selectSubjectAndChapter: 'የትምህርት አይነት እና ምዕራፍ ይምረጡ',
+    selectSubjectPlaceholder: 'የትምህርት አይነት ይምረጡ',
     selectChapterPlaceholder: 'ምዕራፍ ይምረጡ',
     selectExamType: 'የፈተና አይነት ይምረጡ',
     nationalExam: 'የብሄራዊ ፈተና ጥያቄዎች',
@@ -449,15 +449,15 @@ export default {
         keepLearning: 'ይለማመዱ! ይሻሻሉ!'
       },
       tryAgain: 'እንደገና ይሞክሩ',
-      chooseAnotherSubject: 'ሌላ መጽሀፍ ይምረጡ'
+      chooseAnotherSubject: 'ሌላ የትምህርት አይነት ይምረጡ'
     },
     selectAnswer: 'እባክዎ ከመቀጠልዎ በፊት መልስ ይምረጡ',
   },
   flashcards: {
     title: "ፍላሽ ካርዶች",
-    selectSubjectAndChapter: "መጽሐፍ እና ምዕራፍ ይምረጡ",
-    subject: "መጽሀፍ",
-    selectSubject: "መጽሀፍ ይምረጡ",
+    selectSubjectAndChapter: "የትምህርት አይነት እና ምዕራፍ ይምረጡ",
+    subject: "የትምህርት አይነት",
+    selectSubject: "የትምህርት አይነት ይምረጡ",
     chapter: "ምዕራፍ",
     selectChapter: "ምዕራፍ ይምረጡ",
     startFlashcards: "ፍላሽ ካርዶች ይጀምሩ",
