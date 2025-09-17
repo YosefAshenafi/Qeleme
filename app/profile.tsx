@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Animated, RefreshControl, Alert, Linking } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Animated, RefreshControl, Alert, Linking, Image } from 'react-native';
 import { useColorScheme } from '../hooks/useColorScheme';
 import { Colors } from '../constants/Colors';
 import { IconSymbol, IconSymbolName } from '../components/ui/IconSymbol';
@@ -264,11 +264,13 @@ export default function ProfileScreen() {
           <IconSymbol name="chevron.right" size={24} color={colors.background} style={{ transform: [{ rotate: '180deg' }] }} />
         </TouchableOpacity>
         <View style={styles.headerCenter}>
-          <Text style={[styles.headerTitle, { color: colors.background }]}>
-            {t('profile.title')}
-          </Text>
+          <Image
+            source={require('../assets/images/logo/theme-logo.png')}
+            style={styles.logo}
+            resizeMode="contain"
+          />
         </View>
-        <View style={styles.headerRight}>
+        <View style={[styles.headerRight, { paddingBottom: 10 }]}>
           <LanguageToggle colors={{ card: colors.background, text: colors.tint }} />
         </View>
       </View>
@@ -387,6 +389,10 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     marginHorizontal: 20,
+  },
+  logo: {
+    width: 150,
+    height: 40,
   },
   headerTitle: {
     fontSize: 20,

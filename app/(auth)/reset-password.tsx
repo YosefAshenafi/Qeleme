@@ -89,7 +89,10 @@ export default function ResetPasswordScreen() {
           >
             <View style={styles.header}>
               <Image 
-                source={require('@/assets/images/logo.png')}
+                source={isDarkMode 
+                  ? require('@/assets/images/logo/logo-white.png')
+                  : require('@/assets/images/logo/logo-dark.png')
+                }
                 style={styles.logoImage}
                 resizeMode="contain"
               />

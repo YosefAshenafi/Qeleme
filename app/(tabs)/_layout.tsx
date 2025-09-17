@@ -1,6 +1,6 @@
 import { Tabs, Redirect, usePathname } from 'expo-router';
 import React from 'react';
-import { Platform, TouchableOpacity, View, StyleSheet } from 'react-native';
+import { Platform, TouchableOpacity, View, StyleSheet, Image } from 'react-native';
 import { router } from 'expo-router';
 import { BlurView } from 'expo-blur';
 import { useTranslation } from 'react-i18next';
@@ -27,25 +27,34 @@ export default function TabLayout() {
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: colors.tint,
-        tabBarInactiveTintColor: colors.tabIconDefault,
+        tabBarActiveTintColor: colors.background,
+        tabBarInactiveTintColor: colors.background + 'CC',
         headerShown: true,
         headerTitle: '',
         headerShadowVisible: false,
         headerStyle: {
-          backgroundColor: colors.background,
+          backgroundColor: colors.tint,
         },
+        headerLeft: () => (
+          <View style={styles.headerLeft}>
+            <Image
+              source={require('../../assets/images/logo/white-logo.png')}
+              style={styles.logo}
+              resizeMode="contain"
+            />
+          </View>
+        ),
         headerRight: () => (
-          <View style={[styles.headerRight, { marginTop: 10 }]}>
-            {pathname !== '/homework' && <LanguageToggle colors={colors} />}
+          <View style={[styles.headerRight, { paddingTop: 10, paddingBottom: 10 }]}>
+            {pathname !== '/homework' && <LanguageToggle colors={{ card: 'transparent', text: colors.background }} />}
             <TouchableOpacity 
               onPress={() => router.push('/profile')}
             >
-              <View style={[styles.profileIconContainer, { backgroundColor: colors.tint + '20' }]}>
+              <View style={[styles.profileIconContainer, { backgroundColor: colors.background + '20' }]}>
                 <IconSymbol 
                   name="person.fill" 
                   size={24} 
-                  color={colors.tint} 
+                  color={colors.background} 
                 />
               </View>
             </TouchableOpacity>
@@ -53,20 +62,17 @@ export default function TabLayout() {
         ),
         tabBarButton: HapticTab,
         tabBarBackground: () => (
-          <BlurView
-            tint={isDarkMode ? 'dark' : 'light'}
-            intensity={100}
-            style={[StyleSheet.absoluteFill, { backgroundColor: isDarkMode ? 'rgba(0,0,0,0.8)' : 'rgba(255,255,255,0.8)' }]}
-          />
+          <View style={[StyleSheet.absoluteFill, { backgroundColor: colors.tint }]} />
         ),
         tabBarStyle: {
-          backgroundColor: isDarkMode ? colors.background : colors.background,
-          borderTopColor: isDarkMode ? colors.card : colors.card,
-          borderTopWidth: 1,
+          backgroundColor: colors.tint,
+          borderTopColor: colors.background,
+          borderTopWidth: 2,
           position: 'absolute',
           elevation: 0,
-          height: 85,
+          height: 90,
           paddingBottom: 20,
+          paddingTop: 12,
         },
       }}>
       <Tabs.Screen
@@ -74,11 +80,13 @@ export default function TabLayout() {
         options={{
           title: t('navigation.tabs.home'),
           tabBarIcon: ({ color, focused }) => (
-            <IconSymbol 
-              size={28} 
-              name={focused ? "house.fill" : "house"} 
-              color={color} 
-            />
+            <View style={[styles.tabIconContainer, focused && { backgroundColor: colors.background + '20' }]}>
+              <IconSymbol 
+                size={focused ? 30 : 26} 
+                name={focused ? "house.fill" : "house"} 
+                color={focused ? colors.background : colors.background + 'CC'} 
+              />
+            </View>
           ),
         }}
       />
@@ -87,11 +95,13 @@ export default function TabLayout() {
         options={{
           title: t('navigation.tabs.mcq'),
           tabBarIcon: ({ color, focused }) => (
-            <IconSymbol 
-              size={28} 
-              name={focused ? "questionmark.circle.fill" : "questionmark.circle"} 
-              color={color} 
-            />
+            <View style={[styles.tabIconContainer, focused && { backgroundColor: colors.background + '20' }]}>
+              <IconSymbol 
+                size={focused ? 30 : 26} 
+                name={focused ? "questionmark.circle.fill" : "questionmark.circle"} 
+                color={focused ? colors.background : colors.background + 'CC'} 
+              />
+            </View>
           ),
         }}
       />
@@ -100,11 +110,13 @@ export default function TabLayout() {
         options={{
           title: t('navigation.tabs.flashcards'),
           tabBarIcon: ({ color, focused }) => (
-            <IconSymbol 
-              size={28} 
-              name={focused ? "rectangle.stack.fill" : "rectangle.stack"} 
-              color={color} 
-            />
+            <View style={[styles.tabIconContainer, focused && { backgroundColor: colors.background + '20' }]}>
+              <IconSymbol 
+                size={focused ? 30 : 26} 
+                name={focused ? "rectangle.stack.fill" : "rectangle.stack"} 
+                color={focused ? colors.background : colors.background + 'CC'} 
+              />
+            </View>
           ),
         }}
       />
@@ -113,11 +125,13 @@ export default function TabLayout() {
         options={{
           title: t('navigation.tabs.homework'),
           tabBarIcon: ({ color, focused }) => (
-            <IconSymbol 
-              size={28} 
-              name={focused ? "message.fill" : "message"} 
-              color={color} 
-            />
+            <View style={[styles.tabIconContainer, focused && { backgroundColor: colors.background + '20' }]}>
+              <IconSymbol 
+                size={focused ? 30 : 26} 
+                name={focused ? "message.fill" : "message"} 
+                color={focused ? colors.background : colors.background + 'CC'} 
+              />
+            </View>
           ),
         }}
       />
@@ -126,11 +140,13 @@ export default function TabLayout() {
         options={{
           title: t('navigation.tabs.reports'),
           tabBarIcon: ({ color, focused }) => (
-            <IconSymbol 
-              size={28} 
-              name={focused ? "chart.bar.fill" : "chart.bar"} 
-              color={color} 
-            />
+            <View style={[styles.tabIconContainer, focused && { backgroundColor: colors.background + '20' }]}>
+              <IconSymbol 
+                size={focused ? 30 : 26} 
+                name={focused ? "chart.bar.fill" : "chart.bar"} 
+                color={focused ? colors.background : colors.background + 'CC'} 
+              />
+            </View>
           ),
         }}
       />
@@ -139,6 +155,16 @@ export default function TabLayout() {
 }
 
 const styles = StyleSheet.create({
+  headerLeft: {
+    marginLeft: 15,
+    marginTop: 10,
+  },
+  logo: {
+    width: 120,
+    height: 35,
+    marginBottom: 10,
+    marginLeft: -40,
+  },
   headerRight: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -150,5 +176,14 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  tabIconContainer: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 2,
+    marginTop: 2,
   },
 });
