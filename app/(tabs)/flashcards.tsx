@@ -56,7 +56,6 @@ export default function FlashcardsScreen() {
   const [isRevealed, setIsRevealed] = useState(false);
   const [showSubjectDropdown, setShowSubjectDropdown] = useState(false);
   const [showChapterDropdown, setShowChapterDropdown] = useState(false);
-  const [userPhoneNumber, setUserPhoneNumber] = useState<string | null>(null);
   const [flashcardsData, setFlashcardsData] = useState<Grade[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -82,21 +81,19 @@ export default function FlashcardsScreen() {
   };
 
   useEffect(() => {
-    // Check phone number when component mounts
-    const checkPhoneNumber = async () => {
-      const phoneNumber = await AsyncStorage.getItem('userPhoneNumber');
-      setUserPhoneNumber(phoneNumber);
-      
-      // If phone number starts with 911, set grade to 9
-      if (phoneNumber?.startsWith('+251911')) {
-        setSelectedGradeId('9');
-      } else {
-        // Default to grade 1 for other cases
-        setSelectedGradeId('1');
-      }
-    };
-    checkPhoneNumber();
-  }, []);
+    // Initialize grade from user data
+    if (user?.grade) {
+      console.log('Setting grade from user data:', user.grade);
+      // Extract numeric value from grade string (e.g., "Grade 6" -> "6")
+      const gradeNumber = user.grade.replace(/[^\d]/g, '');
+      console.log('Extracted grade number:', gradeNumber);
+      setSelectedGradeId(gradeNumber || '1');
+    } else {
+      // Default to grade 1 if no grade is found in user data
+      console.log('No grade found in user data, defaulting to grade 1');
+      setSelectedGradeId('1');
+    }
+  }, [user]);
 
   // Fetch flashcards when grade level changes
   useEffect(() => {
@@ -328,11 +325,17 @@ export default function FlashcardsScreen() {
         throw new Error('Subject slug not found');
       }
       
+      // Get the chapter name for the API call
+      const chapterName = selectedChapterData?.name;
+      if (!chapterName) {
+        throw new Error('Chapter name not found');
+      }
+      
       // Fetch flashcards directly
       const flashcards = await getFlashcardsForChapter(
         selectedGradeId,
         subjectSlug,
-        selectedChapter
+        chapterName
       );
       
       if (!flashcards || flashcards.length === 0) {
