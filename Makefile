@@ -25,6 +25,12 @@ help:
 	@echo "  APK: android/app/build/outputs/apk/release/app-release.apk"
 	@echo ""
 
+# Start the app
+start:
+	@echo "🚀 Starting the app..."
+	npx expo start -i
+	@echo "✅ App started successfully!"
+
 # Clean previous builds
 clean:
 	@echo "🧹 Cleaning previous builds..."
