@@ -96,14 +96,6 @@ export const BookCover: React.FC<BookCoverProps> = ({
           </View>
         )}
         
-        {/* Content count badge - only show when image is present and loaded successfully */}
-        {imageUrl && !imageError && (flashcardCount !== undefined || questionCount !== undefined) && (
-          <View style={styles.imageCountBadge}>
-            <ThemedText style={styles.imageCountText}>
-              {flashcardCount !== undefined ? `${flashcardCount} cards` : `${questionCount} questions`}
-            </ThemedText>
-          </View>
-        )}
         
         {/* Book pages effect */}
         <View style={styles.bookPages} />
@@ -178,34 +170,6 @@ const styles = StyleSheet.create({
     color: 'rgba(255, 255, 255, 0.8)',
     textAlign: 'center',
     marginBottom: 8,
-  },
-  countBadge: {
-    backgroundColor: 'rgba(255, 255, 255, 0.2)',
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 12,
-    marginTop: 8,
-  },
-  countText: {
-    fontSize: 10,
-    color: '#FFFFFF',
-    fontWeight: '600',
-  },
-  imageCountBadge: {
-    position: 'absolute',
-    bottom: 8,
-    left: 8,
-    right: 8,
-    backgroundColor: 'rgba(0, 0, 0, 0.7)',
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 12,
-    alignItems: 'center',
-  },
-  imageCountText: {
-    fontSize: 10,
-    color: '#FFFFFF',
-    fontWeight: '600',
   },
   bookPages: {
     position: 'absolute',
