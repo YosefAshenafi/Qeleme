@@ -19,7 +19,7 @@ import Animated, {
   useAnimatedReaction,
 } from 'react-native-reanimated';
 import { useTranslation } from 'react-i18next';
-// import { Video, ResizeMode } from 'expo-av';
+import { Video, ResizeMode } from 'expo-av';
 
 import { Header } from '@/components/Header';
 import { ThemedText } from '@/components/ThemedText';
