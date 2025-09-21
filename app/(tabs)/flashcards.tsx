@@ -63,6 +63,7 @@ export default function FlashcardsScreen() {
   const [currentFlashcards, setCurrentFlashcards] = useState<Flashcard[]>([]);
   const [hasAppliedPreSelection, setHasAppliedPreSelection] = useState(false);
   const [sessionStartTime, setSessionStartTime] = useState<number | null>(null);
+  const scrollViewRef = useRef<ScrollView>(null);
 
   const revealAnimation = useSharedValue(0);
   const progressAnimation = useSharedValue(0);
@@ -626,47 +627,53 @@ export default function FlashcardsScreen() {
     <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]}>
       <Header title={t('flashcards.title')} />
       <ThemedView style={[styles.container, { backgroundColor: colors.background }]}>
-        <View style={styles.progressTimeContainer}>
-          <View style={styles.progressContainer}>
-            <View style={[styles.progressBar, { backgroundColor: colors.cardAlt }]}>
-              <Animated.View style={[styles.progressFill, progressBarStyle, { backgroundColor: colors.tint }]} />
-            </View>
-            <View style={styles.progressLabels}>
-              <View style={[styles.questionLabelContainer]}>
-                <ThemedText style={[styles.progressText, { color: colors.tint }]}>
-                  {t('flashcards.cardProgress', { current: currentIndex + 1, total: currentFlashcards.length || 0 })}
-                </ThemedText>
+        <ScrollView 
+          ref={scrollViewRef}
+          style={styles.scrollView}
+          contentContainerStyle={styles.scrollContent}
+          showsVerticalScrollIndicator={false}
+        >
+          <View style={styles.progressTimeContainer}>
+            <View style={styles.progressContainer}>
+              <View style={[styles.progressBar, { backgroundColor: colors.cardAlt }]}>
+                <Animated.View style={[styles.progressFill, progressBarStyle, { backgroundColor: colors.tint }]} />
+              </View>
+              <View style={styles.progressLabels}>
+                <View style={[styles.questionLabelContainer]}>
+                  <ThemedText style={[styles.progressText, { color: colors.tint }]}>
+                    {t('flashcards.cardProgress', { current: currentIndex + 1, total: currentFlashcards.length || 0 })}
+                  </ThemedText>
+                </View>
               </View>
             </View>
           </View>
-        </View>
 
-        <View style={styles.cardContainer}>
-          <TouchableOpacity onPress={handleReveal} activeOpacity={0.9} style={styles.cardWrapper}>
-            <Animated.View style={[styles.card, frontAnimatedStyle, { borderColor: colors.border, backgroundColor: colors.cardAlt }]}>
-              <RichText 
-                text={currentCard?.question || 'No question available'}
-                style={styles.cardText}
-                color={colors.text}
-                fontSize={20}
-                textAlign="center"
-                lineHeight={28}
-              />
-            </Animated.View>
-            <Animated.View style={[styles.card, styles.cardBack, backAnimatedStyle, { borderColor: colors.border, backgroundColor: colors.cardAlt }]}>
-              <RichText 
-                text={currentCard?.answer || 'No answer available'}
-                style={styles.cardText}
-                color={colors.text}
-                fontSize={20}
-                textAlign="center"
-                lineHeight={28}
-              />
-            </Animated.View>
-          </TouchableOpacity>
-        </View>
+          <View style={styles.cardContainer}>
+            <TouchableOpacity onPress={handleReveal} activeOpacity={0.9} style={styles.cardWrapper}>
+              <Animated.View style={[styles.card, frontAnimatedStyle, { borderColor: colors.border, backgroundColor: colors.cardAlt }]}>
+                <RichText 
+                  text={currentCard?.question || 'No question available'}
+                  style={styles.cardText}
+                  color={colors.text}
+                  fontSize={20}
+                  textAlign="center"
+                  lineHeight={28}
+                />
+              </Animated.View>
+              <Animated.View style={[styles.card, styles.cardBack, backAnimatedStyle, { borderColor: colors.border, backgroundColor: colors.cardAlt }]}>
+                <RichText 
+                  text={currentCard?.answer || 'No answer available'}
+                  style={styles.cardText}
+                  color={colors.text}
+                  fontSize={20}
+                  textAlign="center"
+                  lineHeight={28}
+                />
+              </Animated.View>
+            </TouchableOpacity>
+          </View>
 
-        <View style={[styles.navigationContainer, { borderTopColor: colors.border, borderBottomColor: colors.border }]}>
+          <View style={[styles.navigationContainer, { borderTopColor: colors.border, borderBottomColor: colors.border }]}>
           <TouchableOpacity
             style={[
               styles.navButton,
@@ -711,6 +718,7 @@ export default function FlashcardsScreen() {
             <IconSymbol name="chevron.right" size={24} color="#fff" />
           </TouchableOpacity>
         </View>
+        </ScrollView>
       </ThemedView>
     </SafeAreaView>
   );
@@ -723,8 +731,15 @@ const styles = StyleSheet.create({
   },
   container: {
     flex: 1,
-    padding: 20,
     backgroundColor: '#fff',
+  },
+  scrollView: {
+    flex: 1,
+  },
+  scrollContent: {
+    padding: 20,
+    paddingBottom: 40,
+    flexGrow: 1,
   },
   progressTimeContainer: {
     flexDirection: 'row',
@@ -762,7 +777,7 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   cardContainer: {
-    flex: 1,
+    minHeight: 400,
     justifyContent: 'center',
     alignItems: 'center',
     marginVertical: 20,
