@@ -26,7 +26,7 @@ export default {
       },
       homework: {
         title: 'የቤት ስራ እርዳታ',
-        subtitle: 'ሙያዊ እገዛ ያግኙ'
+        subtitle: 'የቤት ስራ እገዛ ያግኙ!'
       },
       reports: {
         title: 'የእድገት ሪፖርት',
@@ -152,7 +152,7 @@ export default {
   },
   login: {
     welcome: 'እንኳን በደህና መጡ',
-    subtitle: 'አእምሮዎን በእያንዳንዱ ትምህርት ያበለጽጉ!',
+    subtitle: 'አእምሮዎን በእያንዳንዱ ትምህርት ያበልጽጉ!',
     username: {
       label: 'መለያ ስም',
       placeholder: 'መለያ ስምዎን ያስገቡ',
@@ -706,7 +706,7 @@ export default {
     },
     homework: {
       title: 'ለቤት ሥራ አጋዥ ይጠቀሙ!',
-      subtitle: 'ሙያዊ እገዛ! ',
+      subtitle: 'የቤት ስራ እገዛ! ',
       description: 'የቤት ሥራ ጥያቄዎችን ለመመለስ የሚያግዝ የግል መማሪያ! '
     },
     skip: 'ይዝለሉ',
