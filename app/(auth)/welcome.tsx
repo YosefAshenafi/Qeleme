@@ -141,7 +141,7 @@ const styles = StyleSheet.create({
   content: {
     flex: 1,
     alignItems: 'center',
-    justifyContent: 'flex-start',
+    justifyContent: 'center',
     paddingHorizontal: 8,
   },
   logoContainer: {
@@ -152,12 +152,13 @@ const styles = StyleSheet.create({
     marginBottom: -100,
   },
   logoImage: {
-    width: '180%',
-    height: '180%',
+    width: '200%',
+    height: '200%',
+    marginLeft: '80%',
   },
   textContainer: {
     alignItems: 'center',
-    marginBottom: 60,
+    marginBottom: 40,
     paddingHorizontal: 8,
   },
   welcomeText: {
