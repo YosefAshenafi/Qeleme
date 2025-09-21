@@ -16,6 +16,7 @@ import { Header } from '../../components/Header';
 import { ThemedText } from '../../components/ThemedText';
 import { ThemedView } from '../../components/ThemedView';
 import { IconSymbol } from '../../components/ui/IconSymbol';
+import RichText from '../../components/ui/RichText';
 import { getMCQData, MCQData, Grade, Subject, Chapter, Question, Option, ExamType, getNationalExamQuestions, getNationalExamAvailable, NationalExamAPIResponse, getRegularMCQQuestions } from '../../services/mcqService';
 import ActivityTrackingService from '../../services/activityTrackingService';
 import PictureMCQScreen from '../screens/PictureMCQScreen';
@@ -1297,9 +1298,14 @@ export default function MCQScreen() {
                 </View>
 
                 <View style={styles.questionContainer}>
-                  <ThemedText style={[styles.questionText, { color: colors.text }]}>
-                    {currentQuestion?.question || 'Question not available'}
-                  </ThemedText>
+                  <RichText 
+                    text={currentQuestion?.question || 'Question not available'}
+                    style={styles.questionText}
+                    color={colors.text}
+                    fontSize={18}
+                    textAlign="left"
+                    lineHeight={26}
+                  />
                 </View>
 
                 <View style={styles.optionsContainer}>
@@ -1320,7 +1326,14 @@ export default function MCQScreen() {
                             {selectedExamType === 'national' ? String.fromCharCode(65 + index) : String(option.id)}
                           </ThemedText>
                         </View>
-                        <ThemedText style={[styles.optionText, { color: colors.text }]}>{option.text}</ThemedText>
+                        <RichText 
+                          text={option.text}
+                          style={styles.optionText}
+                          color={colors.text}
+                          fontSize={16}
+                          textAlign="left"
+                          lineHeight={22}
+                        />
                       </View>
                     </TouchableOpacity>
                   )) || (
@@ -1343,9 +1356,14 @@ export default function MCQScreen() {
                 {showExplanation && currentQuestion?.explanation && currentQuestion.explanation.trim() !== '' && currentQuestion.explanation !== 'No explanation available' && (
                   <View ref={explanationRef} style={[styles.explanationContainer, { backgroundColor: colors.cardAlt }]}>
                     <ThemedText style={[styles.explanationTitle, { color: colors.tint }]}>Explanation:</ThemedText>
-                    <ThemedText style={[styles.explanationText, { color: colors.text }]}>
-                      {currentQuestion.explanation}
-                    </ThemedText>
+                    <RichText 
+                      text={currentQuestion.explanation}
+                      style={styles.explanationText}
+                      color={colors.text}
+                      fontSize={16}
+                      textAlign="left"
+                      lineHeight={24}
+                    />
                   </View>
                 )}
 

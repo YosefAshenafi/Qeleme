@@ -28,6 +28,7 @@ import { IconSymbol } from '@/components/ui/IconSymbol';
 import { ProfileAvatar } from '@/components/ui/ProfileAvatar';
 import { LanguageToggle } from '@/components/ui/LanguageToggle';
 import { ImageSkeleton } from '@/components/ui/ImageSkeleton';
+import RichText from '@/components/ui/RichText';
 import { getKGQuestions, getKGSubcategoryQuestions, KGQuestion } from '@/services/kgService';
 import ActivityTrackingService from '@/services/activityTrackingService';
 
@@ -747,9 +748,14 @@ export default function PictureMCQScreen({ onBackToInstructions }: PictureMCQScr
                     colors={[colors.tint + '20', colors.tint + '10']}
                     style={styles.questionGradient}
                   >
-                    <ThemedText style={[styles.questionText, { color: colors.text }]}>
-                      🤔 {memoizedCurrentQuestion.question} 🤔
-                    </ThemedText>
+                    <RichText 
+                      text={`🤔 ${memoizedCurrentQuestion.question} 🤔`}
+                      style={styles.questionText}
+                      color={colors.text}
+                      fontSize={18}
+                      textAlign="center"
+                      lineHeight={26}
+                    />
                   </LinearGradient>
                 </View>
 
@@ -828,14 +834,18 @@ export default function PictureMCQScreen({ onBackToInstructions }: PictureMCQScr
                         }}
                     >
                       <View style={styles.optionContent}>
-                        <ThemedText style={[
-                          styles.optionText,
-                          { color: isDarkMode ? colors.text : '#333333' },
-                          selectedAnswer === option.id && option.isCorrect && styles.correctText,
-                          selectedAnswer === option.id && !option.isCorrect && styles.incorrectText,
-                        ]}>
-                          {option.text}
-                        </ThemedText>
+                        <RichText 
+                          text={option.text}
+                          style={[
+                            styles.optionText,
+                            selectedAnswer === option.id && option.isCorrect && styles.correctText,
+                            selectedAnswer === option.id && !option.isCorrect && styles.incorrectText,
+                          ]}
+                          color={isDarkMode ? colors.text : '#333333'}
+                          fontSize={16}
+                          textAlign="center"
+                          lineHeight={22}
+                        />
                       </View>
                     </View>
                   ))}
@@ -844,9 +854,14 @@ export default function PictureMCQScreen({ onBackToInstructions }: PictureMCQScr
                 {showExplanation && memoizedCurrentQuestion?.explanation && memoizedCurrentQuestion.explanation.trim() !== '' && memoizedCurrentQuestion.explanation !== 'No explanation available' && (
                   <View style={[styles.explanationContainer, { backgroundColor: isDarkMode ? '#1C1C1E' : '#F5F5F5' }]}>
                     <ThemedText style={[styles.explanationTitle, { color: '#6B54AE' }]}>{t('mcq.explanation')}</ThemedText>
-                    <ThemedText style={[styles.explanationText, { color: colors.text }]}>
-                      {memoizedCurrentQuestion.explanation}
-                    </ThemedText>
+                    <RichText 
+                      text={memoizedCurrentQuestion.explanation}
+                      style={styles.explanationText}
+                      color={colors.text}
+                      fontSize={16}
+                      textAlign="left"
+                      lineHeight={24}
+                    />
                   </View>
                 )}
               </>

@@ -21,6 +21,7 @@ import { Header } from '@/components/Header';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 import { IconSymbol } from '@/components/ui/IconSymbol';
+import RichText from '@/components/ui/RichText';
 import { getFlashcards, getFlashcardStructure, getFlashcardsForChapter, Grade, Subject, Chapter, Flashcard } from '@/services/flashcardService';
 import ActivityTrackingService from '@/services/activityTrackingService';
 
@@ -643,14 +644,24 @@ export default function FlashcardsScreen() {
         <View style={styles.cardContainer}>
           <TouchableOpacity onPress={handleReveal} activeOpacity={0.9} style={styles.cardWrapper}>
             <Animated.View style={[styles.card, frontAnimatedStyle, { borderColor: colors.border, backgroundColor: colors.cardAlt }]}>
-              <ThemedText style={[styles.cardText, { color: colors.text }]}>
-                {currentCard?.question || 'No question available'}
-              </ThemedText>
+              <RichText 
+                text={currentCard?.question || 'No question available'}
+                style={styles.cardText}
+                color={colors.text}
+                fontSize={20}
+                textAlign="center"
+                lineHeight={28}
+              />
             </Animated.View>
             <Animated.View style={[styles.card, styles.cardBack, backAnimatedStyle, { borderColor: colors.border, backgroundColor: colors.cardAlt }]}>
-              <ThemedText style={[styles.cardText, { color: colors.text }]}>
-                {currentCard?.answer || 'No answer available'}
-              </ThemedText>
+              <RichText 
+                text={currentCard?.answer || 'No answer available'}
+                style={styles.cardText}
+                color={colors.text}
+                fontSize={20}
+                textAlign="center"
+                lineHeight={28}
+              />
             </Animated.View>
           </TouchableOpacity>
         </View>
