@@ -663,6 +663,9 @@ export default function FlashcardsScreen() {
           </View>
 
           <View style={styles.cardContainer}>
+            <ThemedText style={[styles.instructionText, { color: colors.textSecondary }]}>
+              {t('flashcards.clickToReveal')}
+            </ThemedText>
             <TouchableOpacity onPress={handleReveal} activeOpacity={0.9} style={styles.cardWrapper}>
               <Animated.View style={[styles.card, frontAnimatedStyle, { borderColor: colors.border, backgroundColor: colors.cardAlt }]}>
                 <RichText 
@@ -795,6 +798,12 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     marginVertical: 20,
+  },
+  instructionText: {
+    fontSize: 14,
+    textAlign: 'center',
+    marginBottom: 16,
+    fontStyle: 'italic',
   },
   cardWrapper: {
     width: CARD_WIDTH,
