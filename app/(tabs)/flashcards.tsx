@@ -475,7 +475,14 @@ export default function FlashcardsScreen() {
                     >
                       <ThemedView style={[styles.modalContent, { backgroundColor: colors.background }]}>
                         <ScrollView>
-                          {selectedGradeData?.subjects?.map((subject: Subject) => (
+                          {selectedGradeData?.subjects?.sort((a, b) => {
+                            // Extract numbers from subject names for proper sorting
+                            const getSubjectNumber = (name: string) => {
+                              const match = name.match(/(\d+)/);
+                              return match ? parseInt(match[1], 10) : 0;
+                            };
+                            return getSubjectNumber(a.name) - getSubjectNumber(b.name);
+                          }).map((subject: Subject) => (
                             <TouchableOpacity
                               key={subject.id}
                               style={[styles.modalItem, { backgroundColor: colors.background, borderBottomColor: colors.border }]}
@@ -544,7 +551,14 @@ export default function FlashcardsScreen() {
                     >
                       <ThemedView style={[styles.modalContent, { backgroundColor: colors.background }]}>
                         <ScrollView>
-                          {selectedSubjectData?.chapters?.map((chapter: Chapter) => (
+                          {selectedSubjectData?.chapters?.sort((a, b) => {
+                            // Extract numbers from chapter names for proper sorting
+                            const getChapterNumber = (name: string) => {
+                              const match = name.match(/(\d+)/);
+                              return match ? parseInt(match[1], 10) : 0;
+                            };
+                            return getChapterNumber(a.name) - getChapterNumber(b.name);
+                          }).map((chapter: Chapter) => (
                             <TouchableOpacity
                               key={chapter.id}
                               style={[styles.modalItem, { backgroundColor: colors.background, borderBottomColor: colors.border }]}
