@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, StyleSheet, ActivityIndicator, Alert, Dimensions } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, StyleSheet, ActivityIndicator, Alert, Dimensions, Image } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { useTheme } from '@/contexts/ThemeContext';
@@ -145,6 +145,14 @@ export default function KGDashboard() {
         headerAnimatedStyle
       ]}>
         <View style={styles.headerLeft}>
+          <Image
+            source={require('@/assets/images/logo/white-logo.png')}
+            style={styles.logo}
+            resizeMode="contain"
+          />
+          <Text style={[styles.logoText, { color: colors.tint }]}>
+            Qelem
+          </Text>
         </View>
         <View style={styles.headerRight}>
           <LanguageToggle colors={colors} />
@@ -297,7 +305,8 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     paddingHorizontal: 20,
-    paddingVertical: 15,
+    paddingTop: 15,
+    paddingBottom: 25,
   },
   headerLeft: {
     flexDirection: 'row',
@@ -307,6 +316,16 @@ const styles = StyleSheet.create({
   headerRight: {
     flexDirection: 'row',
     alignItems: 'center',
+  },
+  logo: {
+    width: 35,
+    height: 35,
+    marginRight: 8,
+  },
+  logoText: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    letterSpacing: 0.5,
   },
   welcomeSection: {
     paddingTop: 20,

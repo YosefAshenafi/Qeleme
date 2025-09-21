@@ -1,6 +1,6 @@
 import { Tabs, Redirect, usePathname } from 'expo-router';
 import React from 'react';
-import { Platform, TouchableOpacity, View, StyleSheet, Image } from 'react-native';
+import { Platform, TouchableOpacity, View, StyleSheet, Image, Text } from 'react-native';
 import { router } from 'expo-router';
 import { BlurView } from 'expo-blur';
 import { useTranslation } from 'react-i18next';
@@ -42,6 +42,9 @@ export default function TabLayout() {
               style={styles.logo}
               resizeMode="contain"
             />
+            <Text style={[styles.logoText, { color: colors.background }]}>
+              Qelem
+            </Text>
           </View>
         ),
         headerRight: () => (
@@ -158,17 +161,26 @@ const styles = StyleSheet.create({
   headerLeft: {
     marginLeft: 15,
     marginTop: 10,
+    paddingBottom: 20,
+    flexDirection: 'row',
+    alignItems: 'center',
   },
   logo: {
-    width: 120,
+    width: 35,
     height: 35,
-    marginBottom: 10,
-    marginLeft: -40,
+    marginRight: 8,
+  },
+  logoText: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    letterSpacing: 0.5,
+    paddingBottom: 20,
   },
   headerRight: {
     flexDirection: 'row',
     alignItems: 'center',
     marginRight: 15,
+    paddingBottom: 20,
   },
   profileIconContainer: {
     width: 40,
