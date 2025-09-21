@@ -188,6 +188,7 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     justifyContent: 'center',
     alignItems: 'center',
+    marginBottom: 15,
   },
   tabIconContainer: {
     width: 50,

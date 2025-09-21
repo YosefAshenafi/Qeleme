@@ -27,11 +27,11 @@ const styles = StyleSheet.create({
   container: {
     alignItems: 'center',
     justifyContent: 'center',
-    padding: 8,
     paddingHorizontal: 12,
     borderRadius: 20,
     marginRight: 8,
     minHeight: 36,
+    paddingBottom: 15,
   },
   text: {
     fontSize: 14,
