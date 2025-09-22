@@ -14,6 +14,7 @@ export interface Question {
   question: string;
   options: Option[];
   explanation: string;
+  image_url?: string; // Added to support images in questions
   isChecked?: boolean; // Added to match API response
 }
 
@@ -52,6 +53,7 @@ interface MCQAPIResponse {
     isCorrect: boolean;
   }[];
   explanation: string;
+  image_url?: string; // Added to support images in questions
   subjectId: number;
   chapterId: number;
   gradeLevelId: number;
@@ -67,6 +69,7 @@ export interface NationalExamAPIResponse {
     isCorrect: boolean;
   }[];
   explanation: string;
+  image_url?: string; // Added to support images in questions
   subjectId: number;
   yearId: number;
   gradeLevelId: number;
@@ -214,6 +217,7 @@ export const getNationalExamQuestions = async (
         isCorrect: opt.isCorrect
       })),
       explanation: q.explanation || '',
+      image_url: q.image_url || undefined,
       subjectId: examGroup.subject,
       yearId: examGroup.year,
       gradeLevelId: examGroup.gradeLevel
@@ -355,6 +359,7 @@ export const getRegularMCQQuestions = async (
         question: q.question,
         options: options,
         explanation: q.explanations || '',
+        image_url: q.image_url || undefined,
         subjectId: subjectKey,
         gradeLevelId: gradeLevelId,
         chapterId: chapterId

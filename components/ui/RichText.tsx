@@ -1,6 +1,6 @@
-import React from 'react';
+import React, { useState } from 'react';
 import Markdown from 'react-native-markdown-display';
-import { StyleSheet, TextStyle, Text } from 'react-native';
+import { StyleSheet, TextStyle, Text, View, Image, ActivityIndicator } from 'react-native';
 
 interface RichTextProps {
   text: string;
@@ -9,7 +9,66 @@ interface RichTextProps {
   fontSize?: number;
   textAlign?: 'left' | 'center' | 'right';
   lineHeight?: number;
+  image_url?: string; // Added to support images in rich text
 }
+
+// Image component with loading states
+const ImageComponent: React.FC<{ imageUrl: string; style?: any }> = ({ imageUrl, style }) => {
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
+
+  const defaultImageStyle = {
+    width: '100%',
+    height: 200,
+    resizeMode: 'contain' as const,
+    marginVertical: 8,
+    borderRadius: 8,
+  };
+
+  return (
+    <View style={[defaultImageStyle, style]}>
+      {loading && (
+        <View style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          justifyContent: 'center',
+          alignItems: 'center',
+          backgroundColor: 'rgba(0,0,0,0.1)',
+          borderRadius: 8,
+        }}>
+          <ActivityIndicator size="small" color="#666" />
+        </View>
+      )}
+      
+      {error ? (
+        <View style={{
+          width: '100%',
+          height: 200,
+          justifyContent: 'center',
+          alignItems: 'center',
+          backgroundColor: 'rgba(0,0,0,0.1)',
+          borderRadius: 8,
+        }}>
+          <Text style={{ color: '#666', fontSize: 12 }}>Failed to load image</Text>
+        </View>
+      ) : (
+        <Image
+          source={{ uri: imageUrl }}
+          style={[defaultImageStyle, style]}
+          onLoadStart={() => setLoading(true)}
+          onLoad={() => setLoading(false)}
+          onError={() => {
+            setLoading(false);
+            setError(true);
+          }}
+        />
+      )}
+    </View>
+  );
+};
 
 // Custom text renderer that handles HTML tags properly
 const renderTextWithFormatting = (text: string, color: string, fontSize: number, lineHeight: number, textAlign: 'left' | 'center' | 'right'): React.ReactNode => {
@@ -84,6 +143,7 @@ const RichText: React.FC<RichTextProps> = ({
   fontSize = 16,
   textAlign = 'left',
   lineHeight = 24,
+  image_url,
 }) => {
   const markdownStyles = {
     body: {
@@ -230,9 +290,14 @@ const RichText: React.FC<RichTextProps> = ({
 
   // Use custom renderer for better HTML support
   return (
-    <Text style={[markdownStyles.body, style]}>
-      {renderTextWithFormatting(text, color, fontSize, lineHeight, textAlign)}
-    </Text>
+    <View>
+      {image_url && (
+        <ImageComponent imageUrl={image_url} />
+      )}
+      <Text style={[markdownStyles.body, style]}>
+        {renderTextWithFormatting(text, color, fontSize, lineHeight, textAlign)}
+      </Text>
+    </View>
   );
 };
 

@@ -12,11 +12,11 @@ export const LanguageToggle: React.FC<{ colors: any }> = ({ colors }) => {
 
   return (
     <TouchableOpacity
-      style={[styles.container, { backgroundColor: colors.card }]}
+      style={styles.container}
       onPress={toggleLanguage}
       activeOpacity={0.7}
     >
-      <Text style={[styles.text, { color: colors.text }]}>
+      <Text style={[styles.text, { color: '#FFFFFF' }]}>
         {currentLanguage === 'en' ? 'EN' : 'አማ'}
       </Text>
     </TouchableOpacity>
@@ -27,11 +27,8 @@ const styles = StyleSheet.create({
   container: {
     alignItems: 'center',
     justifyContent: 'center',
-    paddingHorizontal: 12,
-    borderRadius: 20,
+    paddingHorizontal: 8,
     marginRight: 8,
-    minHeight: 36,
-    paddingBottom: 15,
   },
   text: {
     fontSize: 14,

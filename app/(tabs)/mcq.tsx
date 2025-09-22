@@ -1326,6 +1326,7 @@ export default function MCQScreen() {
                     fontSize={18}
                     textAlign="left"
                     lineHeight={26}
+                    image_url={currentQuestion?.image_url}
                   />
                 </View>
 
@@ -1384,6 +1385,7 @@ export default function MCQScreen() {
                       fontSize={16}
                       textAlign="left"
                       lineHeight={24}
+                      image_url={currentQuestion?.image_url}
                     />
                   </View>
                 )}

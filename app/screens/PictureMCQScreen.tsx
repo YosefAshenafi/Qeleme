@@ -44,6 +44,7 @@ interface Question {
   id: number;
   question: string;
   image: string;
+  image_url?: string; // Added to support images in rich text
   options: Option[];
   explanation: string;
 }
@@ -755,6 +756,7 @@ export default function PictureMCQScreen({ onBackToInstructions }: PictureMCQScr
                       fontSize={18}
                       textAlign="center"
                       lineHeight={26}
+                      image_url={memoizedCurrentQuestion?.image_url}
                     />
                   </LinearGradient>
                 </View>
@@ -861,6 +863,7 @@ export default function PictureMCQScreen({ onBackToInstructions }: PictureMCQScr
                       fontSize={16}
                       textAlign="left"
                       lineHeight={24}
+                      image_url={memoizedCurrentQuestion?.image_url}
                     />
                   </View>
                 )}
