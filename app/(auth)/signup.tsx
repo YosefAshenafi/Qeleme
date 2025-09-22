@@ -55,6 +55,34 @@ export default function SignupScreen() {
   const [usernameError, setUsernameError] = useState('');
   const [validationErrors, setValidationErrors] = useState<{[key: string]: string}>({});
 
+  // Handle pre-filled data from OTP screen
+  useEffect(() => {
+    if (params.prefillData) {
+      try {
+        const prefillData = JSON.parse(decodeURIComponent(params.prefillData as string));
+        
+        // Pre-fill the form with the data
+        setFullName(prefillData.fullName || '');
+        setUsername(prefillData.username || '');
+        setPassword(prefillData.password || '');
+        setConfirmPassword(prefillData.password || ''); // Pre-fill confirm password too
+        setGrade(prefillData.grade || '');
+        
+        // Pre-fill phone number (remove country code if present)
+        const phone = prefillData.phoneNumber || '';
+        const cleanPhone = phone.replace(/^\+251/, ''); // Remove +251 country code
+        setPhoneNumber(cleanPhone);
+        
+        // Pre-fill children data if present
+        if (prefillData.childrenData && Array.isArray(prefillData.childrenData)) {
+          setChildrenData(prefillData.childrenData);
+        }
+      } catch (error) {
+        console.error('Error parsing prefill data:', error);
+      }
+    }
+  }, [params.prefillData]);
+
   // Validation functions
   const validateFullName = (name: string): string => {
     if (!name || name.trim().length === 0) {

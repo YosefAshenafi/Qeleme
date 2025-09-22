@@ -308,7 +308,9 @@ export default {
       subtitle: 'Enter the 6-digit code sent to your phone',
       error: {
         invalid: 'Invalid verification code',
-        incomplete: 'Please enter all digits'
+        incomplete: 'Please enter all digits',
+        invalidData: 'Invalid user data. Please try again.',
+        verificationFailed: 'Failed to verify OTP. Please try again.'
       },
       send: {
         text: "Ready to verify your phone?",

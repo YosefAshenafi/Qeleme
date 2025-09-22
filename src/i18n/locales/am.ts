@@ -587,7 +587,9 @@ export default {
       subtitle: 'ወደ ስልክዎ የተላከውን 6-አሃዝ ኮድ ያስገቡ',
       error: {
         invalid: 'ልክ ያልሆነ የማረጋገጫ ኮድ',
-        incomplete: 'እባክዎ ሁሉንም አሃዞች ያስገቡ'
+        incomplete: 'እባክዎ ሁሉንም አሃዞች ያስገቡ',
+        invalidData: 'ልክ ያልሆነ የተጠቃሚ ውሂብ። እባክዎ እንደገና ይሞክሩ።',
+        verificationFailed: 'OTP ማረጋገጥ አልተሳካም። እባክዎ እንደገና ይሞክሩ።'
       },
       send: {
         text: 'ስልክዎን ለማረጋገጥ ዝግጁ ነዎት?',

@@ -109,19 +109,47 @@ export default function OTPScreen() {
   };
 
   const handleVerify = async () => {
-    // Skip OTP verification for testing
+    // Check if OTP is complete
+    const otpString = otp.join('');
+    if (otpString.length !== 6) {
+      setError(t('auth.otp.errors.incomplete'));
+      return;
+    }
+
+    if (!userData?.phoneNumber) {
+      setError(t('auth.otp.errors.invalidData'));
+      return;
+    }
+
     try {
       setIsLoading(true);
+      setError(''); // Clear any previous errors
       
-      // Navigate to plan selection without OTP verification
-      router.push({
-        pathname: '/(auth)/plan-selection',
-        params: {
-          userData: encodeURIComponent(JSON.stringify(userData))
-        }
-      });
+      // Verify the OTP
+      const response = await verifyOTP(userData.phoneNumber, otpString);
+      
+      if (response.success) {
+        // OTP is valid, proceed to plan selection
+        router.push({
+          pathname: '/(auth)/plan-selection',
+          params: {
+            userData: encodeURIComponent(JSON.stringify(userData))
+          }
+        });
+      } else {
+        // OTP is invalid
+        setError(response.message || t('auth.otp.errors.invalid'));
+        // Clear the OTP inputs
+        setOtp(['', '', '', '', '', '']);
+        // Focus on first input
+        inputRefs.current[0]?.focus();
+      }
     } catch (error) {
-      setError('Failed to proceed. Please try again.');
+      setError(t('auth.otp.errors.verificationFailed'));
+      // Clear the OTP inputs
+      setOtp(['', '', '', '', '', '']);
+      // Focus on first input
+      inputRefs.current[0]?.focus();
     } finally {
       setIsLoading(false);
     }
@@ -141,7 +169,17 @@ export default function OTPScreen() {
             <View style={styles.header}>
               <TouchableOpacity 
                 style={styles.backButton}
-                onPress={() => router.back()}
+                onPress={() => {
+                  // Navigate back to signup form with pre-filled data
+                  router.replace({
+                    pathname: '/(auth)/signup',
+                    params: {
+                      prefillData: encodeURIComponent(JSON.stringify(userData)),
+                      role: userData?.role || 'student',
+                      numberOfChildren: userData?.numberOfChildren?.toString() || '1'
+                    }
+                  });
+                }}
               >
                 <Ionicons name="arrow-back" size={24} color={colors.text} />
               </TouchableOpacity>
@@ -194,10 +232,10 @@ export default function OTPScreen() {
             <TouchableOpacity 
               style={[
                 styles.verifyButton,
-                !isLoading && styles.verifyButtonActive
+                !isLoading && otp.join('').length === 6 && styles.verifyButtonActive
               ]}
               onPress={handleVerify}
-              disabled={isLoading}
+              disabled={isLoading || otp.join('').length !== 6}
             >
               <LinearGradient
                 colors={['#4F46E5', '#7C3AED']}
