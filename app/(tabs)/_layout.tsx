@@ -174,7 +174,6 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: 'bold',
     letterSpacing: 0.5,
-    paddingBottom: 20,
   },
   headerRight: {
     flexDirection: 'row',
