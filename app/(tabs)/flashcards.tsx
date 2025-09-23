@@ -54,7 +54,7 @@ export default function FlashcardsScreen() {
   const [selectedChapter, setSelectedChapter] = useState<string>('');
   const [showFlashcards, setShowFlashcards] = useState(false);
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [isRevealed, setIsRevealed] = useState(true);
+  const [isRevealed, setIsRevealed] = useState(false);
   const [showSubjectDropdown, setShowSubjectDropdown] = useState(false);
   const [showChapterDropdown, setShowChapterDropdown] = useState(false);
   const [flashcardsData, setFlashcardsData] = useState<Grade[]>([]);
@@ -663,9 +663,6 @@ export default function FlashcardsScreen() {
           </View>
 
           <View style={styles.cardContainer}>
-            <ThemedText style={[styles.instructionText, { color: colors.tint }]}>
-              {t('flashcards.clickToReveal')}
-            </ThemedText>
             <TouchableOpacity onPress={handleReveal} activeOpacity={0.9} style={styles.cardWrapper}>
               <Animated.View style={[styles.card, frontAnimatedStyle, { borderColor: colors.border, backgroundColor: colors.cardAlt }]}>
                 <RichText 
@@ -798,12 +795,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     marginVertical: 20,
-  },
-  instructionText: {
-    fontSize: 14,
-    textAlign: 'center',
-    marginBottom: 16,
-    fontStyle: 'italic',
   },
   cardWrapper: {
     width: CARD_WIDTH,
