@@ -54,7 +54,7 @@ export default function FlashcardsScreen() {
   const [selectedChapter, setSelectedChapter] = useState<string>('');
   const [showFlashcards, setShowFlashcards] = useState(false);
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [isRevealed, setIsRevealed] = useState(false);
+  const [isRevealed, setIsRevealed] = useState(true);
   const [showSubjectDropdown, setShowSubjectDropdown] = useState(false);
   const [showChapterDropdown, setShowChapterDropdown] = useState(false);
   const [flashcardsData, setFlashcardsData] = useState<Grade[]>([]);
@@ -663,7 +663,7 @@ export default function FlashcardsScreen() {
           </View>
 
           <View style={styles.cardContainer}>
-            <ThemedText style={[styles.instructionText, { color: colors.textSecondary }]}>
+            <ThemedText style={[styles.instructionText, { color: colors.tint }]}>
               {t('flashcards.clickToReveal')}
             </ThemedText>
             <TouchableOpacity onPress={handleReveal} activeOpacity={0.9} style={styles.cardWrapper}>
@@ -671,7 +671,7 @@ export default function FlashcardsScreen() {
                 <RichText 
                   text={currentCard?.question || 'No question available'}
                   style={styles.cardText}
-                  color={colors.text}
+                  color={isDarkMode ? '#FFFFFF' : colors.tint}
                   fontSize={20}
                   textAlign="center"
                   lineHeight={28}
@@ -681,7 +681,7 @@ export default function FlashcardsScreen() {
                 <RichText 
                   text={currentCard?.answer || 'No answer available'}
                   style={styles.cardText}
-                  color={colors.text}
+                  color={isDarkMode ? '#FFFFFF' : colors.tint}
                   fontSize={20}
                   textAlign="center"
                   lineHeight={28}
