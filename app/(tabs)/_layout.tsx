@@ -161,7 +161,6 @@ const styles = StyleSheet.create({
   headerLeft: {
     marginLeft: 15,
     marginTop: 10,
-    paddingBottom: 20,
     flexDirection: 'row',
     alignItems: 'center',
   },
@@ -179,7 +178,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     marginRight: 15,
-    paddingBottom: 20,
   },
   profileIconContainer: {
     width: 40,
