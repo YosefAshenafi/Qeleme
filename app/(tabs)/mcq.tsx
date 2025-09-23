@@ -1628,7 +1628,6 @@ const styles = StyleSheet.create({
   optionsContainer: {
     gap: 12,
     marginBottom: 30,
-    paddingHorizontal: 16,
   },
   optionContainer: {
     borderRadius: 12,
@@ -1642,9 +1641,9 @@ const styles = StyleSheet.create({
   },
   optionContent: {
     flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-    padding: 16,
+    paddingRight: 50,
+    paddingLeft: 16,
+    paddingVertical: 20,
   },
   optionId: {
     width: 32,
@@ -1653,8 +1652,11 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     borderWidth: 1,
+    marginRight: 10,
   },
   optionIdText: {
+    flex: 1,
+    flexWrap: 'wrap',
     fontWeight: '600',
     fontSize: 14,
   },
@@ -1662,6 +1664,8 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: 16,
     lineHeight: 22,
+    flexWrap: 'wrap',
+    flexShrink: 1,
   },
   explanationContainer: {
     padding: 20,

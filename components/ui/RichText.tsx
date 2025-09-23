@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import Markdown from 'react-native-markdown-display';
 import { StyleSheet, TextStyle, Text, View, Image, ActivityIndicator } from 'react-native';
+import LatexOrText from './LatexOrText';
 
 interface RichTextProps {
   text: string;
@@ -77,6 +78,8 @@ const renderTextWithFormatting = (text: string, color: string, fontSize: number,
     const parts = html.split(/(<[^>]+>.*?<\/[^>]+>)/g);
     
     return parts.map((part, index) => {
+      const uniqueKey = `html-part-${index}-${part.substring(0, 10)}`;
+      
       if (part.startsWith('<') && part.endsWith('>')) {
         // Handle HTML tags
         const tagMatch = part.match(/<(\w+)[^>]*>(.*?)<\/\1>/);
@@ -90,33 +93,33 @@ const renderTextWithFormatting = (text: string, color: string, fontSize: number,
             case 'strong':
             case 'b':
               return (
-                <Text key={index} style={{ fontWeight: 'bold', color, fontSize, lineHeight, textAlign }}>
+                <Text key={uniqueKey} style={{ fontWeight: 'bold', color, fontSize, lineHeight, textAlign }}>
                   {nestedContent}
                 </Text>
               );
             case 'em':
             case 'i':
               return (
-                <Text key={index} style={{ fontStyle: 'italic', color, fontSize, lineHeight, textAlign }}>
+                <Text key={uniqueKey} style={{ fontStyle: 'italic', color, fontSize, lineHeight, textAlign }}>
                   {nestedContent}
                 </Text>
               );
             case 'u':
               return (
-                <Text key={index} style={{ textDecorationLine: 'underline', color, fontSize, lineHeight, textAlign }}>
+                <Text key={uniqueKey} style={{ textDecorationLine: 'underline', color, fontSize, lineHeight, textAlign }}>
                   {nestedContent}
                 </Text>
               );
             case 's':
             case 'strike':
               return (
-                <Text key={index} style={{ textDecorationLine: 'line-through', color, fontSize, lineHeight, textAlign }}>
+                <Text key={uniqueKey} style={{ textDecorationLine: 'line-through', color, fontSize, lineHeight, textAlign }}>
                   {nestedContent}
                 </Text>
               );
             default:
               return (
-                <Text key={index} style={{ color, fontSize, lineHeight, textAlign }}>
+                <Text key={uniqueKey} style={{ color, fontSize, lineHeight, textAlign }}>
                   {nestedContent}
                 </Text>
               );
@@ -126,9 +129,7 @@ const renderTextWithFormatting = (text: string, color: string, fontSize: number,
       
       // Regular text
       return (
-        <Text key={index} style={{ color, fontSize, lineHeight, textAlign }}>
-          {part}
-        </Text>
+        <LatexOrText key={uniqueKey} content={part} />
       );
     });
   };
@@ -151,6 +152,8 @@ const RichText: React.FC<RichTextProps> = ({
       fontSize,
       textAlign,
       lineHeight,
+      flexWrap: 'wrap',
+      flexShrink: 1,
       ...(Array.isArray(style) ? Object.assign({}, ...style) : style),
     },
     strong: {
