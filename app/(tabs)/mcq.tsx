@@ -1303,7 +1303,13 @@ export default function MCQScreen() {
                 <View style={styles.progressTimeContainer}>
                   <View style={styles.progressContainer}>
                     <View style={[styles.progressBar, { backgroundColor: colors.cardAlt }]}>
-                      <View style={[styles.progressFill, { backgroundColor: colors.tint }]} />
+                      <View style={[
+                        styles.progressFill, 
+                        { 
+                          backgroundColor: colors.tint,
+                          width: `${((currentQuestionIndex + 1) / totalQuestions) * 100}%`
+                        }
+                      ]} />
                     </View>
                     <View style={styles.progressLabels}>
                       <View style={[styles.questionLabelContainer]}>
