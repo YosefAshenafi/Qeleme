@@ -640,6 +640,118 @@ export default function FlashcardsScreen() {
   return (
     <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]}>
       <Header title={t('flashcards.title')} />
+      
+      {/* Ultra-Compact Sticky Header */}
+      <View style={{
+        position: 'sticky',
+        top: 0,
+        zIndex: 999,
+        backgroundColor: colors.background,
+        paddingVertical: 4,
+        paddingHorizontal: 0,
+      }}>
+        {/* Full-Width Progress Bar */}
+        <View style={{
+          paddingHorizontal: 20,
+          marginBottom: 4,
+        }}>
+          <View style={{
+            height: 4,
+            backgroundColor: colors.cardAlt,
+            borderRadius: 2,
+            overflow: 'hidden',
+          }}>
+            <Animated.View style={[
+              styles.progressFill, 
+              { 
+                backgroundColor: colors.tint,
+                height: '100%',
+                borderRadius: 2,
+              },
+              progressBarStyle
+            ]} />
+          </View>
+          <ThemedText style={[styles.progressText, { 
+            color: colors.tint, 
+            fontSize: 12, 
+            fontWeight: '600',
+            textAlign: 'center',
+            marginTop: 2,
+          }]}>
+            Card {currentIndex + 1} of {currentFlashcards.length || 0}
+          </ThemedText>
+        </View>
+
+        {/* Full-Width Navigation Buttons */}
+        <View style={{
+          flexDirection: 'row',
+          paddingHorizontal: 20,
+          gap: 8,
+        }}>
+          <TouchableOpacity
+            style={[
+              styles.navButton,
+              styles.prevButton,
+              { 
+                borderColor: colors.border,
+                paddingHorizontal: 12,
+                paddingVertical: 6,
+                flex: 1,
+                justifyContent: 'center',
+                alignItems: 'center',
+              },
+              currentIndex === 0 && styles.navButtonDisabled
+            ]}
+            onPress={handlePrevious}
+            disabled={currentIndex === 0}
+          >
+            <IconSymbol name="chevron.left" size={16} color={colors.tint} />
+            <ThemedText style={[styles.prevButtonText, { color: colors.tint, fontSize: 12, marginLeft: 4 }]}>
+              {t('flashcards.previous')}
+            </ThemedText>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={[
+              styles.navButton,
+              styles.nextButton,
+              { 
+                backgroundColor: colors.tint,
+                paddingHorizontal: 12,
+                paddingVertical: 6,
+                flex: 1,
+                justifyContent: 'center',
+                alignItems: 'center',
+              }
+            ]}
+            onPress={() => {
+              if (currentFlashcards.length > 0 && currentIndex === currentFlashcards.length - 1) {
+                // Reset everything when Finish is clicked
+                setShowFlashcards(false);
+                setSelectedSubject('');
+                setSelectedChapter('');
+                setCurrentIndex(0);
+                setIsRevealed(false);
+                setCurrentFlashcards([]);
+                revealAnimation.value = withSpring(0, {
+                  damping: 12,
+                  stiffness: 80,
+                  mass: 0.8,
+                });
+              } else {
+                handleNext();
+              }
+            }}
+            disabled={false}
+          >
+            <ThemedText style={[styles.nextButtonText, { color: '#fff', fontSize: 12, marginRight: 4 }]}>
+              {currentFlashcards.length > 0 && currentIndex === currentFlashcards.length - 1 ? t('flashcards.finish') : t('flashcards.next')}
+            </ThemedText>
+            <IconSymbol name="chevron.right" size={16} color="#fff" />
+          </TouchableOpacity>
+        </View>
+      </View>
+
       <ThemedView style={[styles.container, { backgroundColor: colors.background }]}>
         <ScrollView 
           ref={scrollViewRef}
@@ -647,22 +759,8 @@ export default function FlashcardsScreen() {
           contentContainerStyle={styles.scrollContent}
           showsVerticalScrollIndicator={false}
         >
-          <View style={styles.progressTimeContainer}>
-            <View style={styles.progressContainer}>
-              <View style={[styles.progressBar, { backgroundColor: colors.cardAlt }]}>
-                <Animated.View style={[styles.progressFill, progressBarStyle, { backgroundColor: colors.tint }]} />
-              </View>
-              <View style={styles.progressLabels}>
-                <View style={[styles.questionLabelContainer]}>
-                  <ThemedText style={[styles.progressText, { color: colors.tint }]}>
-                    {t('flashcards.cardProgress', { current: currentIndex + 1, total: currentFlashcards.length || 0 })}
-                  </ThemedText>
-                </View>
-              </View>
-            </View>
-          </View>
 
-          <View style={styles.cardContainer}>
+          <View style={[styles.cardContainer, { marginHorizontal: 20 }]}>
             <TouchableOpacity onPress={handleReveal} activeOpacity={0.9} style={styles.cardWrapper}>
               <Animated.View style={[styles.card, frontAnimatedStyle, { borderColor: colors.border, backgroundColor: colors.cardAlt }]}>
                 <RichText 
@@ -685,53 +783,19 @@ export default function FlashcardsScreen() {
                 />
               </Animated.View>
             </TouchableOpacity>
+            
+            {/* Instruction Text */}
+            <ThemedText style={[styles.instructionText, { 
+              color: colors.text, 
+              opacity: 0.7,
+              textAlign: 'center',
+              marginTop: 16,
+              fontSize: 14,
+            }]}>
+              {isRevealed ? t('flashcards.tapToSeeQuestion') : t('flashcards.tapToSeeAnswer')}
+            </ThemedText>
           </View>
 
-          <View style={[styles.navigationContainer, { borderTopColor: colors.border, borderBottomColor: colors.border }]}>
-          <TouchableOpacity
-            style={[
-              styles.navButton,
-              styles.prevButton,
-              { borderColor: colors.border },
-              currentIndex === 0 && styles.navButtonDisabled
-            ]}
-            onPress={handlePrevious}
-            disabled={currentIndex === 0}
-          >
-            <IconSymbol name="chevron.left.forwardslash.chevron.right" size={24} color={colors.tint} />
-            <ThemedText style={[styles.prevButtonText, { color: colors.tint }]}>
-              {t('flashcards.previous')}
-            </ThemedText>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={[styles.navButton, styles.nextButton, { backgroundColor: colors.tint }]}
-            onPress={() => {
-              if (currentFlashcards.length > 0 && currentIndex === currentFlashcards.length - 1) {
-                // Reset everything when Finish is clicked
-                setShowFlashcards(false);
-                setSelectedSubject('');
-                setSelectedChapter('');
-                setCurrentIndex(0);
-                setIsRevealed(false);
-                setCurrentFlashcards([]);
-                revealAnimation.value = withSpring(0, {
-                  damping: 12,
-                  stiffness: 80,
-                  mass: 0.8,
-                });
-              } else {
-                handleNext();
-              }
-            }}
-            disabled={false}
-          >
-            <ThemedText style={[styles.nextButtonText, { color: '#fff' }]}>
-              {currentFlashcards.length > 0 && currentIndex === currentFlashcards.length - 1 ? t('flashcards.finish') : t('flashcards.next')}
-            </ThemedText>
-            <IconSymbol name="chevron.right" size={24} color="#fff" />
-          </TouchableOpacity>
-        </View>
         </ScrollView>
       </ThemedView>
     </SafeAreaView>
@@ -791,10 +855,10 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   cardContainer: {
-    minHeight: 400,
     justifyContent: 'center',
     alignItems: 'center',
     marginVertical: 20,
+    
   },
   cardWrapper: {
     width: CARD_WIDTH,
@@ -985,5 +1049,10 @@ const styles = StyleSheet.create({
   retryButtonText: {
     fontSize: 18,
     fontWeight: '700',
+  },
+  instructionText: {
+    fontSize: 14,
+    fontWeight: '500',
+    textAlign: 'center',
   },
 }); 

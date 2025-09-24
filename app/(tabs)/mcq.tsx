@@ -1262,10 +1262,36 @@ export default function MCQScreen() {
 
   return (
     <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]}>
+      {/* Timer in top right */}
+      <View style={{
+        position: 'absolute',
+        top: 60,
+        right: 20,
+        zIndex: 1000,
+      }}>
+        <View style={[styles.timerContainer, { 
+          backgroundColor: colors.tint,
+          paddingHorizontal: 20,
+          paddingVertical: 12,
+          borderRadius: 25,
+          shadowColor: '#000',
+          shadowOffset: { width: 0, height: 2 },
+          shadowOpacity: 0.3,
+          shadowRadius: 4,
+          elevation: 5,
+        }]}>
+          <ThemedText style={[styles.timerText, { 
+            color: '#fff',
+            fontSize: 18,
+            fontWeight: '700',
+          }]}>{formatTime(time)}</ThemedText>
+        </View>
+      </View>
+
       <ThemedView style={[styles.container, { backgroundColor: colors.background }]}>
         <ThemedView style={[styles.content, { backgroundColor: colors.background }]}>
           <ThemedText style={{ fontSize: 30, fontWeight: 'bold', color: colors.text, marginBottom: 16, marginTop: -20, paddingTop: 5 }}>
-            {selectedExamType === 'national' ? 'National Exam' : 'MCQ Test'}
+            {selectedExamType === 'national' ? 'National Exam' : 'MCQ'}
           </ThemedText>
           {!showResult ? (
             <>
@@ -1299,30 +1325,121 @@ export default function MCQScreen() {
                 </View>
               </View>
 
-              <ScrollView ref={scrollViewRef} style={styles.scrollView} showsVerticalScrollIndicator={false}>
-                <View style={styles.progressTimeContainer}>
-                  <View style={styles.progressContainer}>
-                    <View style={[styles.progressBar, { backgroundColor: colors.cardAlt }]}>
-                      <View style={[
-                        styles.progressFill, 
-                        { 
-                          backgroundColor: colors.tint,
-                          width: `${((currentQuestionIndex + 1) / totalQuestions) * 100}%`
-                        }
-                      ]} />
-                    </View>
-                    <View style={styles.progressLabels}>
-                      <View style={[styles.questionLabelContainer]}>
-                        <ThemedText style={[styles.progressText, { color: colors.tint }]}>
-                          Question {currentQuestionIndex + 1} of {totalQuestions}
-                        </ThemedText>
-                      </View>
-                    </View>
+              {/* Compact Sticky Header */}
+              <View style={{
+                position: 'sticky',
+                top: 0,
+                zIndex: 999,
+                backgroundColor: colors.background,
+                paddingVertical: 8,
+                paddingHorizontal: 16,
+                borderBottomWidth: 1,
+                borderBottomColor: colors.border,
+                flexDirection: 'row',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+              }}>
+                {/* Progress Bar */}
+                <View style={{ flex: 1, marginRight: 16 }}>
+                  <View style={[styles.progressBar, { backgroundColor: colors.cardAlt, height: 6 }]}>
+                    <View style={[
+                      styles.progressFill, 
+                      { 
+                        backgroundColor: colors.tint,
+                        width: `${((currentQuestionIndex + 1) / totalQuestions) * 100}%`
+                      }
+                    ]} />
                   </View>
-                  <View style={[styles.timerContainer, { backgroundColor: colors.tint }]}>
-                    <ThemedText style={[styles.timerText, { color: '#fff' }]}>{formatTime(time)}</ThemedText>
+                  <ThemedText style={[styles.progressText, { 
+                    color: colors.tint, 
+                    fontSize: 12, 
+                    textAlign: 'center',
+                    marginTop: 4,
+                  }]}>
+                    {currentQuestionIndex + 1}/{totalQuestions}
+                  </ThemedText>
+                </View>
+
+                {/* Navigation Buttons */}
+                <View style={{ flexDirection: 'row', gap: 8 }}>
+                  <TouchableOpacity
+                    style={[
+                      styles.navButton, 
+                      styles.prevButton, 
+                      { 
+                        borderColor: colors.border, 
+                        paddingHorizontal: 12,
+                        paddingVertical: 8,
+                        minWidth: 80,
+                      }, 
+                      isFirstQuestion && styles.navButtonDisabled
+                    ]}
+                    onPress={handlePreviousQuestion}
+                    disabled={isFirstQuestion}
+                  >
+                    <IconSymbol name="chevron.left" size={18} color={colors.tint} />
+                    <ThemedText style={[styles.prevButtonText, { color: colors.tint, fontSize: 14 }]}>
+                      {t('mcq.previous')}
+                    </ThemedText>
+                  </TouchableOpacity>
+
+                  <TouchableOpacity
+                    style={[
+                      styles.navButton, 
+                      styles.nextButton, 
+                      { 
+                        backgroundColor: colors.tint,
+                        paddingHorizontal: 12,
+                        paddingVertical: 8,
+                        minWidth: 80,
+                      }
+                    ]}
+                    onPress={isLastQuestion ? handleResult : handleNextQuestion}
+                  >
+                    <ThemedText style={[styles.nextButtonText, { color: '#fff', fontSize: 14 }]}>
+                      {isLastQuestion ? t('mcq.finish') : t('mcq.next')}
+                    </ThemedText>
+                    <IconSymbol name="chevron.right" size={18} color="#fff" />
+                  </TouchableOpacity>
+                </View>
+              </View>
+
+              {/* Answer Message - Only show when needed */}
+              {showAnswerMessage && (
+                <View style={{
+                  backgroundColor: colors.warning + '20',
+                  borderLeftWidth: 4,
+                  borderLeftColor: colors.warning,
+                  paddingHorizontal: 16,
+                  paddingVertical: 8,
+                  marginHorizontal: 16,
+                  marginTop: 8,
+                  borderRadius: 8,
+                }}>
+                  <View style={{
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                  }}>
+                    <ThemedText style={{
+                      fontSize: 14,
+                      color: colors.warning,
+                      marginRight: 6,
+                    }}>
+                      ⚠️
+                    </ThemedText>
+                    <ThemedText style={{
+                      fontSize: 13,
+                      fontWeight: '500',
+                      color: colors.warning,
+                      flex: 1,
+                    }}>
+                      {t('mcq.selectAnswer')}
+                    </ThemedText>
                   </View>
                 </View>
+              )}
+
+              <ScrollView ref={scrollViewRef} style={styles.scrollView} showsVerticalScrollIndicator={false}>
 
                 <View style={styles.questionContainer}>
                   <RichText 
@@ -1373,14 +1490,6 @@ export default function MCQScreen() {
                   )}
                 </View>
 
-                {showAnswerMessage && (
-                  <View style={[styles.answerMessageContainer, { backgroundColor: colors.cardAlt }]}>
-                    <ThemedText style={[styles.answerMessageText, { color: colors.warning }]}>
-                      {t('mcq.selectAnswer')}
-                    </ThemedText>
-                  </View>
-                )}
-
                 {showExplanation && currentQuestion?.explanation && currentQuestion.explanation.trim() !== '' && currentQuestion.explanation !== 'No explanation available' && (
                   <View ref={explanationRef} style={[styles.explanationContainer, { backgroundColor: colors.cardAlt }]}>
                     <ThemedText style={[styles.explanationTitle, { color: colors.tint }]}>Explanation:</ThemedText>
@@ -1395,27 +1504,6 @@ export default function MCQScreen() {
                     />
                   </View>
                 )}
-
-                <View style={[styles.navigationContainer, { borderTopColor: colors.border, borderBottomColor: colors.border }]}>
-                  <TouchableOpacity
-                    style={[styles.navButton, styles.prevButton, { borderColor: colors.border }, isFirstQuestion && styles.navButtonDisabled]}
-                    onPress={handlePreviousQuestion}
-                    disabled={isFirstQuestion}
-                  >
-                    <IconSymbol name="chevron.left" size={24} color={colors.tint} />
-                    <ThemedText style={[styles.prevButtonText, { color: colors.tint }]}>{t('mcq.previous')}</ThemedText>
-                  </TouchableOpacity>
-
-                  <TouchableOpacity
-                    style={[styles.navButton, styles.nextButton, { backgroundColor: colors.tint }]}
-                    onPress={isLastQuestion ? handleResult : handleNextQuestion}
-                  >
-                    <ThemedText style={[styles.nextButtonText, { color: '#fff' }]}>
-                      {isLastQuestion ? t('mcq.finish') : t('mcq.next')}
-                    </ThemedText>
-                    <IconSymbol name="chevron.right" size={24} color="#fff" />
-                  </TouchableOpacity>
-                </View>
               </ScrollView>
             </>
           ) : (
@@ -1733,7 +1821,7 @@ const styles = StyleSheet.create({
   },
   progressContainer: {
     marginTop: 10,
-    width: '75%',
+    width: '100%',
   },
   progressBar: {
     height: 8,

@@ -503,6 +503,8 @@ export default {
     error: "Failed to load flashcards. Please check your internet connection and try again.",
     noFlashcards: "No flashcards available for this grade yet.",
     clickToReveal: "Click on the question to see the answer",
+    tapToSeeAnswer: "Tap to see answer",
+    tapToSeeQuestion: "Tap to see question",
     grades: {
       "grade-9": "Grade 9",
       "grade-10": "Grade 10",

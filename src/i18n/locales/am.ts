@@ -493,6 +493,8 @@ export default {
     error: "ፍላሽ ካርዶች ለመጫን አልተቻለም። እባክዎ የኢንተርኔት ግንኙነትዎን ያረጋግጡ እና እንደገና ይሞክሩ።",
     noFlashcards: "ለዚህ ክፍል ፍላሽ ካርዶች አልተዘጋጁም።",
     clickToReveal: "መልሱን ለመመልከት ጥያቄውን ክሊክ ያድርጉ!",
+    tapToSeeAnswer: "መልሱን ለመመልከት ይንኩ።",
+    tapToSeeQuestion: "ጥያቄውን ለመመልከት ካርዱን ይንኩ።",
     grades: {
       "grade-9": "9ኛ ክፍል",
       "grade-10": "10ኛ ክፍል",
