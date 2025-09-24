@@ -12,6 +12,7 @@ import { ThemeProvider, useTheme } from '@/contexts/ThemeContext';
 import { AuthProvider } from '@/contexts/AuthContext';
 import { LanguageProvider } from '@/contexts/LanguageContext';
 import i18n, { initI18n } from '../i18n/i18n';
+import CustomSplashScreen from '@/components/SplashScreen';
 
 // Ignore specific warnings
 LogBox.ignoreLogs([
@@ -27,15 +28,22 @@ function RootLayoutNav() {
   const [loaded] = useFonts({
     SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
   });
+  const [showSplash, setShowSplash] = useState(true);
 
   useEffect(() => {
     if (loaded) {
+      // Hide the native splash screen
       SplashScreen.hideAsync();
+      
+      // Show custom splash for a bit longer with animation
+      setTimeout(() => {
+        setShowSplash(false);
+      }, 2000); // Show splash for 2 seconds
     }
   }, [loaded]);
 
-  if (!loaded) {
-    return null;
+  if (!loaded || showSplash) {
+    return <CustomSplashScreen />;
   }
 
   return (

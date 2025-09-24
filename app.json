@@ -10,9 +10,9 @@
     "newArchEnabled": true,
     "description": "Qelem - Educational platform for interactive learning",
     "splash": {
-      "image": "./assets/images/logo/app-icon.png",
+      "image": "./assets/images/logo/white-logo.png",
       "resizeMode": "contain",
-      "backgroundColor": "#ffffff"
+      "backgroundColor": "#6B54AE"
     },
     "privacy": "public",
     "sdkVersion": "52.0.0",
@@ -30,20 +30,20 @@
       "bundleIdentifier": "com.yosefashenafi.Qelem",
       "icon": "./assets/images/logo/app-icon.png",
       "splash": {
-        "image": "./assets/images/logo/app-icon.png",
+        "image": "./assets/images/logo/white-logo.png",
         "resizeMode": "contain",
-        "backgroundColor": "#ffffff"
+        "backgroundColor": "#6B54AE"
       }
     },
           "android": {
         "adaptiveIcon": {
           "foregroundImage": "./assets/images/logo/app-icon.png",
-          "backgroundColor": "#ffffff"
+          "backgroundColor": "#6B54AE"
         },
         "splash": {
-          "image": "./assets/images/logo/app-icon.png",
+          "image": "./assets/images/logo/white-logo.png",
           "resizeMode": "contain",
-          "backgroundColor": "#ffffff"
+          "backgroundColor": "#6B54AE"
         },
         "package": "com.yosefashenafi.Qelem",
         "versionCode": 3,
@@ -65,10 +65,10 @@
       [
         "expo-splash-screen",
         {
-          "image": "./assets/images/logo/app-icon.png",
+          "image": "./assets/images/logo/white-logo.png",
           "imageWidth": 150,
           "resizeMode": "contain",
-          "backgroundColor": "#ffffff"
+          "backgroundColor": "#6B54AE"
         }
       ],
       "expo-secure-store"
