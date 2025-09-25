@@ -1826,6 +1826,7 @@ const styles = StyleSheet.create({
     padding: 20,
     borderRadius: 12,
     marginTop: 20,
+    marginBottom: 20,
   },
   explanationTitle: {
     marginBottom: 10,
