@@ -237,7 +237,7 @@ export default function PlanSelectionScreen() {
           name: userData.fullName,
           username: userData.username,
           password: userData.password,
-          grade: userData.grade === 'KG' ? 'grade kg' : `grade ${userData.grade}`,
+          grade: userData.grade === 'KG' ? 'kg' : `grade ${userData.grade}`,
           phoneNumber: userData.phoneNumber?.replace('+251', '').replace(/^9/, '09') || userData.phoneNumber,
           Plan: selectedPlan.name
         };
