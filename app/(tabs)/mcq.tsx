@@ -45,6 +45,7 @@ export default function MCQScreen() {
   const [selectedExamType, setSelectedExamType] = useState<string | null>(null);
   const [selectedSubject, setSelectedSubject] = useState('');
   const [selectedChapter, setSelectedChapter] = useState('');
+  const [selectedChapterName, setSelectedChapterName] = useState('');
   const [selectedYear, setSelectedYear] = useState<string | null>(null);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null);
@@ -171,6 +172,7 @@ export default function MCQScreen() {
       // Reset selections first
       setSelectedSubject('');
       setSelectedChapter('');
+      setSelectedChapterName('');
       
       // Set the grade if not already set
       if (data.grades.length > 0 && !selectedGrade) {
@@ -295,6 +297,7 @@ export default function MCQScreen() {
       setSelectedGrade(null);
       setSelectedSubject('');
       setSelectedChapter('');
+      setSelectedChapterName('');
       setCurrentQuestionIndex(0);
       setSelectedAnswer(null);
       setShowExplanation(false);
@@ -367,11 +370,20 @@ export default function MCQScreen() {
   };
 
   const handleAnswerSelect = (answerId: string) => {
+    console.log('🎯 Answer Selected:', {
+      answerId,
+      currentQuestion: currentQuestion?.id,
+      hasExplanation: !!currentQuestion?.explanation,
+      explanation: currentQuestion?.explanation
+    });
+    
     if (selectedAnswer) return; // Prevent multiple selections
     setSelectedAnswer(answerId);
     setAnsweredQuestions(prev => ({ ...prev, [currentQuestionIndex]: answerId }));
     setShowExplanation(true);
     setShowAnswerMessage(false);
+    
+    console.log('🎯 Explanation should now be shown:', true);
     
     // Update score if answer is correct
     const isCorrect = currentQuestion?.options?.find((opt: Option) => opt.id === answerId)?.isCorrect;
@@ -844,6 +856,7 @@ export default function MCQScreen() {
                 setShowTest(false);
                 setSelectedSubject('');
                 setSelectedChapter('');
+                setSelectedChapterName('');
                 fetchMCQData();
               }}
             >
@@ -866,6 +879,7 @@ export default function MCQScreen() {
               setShowChapterChooser(false);
               setSelectedSubject('');
               setSelectedChapter('');
+              setSelectedChapterName('');
               // Reset to show the MCQ subject and chapter chooser
               setSelectedExamType('mcq');
               // Reset dropdown states
@@ -915,6 +929,7 @@ export default function MCQScreen() {
                     style={[styles.chapterItem, { backgroundColor: colors.cardAlt, borderColor: colors.border }]}
                     onPress={() => {
                       setSelectedChapter(chapter.id);
+                      setSelectedChapterName(chapter.name);
                       setShowChapterChooser(false);
                       // Start the test after a short delay to ensure state is updated
                       setTimeout(() => {
@@ -966,6 +981,7 @@ export default function MCQScreen() {
                   setSelectedExamType(null);
                   setSelectedSubject('');
                   setSelectedChapter('');
+                  setSelectedChapterName('');
                   setSelectedYear(null);
                 }}
               >
@@ -1067,6 +1083,7 @@ export default function MCQScreen() {
                                     onPress={() => {
                                       setSelectedSubject(subject);
                                       setSelectedChapter('');
+                                      setSelectedChapterName('');
                                       setShowSubjectDropdown(false);
                                     }}
                                   >
@@ -1089,6 +1106,7 @@ export default function MCQScreen() {
                                     onPress={() => {
                                       setSelectedSubject(subject.id);
                                       setSelectedChapter('');
+                                      setSelectedChapterName('');
                                       setShowSubjectDropdown(false);
                                     }}
                                   >
@@ -1216,6 +1234,7 @@ export default function MCQScreen() {
                                     style={[styles.modalItem, { backgroundColor: colors.background, borderBottomColor: colors.border }]}
                                     onPress={() => {
                                       setSelectedChapter(chapter.id);
+                                      setSelectedChapterName(chapter.name);
                                       setShowChapterDropdown(false);
                                     }}
                                   >
@@ -1299,7 +1318,7 @@ export default function MCQScreen() {
                 <View style={[styles.breadcrumbContainer, { backgroundColor: colors.cardAlt }]}>
                   <View style={[styles.breadcrumbItem, { backgroundColor: colors.background, borderColor: colors.border }]}>
                     <ThemedText style={[styles.breadcrumbText, { color: colors.tint }]}>
-                      {user?.grade ? `Grade ${user.grade}` : 'Select Grade'}
+                      {user?.grade ? user.grade.charAt(0).toUpperCase() + user.grade.slice(1) : 'Select Grade'}
                     </ThemedText>
                   </View>
                   {selectedGrade && (
@@ -1317,7 +1336,7 @@ export default function MCQScreen() {
                       <IconSymbol name="chevron.right" size={16} color={colors.tint} />
                       <View style={[styles.breadcrumbItem, { backgroundColor: colors.background, borderColor: colors.border }]}>
                         <ThemedText style={[styles.breadcrumbText, { color: colors.tint }]}>
-                          {selectedChapter ? selectedSubjectData?.chapters?.find((c: Chapter) => c.id === selectedChapter)?.name : 'Select Chapter'}
+                          {selectedChapter ? `Chapter ${selectedChapterName}` : 'Select Chapter'}
                         </ThemedText>
                       </View>
                     </>
@@ -1490,18 +1509,58 @@ export default function MCQScreen() {
                   )}
                 </View>
 
-                {showExplanation && currentQuestion?.explanation && currentQuestion.explanation.trim() !== '' && currentQuestion.explanation !== 'No explanation available' && (
+                {(() => {
+                  console.log('🔍 Explanation Debug:', {
+                    showExplanation,
+                    hasExplanation: !!currentQuestion?.explanation,
+                    explanation: currentQuestion?.explanation,
+                    explanationLength: currentQuestion?.explanation?.length || 0,
+                    explanationTrimmed: currentQuestion?.explanation?.trim() || '',
+                    isNotNoExplanation: currentQuestion?.explanation !== 'No explanation available'
+                  });
+                  
+                  return showExplanation && currentQuestion?.explanation && currentQuestion.explanation.trim() !== '' && currentQuestion.explanation !== 'No explanation available';
+                })() && (
                   <View ref={explanationRef} style={[styles.explanationContainer, { backgroundColor: colors.cardAlt }]}>
                     <ThemedText style={[styles.explanationTitle, { color: colors.tint }]}>Explanation:</ThemedText>
-                    <RichText 
-                      text={currentQuestion.explanation}
-                      style={styles.explanationText}
-                      color={colors.text}
-                      fontSize={16}
-                      textAlign="left"
-                      lineHeight={24}
-                      image_url={currentQuestion?.image_url}
-                    />
+                    
+                    {(() => {
+                      // Find the correct answer letter
+                      const correctOption = currentQuestion?.options?.find((opt: Option) => opt.isCorrect);
+                      const correctAnswerLetter = correctOption?.id || '';
+                      
+                      console.log('🔍 Correct Answer Debug:', {
+                        correctOption,
+                        correctAnswerLetter,
+                        allOptions: currentQuestion?.options
+                      });
+                      
+                      const explanation = currentQuestion.explanation;
+                      
+                      return (
+                        <View style={styles.explanationContent}>
+                          {/* Colored answer letter */}
+                          <View style={styles.answerLetterContainer}>
+                            <ThemedText style={[styles.answerLetter, { color: '#4CAF50' }]}>
+                              {correctAnswerLetter}.
+                            </ThemedText>
+                          </View>
+                          
+                          {/* Explanation text */}
+                          <View style={styles.explanationTextContainer}>
+                            <RichText 
+                              text={explanation}
+                              style={styles.explanationText}
+                              color={colors.text}
+                              fontSize={16}
+                              textAlign="left"
+                              lineHeight={24}
+                              image_url={currentQuestion?.image_url}
+                            />
+                          </View>
+                        </View>
+                      );
+                    })()}
                   </View>
                 )}
               </ScrollView>
@@ -1553,6 +1612,7 @@ export default function MCQScreen() {
                     setShowTest(false);
                     setSelectedSubject('');
                     setSelectedChapter('');
+                    setSelectedChapterName('');
                     fetchMCQData();
                   }}
                 >
@@ -1769,6 +1829,29 @@ const styles = StyleSheet.create({
   },
   explanationTitle: {
     marginBottom: 10,
+  },
+  explanationContent: {
+    flexDirection: 'column',
+    alignItems: 'flex-start',
+    gap: 12,
+  },
+  answerLetterContainer: {
+    backgroundColor: 'rgba(76, 175, 80, 0.1)',
+    borderRadius: 20,
+    width: 40,
+    height: 40,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 2,
+    borderColor: '#4CAF50',
+  },
+  answerLetter: {
+    fontSize: 18,
+    fontWeight: 'bold',
+  },
+  explanationTextContainer: {
+    flex: 1,
+    width: '100%',
   },
   explanationText: {
     lineHeight: 24,

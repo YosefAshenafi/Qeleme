@@ -358,7 +358,7 @@ export const getRegularMCQQuestions = async (
         id: q.id,
         question: q.question,
         options: options,
-        explanation: q.explanations || '',
+        explanation: q.explanation || q.explanations || '',
         image_url: q.image_url || undefined,
         subjectId: subjectKey,
         gradeLevelId: gradeLevelId,
