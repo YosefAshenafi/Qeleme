@@ -1473,7 +1473,7 @@ export default function MCQScreen() {
                 </View>
 
                 <View style={styles.optionsContainer}>
-                  {currentQuestion?.options?.map((option: Option, index: number) => (
+                  {currentQuestion?.options?.filter((option: Option) => option.text && option.text.trim() !== '')?.map((option: Option, index: number) => (
                     <TouchableOpacity
                       key={option.id}
                       style={[
