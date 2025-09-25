@@ -94,6 +94,21 @@ export default function PlanSelectionScreen() {
     return plan._id || (plan as any).id || (plan as any).planId || plan.name;
   };
 
+  const getDefaultDescription = (plan: PaymentPlan) => {
+    // Use the plan's own description if available, otherwise fall back to a generic description
+    if (plan.description && plan.description.trim()) {
+      return plan.description;
+    }
+    
+    // Fallback: generate description based on duration
+    const duration = plan.durationInMonths;
+    if (duration === 0) {
+      return t('auth.planSelection.descriptions.free');
+    } else {
+      return `${duration} ${t('auth.planSelection.months')} ${t('auth.planSelection.descriptions.fullAccess')}`;
+    }
+  };
+
   const getTotalCost = () => {
     if (!selectedPlans.length) return 0;
     
@@ -383,63 +398,63 @@ export default function PlanSelectionScreen() {
       switch (plan.durationInMonths) {
         case 12:
           return {
-            background: isSelected ? '#DBEAFE' : '#EFF6FF',
-            border: isSelected ? '#2563EB' : '#1D4ED8',
+            background: isSelected ? '#EFF6FF' : '#F8FAFC',
+            border: isSelected ? '#3B82F6' : '#2563EB',
             text: '#1E40AF',
-            subtitle: '#6B7280',
-            gradient: ['#DBEAFE', '#EFF6FF'],
+            subtitle: '#64748B',
+            gradient: ['#EFF6FF', '#F8FAFC'],
             accent: '#F59E0B',
-            activeBorder: '#2563EB'
+            activeBorder: '#3B82F6'
           };
         case 6:
           return {
-            background: isSelected ? '#D1FAE5' : '#ECFDF5',
-            border: isSelected ? '#059669' : '#047857',
+            background: isSelected ? '#ECFDF5' : '#F0FDF4',
+            border: isSelected ? '#10B981' : '#059669',
             text: '#047857',
-            subtitle: '#6B7280',
-            gradient: ['#D1FAE5', '#ECFDF5'],
+            subtitle: '#64748B',
+            gradient: ['#ECFDF5', '#F0FDF4'],
             accent: '#10B981',
-            activeBorder: '#059669'
+            activeBorder: '#10B981'
           };
         case 3:
           return {
-            background: isSelected ? '#FED7AA' : '#FFEDD5',
-            border: isSelected ? '#EA580C' : '#C2410C',
+            background: isSelected ? '#FFEDD5' : '#FFF7ED',
+            border: isSelected ? '#F97316' : '#EA580C',
             text: '#C2410C',
-            subtitle: '#6B7280',
-            gradient: ['#FED7AA', '#FFEDD5'],
+            subtitle: '#64748B',
+            gradient: ['#FFEDD5', '#FFF7ED'],
             accent: '#F97316',
-            activeBorder: '#EA580C'
+            activeBorder: '#F97316'
           };
         case 1:
           return {
-            background: isSelected ? '#EDE9FE' : '#F5F3FF',
-            border: isSelected ? '#7C3AED' : '#6D28D9',
+            background: isSelected ? '#F5F3FF' : '#FAF5FF',
+            border: isSelected ? '#8B5CF6' : '#7C3AED',
             text: '#6D28D9',
-            subtitle: '#6B7280',
-            gradient: ['#EDE9FE', '#F5F3FF'],
+            subtitle: '#64748B',
+            gradient: ['#F5F3FF', '#FAF5FF'],
             accent: '#8B5CF6',
-            activeBorder: '#7C3AED'
+            activeBorder: '#8B5CF6'
           };
         case 0:
           return {
-            background: isSelected ? '#F3F4F6' : '#F9FAFB',
-            border: isSelected ? '#4B5563' : '#374151',
+            background: isSelected ? '#F8FAFC' : '#F9FAFB',
+            border: isSelected ? '#64748B' : '#475569',
             text: '#374151',
-            subtitle: '#6B7280',
-            gradient: ['#F3F4F6', '#F9FAFB'],
-            accent: '#6B7280',
-            activeBorder: '#4B5563'
+            subtitle: '#64748B',
+            gradient: ['#F8FAFC', '#F9FAFB'],
+            accent: '#64748B',
+            activeBorder: '#64748B'
           };
         default:
           return {
-            background: isSelected ? '#F3F4F6' : '#F9FAFB',
-            border: isSelected ? '#4B5563' : '#374151',
+            background: isSelected ? '#F8FAFC' : '#F9FAFB',
+            border: isSelected ? '#64748B' : '#475569',
             text: '#374151',
-            subtitle: '#6B7280',
-            gradient: ['#F3F4F6', '#F9FAFB'],
-            accent: '#6B7280',
-            activeBorder: '#4B5563'
+            subtitle: '#64748B',
+            gradient: ['#F8FAFC', '#F9FAFB'],
+            accent: '#64748B',
+            activeBorder: '#64748B'
           };
       }
     }
@@ -477,99 +492,97 @@ export default function PlanSelectionScreen() {
               <ThemedText style={[styles.title, { color: colors.text }]}>{t('auth.planSelection.title')}</ThemedText>
             </View>
 
-            <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
-              <View style={styles.plansContainer}>
-                {plans.map((plan, index) => {
-                  const planColors = getPlanColors(plan);
-                  const isRecommended = plan.durationInMonths === 6;
-                  const isSelected = selectedPlans.some(p => p.plan === getPlanId(plan));
-                  const isFree = plan.durationInMonths === 0;
-                  
-                  return (
-                    <TouchableOpacity
-                      key={index}
-                      style={[
-                        styles.planCard,
-                        {
-                          borderColor: isSelected ? planColors.activeBorder : planColors.border,
-                          borderWidth: isSelected ? 3 : 2,
-                          shadowColor: isDarkMode ? '#000000' : '#000000',
-                          shadowOffset: {
-                            width: 0,
-                            height: isSelected ? 8 : 4,
-                          },
-                          shadowOpacity: isDarkMode ? 0.4 : 0.15,
-                          shadowRadius: isSelected ? 16 : 12,
-                          elevation: isSelected ? 16 : 12,
-                        }
-                      ]}
-                      onPress={() => handlePlanSelect(plan)}
+            <View style={styles.plansContainer}>
+              {plans.map((plan, index) => {
+                const planColors = getPlanColors(plan);
+                const isRecommended = plan.durationInMonths === 6;
+                const isSelected = selectedPlans.some(p => p.plan === getPlanId(plan));
+                const isFree = plan.durationInMonths === 0;
+                
+                return (
+                  <TouchableOpacity
+                    key={index}
+                    style={[
+                      styles.planCard,
+                      {
+                        borderColor: isSelected ? planColors.activeBorder : planColors.border,
+                        borderWidth: isSelected ? 3 : 2,
+                        shadowColor: isDarkMode ? '#000000' : '#000000',
+                        shadowOffset: {
+                          width: 0,
+                          height: isSelected ? 8 : 4,
+                        },
+                        shadowOpacity: isDarkMode ? 0.4 : 0.15,
+                        shadowRadius: isSelected ? 16 : 12,
+                        elevation: isSelected ? 16 : 12,
+                      }
+                    ]}
+                    onPress={() => handlePlanSelect(plan)}
+                  >
+                    <LinearGradient
+                      colors={planColors.gradient as [string, string]}
+                      style={styles.planCardGradient}
                     >
-                      <LinearGradient
-                        colors={planColors.gradient as [string, string]}
-                        style={styles.planCardGradient}
-                      >
-                        {/* Recommended Badge - Ribbon Style */}
-                        {isRecommended && (
-                          <View style={styles.ribbonBadge}>
-                            <LinearGradient
-                              colors={['#8B5CF6', '#7C3AED']}
-                              style={styles.ribbonGradient}
-                            >
-                              <Ionicons name="star" size={12} color="#FFFFFF" />
-                              <ThemedText style={styles.ribbonText}>
-                                {t('auth.planSelection.recommended')}
-                              </ThemedText>
-                            </LinearGradient>
-                          </View>
-                        )}
-
-                        {/* Header */}
-                        <View style={styles.planHeader}>
-                          <View style={styles.planTitleContainer}>
-                            <ThemedText style={[styles.planName, { color: planColors.text }]}>
-                              {plan.name}
+                      {/* Recommended Badge - Ribbon Style */}
+                      {isRecommended && (
+                        <View style={styles.ribbonBadge}>
+                          <LinearGradient
+                            colors={['#8B5CF6', '#7C3AED']}
+                            style={styles.ribbonGradient}
+                          >
+                            <Ionicons name="star" size={12} color="#FFFFFF" />
+                            <ThemedText style={styles.ribbonText}>
+                              {t('auth.planSelection.recommended')}
                             </ThemedText>
-                          </View>
-                          
-                          <View style={styles.priceContainer}>
-                            <ThemedText style={[styles.planPrice, { color: planColors.text }]}>
-                              {isFree ? t('auth.planSelection.free') : `ETB ${typeof plan.amount === 'string' ? parseFloat(plan.amount).toFixed(2) : plan.amount.toFixed(2)}`}
-                            </ThemedText>
-                            {!isFree && (
-                              <ThemedText style={[styles.planDuration, { color: planColors.subtitle }]}>
-                              </ThemedText>
-                            )}
-                          </View>
+                          </LinearGradient>
                         </View>
+                      )}
+
+                      {/* Header */}
+                      <View style={styles.planHeader}>
+                        <View style={styles.planTitleContainer}>
+                          <ThemedText style={[styles.planName, { color: planColors.text }]}>
+                            {plan.name}
+                          </ThemedText>
+                        </View>
+                        
+                        <View style={styles.priceContainer}>
+                          <ThemedText style={[styles.planPrice, { color: planColors.text }]}>
+                            {isFree ? t('auth.planSelection.free') : `ETB ${typeof plan.amount === 'string' ? parseFloat(plan.amount).toFixed(2) : plan.amount.toFixed(2)}`}
+                          </ThemedText>
+                          {!isFree && (
+                            <ThemedText style={[styles.planDuration, { color: planColors.subtitle }]}>
+                            </ThemedText>
+                          )}
+                        </View>
+                      </View>
 
                         {/* Description */}
                         <View style={styles.descriptionContainer}>
                           <ThemedText style={[styles.planDescription, { color: planColors.subtitle }]}>
-                            {plan.description}
+                            {plan.description || getDefaultDescription(plan)}
                           </ThemedText>
                         </View>
 
-                        {/* Features or Remark */}
-                        {plan.remark && (
-                          <View style={styles.remarkContainer}>
-                            <Ionicons name="checkmark-circle" size={16} color={planColors.accent} />
-                            <ThemedText style={[styles.planRemark, { color: planColors.subtitle }]}>
-                              {plan.remark}
-                            </ThemedText>
-                          </View>
-                        )}
+                      {/* Features or Remark */}
+                      {plan.remark && (
+                        <View style={styles.remarkContainer}>
+                          <Ionicons name="checkmark-circle" size={16} color={planColors.accent} />
+                          <ThemedText style={[styles.planRemark, { color: planColors.subtitle }]}>
+                            {plan.remark}
+                          </ThemedText>
+                        </View>
+                      )}
 
-                        {/* Active Border Indicator */}
-                        {isSelected && (
-                          <View style={[styles.activeBorderIndicator, { borderColor: planColors.activeBorder }]} />
-                        )}
-                      </LinearGradient>
-                    </TouchableOpacity>
-                  );
-                })}
-              </View>
-            </ScrollView>
+                      {/* Active Border Indicator */}
+                      {isSelected && (
+                        <View style={[styles.activeBorderIndicator, { borderColor: planColors.activeBorder }]} />
+                      )}
+                    </LinearGradient>
+                  </TouchableOpacity>
+                );
+              })}
+            </View>
 
             <View style={styles.footer}>
               <View style={styles.totalContainer}>
@@ -628,13 +641,13 @@ const styles = StyleSheet.create({
   },
   container: {
     flex: 1,
-    padding: 24,
+    padding: 12,
   },
   header: {
-    marginBottom: 24,
+    marginBottom: 12,
   },
   backButton: {
-    marginBottom: 16,
+    marginBottom: 8,
   },
   languageToggleContainer: {
     position: 'absolute',
@@ -645,33 +658,39 @@ const styles = StyleSheet.create({
     zIndex: 1,
   },
   title: {
-    fontSize: 32,
+    fontSize: 24,
     fontWeight: '700',
-    marginBottom: 8,
-    paddingTop: 10,
+    marginBottom: 4,
+    paddingTop: 6,
   },
   subtitle: {
-    fontSize: 16,
-  },
-  scrollView: {
-    flex: 1,
+    fontSize: 12,
   },
   plansContainer: {
-    gap: 20,
-    paddingBottom: 24,
+    flex: 1,
+    gap: 6,
+    paddingBottom: 6,
   },
   planCard: {
-    borderRadius: 20,
+    borderRadius: 12,
     position: 'relative',
     overflow: 'hidden',
-    marginBottom: 20,
-    minHeight: 140,
+    marginBottom: 8,
+    minHeight: 95,
     backgroundColor: 'transparent',
+    shadowColor: '#000000',
+    shadowOffset: {
+      width: 0,
+      height: 1,
+    },
+    shadowOpacity: 0.08,
+    shadowRadius: 4,
+    elevation: 2,
   },
   planCardGradient: {
     flex: 1,
-    padding: 24,
-    borderRadius: 18,
+    padding: 14,
+    borderRadius: 10,
   },
   recommendedBadge: {
     marginLeft: 8,
@@ -693,7 +712,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'flex-start',
-    marginBottom: 20,
+    marginBottom: 6,
   },
   planTitleContainer: {
     flexDirection: 'row',
@@ -701,41 +720,42 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   planName: {
-    fontSize: 22,
+    fontSize: 16,
     fontWeight: '700',
   },
   priceContainer: {
     alignItems: 'flex-end',
   },
   planPrice: {
-    fontSize: 28,
-    fontWeight: '800',
-    marginBottom: 6,
-    paddingTop: 10,
+    fontSize: 22,
+    fontWeight: '900',
+    marginBottom: 2,
+    paddingTop: 4,
+    marginTop: 2,
   },
   planDuration: {
-    fontSize: 15,
+    fontSize: 11,
     fontWeight: '500',
   },
   descriptionContainer: {
-    marginBottom: 20,
+    marginBottom: 4,
   },
   planDescription: {
-    fontSize: 16,
-    lineHeight: 24,
+    fontSize: 12,
+    lineHeight: 16,
     opacity: 0.85,
   },
   remarkContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 10,
-    paddingVertical: 8,
-    paddingHorizontal: 12,
+    gap: 4,
+    paddingVertical: 3,
+    paddingHorizontal: 6,
     backgroundColor: 'rgba(255, 255, 255, 0.1)',
-    borderRadius: 12,
+    borderRadius: 6,
   },
   planRemark: {
-    fontSize: 14,
+    fontSize: 9,
     flex: 1,
     opacity: 0.9,
     fontWeight: '500',
@@ -782,7 +802,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'transparent',
   },
   footer: {
-    paddingTop: 20,
+    paddingTop: 12,
     borderTopWidth: 1,
     borderTopColor: '#E5E7EB',
     backgroundColor: 'transparent',
@@ -791,21 +811,21 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 20,
+    marginBottom: 12,
   },
   totalLabel: {
-    fontSize: 18,
+    fontSize: 14,
     fontWeight: '600',
   },
   totalAmount: {
-    paddingTop: 15,
-    fontSize: 28,
+    paddingTop: 8,
+    fontSize: 20,
     fontWeight: '800',
   },
   continueButton: {
     width: '100%',
-    height: 56,
-    borderRadius: 16,
+    height: 44,
+    borderRadius: 12,
     overflow: 'hidden',
     opacity: 0.5,
   },
@@ -830,7 +850,7 @@ const styles = StyleSheet.create({
   },
   buttonText: {
     color: '#FFFFFF',
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: '600',
   },
 }); 

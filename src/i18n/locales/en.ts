@@ -338,6 +338,14 @@ export default {
       months: 'months',
       calculation: '{{planPrice}} ETB × {{numberOfChildren}} children = {{total}} ETB',
       pricePerChild: 'Price per child: {{price}} ETB',
+      descriptions: {
+        free: 'Free plan with limited access to basic features',
+        oneMonth: '1 month of full access to all learning materials',
+        threeMonths: '3 months of full access to all learning materials',
+        sixMonths: '6 months of full access to all learning materials',
+        twelveMonths: '12 months of full access with premium features',
+        fullAccess: 'of full access to all learning materials'
+      },
       success: {
         title: 'Registration Successful!',
         message: 'Your account has been created successfully. Please login to continue your learning journey.',

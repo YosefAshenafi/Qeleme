@@ -619,6 +619,14 @@ export default {
       months: 'ወራት',
       calculation: '{{planPrice}} ብር × {{numberOfChildren}} ልጆች = {{total}} ብር',
       pricePerChild: 'በአንድ ልጅ ዋጋ: {{price}} ብር',
+      descriptions: {
+        free: 'ነጻ እቅድ ከመሰረታዊ ባህሪያት ጋር የተገደበ መዳረሻ',
+        oneMonth: '1 ወር የሙሉ መዳረሻ ወደ ሁሉም የትምህርት ቁሳቁሶች',
+        threeMonths: '3 ወራት የሙሉ መዳረሻ ወደ ሁሉም የትምህርት ቁሳቁሶች',
+        sixMonths: '6 ወራት የሙሉ መዳረሻ ወደ ሁሉም የትምህርት ቁሳቁሶች',
+        twelveMonths: '12 ወራት የሙሉ መዳረሻ ከፕሪሚየም ባህሪያት ጋር',
+        fullAccess: 'የሙሉ መዳረሻ ወደ ሁሉም የትምህርት ቁሳቁሶች'
+      },
       success: {
         title: 'ምዝገባ ተሳክቷል!',
         message: 'መለያዎ በተሳካ ሁኔታ ተፈጥሯል። የትምህርት ጉዞዎን ለመቀጠል እባክዎ ይግቡ።',
