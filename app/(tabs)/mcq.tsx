@@ -1336,7 +1336,7 @@ export default function MCQScreen() {
                       <IconSymbol name="chevron.right" size={16} color={colors.tint} />
                       <View style={[styles.breadcrumbItem, { backgroundColor: colors.background, borderColor: colors.border }]}>
                         <ThemedText style={[styles.breadcrumbText, { color: colors.tint }]}>
-                          {selectedChapter ? `Chapter ${selectedChapterName}` : 'Select Chapter'}
+                          {selectedChapter ? `Chapter ${selectedSubjectData?.chapters?.find((c: Chapter) => c.id === selectedChapter)?.name || selectedChapterName}` : 'Select Chapter'}
                         </ThemedText>
                       </View>
                     </>
