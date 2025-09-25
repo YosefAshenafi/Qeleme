@@ -670,6 +670,7 @@ export default {
   },
   kg: {
     welcome: 'Welcome {{name}}!',
+    howToPlay: 'How to Play',
     subtitle: "Let's learn something new today!",
     categories: {
       // Fallback categories

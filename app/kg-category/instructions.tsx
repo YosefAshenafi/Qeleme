@@ -174,7 +174,7 @@ export default function KGCategoryInstructions() {
         {/* Instructions */}
         <Animated.View style={[styles.instructionsContainer, instructionAnimatedStyle]}>
           <ThemedText style={[styles.instructionsTitle, { color: colors.text }]}>
-            🎮 {t('kg.instructions.howToPlay', 'How to Play')} 🎮
+            🎮 {t('kg.howToPlay')} 🎮
           </ThemedText>
           
           <View style={[styles.instructionItem, { backgroundColor: colors.tint + '15' }]}>

@@ -265,6 +265,7 @@ export default {
   kg: {
     welcome: 'እንኳን ደህና መጡ {{name}}!',
     subtitle: 'ዛሬ አዲስ ነገር ለመማር ዝግጁ ኖት?',
+    howToPlay: 'አጠቃቀም',
     categories: {
       // Fallback categories
       'Animals': 'እንስሳት',
