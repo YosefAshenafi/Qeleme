@@ -1714,6 +1714,7 @@ const styles = StyleSheet.create({
   },
   questionContainer: {
     marginBottom: 30,
+    marginTop: 20,
   },
   questionText: {
     fontSize: 24,
