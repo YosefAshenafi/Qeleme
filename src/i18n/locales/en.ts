@@ -417,6 +417,7 @@ export default {
     processing: 'Processing...',
     retry: 'Retry',
     imageLoadError: 'Image failed to load',
+    grade: 'Grade',
   },
   mcq: {
     question: 'Question',

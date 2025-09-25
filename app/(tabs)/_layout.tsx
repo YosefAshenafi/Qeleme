@@ -11,6 +11,7 @@ import { IconSymbol } from '../../components/ui/IconSymbol';
 import { useTheme } from '../../contexts/ThemeContext';
 import { getColors } from '../../constants/Colors';
 import { LanguageToggle } from '../../components/ui/LanguageToggle';
+import { GradeBadge } from '../../components/ui/GradeBadge';
 
 export default function TabLayout() {
   const { isDarkMode } = useTheme();
@@ -30,7 +31,6 @@ export default function TabLayout() {
         tabBarActiveTintColor: colors.background,
         tabBarInactiveTintColor: colors.background + 'CC',
         headerShown: true,
-        headerTitle: '',
         headerShadowVisible: false,
         headerStyle: {
           backgroundColor: colors.tint,
@@ -47,16 +47,33 @@ export default function TabLayout() {
             </Text>
           </View>
         ),
+        headerTitle: () => (
+          <View style={[styles.gradeContainer, { backgroundColor: colors.background + '20', borderColor: colors.background }]}>
+            <Text style={styles.gradeIcon}>🎓</Text>
+            <Text style={[styles.gradeText, { color: colors.background }]}>
+              {t('common.grade')}: {user?.grade?.replace(/\D/g, '')}
+            </Text>
+          </View>
+        ),
         headerRight: () => (
-          <View style={[styles.headerRight, { paddingTop: 10, paddingBottom: 10 }]}>
-            {pathname !== '/homework' && <LanguageToggle colors={{ card: 'transparent', text: colors.background }} />}
+          <View style={styles.headerRight}>
+            {pathname !== '/homework' && (
+              <LanguageToggle 
+                colors={{ 
+                  card: 'transparent', 
+                  text: colors.background,
+                  tint: colors.background 
+                }} 
+              />
+            )}
             <TouchableOpacity 
               onPress={() => router.push('/profile')}
+              style={styles.profileButton}
             >
               <View style={[styles.profileIconContainer, { backgroundColor: colors.background + '20' }]}>
                 <IconSymbol 
                   name="person.fill" 
-                  size={24} 
+                  size={20} 
                   color={colors.background} 
                 />
               </View>
@@ -160,32 +177,43 @@ export default function TabLayout() {
 const styles = StyleSheet.create({
   headerLeft: {
     marginLeft: 15,
-    marginTop: 10,
     flexDirection: 'row',
     alignItems: 'center',
+    gap: 8,
   },
   logo: {
-    width: 35,
-    height: 35,
-    marginRight: 8,
+    width: 32,
+    height: 32,
   },
   logoText: {
-    fontSize: 20,
+    fontSize: 18,
     fontWeight: 'bold',
     letterSpacing: 0.5,
+  },
+  headerCenter: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    flex: 1,
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    zIndex: 1,
   },
   headerRight: {
     flexDirection: 'row',
     alignItems: 'center',
     marginRight: 15,
+    gap: 8,
+  },
+  profileButton: {
+    padding: 4,
   },
   profileIconContainer: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+    width: 36,
+    height: 36,
+    borderRadius: 18,
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 15,
   },
   tabIconContainer: {
     width: 50,
@@ -195,5 +223,27 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 2,
     marginTop: 2,
+  },
+  gradeContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 16,
+    borderWidth: 1,
+    gap: 6,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  gradeIcon: {
+    fontSize: 16,
+  },
+  gradeText: {
+    fontSize: 14,
+    fontWeight: '600',
+    letterSpacing: 0.3,
   },
 });

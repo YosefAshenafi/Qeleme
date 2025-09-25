@@ -10,13 +10,17 @@ export const LanguageToggle: React.FC<{ colors: any }> = ({ colors }) => {
     await changeLanguage(newLanguage);
   };
 
+  // Use the provided colors or fallback to theme colors
+  const backgroundColor = colors.card === 'transparent' ? colors.tint + '20' : colors.card;
+  const textColor = colors.text || colors.tint;
+
   return (
     <TouchableOpacity
-      style={[styles.container, { backgroundColor: colors.tint + '20' }]}
+      style={[styles.container, { backgroundColor }]}
       onPress={toggleLanguage}
       activeOpacity={0.7}
     >
-      <Text style={[styles.text, { color: colors.tint }]}>
+      <Text style={[styles.text, { color: textColor }]}>
         {currentLanguage === 'en' ? 'EN' : 'አማ'}
       </Text>
     </TouchableOpacity>
@@ -27,14 +31,15 @@ const styles = StyleSheet.create({
   container: {
     alignItems: 'center',
     justifyContent: 'center',
-    paddingHorizontal: 12,
+    paddingHorizontal: 10,
     paddingVertical: 6,
-    marginRight: 8,
-    borderRadius: 16,
-    minWidth: 40,
+    borderRadius: 14,
+    minWidth: 36,
+    height: 28,
   },
   text: {
-    fontSize: 14,
+    fontSize: 12,
     fontWeight: '600',
+    letterSpacing: 0.5,
   },
 }); 

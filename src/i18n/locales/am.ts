@@ -402,6 +402,7 @@ export default {
     processing: 'በማዘዋወር ላይ...',
     retry: 'እንደገና ይሞክሩ',
     imageLoadError: 'ምስሉ ለመጫን አልተቻለም',
+    grade: 'ክፍል',
   },
   mcq: {
     question: 'ጥያቄ',

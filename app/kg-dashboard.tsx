@@ -10,6 +10,7 @@ import { IconSymbol } from '@/components/ui/IconSymbol';
 import { useAuth } from '@/contexts/AuthContext';
 import { ProfileAvatar } from '@/components/ui/ProfileAvatar';
 import { CategoryImage } from '@/components/ui/CategoryImage';
+import { GradeBadge } from '@/components/ui/GradeBadge';
 import { getKGCategories, KGCategory } from '@/services/kgService';
 import { LinearGradient } from 'expo-linear-gradient';
 import { imagePreloader } from '@/utils/imagePreloader';
@@ -154,8 +155,25 @@ export default function KGDashboard() {
             Qelem
           </Text>
         </View>
+        <View style={styles.headerCenter}>
+          <View style={[styles.gradeBadge, { 
+            backgroundColor: colors.tint + '20',
+            borderColor: colors.tint + '40'
+          }]}>
+            <Text style={styles.gradeIcon}>🎓</Text>
+            <Text style={[styles.gradeText, { color: colors.tint }]}>
+              {user?.grade ? (user.grade.toLowerCase() === 'kg' ? 'Kindergarten' : `Grade ${user.grade.replace('grade ', '')}`) : 'Grade'}
+            </Text>
+          </View>
+        </View>
         <View style={styles.headerRight}>
-          <LanguageToggle colors={colors} />
+          <LanguageToggle 
+            colors={{ 
+              card: 'transparent', 
+              text: colors.tint,
+              tint: colors.tint 
+            }} 
+          />
           <ProfileAvatar colors={colors} />
         </View>
       </Animated.View>
@@ -306,24 +324,55 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: 20,
     paddingTop: 15,
-    paddingBottom: 25,
+    paddingBottom: 20,
+    minHeight: 60,
   },
   headerLeft: {
     flexDirection: 'row',
     alignItems: 'center',
     flex: 1,
+    gap: 8,
+  },
+  headerCenter: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    flex: 0,
+  },
+  gradeBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 16,
+    borderWidth: 1,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  gradeIcon: {
+    fontSize: 14,
+    marginRight: 6,
+  },
+  gradeText: {
+    fontSize: 12,
+    fontWeight: '600',
+    letterSpacing: 0.3,
   },
   headerRight: {
     flexDirection: 'row',
     alignItems: 'center',
+    flex: 1,
+    justifyContent: 'flex-end',
+    gap: 8,
   },
   logo: {
-    width: 35,
-    height: 35,
-    marginRight: 8,
+    width: 32,
+    height: 32,
   },
   logoText: {
-    fontSize: 20,
+    fontSize: 18,
     fontWeight: 'bold',
     letterSpacing: 0.5,
   },
