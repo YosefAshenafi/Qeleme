@@ -3,6 +3,7 @@ import { StyleSheet, TouchableOpacity, Dimensions, View, Modal, ScrollView } fro
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useTranslation } from 'react-i18next';
+import i18n from 'i18next';
 import Animated, {
   useAnimatedStyle,
   withTiming,
@@ -64,6 +65,7 @@ export default function FlashcardsScreen() {
   const [hasAppliedPreSelection, setHasAppliedPreSelection] = useState(false);
   const [sessionStartTime, setSessionStartTime] = useState<number | null>(null);
   const scrollViewRef = useRef<ScrollView>(null);
+  const [previousLanguage, setPreviousLanguage] = useState(i18n.language);
 
   const revealAnimation = useSharedValue(0);
   const progressAnimation = useSharedValue(0);
@@ -176,6 +178,19 @@ export default function FlashcardsScreen() {
   const currentCard = currentFlashcards.length > currentIndex 
     ? currentFlashcards[currentIndex] 
     : null;
+  
+  // Language-specific fix for data structure differences
+  const getQuestionText = (card: typeof currentCard) => {
+    if (!card) return 'No question available';
+    // For English, the question field contains the answer, so use answer field as question
+    return i18n.language === 'en' ? card.answer : card.question;
+  };
+  
+  const getAnswerText = (card: typeof currentCard) => {
+    if (!card) return 'No answer available';
+    // For English, the answer field contains the question, so use question field as answer
+    return i18n.language === 'en' ? card.question : card.answer;
+  };
   const progress = currentFlashcards.length > 0 
     ? ((currentIndex + 1) / currentFlashcards.length) * 100 
     : 0;
@@ -185,6 +200,21 @@ export default function FlashcardsScreen() {
       progressAnimation.value = withTiming((1 / selectedChapterData.flashcards.length) * 100);
     }
   }, [showFlashcards, selectedChapterData]);
+
+  // Reset flashcard state when language changes
+  useEffect(() => {
+    if (previousLanguage !== i18n.language && showFlashcards) {
+      console.log('Language changed from', previousLanguage, 'to', i18n.language);
+      // Reset to question side (not revealed)
+      setIsRevealed(false);
+      revealAnimation.value = withSpring(0, {
+        damping: 12,
+        stiffness: 80,
+        mass: 0.8,
+      });
+      setPreviousLanguage(i18n.language);
+    }
+  }, [i18n.language, showFlashcards, previousLanguage]);
 
   const frontAnimatedStyle = useAnimatedStyle(() => {
     const rotateY = interpolate(revealAnimation.value, [0, 1], [0, 180]);
@@ -764,7 +794,7 @@ export default function FlashcardsScreen() {
             <TouchableOpacity onPress={handleReveal} activeOpacity={0.9} style={styles.cardWrapper}>
               <Animated.View style={[styles.card, frontAnimatedStyle, { borderColor: colors.border, backgroundColor: colors.cardAlt }]}>
                 <RichText 
-                  text={currentCard?.question || 'No question available'}
+                  text={getQuestionText(currentCard)}
                   style={styles.cardText}
                   color={isDarkMode ? '#FFFFFF' : colors.tint}
                   fontSize={20}
@@ -774,7 +804,7 @@ export default function FlashcardsScreen() {
               </Animated.View>
               <Animated.View style={[styles.card, styles.cardBack, backAnimatedStyle, { borderColor: colors.border, backgroundColor: colors.cardAlt }]}>
                 <RichText 
-                  text={currentCard?.answer || 'No answer available'}
+                  text={getAnswerText(currentCard)}
                   style={styles.cardText}
                   color={isDarkMode ? '#FFFFFF' : colors.tint}
                   fontSize={20}
