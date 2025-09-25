@@ -25,8 +25,8 @@ export default {
         subtitle: 'ቁልፍ ጽንሰ-ሀሳቦችን ይማሩ!'
       },
       homework: {
-        title: 'የቤት ስራ እርዳታ',
-        subtitle: 'የቤት ስራ እገዛ ያግኙ!'
+        title: 'የቤት ሥራ እገዛ',
+        subtitle: 'የቤት ሥራ እገዛ ያግኙ!'
       },
       reports: {
         title: 'የእድገት ሪፖርት',
@@ -92,7 +92,7 @@ export default {
       completed: 'ተጠናቅቋል',
       inProgress: 'በሂደት ላይ',
       grade: 'ደረጃ',
-      subject: 'የትምህርት አይነት',
+      subject: 'የትምህርት ዓይነት',
       chapter: 'ምዕራፍ',
       duration: '{hours}ሰ',
       questions: {
@@ -103,8 +103,8 @@ export default {
         reviewed: '10 ፍላሽ ካርዶች ተገመግመዋል'
       },
       homework: {
-        submitted: 'የቤት ስራ ቀርቧል',
-        working: 'በየቤት ስራ ላይ እየሰራ'
+        submitted: 'የቤት ሥራ ቀርቧል',
+        working: 'በየቤት ሥራ ላይ እየሰራ'
       },
       study: {
         session: 'የትምህርት ክፍለ ጊዜ - {duration}'
@@ -406,14 +406,14 @@ export default {
   mcq: {
     question: 'ጥያቄ',
     title: 'ምርጫ',
-    selectSubject: 'የትምህርት አይነት ይምረጡ',
-    subject: 'የትምህርት አይነት',
+    selectSubject: 'የትምህርት ዓይነት ይምረጡ',
+    subject: 'የትምህርት ዓይነት',
     chapter: 'ምዕራፍ',
     selectChapter: 'ምዕራፍ ይምረጡ',
-    selectSubjectAndChapter: 'የትምህርት አይነት እና ምዕራፍ ይምረጡ',
-    selectSubjectPlaceholder: 'የትምህርት አይነት ይምረጡ',
+    selectSubjectAndChapter: 'የትምህርት ዓይነት እና ምዕራፍ ይምረጡ',
+    selectSubjectPlaceholder: 'የትምህርት ዓይነት ይምረጡ',
     selectChapterPlaceholder: 'ምዕራፍ ይምረጡ',
-    selectExamType: 'የፈተና አይነት ይምረጡ',
+    selectExamType: 'የፈተና ዓይነት ይምረጡ',
     nationalExam: 'የብሄራዊ ፈተና ጥያቄዎች',
     mcqExam: 'የምርጫ ፈተና ጥያቄዎች',
     nationalExamDescription: 'የቀድሞ ብሔራዊ ፈተናዎች እውነተኛ ጥያቄዎችን ለማስተላለፍ ይረዳዎታል። ለፈተና አዘጋጅት እና ለራስ ግምገማ ተገቢ ነው።',
@@ -465,11 +465,11 @@ export default {
         canDoBetter: 'ይማሩ! የበለጠ ማድረግ ይችላሉ!'
       },
       tryAgain: 'እንደገና ይሞክሩ',
-      chooseAnotherSubject: 'ሌላ የትምህርት አይነት ይምረጡ'
+      chooseAnotherSubject: 'ሌላ የትምህርት ዓይነት ይምረጡ'
     },
     selectAnswer: 'እባክዎ ከመቀጠልዎ በፊት መልስ ይምረጡ',
     noSubjectsFound: {
-      title: 'ለክፍልዎ የትምህርት አይነቶች አልተገኙም',
+      title: 'ለክፍልዎ የትምህርት ዓይነቶች አልተገኙም',
       description: 'ለ{{gradeName}} ክፍል የትምህርት አይነቶች ማግኘት አልቻልንም። ይህ ሊሆን የቻለው:',
       reasons: {
         accountUpdate: 'መለያዎ በትክክለኛው ክፍል ሊስተካከል ይፈልጋል',
@@ -480,9 +480,9 @@ export default {
   },
   flashcards: {
     title: "ፍላሽ ካርዶች",
-    selectSubjectAndChapter: "የትምህርት አይነት እና ምዕራፍ ይምረጡ",
-    subject: "የትምህርት አይነት",
-    selectSubject: "የትምህርት አይነት ይምረጡ",
+    selectSubjectAndChapter: "የትምህርት ዓይነት እና ምዕራፍ ይምረጡ",
+    subject: "የትምህርት ዓይነት",
+    selectSubject: "የትምህርት ዓይነት ይምረጡ",
     chapter: "ምዕራፍ",
     selectChapter: "ምዕራፍ ይምረጡ",
     startFlashcards: "ይጀምሩ",
@@ -506,7 +506,7 @@ export default {
   homework: {
     title: 'የቤት ስራ',
     emptyState: 'ስለ የቤት ስራዎ ማንኛውንም ነገር ጠይቁኝ!',
-    inputPlaceholder: 'የቤት ስራ ጥያቄዎን ያስገቡ...',
+    inputPlaceholder: 'የቤት ሥራ ጥያቄዎን ያስገቡ...',
     thinking: 'በማሰብ ላይ',
     error: 'ይቅርታ፣ ስህተት ተፈጥሯል። እባክዎ እንደገና ይሞክሩ።',
     imageButton: 'ምስል ያክሉ',
@@ -516,8 +516,8 @@ export default {
       type: 'የቤት ስራ',
       grade: '12ኛ ክፍል',
       subject: 'አጠቃላይ',
-      chapter: 'የቤት ስራ እርዳታ',
-      details: 'የቤት ስራ ጥያቄ ተጠይቋል',
+      chapter: 'የቤት ሥራ እገዛ',
+      details: 'የቤት ሥራ ጥያቄ ተጠይቋል',
       status: 'ተጠናቅቋል'
     }
   },
@@ -535,7 +535,7 @@ export default {
     stats: {
       mcqsCompleted: 'የተጠናቀቁ ምርጫዎች',
       flashcardsClicked: 'የተጫኑ ፍላሽ ካርዶች',
-      homeworkQuestions: 'የቤት ስራ ጥያቄዎች',
+      homeworkQuestions: 'የቤት ሥራ ጥያቄዎች',
       studyHours: 'የትምህርት ሰዓታት',
       pictureQuestions: 'የምስል ጥያቄዎች',
       cardGroups: 'የካርድ ቡድኖች'
@@ -719,7 +719,7 @@ export default {
     },
     homework: {
       title: 'ለቤት ሥራ አጋዥ ይጠቀሙ!',
-      subtitle: 'የቤት ስራ እገዛ! ',
+      subtitle: 'የቤት ሥራ እገዛ! ',
       description: 'የቤት ሥራ ጥያቄዎችን ለመመለስ የሚያግዝ የግል መማሪያ! '
     },
     skip: 'ይዝለሉ',
