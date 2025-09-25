@@ -85,7 +85,7 @@ const LatexOrText: React.FC<LatexOrTextProps> = ({ content, inline = true, textS
   const parts = parseMixedContent(content);
 
   return (
-    <View style={styles.container}>
+    <Text style={[styles.text, textStyle]}>
       {parts.map((part, index) => {
         const uniqueKey = `${part.type}-${index}-${part.content.substring(0, 10)}`;
         
@@ -103,27 +103,16 @@ const LatexOrText: React.FC<LatexOrTextProps> = ({ content, inline = true, textS
             />
           );
         } else {
-          return (
-            <Text key={uniqueKey} style={[styles.text, textStyle]}>
-              {part.content}
-            </Text>
-          );
+          return part.content;
         }
       })}
-    </View>
+    </Text>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    alignItems: 'center',
-  },
   text: {
     fontSize: 16,
-    flexWrap: 'wrap',
-    flexShrink: 1,
   },
   math: {
     marginVertical: 2,
