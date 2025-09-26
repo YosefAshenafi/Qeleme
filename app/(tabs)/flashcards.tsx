@@ -179,6 +179,14 @@ export default function FlashcardsScreen() {
     ? currentFlashcards[currentIndex] 
     : null;
   
+  // Function to detect if text contains Amharic characters
+  const isAmharicText = (text: string): boolean => {
+    if (!text) return false;
+    // Amharic Unicode range: U+1200-U+137F
+    const amharicRegex = /[\u1200-\u137F]/;
+    return amharicRegex.test(text);
+  };
+
   // Language-specific fix for data structure differences
   const getQuestionText = (card: typeof currentCard) => {
     if (!card) return 'No question available';
@@ -191,9 +199,27 @@ export default function FlashcardsScreen() {
     // For English, the answer field contains the question, so use question field as answer
     return i18n.language === 'en' ? card.question : card.answer;
   };
+
+  // Check if the current language is Amharic
+  const isAmharicLanguage = i18n.language === 'am';
   const progress = currentFlashcards.length > 0 
     ? ((currentIndex + 1) / currentFlashcards.length) * 100 
     : 0;
+
+  // Set initial reveal state based on whether the current language is Amharic
+  useEffect(() => {
+    if (currentCard) {
+      const shouldShowAnswer = isAmharicLanguage;
+      setIsRevealed(shouldShowAnswer);
+      
+      // Animate to the appropriate state
+      revealAnimation.value = withSpring(shouldShowAnswer ? 1 : 0, {
+        damping: 12,
+        stiffness: 80,
+        mass: 0.8,
+      });
+    }
+  }, [currentCard, isAmharicLanguage]);
 
   useEffect(() => {
     if (showFlashcards && selectedChapterData?.flashcards && selectedChapterData.flashcards.length > 0) {
@@ -205,13 +231,7 @@ export default function FlashcardsScreen() {
   useEffect(() => {
     if (previousLanguage !== i18n.language && showFlashcards) {
       console.log('Language changed from', previousLanguage, 'to', i18n.language);
-      // Reset to question side (not revealed)
-      setIsRevealed(false);
-      revealAnimation.value = withSpring(0, {
-        damping: 12,
-        stiffness: 80,
-        mass: 0.8,
-      });
+      // The useEffect for currentCard will handle setting the correct reveal state
       setPreviousLanguage(i18n.language);
     }
   }, [i18n.language, showFlashcards, previousLanguage]);
@@ -220,7 +240,6 @@ export default function FlashcardsScreen() {
     const rotateY = interpolate(revealAnimation.value, [0, 1], [0, 180]);
     const scale = interpolate(revealAnimation.value, [0, 0.5, 1], [1, 1.1, 1]);
     const shadowOpacity = interpolate(revealAnimation.value, [0, 0.5, 1], [0.1, 0.5, 0.1]);
-    const shadowOffset = interpolate(revealAnimation.value, [0, 0.5, 1], [2, 20, 2]);
     
     return {
       transform: [
@@ -229,7 +248,6 @@ export default function FlashcardsScreen() {
         { scale },
       ],
       shadowOpacity,
-      shadowOffset: { width: 0, height: shadowOffset },
       shadowRadius: interpolate(revealAnimation.value, [0, 0.5, 1], [8, 24, 8]),
     };
   });
@@ -238,7 +256,6 @@ export default function FlashcardsScreen() {
     const rotateY = interpolate(revealAnimation.value, [0, 1], [180, 360]);
     const scale = interpolate(revealAnimation.value, [0, 0.5, 1], [1, 1.1, 1]);
     const shadowOpacity = interpolate(revealAnimation.value, [0, 0.5, 1], [0.1, 0.5, 0.1]);
-    const shadowOffset = interpolate(revealAnimation.value, [0, 0.5, 1], [2, 20, 2]);
     
     return {
       transform: [
@@ -247,7 +264,6 @@ export default function FlashcardsScreen() {
         { scale },
       ],
       shadowOpacity,
-      shadowOffset: { width: 0, height: shadowOffset },
       shadowRadius: interpolate(revealAnimation.value, [0, 0.5, 1], [8, 24, 8]),
     };
   });
@@ -270,12 +286,7 @@ export default function FlashcardsScreen() {
   const handleNext = () => {
     if (currentFlashcards.length > 0 && currentIndex < currentFlashcards.length - 1) {
       setCurrentIndex(prev => prev + 1);
-      setIsRevealed(false);
-      revealAnimation.value = withSpring(0, {
-        damping: 12,
-        stiffness: 80,
-        mass: 0.8,
-      });
+      // The useEffect will handle setting the correct reveal state based on Amharic detection
       progressAnimation.value = withTiming(((currentIndex + 2) / currentFlashcards.length) * 100);
       
       // Track activity when reaching the end
@@ -512,9 +523,9 @@ export default function FlashcardsScreen() {
                               return match ? parseInt(match[1], 10) : 0;
                             };
                             return getSubjectNumber(a.name) - getSubjectNumber(b.name);
-                          }).map((subject: Subject) => (
+                          }).map((subject: Subject, index: number) => (
                             <TouchableOpacity
-                              key={subject.id}
+                              key={`subject-${subject.id}-${index}`}
                               style={[styles.modalItem, { backgroundColor: colors.background, borderBottomColor: colors.border }]}
                               onPress={() => {
                                 setSelectedSubject(subject.id);
@@ -588,9 +599,9 @@ export default function FlashcardsScreen() {
                               return match ? parseInt(match[1], 10) : 0;
                             };
                             return getChapterNumber(a.name) - getChapterNumber(b.name);
-                          }).map((chapter: Chapter) => (
+                          }).map((chapter: Chapter, index: number) => (
                             <TouchableOpacity
-                              key={chapter.id}
+                              key={`chapter-${chapter.id}-${index}`}
                               style={[styles.modalItem, { backgroundColor: colors.background, borderBottomColor: colors.border }]}
                               onPress={() => {
                                 setSelectedChapter(chapter.id);
@@ -822,7 +833,10 @@ export default function FlashcardsScreen() {
               marginTop: 16,
               fontSize: 14,
             }]}>
-              {isRevealed ? t('flashcards.tapToSeeQuestion') : t('flashcards.tapToSeeAnswer')}
+              {isAmharicLanguage 
+                ? (isRevealed ? t('flashcards.tapToSeeQuestion') : t('flashcards.tapToSeeAnswer') + ' (Amharic)')
+                : (isRevealed ? t('flashcards.tapToSeeQuestion') : t('flashcards.tapToSeeAnswer'))
+              }
             </ThemedText>
           </View>
 

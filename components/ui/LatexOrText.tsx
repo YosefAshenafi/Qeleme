@@ -87,7 +87,7 @@ const LatexOrText: React.FC<LatexOrTextProps> = ({ content, inline = true, textS
   return (
     <Text style={[styles.text, textStyle]}>
       {parts.map((part, index) => {
-        const uniqueKey = `${part.type}-${index}-${part.content.substring(0, 10)}`;
+        const uniqueKey = `${part.type}-${index}-${part.content.length}-${part.content.charCodeAt(0)}-${part.content.charCodeAt(part.content.length - 1)}`;
         
         if (part.type === 'latex') {
           return (
@@ -95,7 +95,7 @@ const LatexOrText: React.FC<LatexOrTextProps> = ({ content, inline = true, textS
               key={uniqueKey}
               math={part.content}
               resizeMode="contain"
-              style={[styles.math, part.inline ? styles.inlineMath : styles.blockMath]}
+              style={[styles.math, part.inline ? styles.inlineMath : styles.blockMath] as any}
               mathJaxOptions={{
                 displayMessages: false,
                 messageStyle: { color: 'red' },

@@ -78,7 +78,7 @@ const renderTextWithFormatting = (text: string, color: string, fontSize: number,
     const parts = html.split(/(<[^>]+>.*?<\/[^>]+>)/g);
     
     return parts.map((part, index) => {
-      const uniqueKey = `html-part-${index}-${part.substring(0, 10)}`;
+      const uniqueKey = `html-part-${index}-${part.length}-${part.charCodeAt(0)}-${part.charCodeAt(part.length - 1)}`;
       
       if (part.startsWith('<') && part.endsWith('>')) {
         // Handle HTML tags
