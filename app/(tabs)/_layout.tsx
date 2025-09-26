@@ -32,6 +32,7 @@ export default function TabLayout() {
         tabBarInactiveTintColor: colors.background + 'CC',
         headerShown: true,
         headerShadowVisible: false,
+        headerTitleAlign: 'center',
         headerStyle: {
           backgroundColor: colors.tint,
         },
