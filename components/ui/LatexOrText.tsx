@@ -1,6 +1,5 @@
 import React from 'react';
-import { Text, TextStyle, StyleSheet, View } from 'react-native';
-import MathView from 'react-native-math-view';
+import { Text, TextStyle, StyleSheet, Platform } from 'react-native';
 
 interface LatexOrTextProps {
   content: string;
@@ -12,13 +11,207 @@ interface LatexOrTextProps {
 const inlineLatexRegex = /\\\((.*?)\\\)/g;
 const blockLatexRegex = /\\\[(.*?)\\\]/g;
 
-// Function to clean LaTeX content by removing common commands
-const cleanLatexContent = (input: string): string => {
+// Function to convert LaTeX to properly formatted text with platform-specific Unicode handling
+const latexToText = (input: string): string => {
+  const isAndroid = Platform.OS === 'android';
+  
   return input
+    // Preprocess: Clean up spaces in subscript and superscript patterns
+    .replace(/_\s*{([^}]+)}/g, '_{$1}')  // Fix _{4} -> _{4} (remove spaces)
+    .replace(/_\s+([0-9a-zA-Z])/g, '_$1')  // Fix _ 4 -> _4 (remove spaces)
+    .replace(/\^\s*{([^}]+)}/g, '^{$1}')  // Fix ^{2+} -> ^{2+} (remove spaces)
+    .replace(/\^\s+([0-9a-zA-Z])/g, '^$1')  // Fix ^ 2 -> ^2 (remove spaces)
     .replace(/\\mathrm{(.*?)}/g, (_, inner) => inner) // remove \mathrm{}
     .replace(/\\text{(.*?)}/g, (_, inner) => inner) // remove \text{}
     .replace(/\\textbf{(.*?)}/g, (_, inner) => inner) // remove \textbf{}
-    .replace(/\\textit{(.*?)}/g, (_, inner) => inner); // remove \textit{}
+    .replace(/\\textit{(.*?)}/g, (_, inner) => inner) // remove \textit{}
+    // Greek letters
+    .replace(/\\pi/g, 'π')
+    .replace(/\\alpha/g, 'α')
+    .replace(/\\beta/g, 'β')
+    .replace(/\\gamma/g, 'γ')
+    .replace(/\\delta/g, 'δ')
+    .replace(/\\epsilon/g, 'ε')
+    .replace(/\\theta/g, 'θ')
+    .replace(/\\lambda/g, 'λ')
+    .replace(/\\mu/g, 'μ')
+    .replace(/\\sigma/g, 'σ')
+    .replace(/\\phi/g, 'φ')
+    .replace(/\\omega/g, 'ω')
+    // Math symbols
+    .replace(/\\infty/g, '∞')
+    .replace(/\\leq/g, '≤')
+    .replace(/\\geq/g, '≥')
+    .replace(/\\neq/g, '≠')
+    .replace(/\\approx/g, '≈')
+    .replace(/\\pm/g, '±')
+    .replace(/\\times/g, '×')
+    .replace(/\\div/g, '÷')
+    .replace(/\\cdot/g, '·')
+    // Arrows
+    .replace(/\\rightarrow/g, '→')
+    .replace(/\\leftarrow/g, '←')
+    .replace(/\\leftrightarrow/g, '↔')
+    .replace(/\\Rightarrow/g, '⇒')
+    .replace(/\\Leftarrow/g, '⇐')
+    .replace(/\\Leftrightarrow/g, '⇔')
+    .replace(/\\rightleftharpoons/g, '⇌')
+    // Parentheses and brackets
+    .replace(/\\left\(/g, '(')
+    .replace(/\\right\)/g, ')')
+    .replace(/\\left\[/g, '[')
+    .replace(/\\right\]/g, ']')
+    .replace(/\\left\{/g, '{')
+    .replace(/\\right\}/g, '}')
+    // Spacing
+    .replace(/\\,|\\:|\\;|\\!/g, ' ')
+    .replace(/\\\\/g, '\n')
+    .replace(/\\quad|\\qquad/g, '  ')
+    // Fractions - convert to readable format
+    .replace(/\\frac{([^}]+)}{([^}]+)}/g, '($1)/($2)')
+    // Square roots
+    .replace(/\\sqrt{([^}]+)}/g, '√($1)')
+    // Sum and integral
+    .replace(/\\sum/g, 'Σ')
+    .replace(/\\int/g, '∫')
+    // Handle subscripts first (both braced and unbraced) - order matters!
+    // Process braced subscripts first: _{content}
+    .replace(/_{([^}]+)}/g, (_, content) => {
+      if (isAndroid) {
+        // For Android, use Unicode subscripts
+        const subscripts: { [key: string]: string } = {
+          '0': '₀', '1': '₁', '2': '₂', '3': '₃', '4': '₄', '5': '₅', '6': '₆', '7': '₇', '8': '₈', '9': '₉',
+          '+': '₊', '-': '₋', '=': '₌', '(': '₍', ')': '₎', 'a': 'ₐ', 'e': 'ₑ', 'h': 'ₕ', 'i': 'ᵢ', 'j': 'ⱼ',
+          'k': 'ₖ', 'l': 'ₗ', 'm': 'ₘ', 'n': 'ₙ', 'o': 'ₒ', 'p': 'ₚ', 'r': 'ᵣ', 's': 'ₛ', 't': 'ₜ', 'u': 'ᵤ',
+          'v': 'ᵥ', 'x': 'ₓ'
+        };
+        return content.split('').map((char: string) => subscripts[char] || char).join('');
+      } else {
+        // For iOS, use proper Unicode subscripts
+        const subscripts: { [key: string]: string } = {
+          '0': '₀', '1': '₁', '2': '₂', '3': '₃', '4': '₄', '5': '₅', '6': '₆', '7': '₇', '8': '₈', '9': '₉',
+          '+': '₊', '-': '₋', '=': '₌', '(': '₍', ')': '₎', 'a': 'ₐ', 'e': 'ₑ', 'h': 'ₕ', 'i': 'ᵢ', 'j': 'ⱼ',
+          'k': 'ₖ', 'l': 'ₗ', 'm': 'ₘ', 'n': 'ₙ', 'o': 'ₒ', 'p': 'ₚ', 'r': 'ᵣ', 's': 'ₛ', 't': 'ₜ', 'u': 'ᵤ',
+          'v': 'ᵥ', 'x': 'ₓ'
+        };
+        return content.split('').map((char: string) => subscripts[char] || char).join('');
+      }
+    })
+    // Handle single character subscripts without braces: _char
+    .replace(/_([0-9a-zA-Z])/g, (_, char) => {
+      if (isAndroid) {
+        // For Android, use Unicode subscripts
+        const subscripts: { [key: string]: string } = {
+          '0': '₀', '1': '₁', '2': '₂', '3': '₃', '4': '₄', '5': '₅', '6': '₆', '7': '₇', '8': '₈', '9': '₉',
+          'a': 'ₐ', 'e': 'ₑ', 'h': 'ₕ', 'i': 'ᵢ', 'j': 'ⱼ', 'k': 'ₖ', 'l': 'ₗ', 'm': 'ₘ', 'n': 'ₙ', 'o': 'ₒ',
+          'p': 'ₚ', 'r': 'ᵣ', 's': 'ₛ', 't': 'ₜ', 'u': 'ᵤ', 'v': 'ᵥ', 'x': 'ₓ'
+        };
+        return subscripts[char] || char;
+      } else {
+        // For iOS, use proper Unicode subscripts
+        const subscripts: { [key: string]: string } = {
+          '0': '₀', '1': '₁', '2': '₂', '3': '₃', '4': '₄', '5': '₅', '6': '₆', '7': '₇', '8': '₈', '9': '₉',
+          'a': 'ₐ', 'e': 'ₑ', 'h': 'ₕ', 'i': 'ᵢ', 'j': 'ⱼ', 'k': 'ₖ', 'l': 'ₗ', 'm': 'ₘ', 'n': 'ₙ', 'o': 'ₒ',
+          'p': 'ₚ', 'r': 'ᵣ', 's': 'ₛ', 't': 'ₜ', 'u': 'ᵤ', 'v': 'ᵥ', 'x': 'ₓ'
+        };
+        return subscripts[char] || char;
+      }
+    })
+    // Handle any remaining underscore patterns that might have been missed
+    .replace(/_([^{}\s]+)/g, (_, content) => {
+      if (isAndroid) {
+        // For Android, use Unicode subscripts
+        const subscripts: { [key: string]: string } = {
+          '0': '₀', '1': '₁', '2': '₂', '3': '₃', '4': '₄', '5': '₅', '6': '₆', '7': '₇', '8': '₈', '9': '₉',
+          'a': 'ₐ', 'e': 'ₑ', 'h': 'ₕ', 'i': 'ᵢ', 'j': 'ⱼ', 'k': 'ₖ', 'l': 'ₗ', 'm': 'ₘ', 'n': 'ₙ', 'o': 'ₒ',
+          'p': 'ₚ', 'r': 'ᵣ', 's': 'ₛ', 't': 'ₜ', 'u': 'ᵤ', 'v': 'ᵥ', 'x': 'ₓ'
+        };
+        return content.split('').map((char: string) => subscripts[char] || char).join('');
+      } else {
+        // For iOS, use proper Unicode subscripts
+        const subscripts: { [key: string]: string } = {
+          '0': '₀', '1': '₁', '2': '₂', '3': '₃', '4': '₄', '5': '₅', '6': '₆', '7': '₇', '8': '₈', '9': '₉',
+          'a': 'ₐ', 'e': 'ₑ', 'h': 'ₕ', 'i': 'ᵢ', 'j': 'ⱼ', 'k': 'ₖ', 'l': 'ₗ', 'm': 'ₘ', 'n': 'ₙ', 'o': 'ₒ',
+          'p': 'ₚ', 'r': 'ᵣ', 's': 'ₛ', 't': 'ₜ', 'u': 'ᵤ', 'v': 'ᵥ', 'x': 'ₓ'
+        };
+        return content.split('').map((char: string) => subscripts[char] || char).join('');
+      }
+    })
+    // Handle superscripts after subscripts
+    .replace(/\^{([^}]+)}/g, (_, content) => {
+      if (isAndroid) {
+        // For Android, use Unicode superscripts
+        const superscripts: { [key: string]: string } = {
+          '0': '⁰', '1': '¹', '2': '²', '3': '³', '4': '⁴', '5': '⁵', '6': '⁶', '7': '⁷', '8': '⁸', '9': '⁹',
+          '+': '⁺', '-': '⁻', '=': '⁼', '(': '⁽', ')': '⁾', 'n': 'ⁿ', 'i': 'ⁱ', 'x': 'ˣ', 'y': 'ʸ', 'z': 'ᶻ',
+          'a': 'ᵃ', 'b': 'ᵇ', 'c': 'ᶜ', 'd': 'ᵈ', 'e': 'ᵉ', 'f': 'ᶠ', 'g': 'ᵍ', 'h': 'ʰ', 'j': 'ʲ', 'k': 'ᵏ',
+          'l': 'ˡ', 'm': 'ᵐ', 'o': 'ᵒ', 'p': 'ᵖ', 'r': 'ʳ', 's': 'ˢ', 't': 'ᵗ', 'u': 'ᵘ', 'v': 'ᵛ', 'w': 'ʷ'
+        };
+        return content.split('').map((char: string) => superscripts[char] || char).join('');
+      } else {
+        // For iOS, use proper Unicode superscripts
+        const superscripts: { [key: string]: string } = {
+          '0': '⁰', '1': '¹', '2': '²', '3': '³', '4': '⁴', '5': '⁵', '6': '⁶', '7': '⁷', '8': '⁸', '9': '⁹',
+          '+': '⁺', '-': '⁻', '=': '⁼', '(': '⁽', ')': '⁾', 'n': 'ⁿ', 'i': 'ⁱ', 'x': 'ˣ', 'y': 'ʸ', 'z': 'ᶻ',
+          'a': 'ᵃ', 'b': 'ᵇ', 'c': 'ᶜ', 'd': 'ᵈ', 'e': 'ᵉ', 'f': 'ᶠ', 'g': 'ᵍ', 'h': 'ʰ', 'j': 'ʲ', 'k': 'ᵏ',
+          'l': 'ˡ', 'm': 'ᵐ', 'o': 'ᵒ', 'p': 'ᵖ', 'r': 'ʳ', 's': 'ˢ', 't': 'ᵗ', 'u': 'ᵘ', 'v': 'ᵛ', 'w': 'ʷ'
+        };
+        return content.split('').map((char: string) => superscripts[char] || char).join('');
+      }
+    })
+    // Handle chemical formulas with numbers as subscripts (NH3, H2O, NH4+, etc.)
+    .replace(/([A-Z][a-z]?)(\d+)([+-]?)/g, (_, element, number, charge) => {
+      if (isAndroid) {
+        // For Android, use Unicode subscripts but with smaller font size
+        const subscripts: { [key: string]: string } = {
+          '0': '₀', '1': '₁', '2': '₂', '3': '₃', '4': '₄', '5': '₅', '6': '₆', '7': '₇', '8': '₈', '9': '₉'
+        };
+        const subscriptNumber = number.split('').map((char: string) => subscripts[char] || char).join('');
+        
+        // Handle charges
+        if (charge) {
+          const superscripts: { [key: string]: string } = {
+            '+': '⁺', '-': '⁻'
+          };
+          const superscriptCharge = charge.split('').map((char: string) => superscripts[char] || char).join('');
+          return element + subscriptNumber + superscriptCharge;
+        }
+        
+        return element + subscriptNumber;
+      } else {
+        // For iOS, convert numbers to subscripts
+        const subscripts: { [key: string]: string } = {
+          '0': '₀', '1': '₁', '2': '₂', '3': '₃', '4': '₄', '5': '₅', '6': '₆', '7': '₇', '8': '₈', '9': '₉'
+        };
+        const subscriptNumber = number.split('').map((char: string) => subscripts[char] || char).join('');
+        
+        // Handle charges
+        if (charge) {
+          const superscripts: { [key: string]: string } = {
+            '+': '⁺', '-': '⁻'
+          };
+          const superscriptCharge = charge.split('').map((char: string) => superscripts[char] || char).join('');
+          return element + subscriptNumber + superscriptCharge;
+        }
+        
+        return element + subscriptNumber;
+      }
+    })
+    // Handle standalone charges (+ and -)
+    .replace(/([A-Z][a-z]?)([+-])/g, (_, element, charge) => {
+      if (isAndroid) {
+        const superscripts: { [key: string]: string } = {
+          '+': '⁺', '-': '⁻'
+        };
+        return element + (superscripts[charge] || charge);
+      } else {
+        const superscripts: { [key: string]: string } = {
+          '+': '⁺', '-': '⁻'
+        };
+        return element + (superscripts[charge] || charge);
+      }
+    })
+    .trim();
 };
 
 // Function to parse mixed content and return array of text and LaTeX parts
@@ -56,7 +249,7 @@ const parseMixedContent = (content: string): Array<{ type: 'text' | 'latex'; con
     }
     
     // Add LaTeX content
-    const latexContent = cleanLatexContent(match[1]);
+    const latexContent = latexToText(match[1]);
     if (latexContent.trim()) {
       parts.push({ type: 'latex', content: latexContent, inline });
     }
@@ -77,6 +270,19 @@ const parseMixedContent = (content: string): Array<{ type: 'text' | 'latex'; con
 
 const LatexOrText: React.FC<LatexOrTextProps> = ({ content, inline = true, textStyle }) => {
   const hasLatex = /\\\(|\\\)|\\\[|\\\]/.test(content);
+  const hasChemicalFormula = /_{[^}]+}|_[a-zA-Z]|\^[0-9a-zA-Z]|\^\{[^}]+\}|[A-Z][a-z]?\d+[A-Z]|[A-Z][a-z]?\d+[_{]|[A-Z][a-z]?\d+|[A-Z][a-z]?[+-]|\\(rightleftharpoons|rightarrow|leftarrow\\)/.test(content);
+
+  // If no LaTeX delimiters but has chemical formula patterns, process the entire content
+  if (!hasLatex && hasChemicalFormula) {
+    const processedContent = latexToText(content);
+    return (
+      <Text style={[styles.text, textStyle]}>
+        <Text style={[styles.math, styles.inlineMath]}>
+          {processedContent}
+        </Text>
+      </Text>
+    );
+  }
 
   if (!hasLatex) {
     return <Text style={[styles.text, textStyle]}>{content}</Text>;
@@ -91,16 +297,9 @@ const LatexOrText: React.FC<LatexOrTextProps> = ({ content, inline = true, textS
         
         if (part.type === 'latex') {
           return (
-            <MathView
-              key={uniqueKey}
-              math={part.content}
-              resizeMode="contain"
-              style={[styles.math, part.inline ? styles.inlineMath : styles.blockMath] as any}
-              mathJaxOptions={{
-                displayMessages: false,
-                messageStyle: { color: 'red' },
-              }}
-            />
+            <Text key={uniqueKey} style={[styles.math, part.inline ? styles.inlineMath : styles.blockMath]}>
+              {part.content}
+            </Text>
           );
         } else {
           return part.content;
@@ -113,15 +312,20 @@ const LatexOrText: React.FC<LatexOrTextProps> = ({ content, inline = true, textS
 const styles = StyleSheet.create({
   text: {
     fontSize: 16,
+    lineHeight: 24,
   },
   math: {
-    marginVertical: 2,
+    fontFamily: Platform.OS === 'android' ? 'monospace' : 'monospace',
+    fontWeight: '500',
+    color: '#2c3e50',
+    fontSize: Platform.OS === 'android' ? 14 : 16, // Slightly smaller on Android for better readability
   },
   inlineMath: {
     marginHorizontal: 2,
   },
   blockMath: {
     marginVertical: 4,
+    textAlign: 'center',
   },
 });
 
