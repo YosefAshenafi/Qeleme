@@ -66,6 +66,7 @@ export default function FlashcardsScreen() {
   const [sessionStartTime, setSessionStartTime] = useState<number | null>(null);
   const scrollViewRef = useRef<ScrollView>(null);
   const [previousLanguage, setPreviousLanguage] = useState(i18n.language);
+  const [isPreSelected, setIsPreSelected] = useState(false);
 
   const revealAnimation = useSharedValue(0);
   const progressAnimation = useSharedValue(0);
@@ -118,6 +119,21 @@ export default function FlashcardsScreen() {
           console.log('Looking for subject:', params.preSelectedSubject);
           console.log('Available subjects:', grade.subjects?.map(s => s.name));
           
+          // Reset any active flashcard session when navigating from home page
+          setShowFlashcards(false);
+          setCurrentIndex(0);
+          setIsRevealed(false);
+          setCurrentFlashcards([]);
+          setSessionStartTime(null);
+          
+          // Reset animations
+          revealAnimation.value = withSpring(0, {
+            damping: 12,
+            stiffness: 80,
+            mass: 0.8,
+          });
+          progressAnimation.value = withTiming(0);
+          
           // Try exact match first
           let subject = grade.subjects?.find(s => 
             s.name.toLowerCase() === (params.preSelectedSubject as string).toLowerCase()
@@ -137,12 +153,14 @@ export default function FlashcardsScreen() {
             console.log('Setting selected subject to:', subject.id);
             setSelectedSubject(subject.id);
             setSelectedChapter(''); // Reset chapter when subject changes
+            setIsPreSelected(true); // Mark as pre-selected
             setHasAppliedPreSelection(true);
           } else {
             console.log('Subject not found, resetting selection');
             // Reset subject and chapter if pre-selected subject not found
             setSelectedSubject('');
             setSelectedChapter('');
+            setIsPreSelected(false);
             setHasAppliedPreSelection(true);
           }
         } else if (!params.preSelectedSubject) {
@@ -158,8 +176,12 @@ export default function FlashcardsScreen() {
   useEffect(() => {
     if (selectedSubject) {
       setSelectedChapter('');
+      // Clear pre-selected flag when user manually changes subject
+      if (isPreSelected) {
+        setIsPreSelected(false);
+      }
     }
-  }, [selectedSubject]);
+  }, [selectedSubject, isPreSelected]);
 
   // Reset pre-selection flag when parameters change
   useEffect(() => {
@@ -492,9 +514,21 @@ export default function FlashcardsScreen() {
               <ThemedView style={[styles.formGroup, { backgroundColor: colors.background }]}>
                 <ThemedText style={[styles.formLabel, { color: colors.tint }]}>
                   {t('flashcards.subject')}
+                  {isPreSelected && (
+                    <ThemedText style={[styles.preSelectedLabel, { color: colors.tint }]}>
+                      {' '}({t('flashcards.preSelected')})
+                    </ThemedText>
+                  )}
                 </ThemedText>
                 <TouchableOpacity
-                  style={[styles.formInput, { backgroundColor: colors.cardAlt, borderColor: colors.border }]}
+                  style={[
+                    styles.formInput, 
+                    { 
+                      backgroundColor: colors.cardAlt, 
+                      borderColor: isPreSelected ? colors.tint : colors.border,
+                      borderWidth: isPreSelected ? 2 : 1,
+                    }
+                  ]}
                   onPress={() => setShowSubjectDropdown(!showSubjectDropdown)}
                 >
                   <ThemedText style={[styles.formInputText, { color: colors.text }]}>
@@ -995,6 +1029,11 @@ const styles = StyleSheet.create({
   formLabel: {
     fontSize: 16,
     fontWeight: '600',
+  },
+  preSelectedLabel: {
+    fontSize: 14,
+    fontWeight: '400',
+    fontStyle: 'italic',
   },
   formInput: {
     flexDirection: 'row',

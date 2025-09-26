@@ -67,11 +67,12 @@ export default function MCQScreen() {
   const [availableYears, setAvailableYears] = useState<number[]>([]);
   const [nationalExamQuestions, setNationalExamQuestions] = useState<NationalExamAPIResponse[]>([]);
   const [showChapterChooser, setShowChapterChooser] = useState(false);
+  const [isPreSelected, setIsPreSelected] = useState(false);
   
   // Timer states
   const [time, setTime] = useState(0);
   const [isTimerRunning, setIsTimerRunning] = useState(false);
-  const timerRef = useRef<NodeJS.Timeout | null>(null);
+  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   // Animation refs for result screen
   const scaleAnim = useRef(new Animated.Value(0)).current;
@@ -214,19 +215,48 @@ export default function MCQScreen() {
         subjectId: params.preSelectedSubjectId
       });
       
+      // Reset any active MCQ session when navigating from home page
+      setShowTest(false);
+      setShowResult(false);
+      setCurrentQuestionIndex(0);
+      setSelectedAnswer(null);
+      setShowExplanation(false);
+      setAnsweredQuestions({});
+      setShowAnswerMessage(false);
+      setScore(0);
+      setShowPictureMCQ(false);
+      setIsPictureQuestions(false);
+      setNationalExamQuestions([]);
+      setShowChapterChooser(false);
+      
+      // Clear chapter and year selections
+      setSelectedChapter('');
+      setSelectedChapterName('');
+      setSelectedYear(null);
+      
       // Set the exam type to 'mcq' for regular MCQ
       setSelectedExamType('mcq');
       
       // Find and set the pre-selected subject
       const subjectId = params.preSelectedSubjectId as string;
       setSelectedSubject(subjectId);
-      
-      // Don't show the chapter chooser interface - let user use regular dropdowns
-      // setShowChapterChooser(true);
+      setIsPreSelected(true); // Mark as pre-selected
       
       console.log('✅ Pre-selected subject set:', subjectId);
+      console.log('✅ Active MCQ session reset');
     }
   }, [params.preSelectedSubject, params.preSelectedSubjectId, mcqData]);
+
+  // Clear pre-selected flag when user manually changes subject
+  useEffect(() => {
+    if (isPreSelected && selectedSubject) {
+      // Check if this is a manual change (not from pre-selection)
+      const isFromPreSelection = params.preSelectedSubjectId === selectedSubject;
+      if (!isFromPreSelection) {
+        setIsPreSelected(false);
+      }
+    }
+  }, [selectedSubject, isPreSelected, params.preSelectedSubjectId]);
 
   // Function to fetch available national exam data
   const fetchNationalExamAvailable = async () => {
@@ -1051,9 +1081,21 @@ export default function MCQScreen() {
                   <ThemedView style={[styles.formGroup, { backgroundColor: colors.background }]}>
                     <ThemedText style={[styles.formLabel, { color: colors.tint }]}>
                       {t('mcq.subject')}
+                      {isPreSelected && (
+                        <ThemedText style={[styles.preSelectedLabel, { color: colors.tint }]}>
+                          {' '}({t('mcq.preSelected')})
+                        </ThemedText>
+                      )}
                     </ThemedText>
                     <TouchableOpacity
-                      style={[styles.formInput, { backgroundColor: colors.cardAlt, borderColor: colors.border }]}
+                      style={[
+                        styles.formInput, 
+                        { 
+                          backgroundColor: colors.cardAlt, 
+                          borderColor: isPreSelected ? colors.tint : colors.border,
+                          borderWidth: isPreSelected ? 2 : 1,
+                        }
+                      ]}
                       onPress={() => setShowSubjectDropdown(!showSubjectDropdown)}
                     >
                       <ThemedText style={[styles.formInputText, { color: colors.text }]}>
@@ -1084,6 +1126,7 @@ export default function MCQScreen() {
                                       setSelectedSubject(subject);
                                       setSelectedChapter('');
                                       setSelectedChapterName('');
+                                      setIsPreSelected(false); // Clear pre-selected flag
                                       setShowSubjectDropdown(false);
                                     }}
                                   >
@@ -1107,6 +1150,7 @@ export default function MCQScreen() {
                                       setSelectedSubject(subject.id);
                                       setSelectedChapter('');
                                       setSelectedChapterName('');
+                                      setIsPreSelected(false); // Clear pre-selected flag
                                       setShowSubjectDropdown(false);
                                     }}
                                   >
@@ -1682,6 +1726,11 @@ const styles = StyleSheet.create({
   formLabel: {
     fontSize: 18,
     fontWeight: '600',
+  },
+  preSelectedLabel: {
+    fontSize: 14,
+    fontWeight: '400',
+    fontStyle: 'italic',
   },
   formInput: {
     flexDirection: 'row',
