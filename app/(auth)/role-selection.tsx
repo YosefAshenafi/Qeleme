@@ -234,7 +234,7 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   title: {
-    paddingTop: 20,
+    paddingVertical: 20,
     fontSize: 36,
     fontWeight: '700',
     letterSpacing: -0.5,
