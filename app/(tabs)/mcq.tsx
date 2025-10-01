@@ -21,6 +21,7 @@ import { getMCQData, MCQData, Grade, Subject, Chapter, Question, Option, ExamTyp
 import ActivityTrackingService from '../../services/activityTrackingService';
 import PictureMCQScreen from '../screens/PictureMCQScreen';
 import PictureMCQInstructionScreen from '../screens/PictureMCQInstructionScreen';
+import SponsoredBy from '../../components/SponsoredBy';
 
 interface RecentActivity {
   type: string;
@@ -893,6 +894,9 @@ export default function MCQScreen() {
               <ThemedText style={[styles.homeButtonText, { color: colors.text }]}>{t('mcq.results.chooseAnotherSubject')}</ThemedText>
             </TouchableOpacity>
           </ThemedView>
+
+          {/* Sponsored By Section */}
+          <SponsoredBy />
         </ScrollView>
       </ThemedView>
     );
@@ -1083,7 +1087,7 @@ export default function MCQScreen() {
                       {t('mcq.subject')}
                       {isPreSelected && (
                         <ThemedText style={[styles.preSelectedLabel, { color: colors.tint }]}>
-                          {' '}({t('mcq.preSelected')})
+                          {' '}
                         </ThemedText>
                       )}
                     </ThemedText>
@@ -2013,7 +2017,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'transparent',
   },
   scoreText: {
-    paddingTop: 30,
+    paddingVertical: 35,
     fontSize: 48,
     fontWeight: '700',
     textAlign: 'center',

@@ -10,6 +10,10 @@ export default function CustomSplashScreen() {
   const opacityAnim = useRef(new Animated.Value(0)).current;
   const textScaleAnim = useRef(new Animated.Value(0.5)).current;
   const textOpacityAnim = useRef(new Animated.Value(0)).current;
+  
+  // Sponsor animation values
+  const sponsorSlideAnim = useRef(new Animated.Value(-width)).current;
+  const sponsorOpacityAnim = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
     // Start the zoom animation for icon
@@ -41,6 +45,22 @@ export default function CustomSplashScreen() {
         }),
       ]).start();
     }, 300);
+
+    // Start the sponsor animation after the main content is shown
+    setTimeout(() => {
+      Animated.parallel([
+        Animated.timing(sponsorSlideAnim, {
+          toValue: 0,
+          duration: 800,
+          useNativeDriver: true,
+        }),
+        Animated.timing(sponsorOpacityAnim, {
+          toValue: 1,
+          duration: 600,
+          useNativeDriver: true,
+        }),
+      ]).start();
+    }, 1200);
   }, []);
 
   const themeColor = isDarkMode ? '#8B6BCE' : '#6B54AE';
@@ -90,6 +110,60 @@ export default function CustomSplashScreen() {
             Qelem
           </Text>
         </Animated.View>
+      </Animated.View>
+
+      {/* Sponsored by section */}
+      <Animated.View
+        style={{
+          position: 'absolute',
+          bottom: 60,
+          left: 0,
+          right: 0,
+          transform: [{ translateX: sponsorSlideAnim }],
+          opacity: sponsorOpacityAnim,
+          alignItems: 'center',
+          paddingHorizontal: 20,
+        }}
+      >
+        <View
+          style={{
+            backgroundColor: 'rgba(255, 255, 255, 0.1)',
+            borderRadius: 25,
+            paddingVertical: 12,
+            paddingHorizontal: 20,
+            flexDirection: 'row',
+            alignItems: 'center',
+            justifyContent: 'center',
+            shadowColor: '#000',
+            shadowOffset: {
+              width: 0,
+              height: 2,
+            },
+            shadowOpacity: 0.25,
+            shadowRadius: 3.84,
+            elevation: 5,
+          }}
+        >
+          <Text
+            style={{
+              color: 'rgba(255, 255, 255, 0.8)',
+              fontSize: 14,
+              fontWeight: '500',
+              marginRight: 8,
+              letterSpacing: 0.5,
+            }}
+          >
+            Sponsored by
+          </Text>
+          <Image
+            source={require('@/assets/images/sponsor/zemen-bank-logo.png')}
+            style={{
+              width: 80,
+              height: 30,
+              resizeMode: 'contain',
+            }}
+          />
+        </View>
       </Animated.View>
     </View>
   );
