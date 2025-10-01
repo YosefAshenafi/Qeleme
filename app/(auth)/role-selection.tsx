@@ -113,7 +113,7 @@ export default function RoleSelectionScreen() {
                 </View>
                 <View style={styles.roleContent}>
                   <ThemedText style={[styles.roleTitle, { 
-                    color: selectedRole === 'student' ? '#4F46E5' : colors.text 
+                    color: '#4F46E5' 
                   }]}>
                     {t('signup.roleSelection.student.title')}
                   </ThemedText>
@@ -175,7 +175,7 @@ export default function RoleSelectionScreen() {
                 </View>
                 <View style={styles.roleContent}>
                   <ThemedText style={[styles.roleTitle, { 
-                    color: selectedRole === 'parent' ? '#4F46E5' : colors.text 
+                    color: '#4F46E5'
                   }]}>
                     {t('signup.roleSelection.parent.title')}
                   </ThemedText>
