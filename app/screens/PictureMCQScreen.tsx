@@ -144,6 +144,7 @@ export default function PictureMCQScreen({ onBackToInstructions }: PictureMCQScr
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [imageStates, setImageStates] = useState<{ [key: number]: { loading: boolean; error: boolean; loaded: boolean } }>({});
+  const [showAnswerHint, setShowAnswerHint] = useState(false);
   const { t } = useTranslation();
 
   // Transform API questions to the expected format
@@ -339,6 +340,7 @@ export default function PictureMCQScreen({ onBackToInstructions }: PictureMCQScr
         if (selectedOption) {
           runOnJS(setDroppedOption)(hoveredOption);
           runOnJS(setSelectedAnswer)(hoveredOption);
+          runOnJS(setShowAnswerHint)(false); // Hide hint when answer is selected
           
           if (selectedOption.isCorrect) {
             // Simplified score update
@@ -391,6 +393,7 @@ export default function PictureMCQScreen({ onBackToInstructions }: PictureMCQScr
       setShowIncorrectVideo(false);
       setDroppedOption(null);
       setHoveredOption(null);
+      setShowAnswerHint(false);
     } else {
       console.log('Already at last question');
     }
@@ -406,6 +409,7 @@ export default function PictureMCQScreen({ onBackToInstructions }: PictureMCQScr
       setShowIncorrectVideo(false);
       setDroppedOption(null);
       setHoveredOption(null);
+      setShowAnswerHint(false);
     }
   };
 
@@ -419,6 +423,7 @@ export default function PictureMCQScreen({ onBackToInstructions }: PictureMCQScr
     setShowResult(false);
     setDroppedOption(null);
     setHoveredOption(null);
+    setShowAnswerHint(false);
   };
 
   const handleGoToInstructions = () => {
@@ -445,6 +450,19 @@ export default function PictureMCQScreen({ onBackToInstructions }: PictureMCQScr
 
   const handleNavigation = async () => {
     if (!currentQuestion) return;
+    
+    // Prevent navigation if no answer is selected
+    if (!selectedAnswer) {
+      // Show hint that answer is required
+      setShowAnswerHint(true);
+      // Hide hint after 3 seconds
+      setTimeout(() => setShowAnswerHint(false), 3000);
+      return;
+    }
+    
+    // Hide hint if answer is selected
+    setShowAnswerHint(false);
+    
     const currentScore = Number(score) || 0; // Ensure score is a number
     if (isLastQuestion) {
       // Track activity when quiz is completed
@@ -493,11 +511,11 @@ export default function PictureMCQScreen({ onBackToInstructions }: PictureMCQScr
           console.log('Showing results');
           setShowResult(true);
         }
-      }, 3000); // Wait 4 seconds to show the video
+      }, 3000); // Wait 3 seconds to show the video
 
       return () => clearTimeout(timer);
     }
-  }, [selectedAnswer, showCorrectVideo, showIncorrectVideo]);
+  }, [selectedAnswer, showCorrectVideo, showIncorrectVideo, currentQuestionIndex, questions.length]);
 
 
 
@@ -718,6 +736,7 @@ export default function PictureMCQScreen({ onBackToInstructions }: PictureMCQScr
         </View>
         <ThemedView style={[styles.container, { backgroundColor: isDarkMode ? '#000000' : '#F8F9FA' }]}>
           <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
+            {/* Compact Progress and Navigation Container */}
             <View style={styles.progressContainer}>
               <LinearGradient
                 colors={[colors.tint, colors.tint + 'DD']}
@@ -737,56 +756,58 @@ export default function PictureMCQScreen({ onBackToInstructions }: PictureMCQScr
                       />
                     </View>
                   </View>
-                  <View style={styles.progressLabels}>
-                    <ThemedText style={styles.progressText}>
-                      🎯 {t('mcq.question', 'Question')} {currentQuestionIndex + 1} {t('mcq.of', 'of')} {questions.length} 🎯
-                    </ThemedText>
+                  
+                  {/* Question Counter and Navigation on Same Line */}
+                  <View style={styles.compactNavigationContainer}>
+                    <TouchableOpacity
+                      style={[
+                        styles.compactNavButton,
+                        styles.compactPrevButton,
+                        { borderColor: 'rgba(255, 255, 255, 0.3)' },
+                        isFirstQuestion && styles.compactNavButtonDisabled
+                      ]}
+                      onPress={handlePreviousQuestion}
+                      disabled={memoizedIsFirstQuestion}
+                    >
+                      <IconSymbol name="chevron.left" size={14} color="#FFFFFF" />
+                      <ThemedText style={styles.compactNavButtonText}>
+                        {t('mcq.previous')}
+                      </ThemedText>
+                    </TouchableOpacity>
+
+                    <View style={styles.questionCounterContainer}>
+                      <ThemedText style={styles.compactProgressText}>
+                        {currentQuestionIndex + 1} / {questions.length}
+                      </ThemedText>
+                    </View>
+
+                    <TouchableOpacity
+                      style={[
+                        styles.compactNavButton,
+                        styles.compactNextButton,
+                        { 
+                          backgroundColor: 'rgba(255, 255, 255, 0.2)',
+                          opacity: 1
+                        }
+                      ]}
+                      onPress={handleNavigation}
+                      testID="next-button"
+                    >
+                      <ThemedText style={[
+                        styles.compactNavButtonText,
+                        { opacity: 1 }
+                      ]}>
+                        {memoizedIsLastQuestion ? t('mcq.finish') : t('mcq.next')}
+                      </ThemedText>
+                      <IconSymbol 
+                        name="chevron.right" 
+                        size={14} 
+                        color="#FFFFFF"
+                      />
+                    </TouchableOpacity>
                   </View>
                 </View>
               </LinearGradient>
-            </View>
-
-            {/* Navigation Buttons - Moved to top */}
-            <View style={[styles.navigationContainer, {
-              borderTopColor: isDarkMode ? '#3C3C3E' : '#E0E0E0',
-              borderBottomColor: isDarkMode ? '#3C3C3E' : '#E0E0E0',
-              marginBottom: 20,
-            }]}>
-              <TouchableOpacity
-                style={[
-                  styles.navButton,
-                  styles.prevButton,
-                  { borderColor: isDarkMode ? '#3C3C3E' : '#E0E0E0' },
-                  isFirstQuestion && styles.navButtonDisabled
-                ]}
-                onPress={handlePreviousQuestion}
-                disabled={memoizedIsFirstQuestion}
-              >
-                <IconSymbol name="chevron.left" size={18} color={colors.tint} />
-                <ThemedText style={[styles.prevButtonText, { color: colors.tint, fontSize: 14 }]}>
-                  {t('mcq.previous')}
-                </ThemedText>
-              </TouchableOpacity>
-
-              <TouchableOpacity
-                style={[
-                  styles.navButton, 
-                  styles.nextButton, 
-                  { 
-                    backgroundColor: colors.tint,
-                    paddingHorizontal: 12,
-                    paddingVertical: 8,
-                    minWidth: 80,
-                  }
-                ]}
-                onPress={handleNavigation}
-                testID="next-button"
-              >
-                <ThemedText style={[styles.nextButtonText, { color: '#fff', fontSize: 14 }]}>
-                  {memoizedIsLastQuestion ? t('mcq.finish') : t('mcq.next')}
-                </ThemedText>
-                <IconSymbol name="chevron.right" size={18} color="#fff" />
-              </TouchableOpacity>
             </View>
 
             {memoizedCurrentQuestion && (
@@ -805,6 +826,11 @@ export default function PictureMCQScreen({ onBackToInstructions }: PictureMCQScr
                       lineHeight={26}
                       image_url={memoizedCurrentQuestion?.image_url}
                     />
+                    {showAnswerHint && (
+                      <ThemedText style={[styles.answerRequiredText, { color: colors.tint }]}>
+                        {t('mcq.selectAnswer', 'Please select an answer to continue')}
+                      </ThemedText>
+                    )}
                   </LinearGradient>
                 </View>
 
@@ -887,8 +913,8 @@ export default function PictureMCQScreen({ onBackToInstructions }: PictureMCQScr
                           text={option.text}
                           style={[
                             styles.optionText,
-                            selectedAnswer === option.id && option.isCorrect && styles.correctText,
-                            selectedAnswer === option.id && !option.isCorrect && styles.incorrectText,
+                            ...(selectedAnswer === option.id && option.isCorrect ? [styles.correctText] : []),
+                            ...(selectedAnswer === option.id && !option.isCorrect ? [styles.incorrectText] : []),
                           ]}
                           color={isDarkMode ? colors.text : '#333333'}
                           fontSize={16}
@@ -984,6 +1010,50 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '600',
   },
+  compactNavigationContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginTop: 12,
+    paddingHorizontal: 8,
+  },
+  compactNavButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 20,
+    borderWidth: 1,
+    minWidth: 80,
+    gap: 4,
+  },
+  compactPrevButton: {
+    backgroundColor: 'transparent',
+  },
+  compactNextButton: {
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+  },
+  compactNavButtonDisabled: {
+    opacity: 0.4,
+  },
+  compactNavButtonText: {
+    color: '#FFFFFF',
+    fontSize: 12,
+    fontWeight: '600',
+  },
+  questionCounterContainer: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 16,
+  },
+  compactProgressText: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontWeight: '700',
+    textAlign: 'center',
+  },
   questionContainer: {
     marginBottom: 20,
     paddingHorizontal: 20,
@@ -1002,6 +1072,13 @@ const styles = StyleSheet.create({
     lineHeight: 30,
     fontWeight: '600',
     textAlign: 'center',
+  },
+  answerRequiredText: {
+    fontSize: 14,
+    fontWeight: '500',
+    textAlign: 'center',
+    marginTop: 8,
+    fontStyle: 'italic',
   },
   imageContainer: {
     width: '100%',
