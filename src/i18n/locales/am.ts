@@ -304,7 +304,7 @@ export default {
       },
       haveFun: {
         title: 'ይደሰቱ!',
-        description: 'መማር አስደሳች ነው! ሂደቱን ይደሰቱ እና እድገትዎን ያክብሩ።'
+        description: 'መማር አስደሳች ነው! ሂደቱን ይደሰቱ እና እድገትዎን ይመልከቱ'
       },
       start: 'መማር ይጀምሩ'
     },
