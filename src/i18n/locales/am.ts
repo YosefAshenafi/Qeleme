@@ -470,7 +470,7 @@ export default {
         notBad: 'ጥሩ አይደለም! ይለማመዱ!',
         canDoBetter: 'ይማሩ! የበለጠ ማድረግ ይችላሉ!'
       },
-      tryAgain: 'እንደገና ይሞክሩ',
+      tryAgain: 'ሌሎች ቀሪ ጥያቄዎችን ይሞክሩ',
       chooseAnotherSubject: 'ሌላ የትምህርት ዓይነት ይምረጡ'
     },
     selectAnswer: 'እባክዎ ከመቀጠልዎ በፊት መልስ ይምረጡ',

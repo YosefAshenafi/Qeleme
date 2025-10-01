@@ -482,7 +482,7 @@ export default {
         notBad: 'Not bad! Keep practicing!',
         canDoBetter: 'Keep learning! You can do better!'
       },
-      tryAgain: 'Try Again',
+      tryAgain: 'Try Other Remaining Questions',
       chooseAnotherSubject: 'Choose Another Subject'
     },
     selectAnswer: 'Please select an answer before proceeding',
