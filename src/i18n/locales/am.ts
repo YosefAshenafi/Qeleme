@@ -266,6 +266,7 @@ export default {
     welcome: 'እንኳን ደህና መጡ {{name}}!',
     subtitle: 'ዛሬ አዲስ ነገር ለመማር ዝግጁ ኖት?',
     howToPlay: 'አጠቃቀም',
+    letsHaveFun: 'እየተደሰትን እንማር!',
     categories: {
       // Fallback categories
       'Animals': 'እንስሳት',
@@ -290,7 +291,10 @@ export default {
       'Fruits and Vegetables': 'ፍራፍሬዎች እና አትክልቶች',
       'School Compound': 'የትምህርት ቤት ግቢ',
       'Different Activities': 'የተለያዩ እንቅስቃሴዎች',
-      'Foods': 'ምግቦች'
+      'Foods': 'ምግቦች',
+      // UI text
+      title: 'የመማሪያ ጉዞዎን ይምረጡ!',
+      subtitle: 'ርዕስ ይምረጡ እና የእርስዎን አስደናቂ ጉዞ ይጀምሩ!'
     },
     instructions: {
       subtitle: 'አዲስ ነገር ለመማር ዝግጁ ኖት?',
@@ -311,6 +315,7 @@ export default {
     subcategories: {
       welcome: 'እንኳን ደህና መጡ ወደ {{category}}!',
       subtitle: 'መማር ለመጀመር ርዕስ ይምረጡ',
+      title: 'የመማሪያ ጉዞዎን ይምረጡ!',
       '1-10 Numbers': '1-10 ቁጥሮች',
       '11-20 Numbers': '11-20 ቁጥሮች',
       '1-10 Counting': '1-10 መቁጠሪያ',

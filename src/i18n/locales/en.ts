@@ -673,6 +673,7 @@ export default {
     welcome: 'Welcome {{name}}!',
     howToPlay: 'How to Play',
     subtitle: "Let's learn something new today!",
+    letsHaveFun: "Let's have fun learning!",
     categories: {
       // Fallback categories
       'Animals': 'Animals',
@@ -697,7 +698,10 @@ export default {
       'Fruits and Vegetables': 'Fruits and Vegetables',
       'School Compound': 'School Compound',
       'Different Activities': 'Different Activities',
-      'Foods': 'Foods'
+      'Foods': 'Foods',
+      // UI text
+      title: 'Choose Your Learning Adventure!',
+      subtitle: 'Pick a topic and start your amazing journey!'
     },
     instructions: {
       subtitle: "Let's learn something new!",
@@ -718,6 +722,7 @@ export default {
     subcategories: {
       welcome: 'Welcome to {{category}}!',
       subtitle: 'Choose a topic to start learning',
+      title: 'Choose Your Learning Adventure!',
       '1-10 Numbers': '1-10 Numbers',
       '11-20 Numbers': '11-20 Numbers',
       '1-10 Counting': '1-10 Counting',

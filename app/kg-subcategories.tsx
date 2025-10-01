@@ -176,7 +176,7 @@ export default function KGSubcategoriesScreen() {
             {categoryName}
           </Text>
           <Text style={[styles.headerSubtitle, { color: colors.text + '80' }]}>
-            Choose your learning path!
+            {t('kg.subcategories.title', 'Choose your learning path!')}
           </Text>
         </View>
         <View style={styles.headerRight}>
@@ -206,7 +206,7 @@ export default function KGSubcategoriesScreen() {
               <Text style={styles.welcomeEmoji}>🌟</Text>
             </View>
             <Text style={styles.welcomeTitle}>
-              {t('kg.subcategories.welcome', 'Ready to Explore!')}
+              {t('kg.subcategories.welcome', { category: categoryName }, 'Ready to Explore!')}
             </Text>
             <Text style={styles.welcomeSubtitle}>
               {t('kg.subcategories.subtitle', 'Pick a subcategory and start learning!')}
@@ -226,7 +226,7 @@ export default function KGSubcategoriesScreen() {
               {t('kg.subcategories.title', 'Choose Your Learning Adventure!')}
             </Text>
             <Text style={[styles.subcategoriesSubtitle, { color: colors.text + '80' }]}>
-              Pick a topic and start your amazing journey!
+              {t('kg.categories.subtitle', 'Pick a topic and start your amazing journey!')}
             </Text>
           </View>
           

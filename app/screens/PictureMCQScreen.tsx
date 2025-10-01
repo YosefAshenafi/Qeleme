@@ -723,27 +723,70 @@ export default function PictureMCQScreen({ onBackToInstructions }: PictureMCQScr
                 colors={[colors.tint, colors.tint + 'DD']}
                 style={styles.progressGradient}
               >
-                                  <View style={styles.progressContent}>
-                    <View style={styles.progressBarContainer}>
-                      <View style={[styles.progressBar, { backgroundColor: 'rgba(255, 255, 255, 0.3)' }]}>
-                        <View 
-                          style={[
-                            styles.progressFill, 
-                            { 
-                              backgroundColor: '#FFFFFF',
-                              width: `${((currentQuestionIndex + 1) / questions.length) * 100}%`
-                            }
-                          ]} 
-                        />
-                      </View>
-                    </View>
-                    <View style={styles.progressLabels}>
-                      <ThemedText style={styles.progressText}>
-                        🎯 {t('mcq.question', 'Question')} {currentQuestionIndex + 1} {t('mcq.of', 'of')} {questions.length} 🎯
-                      </ThemedText>
+                <View style={styles.progressContent}>
+                  <View style={styles.progressBarContainer}>
+                    <View style={[styles.progressBar, { backgroundColor: 'rgba(255, 255, 255, 0.3)' }]}>
+                      <View 
+                        style={[
+                          styles.progressFill, 
+                          { 
+                            backgroundColor: '#FFFFFF',
+                            width: `${((currentQuestionIndex + 1) / questions.length) * 100}%`
+                          }
+                        ]} 
+                      />
                     </View>
                   </View>
+                  <View style={styles.progressLabels}>
+                    <ThemedText style={styles.progressText}>
+                      🎯 {t('mcq.question', 'Question')} {currentQuestionIndex + 1} {t('mcq.of', 'of')} {questions.length} 🎯
+                    </ThemedText>
+                  </View>
+                </View>
               </LinearGradient>
+            </View>
+
+            {/* Navigation Buttons - Moved to top */}
+            <View style={[styles.navigationContainer, {
+              borderTopColor: isDarkMode ? '#3C3C3E' : '#E0E0E0',
+              borderBottomColor: isDarkMode ? '#3C3C3E' : '#E0E0E0',
+              marginBottom: 20,
+            }]}>
+              <TouchableOpacity
+                style={[
+                  styles.navButton,
+                  styles.prevButton,
+                  { borderColor: isDarkMode ? '#3C3C3E' : '#E0E0E0' },
+                  isFirstQuestion && styles.navButtonDisabled
+                ]}
+                onPress={handlePreviousQuestion}
+                disabled={memoizedIsFirstQuestion}
+              >
+                <IconSymbol name="chevron.left" size={18} color={colors.tint} />
+                <ThemedText style={[styles.prevButtonText, { color: colors.tint, fontSize: 14 }]}>
+                  {t('mcq.previous')}
+                </ThemedText>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={[
+                  styles.navButton, 
+                  styles.nextButton, 
+                  { 
+                    backgroundColor: colors.tint,
+                    paddingHorizontal: 12,
+                    paddingVertical: 8,
+                    minWidth: 80,
+                  }
+                ]}
+                onPress={handleNavigation}
+                testID="next-button"
+              >
+                <ThemedText style={[styles.nextButtonText, { color: '#fff', fontSize: 14 }]}>
+                  {memoizedIsLastQuestion ? t('mcq.finish') : t('mcq.next')}
+                </ThemedText>
+                <IconSymbol name="chevron.right" size={18} color="#fff" />
+              </TouchableOpacity>
             </View>
 
             {memoizedCurrentQuestion && (
@@ -874,35 +917,6 @@ export default function PictureMCQScreen({ onBackToInstructions }: PictureMCQScr
               </>
             )}
 
-            <View style={[styles.navigationContainer, {
-              borderTopColor: isDarkMode ? '#3C3C3E' : '#E0E0E0',
-              borderBottomColor: isDarkMode ? '#3C3C3E' : '#E0E0E0',
-            }]}>
-              <TouchableOpacity
-                style={[
-                  styles.navButton,
-                  styles.prevButton,
-                  { borderColor: isDarkMode ? '#3C3C3E' : '#E0E0E0' },
-                  isFirstQuestion && styles.navButtonDisabled
-                ]}
-                onPress={handlePreviousQuestion}
-                disabled={memoizedIsFirstQuestion}
-              >
-                <IconSymbol name="chevron.left.forwardslash.chevron.right" size={24} color="#6B54AE" />
-                <ThemedText style={styles.prevButtonText}>{t('mcq.previous')}</ThemedText>
-              </TouchableOpacity>
-
-              <TouchableOpacity
-                style={[styles.navButton, styles.nextButton]}
-                onPress={handleNavigation}
-                testID="next-button"
-              >
-                <ThemedText style={styles.nextButtonText}>
-                  {memoizedIsLastQuestion ? t('mcq.finish') : t('mcq.next')}
-                </ThemedText>
-                <IconSymbol name="chevron.right" size={24} color="#fff" />
-              </TouchableOpacity>
-            </View>
           </ScrollView>
         </ThemedView>
       </SafeAreaView>
@@ -1095,6 +1109,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     marginVertical: 20,
     paddingVertical: 20,
+    paddingHorizontal: 20,
     borderTopWidth: 1,
     borderBottomWidth: 1,
     borderTopColor: '#E0E0E0',
