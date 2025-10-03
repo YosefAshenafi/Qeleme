@@ -152,19 +152,38 @@ export default function PaymentScreen() {
       console.log('Payment Success - plan:', selectedPlanName);
 
       // For paid plans, we need to register the user after successful payment
-      const endpoint = `${BASE_URL}/api/auth/register/student`;
+      const endpoint = userData.role === 'parent' 
+        ? `${BASE_URL}/api/auth/register/parent`
+        : `${BASE_URL}/api/auth/register/student`;
 
-      const requestBody = {
+      const requestBody = userData.role === 'parent' ? {
+        parent: {
+          name: userData.fullName,
+          username: userData.username,
+          password: userData.password,
+          phoneNumber: userData.phoneNumber?.replace('+251', '').replace(/^9/, '09') || userData.phoneNumber,
+          region: userData.region
+        },
+        students: userData.childrenData?.map((child: any) => ({
+          name: child.fullName,
+          username: child.username,
+          password: child.password,
+          grade: child.grade === 'KG' ? 'kg' : `grade ${child.grade}`,
+          plan: selectedPlanName,
+          region: child.region
+        })) || []
+      } : {
         name: userData.fullName,
         username: userData.username,
         password: userData.password,
-        grade: userData.grade === 'KG' ? 'kg' : `grade ${userData.grade}`,
         phoneNumber: userData.phoneNumber?.replace('+251', '').replace(/^9/, '09') || userData.phoneNumber,
         Plan: selectedPlanName,
-        region: userData.region
+        region: userData.region,
+        grade: userData.grade === 'KG' ? 'kg' : `grade ${userData.grade}`
       };
 
       console.log('Payment Success - Registration request body:', requestBody);
+      console.log('Payment Success - Children data being sent:', userData.childrenData);
 
       const response = await fetch(endpoint, {
         method: 'POST',

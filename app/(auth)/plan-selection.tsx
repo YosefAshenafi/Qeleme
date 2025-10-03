@@ -210,9 +210,11 @@ export default function PlanSelectionScreen() {
           return;
         }
 
-        // For parent registration, validate that children have grades
+        // For parent registration, validate that children have grades and regions
         if (userData.role === 'parent') {
           const childrenWithoutGrades = userData.childrenData?.filter((child: any) => !child.grade) || [];
+          const childrenWithoutRegions = userData.childrenData?.filter((child: any) => !child.region) || [];
+          
           if (childrenWithoutGrades.length > 0) {
             console.error('Children missing grades:', childrenWithoutGrades);
             Alert.alert(
@@ -231,21 +233,59 @@ export default function PlanSelectionScreen() {
             );
             return;
           }
+          
+          if (childrenWithoutRegions.length > 0) {
+            console.error('Children missing regions:', childrenWithoutRegions);
+            Alert.alert(
+              'Region Required',
+              'Please select regions for all children before proceeding. You will be redirected to the signup screen.',
+              [
+                {
+                  text: 'OK',
+                  onPress: () => router.replace('/(auth)/signup'),
+                  style: 'default'
+                }
+              ],
+              {
+                cancelable: false
+              }
+            );
+            return;
+          }
         }
         
-        const endpoint = `${BASE_URL}/api/auth/register/student`;
-        const requestBody = {
+        const endpoint = userData.role === 'parent' 
+          ? `${BASE_URL}/api/auth/register/parent`
+          : `${BASE_URL}/api/auth/register/student`;
+        const requestBody = userData.role === 'parent' ? {
+          parent: {
+            name: userData.fullName,
+            username: userData.username,
+            password: userData.password,
+            phoneNumber: userData.phoneNumber?.replace('+251', '').replace(/^9/, '09') || userData.phoneNumber,
+            region: userData.region
+          },
+          students: userData.childrenData?.map((child: any) => ({
+            name: child.fullName,
+            username: child.username,
+            password: child.password,
+            grade: child.grade === 'KG' ? 'kg' : `grade ${child.grade}`,
+            plan: selectedPlan.name,
+            region: child.region
+          })) || []
+        } : {
           name: userData.fullName,
           username: userData.username,
           password: userData.password,
-          grade: userData.grade === 'KG' ? 'kg' : `grade ${userData.grade}`,
           phoneNumber: userData.phoneNumber?.replace('+251', '').replace(/^9/, '09') || userData.phoneNumber,
           Plan: selectedPlan.name,
-          region: userData.region
+          region: userData.region,
+          grade: userData.grade === 'KG' ? 'kg' : `grade ${userData.grade}`
         };
 
         console.log('Plan Selection - Sending registration request:', requestBody);
         console.log('Plan Selection - Region being sent:', userData.region);
+        console.log('Plan Selection - Children data being sent:', userData.childrenData);
 
         const response = await fetch(endpoint, {
           method: 'POST',

@@ -38,7 +38,8 @@ export default function SignupScreen() {
   const numberOfChildren = params.numberOfChildren ? parseInt(params.numberOfChildren as string) : 1;
   const role = params.role as string || 'student';
   const initialChildrenData = params.childrenData ? JSON.parse(params.childrenData as string) : 
-    Array(numberOfChildren).fill({ fullName: '', username: '', grade: '' as Grade, password: '', confirmPassword: '' });
+    Array(numberOfChildren).fill({ fullName: '', username: '', grade: '' as Grade, password: '', confirmPassword: '', region: '' });
+  
   
   const [fullName, setFullName] = useState('');
   const [username, setUsername] = useState('');
@@ -252,9 +253,13 @@ export default function SignupScreen() {
     const confirmPasswordError = validatePasswordConfirmation(password, confirmPassword);
     if (confirmPasswordError) errors.confirmPassword = confirmPasswordError;
 
-    const gradeError = validateGrade(grade);
-    if (gradeError) errors.grade = gradeError;
+    // Only validate grade for students
+    if (role === 'student') {
+      const gradeError = validateGrade(grade);
+      if (gradeError) errors.grade = gradeError;
+    }
 
+    // Validate region for both students and parents
     const regionError = validateRegion(region);
     if (regionError) errors.region = regionError;
 
@@ -628,6 +633,33 @@ export default function SignupScreen() {
                     error={!!validationErrors.confirmPassword}
                     errorMessage={validationErrors.confirmPassword}
                   />
+
+                  {/* Parent region selection - only for parent role */}
+                  {role === 'parent' ? (
+                    <>
+                      <ThemedText style={[styles.sectionTitle, { color: colors.text }]}>
+                        Your Region
+                      </ThemedText>
+                      <View style={[styles.inputContainer, {
+                        backgroundColor: isDarkMode ? '#2C2C2E' : '#F9FAFB',
+                        borderColor: validationErrors.region ? '#F44336' : (isDarkMode ? '#3C3C3E' : '#E5E7EB'),
+                      }]}>
+                        <Ionicons name="location-outline" size={20} color={isDarkMode ? '#A0A0A5' : '#6B7280'} style={styles.inputIcon} />
+                        <TouchableOpacity 
+                          style={styles.dropdownButton}
+                          onPress={() => openRegionModal()}
+                        >
+                          <ThemedText style={[styles.input, { color: region ? colors.text : (isDarkMode ? '#A0A0A5' : '#9CA3AF') }]}>
+                            {region ? regions.find(r => r.name === region)?.name || t('signup.region.label') : t('signup.region.label')}
+                          </ThemedText>
+                          <Ionicons name="chevron-down" size={20} color={isDarkMode ? '#A0A0A5' : '#6B7280'} />
+                        </TouchableOpacity>
+                      </View>
+                    </>
+                  ) : null}
+                  {role === 'parent' && validationErrors.region ? (
+                    <ThemedText style={[styles.errorText, { color: '#F44336' }]}>{validationErrors.region}</ThemedText>
+                  ) : null}
 
                   {role === 'parent' && numberOfChildren >= 1 ? (
                     childrenData.map((child, index) => (
@@ -1249,4 +1281,10 @@ const styles = StyleSheet.create({
     marginRight: 16,
     zIndex: 1,
   },
-}); 
+  sectionTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    marginBottom: 8,
+    marginTop: 8,
+  },
+});

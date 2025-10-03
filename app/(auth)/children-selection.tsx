@@ -77,6 +77,7 @@ export default function ChildrenSelectionScreen() {
       grade: '',
       password: '',
       confirmPassword: '',
+      region: '',
       plan: '3' // Default to free plan
     }));
 
