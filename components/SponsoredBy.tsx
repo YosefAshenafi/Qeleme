@@ -35,6 +35,7 @@ const styles = StyleSheet.create({
   container: {
     alignItems: 'center',
     marginVertical: 20,
+    marginBottom: 40, // Extra bottom margin for small screens
     paddingHorizontal: 20,
   },
   sponsorCard: {

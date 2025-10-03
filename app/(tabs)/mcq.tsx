@@ -1696,7 +1696,7 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     flexGrow: 1,
-    paddingBottom: 20,
+    paddingBottom: 60, // Increased padding for small screens to ensure Zemen Bank logo is fully visible
   },
   title: {
     fontSize: 24,
