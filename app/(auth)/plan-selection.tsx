@@ -46,6 +46,7 @@ export default function PlanSelectionScreen() {
   console.log('Plan Selection - userData.childrenData:', userData?.childrenData);
   console.log('Plan Selection - userData.phoneNumber:', userData?.phoneNumber);
   console.log('Plan Selection - userData.grade:', userData?.grade);
+  console.log('Plan Selection - userData.region:', userData?.region);
 
   useEffect(() => {
     fetchPaymentPlans();
@@ -239,10 +240,12 @@ export default function PlanSelectionScreen() {
           password: userData.password,
           grade: userData.grade === 'KG' ? 'kg' : `grade ${userData.grade}`,
           phoneNumber: userData.phoneNumber?.replace('+251', '').replace(/^9/, '09') || userData.phoneNumber,
-          Plan: selectedPlan.name
+          Plan: selectedPlan.name,
+          region: userData.region
         };
 
-        console.log('Sending registration request:', requestBody);
+        console.log('Plan Selection - Sending registration request:', requestBody);
+        console.log('Plan Selection - Region being sent:', userData.region);
 
         const response = await fetch(endpoint, {
           method: 'POST',

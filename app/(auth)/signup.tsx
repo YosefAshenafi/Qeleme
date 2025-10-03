@@ -12,6 +12,7 @@ import { sendOTP } from '@/utils/otpService';
 import { grades, Grade } from '@/constants/Grades';
 import { useTranslation } from 'react-i18next';
 import { BASE_URL } from '@/config/constants';
+import { fetchRegions, Region } from '@/services/regionService';
 
 import { ThemedText } from '@/components/ThemedText';
 import { LanguageToggle } from '@/components/ui/LanguageToggle';
@@ -26,6 +27,7 @@ interface ChildData {
   plan?: string;
   usernameValid?: boolean | null;
   usernameChecking?: boolean;
+  region?: string;
 }
 
 export default function SignupScreen() {
@@ -44,8 +46,10 @@ export default function SignupScreen() {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [grade, setGrade] = useState<Grade | ''>('');
+  const [region, setRegion] = useState('');
   const [acceptTerms, setAcceptTerms] = useState(false);
   const [showGradeModal, setShowGradeModal] = useState(false);
+  const [showRegionModal, setShowRegionModal] = useState(false);
   const [showTermsModal, setShowTermsModal] = useState(false);
   const [childrenData, setChildrenData] = useState<ChildData[]>(initialChildrenData);
   const [selectedChildIndex, setSelectedChildIndex] = useState<number | null>(null);
@@ -54,6 +58,8 @@ export default function SignupScreen() {
   const [usernameChecking, setUsernameChecking] = useState(false);
   const [usernameError, setUsernameError] = useState('');
   const [validationErrors, setValidationErrors] = useState<{[key: string]: string}>({});
+  const [regions, setRegions] = useState<Region[]>([]);
+  const [regionsLoading, setRegionsLoading] = useState(false);
 
   // Handle pre-filled data from OTP screen
   useEffect(() => {
@@ -67,6 +73,7 @@ export default function SignupScreen() {
         setPassword(prefillData.password || '');
         setConfirmPassword(prefillData.password || ''); // Pre-fill confirm password too
         setGrade(prefillData.grade || '');
+        setRegion(prefillData.region || '');
         
         // Pre-fill phone number (remove country code if present)
         const phone = prefillData.phoneNumber || '';
@@ -82,6 +89,24 @@ export default function SignupScreen() {
       }
     }
   }, [params.prefillData]);
+
+  // Fetch regions on component mount
+  useEffect(() => {
+    const loadRegions = async () => {
+      setRegionsLoading(true);
+      try {
+        const regionsData = await fetchRegions();
+        setRegions(regionsData);
+      } catch (error) {
+        console.error('Error loading regions:', error);
+        setError('Failed to load regions. Please try again.');
+      } finally {
+        setRegionsLoading(false);
+      }
+    };
+
+    loadRegions();
+  }, []);
 
   // Validation functions
   const validateFullName = (name: string): string => {
@@ -165,6 +190,13 @@ export default function SignupScreen() {
     return '';
   };
 
+  const validateRegion = (region: string): string => {
+    if (!region) {
+      return t('signup.errors.regionRequired');
+    }
+    return '';
+  };
+
   const validateChildData = (child: ChildData, index: number): {[key: string]: string} => {
     const errors: {[key: string]: string} = {};
     
@@ -181,6 +213,11 @@ export default function SignupScreen() {
     const gradeError = validateGrade(child.grade);
     if (gradeError) {
       errors[`child${index}_grade`] = gradeError;
+    }
+
+    const regionError = validateRegion(child.region || '');
+    if (regionError) {
+      errors[`child${index}_region`] = regionError;
     }
 
     const passwordError = validatePassword(child.password);
@@ -217,6 +254,9 @@ export default function SignupScreen() {
 
     const gradeError = validateGrade(grade);
     if (gradeError) errors.grade = gradeError;
+
+    const regionError = validateRegion(region);
+    if (regionError) errors.region = regionError;
 
     // Validate children data if role is parent
     if (role === 'parent') {
@@ -260,9 +300,25 @@ export default function SignupScreen() {
     setShowGradeModal(false);
   };
 
+  const handleRegionSelect = (value: string, childIndex?: number) => {
+    if (childIndex !== undefined) {
+      const newChildrenData = [...childrenData];
+      newChildrenData[childIndex] = { ...newChildrenData[childIndex], region: value };
+      setChildrenData(newChildrenData);
+    } else {
+      setRegion(value);
+    }
+    setShowRegionModal(false);
+  };
+
   const openGradeModal = (childIndex?: number) => {
     setSelectedChildIndex(childIndex ?? null);
     setShowGradeModal(true);
+  };
+
+  const openRegionModal = (childIndex?: number) => {
+    setSelectedChildIndex(childIndex ?? null);
+    setShowRegionModal(true);
   };
 
   const handleFullNameChange = (text: string) => {
@@ -379,6 +435,12 @@ export default function SignupScreen() {
     setChildrenData(newChildrenData);
   };
 
+  const handleChildRegionChange = (text: string, index: number) => {
+    const newChildrenData = [...childrenData];
+    newChildrenData[index] = { ...newChildrenData[index], region: text };
+    setChildrenData(newChildrenData);
+  };
+
   const handleSignup = async () => {
     // Reset error states
     setError('');
@@ -416,6 +478,7 @@ export default function SignupScreen() {
           username,
           password,
           grade,
+          region,
           role,
           numberOfChildren: numberOfChildren.toString(),
           childrenData: JSON.stringify(childrenData)
@@ -660,27 +723,66 @@ export default function SignupScreen() {
                         {validationErrors[`child${index}_grade`] ? (
                           <ThemedText style={[styles.errorText, { color: '#F44336' }]}>{validationErrors[`child${index}_grade`]}</ThemedText>
                         ) : null}
+                        <View style={[styles.inputContainer, {
+                          backgroundColor: isDarkMode ? '#2C2C2E' : '#F9FAFB',
+                          borderColor: validationErrors[`child${index}_region`] ? '#F44336' : (isDarkMode ? '#3C3C3E' : '#E5E7EB'),
+                        }]}>
+                          <Ionicons name="location-outline" size={20} color={isDarkMode ? '#A0A0A5' : '#6B7280'} style={styles.inputIcon} />
+                          <TouchableOpacity 
+                            style={styles.dropdownButton}
+                            onPress={() => openRegionModal(index)}
+                          >
+                            <ThemedText style={[styles.input, { color: child.region ? colors.text : (isDarkMode ? '#A0A0A5' : '#9CA3AF') }]}>
+                              {child.region ? regions.find(r => r.name === child.region)?.name || t('signup.region.label') : t('signup.region.label')}
+                            </ThemedText>
+                            <Ionicons name="chevron-down" size={20} color={isDarkMode ? '#A0A0A5' : '#6B7280'} />
+                          </TouchableOpacity>
+                        </View>
+                        {validationErrors[`child${index}_region`] ? (
+                          <ThemedText style={[styles.errorText, { color: '#F44336' }]}>{validationErrors[`child${index}_region`]}</ThemedText>
+                        ) : null}
                       </View>
                     ))
                   ) : role === 'student' ? (
-                    <View style={[styles.inputContainer, {
-                      backgroundColor: isDarkMode ? '#2C2C2E' : '#F9FAFB',
-                      borderColor: validationErrors.grade ? '#F44336' : (isDarkMode ? '#3C3C3E' : '#E5E7EB'),
-                    }]}>
-                      <Ionicons name="school-outline" size={20} color={isDarkMode ? '#A0A0A5' : '#6B7280'} style={styles.inputIcon} />
-                      <TouchableOpacity 
-                        style={styles.dropdownButton}
-                        onPress={() => openGradeModal()}
-                      >
-                        <ThemedText style={[styles.input, { color: grade ? colors.text : (isDarkMode ? '#A0A0A5' : '#9CA3AF') }]}>
-                          {grade ? grades.find(g => g.value === grade)?.label || t('signup.grade.label') : t('signup.grade.label')}
-                        </ThemedText>
-                        <Ionicons name="chevron-down" size={20} color={isDarkMode ? '#A0A0A5' : '#6B7280'} />
-                      </TouchableOpacity>
-                    </View>
-                  ) : null}
-                  {validationErrors.grade ? (
-                    <ThemedText style={[styles.errorText, { color: '#F44336' }]}>{validationErrors.grade}</ThemedText>
+                    <>
+                      <View style={[styles.inputContainer, {
+                        backgroundColor: isDarkMode ? '#2C2C2E' : '#F9FAFB',
+                        borderColor: validationErrors.grade ? '#F44336' : (isDarkMode ? '#3C3C3E' : '#E5E7EB'),
+                      }]}>
+                        <Ionicons name="school-outline" size={20} color={isDarkMode ? '#A0A0A5' : '#6B7280'} style={styles.inputIcon} />
+                        <TouchableOpacity 
+                          style={styles.dropdownButton}
+                          onPress={() => openGradeModal()}
+                        >
+                          <ThemedText style={[styles.input, { color: grade ? colors.text : (isDarkMode ? '#A0A0A5' : '#9CA3AF') }]}>
+                            {grade ? grades.find(g => g.value === grade)?.label || t('signup.grade.label') : t('signup.grade.label')}
+                          </ThemedText>
+                          <Ionicons name="chevron-down" size={20} color={isDarkMode ? '#A0A0A5' : '#6B7280'} />
+                        </TouchableOpacity>
+                      </View>
+                      {validationErrors.grade ? (
+                        <ThemedText style={[styles.errorText, { color: '#F44336' }]}>{validationErrors.grade}</ThemedText>
+                      ) : null}
+
+                      <View style={[styles.inputContainer, {
+                        backgroundColor: isDarkMode ? '#2C2C2E' : '#F9FAFB',
+                        borderColor: validationErrors.region ? '#F44336' : (isDarkMode ? '#3C3C3E' : '#E5E7EB'),
+                      }]}>
+                        <Ionicons name="location-outline" size={20} color={isDarkMode ? '#A0A0A5' : '#6B7280'} style={styles.inputIcon} />
+                        <TouchableOpacity 
+                          style={styles.dropdownButton}
+                          onPress={() => openRegionModal()}
+                        >
+                          <ThemedText style={[styles.input, { color: region ? colors.text : (isDarkMode ? '#A0A0A5' : '#9CA3AF') }]}>
+                            {region ? regions.find(r => r.name === region)?.name || t('signup.region.label') : t('signup.region.label')}
+                          </ThemedText>
+                          <Ionicons name="chevron-down" size={20} color={isDarkMode ? '#A0A0A5' : '#6B7280'} />
+                        </TouchableOpacity>
+                      </View>
+                      {validationErrors.region ? (
+                        <ThemedText style={[styles.errorText, { color: '#F44336' }]}>{validationErrors.region}</ThemedText>
+                      ) : null}
+                    </>
                   ) : null}
                 </View>
 
@@ -751,6 +853,57 @@ export default function SignupScreen() {
                               styles.gradeOptionTextSelected
                             ]}>
                               {item.label}
+                            </ThemedText>
+                          </TouchableOpacity>
+                        ))}
+                      </ScrollView>
+                    </View>
+                  </Pressable>
+                </Modal>
+
+                <Modal
+                  visible={showRegionModal}
+                  transparent={true}
+                  animationType="fade"
+                  onRequestClose={() => setShowRegionModal(false)}
+                >
+                  <Pressable 
+                    style={styles.modalOverlay}
+                    onPress={() => setShowRegionModal(false)}
+                  >
+                    <View style={[styles.modalContent, {
+                      backgroundColor: isDarkMode ? '#1C1C1E' : '#FFFFFF',
+                    }]}>
+                      <View style={[styles.modalHeader, {
+                        borderBottomColor: isDarkMode ? '#3C3C3E' : '#E5E7EB',
+                      }]}>
+                        <ThemedText style={[styles.modalTitle, { color: colors.text }]}>{t('signup.region.title')}</ThemedText>
+                        <TouchableOpacity onPress={() => setShowRegionModal(false)}>
+                          <Ionicons name="close" size={24} color={isDarkMode ? '#A0A0A5' : '#6B7280'} />
+                        </TouchableOpacity>
+                      </View>
+                      <ScrollView style={styles.gradeScrollView}>
+                        {regions.map((item) => (
+                          <TouchableOpacity
+                            key={item.id}
+                            style={[
+                              styles.gradeOption,
+                              ((selectedChildIndex !== null ? 
+                                childrenData[selectedChildIndex].region : region) === item.name) && 
+                              [styles.gradeOptionSelected, {
+                                backgroundColor: isDarkMode ? '#2C2C2E' : '#EEF2FF'
+                              }]
+                            ]}
+                            onPress={() => handleRegionSelect(item.name, selectedChildIndex ?? undefined)}
+                          >
+                            <ThemedText style={[
+                              styles.gradeOptionText,
+                              { color: isDarkMode ? colors.text : '#1F2937' },
+                              ((selectedChildIndex !== null ? 
+                                childrenData[selectedChildIndex].region : region) === item.name) && 
+                              styles.gradeOptionTextSelected
+                            ]}>
+                              {item.name}
                             </ThemedText>
                           </TouchableOpacity>
                         ))}

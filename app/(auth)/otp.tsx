@@ -34,6 +34,7 @@ export default function OTPScreen() {
       username: params.username as string,
       password: params.password as string,
       grade: params.grade as string,
+      region: params.region as string,
       role: params.role as string,
       numberOfChildren: parseInt(params.numberOfChildren as string) || 0,
       childrenData: params.childrenData ? JSON.parse(params.childrenData as string) : []

@@ -597,6 +597,10 @@ export default {
       label: 'Select your grade',
       title: 'Select Grade'
     },
+    region: {
+      label: 'Select your region',
+      title: 'Select Region'
+    },
     terms: {
       prefix: 'I accept the ',
       link: 'Terms and Conditions',
@@ -625,6 +629,7 @@ export default {
       usernameTaken: 'Username is already taken',
       acceptTerms: 'Please accept the terms and conditions',
       gradeRequired: 'Please select your grade',
+      regionRequired: 'Please select your region',
       incompleteChildrenData: 'Please complete all children information',
       generic: 'An error occurred during signup',
       validationFailed: 'Please fix the errors below before continuing',

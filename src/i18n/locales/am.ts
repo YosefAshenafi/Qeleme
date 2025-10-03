@@ -225,6 +225,10 @@ export default {
       label: 'ክፍልዎን ይምረጡ',
       title: 'ክፍል ይምረጡ'
     },
+    region: {
+      label: 'ክልልዎን ይምረጡ',
+      title: 'ክልል ይምረጡ'
+    },
     terms: {
       prefix: 'የሚከተሉትን ይቀበላሉ ',
       link: 'የአገልግሎት ውሎች እና ሁኔታዎች',
@@ -253,6 +257,7 @@ export default {
       usernameTaken: 'የተጠቃሚ ስም አስቀድሞ ተይዟል',
       acceptTerms: 'እባክዎ ውሎችን እና ሁኔታዎችን ይቀበሉ',
       gradeRequired: 'እባክዎ ክፍልዎን ይምረጡ',
+      regionRequired: 'እባክዎ ክልልዎን ይምረጡ',
       incompleteChildrenData: 'እባክዎ የልጆች መረጃ ሁሉን ይጨምሩ',
       generic: 'በተመዝገበ ጊዜ ስህተት ተከስቷል',
       validationFailed: 'እባክዎ ከመቀጠል በፊት ከዚህ በታች ያሉትን ስህተቶች ያስተካክሉ',
