@@ -209,17 +209,15 @@ export default function FlashcardsScreen() {
     return amharicRegex.test(text);
   };
 
-  // Language-specific fix for data structure differences
+  // Get question and answer text - always use the same fields regardless of language
   const getQuestionText = (card: typeof currentCard) => {
     if (!card) return 'No question available';
-    // For English, the question field contains the answer, so use answer field as question
-    return i18n.language === 'en' ? card.answer : card.question;
+    return card.question;
   };
   
   const getAnswerText = (card: typeof currentCard) => {
     if (!card) return 'No answer available';
-    // For English, the answer field contains the question, so use question field as answer
-    return i18n.language === 'en' ? card.question : card.answer;
+    return card.answer;
   };
 
   // Check if the current language is Amharic
@@ -228,20 +226,19 @@ export default function FlashcardsScreen() {
     ? ((currentIndex + 1) / currentFlashcards.length) * 100 
     : 0;
 
-  // Set initial reveal state based on whether the current language is Amharic
+  // Always show questions first when a new card is loaded
   useEffect(() => {
     if (currentCard) {
-      const shouldShowAnswer = isAmharicLanguage;
-      setIsRevealed(shouldShowAnswer);
+      setIsRevealed(false);
       
-      // Animate to the appropriate state
-      revealAnimation.value = withSpring(shouldShowAnswer ? 1 : 0, {
+      // Animate to show question (not revealed state)
+      revealAnimation.value = withSpring(0, {
         damping: 12,
         stiffness: 80,
         mass: 0.8,
       });
     }
-  }, [currentCard, isAmharicLanguage]);
+  }, [currentCard]);
 
   useEffect(() => {
     if (showFlashcards && selectedChapterData?.flashcards && selectedChapterData.flashcards.length > 0) {
@@ -249,14 +246,13 @@ export default function FlashcardsScreen() {
     }
   }, [showFlashcards, selectedChapterData]);
 
-  // Reset flashcard state when language changes
+  // Track language changes for debugging
   useEffect(() => {
-    if (previousLanguage !== i18n.language && showFlashcards) {
+    if (previousLanguage !== i18n.language) {
       console.log('Language changed from', previousLanguage, 'to', i18n.language);
-      // The useEffect for currentCard will handle setting the correct reveal state
       setPreviousLanguage(i18n.language);
     }
-  }, [i18n.language, showFlashcards, previousLanguage]);
+  }, [i18n.language, previousLanguage]);
 
   const frontAnimatedStyle = useAnimatedStyle(() => {
     const rotateY = interpolate(revealAnimation.value, [0, 1], [0, 180]);
@@ -867,10 +863,7 @@ export default function FlashcardsScreen() {
               marginTop: 16,
               fontSize: 14,
             }]}>
-              {isAmharicLanguage 
-                ? (isRevealed ? t('flashcards.tapToSeeQuestion') : t('flashcards.tapToSeeAnswer') + ' (Amharic)')
-                : (isRevealed ? t('flashcards.tapToSeeQuestion') : t('flashcards.tapToSeeAnswer'))
-              }
+              {isRevealed ? t('flashcards.tapToSeeQuestion') : t('flashcards.tapToSeeAnswer')}
             </ThemedText>
           </View>
 
