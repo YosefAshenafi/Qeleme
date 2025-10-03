@@ -99,6 +99,12 @@ export default function MCQScreen() {
 
   // Timer functions (were accidentally removed)
   const startTimer = () => {
+    // Clear any existing timer first
+    if (timerRef.current) {
+      clearInterval(timerRef.current);
+      timerRef.current = null;
+    }
+    
     setIsTimerRunning(true);
     timerRef.current = setInterval(() => {
       setTime(prevTime => prevTime + 1);
@@ -109,6 +115,7 @@ export default function MCQScreen() {
     setIsTimerRunning(false);
     if (timerRef.current) {
       clearInterval(timerRef.current);
+      timerRef.current = null;
     }
   };
 
@@ -340,10 +347,21 @@ export default function MCQScreen() {
       setTime(0);
       if (timerRef.current) {
         clearInterval(timerRef.current);
+        timerRef.current = null;
       }
       setIsTimerRunning(false);
     }
   }, [params.reset]);
+
+  // Cleanup effect to clear timer on unmount
+  useEffect(() => {
+    return () => {
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+        timerRef.current = null;
+      }
+    };
+  }, []);
 
   useEffect(() => {
     if (showResult) {
@@ -362,21 +380,7 @@ export default function MCQScreen() {
     }
   }, [showResult]);
 
-  // Debug logging for current question
-  useEffect(() => {
-    if (showTest && currentQuestion) {
-      console.log('🔍 Current Question Debug:', {
-        currentQuestionIndex,
-        totalQuestions,
-        currentQuestion: {
-          id: currentQuestion.id,
-          question: currentQuestion.question?.substring(0, 50) + '...',
-          optionsCount: currentQuestion.options?.length || 0
-        },
-        nationalExamQuestionsLength: nationalExamQuestions.length
-      });
-    }
-  }, [currentQuestionIndex, currentQuestion, showTest, nationalExamQuestions.length]);
+  // Debug logging for current question - removed for performance
 
   const spin = rotateAnim.interpolate({
     inputRange: [0, 1],
@@ -434,12 +438,6 @@ export default function MCQScreen() {
   };
 
   const handleNextQuestion = () => {
-    console.log('🔄 Next Question Debug:', {
-      currentQuestionIndex,
-      totalQuestions: nationalExamQuestions.length,
-      hasSelectedAnswer: !!selectedAnswer,
-      isLastQuestion: currentQuestionIndex >= nationalExamQuestions.length - 1
-    });
     
     if (currentQuestionIndex < nationalExamQuestions.length - 1) {
       if (!selectedAnswer) {
@@ -498,6 +496,12 @@ export default function MCQScreen() {
   };
 
   const handleRetry = () => {
+    // Clear existing timer first
+    if (timerRef.current) {
+      clearInterval(timerRef.current);
+      timerRef.current = null;
+    }
+    
     setCurrentQuestionIndex(0);
     setSelectedAnswer(null);
     setShowExplanation(false);
@@ -507,7 +511,12 @@ export default function MCQScreen() {
     setShowTest(false);
     setAnsweredQuestions({});
     setTime(0);
-    startTimer();
+    setIsTimerRunning(false);
+    
+    // Start timer after a small delay to ensure state is reset
+    setTimeout(() => {
+      startTimer();
+    }, 100);
   };
 
   const handleStartTest = async () => {
@@ -883,11 +892,24 @@ export default function MCQScreen() {
             <TouchableOpacity
               style={[styles.button, styles.homeButton, { backgroundColor: colors.cardAlt, borderColor: colors.border }]}
               onPress={() => {
+                // Clear timer first
+                if (timerRef.current) {
+                  clearInterval(timerRef.current);
+                  timerRef.current = null;
+                }
+                
                 setShowResult(false);
                 setShowTest(false);
                 setSelectedSubject('');
                 setSelectedChapter('');
                 setSelectedChapterName('');
+                setTime(0);
+                setIsTimerRunning(false);
+                setCurrentQuestionIndex(0);
+                setSelectedAnswer(null);
+                setShowExplanation(false);
+                setAnsweredQuestions({});
+                setScore(0);
                 fetchMCQData();
               }}
             >
@@ -1557,58 +1579,34 @@ export default function MCQScreen() {
                   )}
                 </View>
 
-                {(() => {
-                  console.log('🔍 Explanation Debug:', {
-                    showExplanation,
-                    hasExplanation: !!currentQuestion?.explanation,
-                    explanation: currentQuestion?.explanation,
-                    explanationLength: currentQuestion?.explanation?.length || 0,
-                    explanationTrimmed: currentQuestion?.explanation?.trim() || '',
-                    isNotNoExplanation: currentQuestion?.explanation !== 'No explanation available'
-                  });
-                  
-                  return showExplanation && currentQuestion?.explanation && currentQuestion.explanation.trim() !== '' && currentQuestion.explanation !== 'No explanation available';
-                })() && (
+                {showExplanation && currentQuestion?.explanation && currentQuestion.explanation.trim() !== '' && currentQuestion.explanation !== 'No explanation available' && (
                   <View ref={explanationRef} style={[styles.explanationContainer, { backgroundColor: colors.cardAlt }]}>
                     <ThemedText style={[styles.explanationTitle, { color: colors.tint }]}>Explanation:</ThemedText>
                     
-                    {(() => {
-                      // Find the correct answer letter
-                      const correctOption = currentQuestion?.options?.find((opt: Option) => opt.isCorrect);
-                      const correctAnswerLetter = correctOption?.id || '';
+                    <View style={styles.explanationContent}>
+                      {/* Colored answer letter */}
+                      <View style={styles.answerLetterContainer}>
+                        <ThemedText style={[styles.answerLetter, { color: '#4CAF50' }]}>
+                          {(() => {
+                            const correctOption = currentQuestion?.options?.find((opt: Option) => opt.isCorrect);
+                            return correctOption?.id || '';
+                          })()}.
+                        </ThemedText>
+                      </View>
                       
-                      console.log('🔍 Correct Answer Debug:', {
-                        correctOption,
-                        correctAnswerLetter,
-                        allOptions: currentQuestion?.options
-                      });
-                      
-                      const explanation = currentQuestion.explanation;
-                      
-                      return (
-                        <View style={styles.explanationContent}>
-                          {/* Colored answer letter */}
-                          <View style={styles.answerLetterContainer}>
-                            <ThemedText style={[styles.answerLetter, { color: '#4CAF50' }]}>
-                              {correctAnswerLetter}.
-                            </ThemedText>
-                          </View>
-                          
-                          {/* Explanation text */}
-                          <View style={styles.explanationTextContainer}>
-                            <RichText 
-                              text={explanation}
-                              style={styles.explanationText}
-                              color={colors.text}
-                              fontSize={16}
-                              textAlign="left"
-                              lineHeight={24}
-                              image_url={currentQuestion?.image_url}
-                            />
-                          </View>
-                        </View>
-                      );
-                    })()}
+                      {/* Explanation text */}
+                      <View style={styles.explanationTextContainer}>
+                        <RichText 
+                          text={currentQuestion.explanation}
+                          style={styles.explanationText}
+                          color={colors.text}
+                          fontSize={16}
+                          textAlign="left"
+                          lineHeight={24}
+                          image_url={currentQuestion?.image_url}
+                        />
+                      </View>
+                    </View>
                   </View>
                 )}
               </ScrollView>
@@ -1656,11 +1654,24 @@ export default function MCQScreen() {
                 <TouchableOpacity
                   style={[styles.button, styles.homeButton, { backgroundColor: colors.cardAlt, borderColor: colors.border }]}
                   onPress={() => {
+                    // Clear timer first
+                    if (timerRef.current) {
+                      clearInterval(timerRef.current);
+                      timerRef.current = null;
+                    }
+                    
                     setShowResult(false);
                     setShowTest(false);
                     setSelectedSubject('');
                     setSelectedChapter('');
                     setSelectedChapterName('');
+                    setTime(0);
+                    setIsTimerRunning(false);
+                    setCurrentQuestionIndex(0);
+                    setSelectedAnswer(null);
+                    setShowExplanation(false);
+                    setAnsweredQuestions({});
+                    setScore(0);
                     fetchMCQData();
                   }}
                 >
