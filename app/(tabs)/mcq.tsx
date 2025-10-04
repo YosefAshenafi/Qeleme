@@ -1850,19 +1850,21 @@ const styles = StyleSheet.create({
   },
   optionContainer: {
     borderRadius: 12,
-    overflow: 'hidden',
     elevation: 2,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.2,
     shadowRadius: 3,
     borderWidth: 1,
+    minHeight: 60, // Ensure minimum height for consistency
   },
   optionContent: {
     flexDirection: 'row',
     paddingRight: 50,
     paddingLeft: 16,
-    paddingVertical: 20,
+    paddingVertical: 16,
+    minHeight: 60, // Ensure minimum height
+    alignItems: 'flex-start', // Align content to top for better multi-line text handling
   },
   optionId: {
     width: 32,
@@ -1872,6 +1874,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     borderWidth: 1,
     marginRight: 10,
+    marginTop: 2, // Slight top margin to align with first line of text
+    flexShrink: 0, // Prevent the ID circle from shrinking
   },
   optionIdText: {
     flex: 1,
@@ -1885,6 +1889,7 @@ const styles = StyleSheet.create({
     lineHeight: 22,
     flexWrap: 'wrap',
     flexShrink: 1,
+    alignSelf: 'stretch', // Ensure text takes full available width
   },
   explanationContainer: {
     padding: 20,
