@@ -356,15 +356,15 @@ const LatexOrText: React.FC<LatexOrTextProps> = ({ content, inline = true, textS
 
 const styles = StyleSheet.create({
   text: {
-    fontSize: 16,
-    lineHeight: 24,
+    fontSize: 18,
+    lineHeight: 26,
     fontFamily: 'System', // Ensure consistent system font
   },
   math: {
     fontFamily: Platform.OS === 'android' ? 'monospace' : 'monospace',
     fontWeight: '500',
     color: '#2c3e50',
-    fontSize: Platform.OS === 'android' ? 14 : 16, // Slightly smaller on Android for better readability
+    fontSize: Platform.OS === 'android' ? 20 : 22, // Increased font size for better readability of fractions
   },
   inlineMath: {
     marginHorizontal: 2,
