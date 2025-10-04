@@ -67,8 +67,45 @@ const latexToText = (input: string): string => {
     .replace(/\\,|\\:|\\;|\\!/g, ' ')
     .replace(/\\\\/g, '\n')
     .replace(/\\quad|\\qquad/g, '  ')
-    // Fractions - convert to readable format
-    .replace(/\\frac{([^}]+)}{([^}]+)}/g, '($1)/($2)')
+    // Fractions - convert to proper fraction format
+    .replace(/\\frac{([^}]+)}{([^}]+)}/g, (_, numerator, denominator) => {
+      // Handle common fractions with Unicode fraction characters
+      const num = numerator.trim();
+      const den = denominator.trim();
+      
+      // Common fractions that have Unicode equivalents
+      const commonFractions: { [key: string]: string } = {
+        '1/2': '½', '1/3': '⅓', '2/3': '⅔', '1/4': '¼', '3/4': '¾',
+        '1/5': '⅕', '2/5': '⅖', '3/5': '⅗', '4/5': '⅘', '1/6': '⅙',
+        '5/6': '⅚', '1/7': '⅐', '1/8': '⅛', '3/8': '⅜', '5/8': '⅝',
+        '7/8': '⅞', '1/9': '⅑', '1/10': '⅒'
+      };
+      
+      const fractionKey = `${num}/${den}`;
+      if (commonFractions[fractionKey]) {
+        return commonFractions[fractionKey];
+      }
+      
+      // For other fractions, use proper fraction formatting
+      if (isAndroid) {
+        // On Android, use Unicode superscript and subscript
+        const superscripts: { [key: string]: string } = {
+          '0': '⁰', '1': '¹', '2': '²', '3': '³', '4': '⁴', '5': '⁵', '6': '⁶', '7': '⁷', '8': '⁸', '9': '⁹',
+          '+': '⁺', '-': '⁻', '=': '⁼', '(': '⁽', ')': '⁾'
+        };
+        const subscripts: { [key: string]: string } = {
+          '0': '₀', '1': '₁', '2': '₂', '3': '₃', '4': '₄', '5': '₅', '6': '₆', '7': '₇', '8': '₈', '9': '₉',
+          '+': '₊', '-': '₋', '=': '₌', '(': '₍', ')': '₎'
+        };
+        
+        const supNum = num.split('').map((char: string) => superscripts[char] || char).join('');
+        const subDen = den.split('').map((char: string) => subscripts[char] || char).join('');
+        return `${supNum}⁄${subDen}`;
+      } else {
+        // On iOS, use fraction slash with proper formatting
+        return `${num}⁄${den}`;
+      }
+    })
     // Square roots
     .replace(/\\sqrt{([^}]+)}/g, '√($1)')
     // Sum and integral
@@ -271,9 +308,10 @@ const parseMixedContent = (content: string): Array<{ type: 'text' | 'latex'; con
 const LatexOrText: React.FC<LatexOrTextProps> = ({ content, inline = true, textStyle }) => {
   const hasLatex = /\\\(|\\\)|\\\[|\\\]/.test(content);
   const hasChemicalFormula = /_{[^}]+}|_[a-zA-Z]|\^[0-9a-zA-Z]|\^\{[^}]+\}|[A-Z][a-z]?\d+[A-Z]|[A-Z][a-z]?\d+[_{]|[A-Z][a-z]?\d+|[A-Z][a-z]?[+-]|\\(rightleftharpoons|rightarrow|leftarrow\\)/.test(content);
+  const hasFraction = /\\frac\{[^}]+\}\{[^}]+\}/.test(content);
 
-  // If no LaTeX delimiters but has chemical formula patterns, process the entire content
-  if (!hasLatex && hasChemicalFormula) {
+  // If no LaTeX delimiters but has chemical formula or fraction patterns, process the entire content
+  if (!hasLatex && (hasChemicalFormula || hasFraction)) {
     const processedContent = latexToText(content);
     return (
       <Text style={[styles.text, textStyle]}>
