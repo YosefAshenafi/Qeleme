@@ -307,11 +307,18 @@ const parseMixedContent = (content: string): Array<{ type: 'text' | 'latex'; con
 
 const LatexOrText: React.FC<LatexOrTextProps> = ({ content, inline = true, textStyle }) => {
   const hasLatex = /\\\(|\\\)|\\\[|\\\]/.test(content);
-  const hasChemicalFormula = /_{[^}]+}|_[a-zA-Z]|\^[0-9a-zA-Z]|\^\{[^}]+\}|[A-Z][a-z]?\d+[A-Z]|[A-Z][a-z]?\d+[_{]|[A-Z][a-z]?\d+|[A-Z][a-z]?[+-]|\\(rightleftharpoons|rightarrow|leftarrow\\)/.test(content);
+  // Very specific chemical formula detection - only match clear chemical patterns
+  const hasChemicalFormula = /[A-Z][a-z]?\d+[A-Z]|[A-Z][a-z]?\d+[_{]|[A-Z][a-z]?\d+|[A-Z][a-z]?[+-]|\\(rightleftharpoons|rightarrow|leftarrow\\)/.test(content);
   const hasFraction = /\\frac\{[^}]+\}\{[^}]+\}/.test(content);
+  // Only detect subscripts/superscripts when they're clearly mathematical (with braces or specific patterns)
+  const hasMathSubscript = /_{[^}]+}|\^\{[^}]+\}/.test(content);
 
-  // If no LaTeX delimiters but has chemical formula or fraction patterns, process the entire content
-  if (!hasLatex && (hasChemicalFormula || hasFraction)) {
+  // Check for common non-mathematical patterns that might cause false positives
+  const hasCommonTextPatterns = /[a-z]+_[a-z]+|\s+_\s+|\s+\^\s+/.test(content);
+
+  // Only process as LaTeX if there are clear LaTeX delimiters or very specific mathematical patterns
+  // Be very conservative to avoid false positives - exclude if it has common text patterns
+  if (!hasLatex && !hasCommonTextPatterns && (hasChemicalFormula || hasFraction || hasMathSubscript)) {
     const processedContent = latexToText(content);
     return (
       <Text style={[styles.text, textStyle]}>
@@ -351,6 +358,7 @@ const styles = StyleSheet.create({
   text: {
     fontSize: 16,
     lineHeight: 24,
+    fontFamily: 'System', // Ensure consistent system font
   },
   math: {
     fontFamily: Platform.OS === 'android' ? 'monospace' : 'monospace',

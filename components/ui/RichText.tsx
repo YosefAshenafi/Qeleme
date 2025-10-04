@@ -93,33 +93,33 @@ const renderTextWithFormatting = (text: string, color: string, fontSize: number,
             case 'strong':
             case 'b':
               return (
-                <Text key={uniqueKey} style={{ fontWeight: 'bold', color, fontSize, lineHeight, textAlign }}>
+                <Text key={uniqueKey} style={{ fontWeight: 'bold', color, fontSize, lineHeight, textAlign, fontFamily: 'System' }}>
                   {nestedContent}
                 </Text>
               );
             case 'em':
             case 'i':
               return (
-                <Text key={uniqueKey} style={{ fontStyle: 'italic', color, fontSize, lineHeight, textAlign }}>
+                <Text key={uniqueKey} style={{ fontStyle: 'italic', color, fontSize, lineHeight, textAlign, fontFamily: 'System' }}>
                   {nestedContent}
                 </Text>
               );
             case 'u':
               return (
-                <Text key={uniqueKey} style={{ textDecorationLine: 'underline', color, fontSize, lineHeight, textAlign }}>
+                <Text key={uniqueKey} style={{ textDecorationLine: 'underline', color, fontSize, lineHeight, textAlign, fontFamily: 'System' }}>
                   {nestedContent}
                 </Text>
               );
             case 's':
             case 'strike':
               return (
-                <Text key={uniqueKey} style={{ textDecorationLine: 'line-through', color, fontSize, lineHeight, textAlign }}>
+                <Text key={uniqueKey} style={{ textDecorationLine: 'line-through', color, fontSize, lineHeight, textAlign, fontFamily: 'System' }}>
                   {nestedContent}
                 </Text>
               );
             default:
               return (
-                <Text key={uniqueKey} style={{ color, fontSize, lineHeight, textAlign }}>
+                <Text key={uniqueKey} style={{ color, fontSize, lineHeight, textAlign, fontFamily: 'System' }}>
                   {nestedContent}
                 </Text>
               );
@@ -154,6 +154,7 @@ const RichText: React.FC<RichTextProps> = ({
       lineHeight,
       flexWrap: 'wrap',
       flexShrink: 1,
+      fontFamily: 'System', // Ensure consistent system font
       ...(Array.isArray(style) ? Object.assign({}, ...style) : style),
     },
     strong: {
