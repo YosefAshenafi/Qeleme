@@ -165,6 +165,18 @@ export const getMCQData = async (gradeId: string): Promise<MCQData> => {
   }
 };
 
+// Helper function to convert correct answer letter to index
+const getCorrectAnswerIndex = (correctAnswer: string): number => {
+  const letter = correctAnswer.toUpperCase();
+  switch (letter) {
+    case 'A': return 0;
+    case 'B': return 1;
+    case 'C': return 2;
+    case 'D': return 3;
+    default: return 0;
+  }
+};
+
 // Function to fetch National Exam questions
 export const getNationalExamQuestions = async (
   gradeLevelId: number,
@@ -178,7 +190,7 @@ export const getNationalExamQuestions = async (
     }
 
     const response = await fetch(
-      `${BASE_URL}/questions/grouped?gradeLevelId=${gradeLevelId}&yearId=${yearId}&subject=${encodeURIComponent(subject)}`,
+      `${BASE_URL}/national-exams/grouped?gradeLevelId=${gradeLevelId}&yearId=${yearId}&subject=${encodeURIComponent(subject)}`,
       {
         method: 'GET',
         headers: {
@@ -198,29 +210,34 @@ export const getNationalExamQuestions = async (
     
     const data = await response.json();
     
-    if (!data.data || !Array.isArray(data.data) || data.data.length === 0) {
-      throw new Error('No questions found for this exam');
+    // Handle the actual API response format based on the sample data
+    if (!data || !data.subjects || !Array.isArray(data.subjects)) {
+      throw new Error('No subjects found for this exam');
     }
 
-    const examGroup = data.data[0];
-    if (!examGroup.questions || !Array.isArray(examGroup.questions)) {
-      throw new Error('Invalid questions format in response');
+    // Find the matching subject
+    const matchingSubject = data.subjects.find((subj: any) => 
+      subj.name.toLowerCase() === subject.toLowerCase()
+    );
+
+    if (!matchingSubject || !matchingSubject.questions || !Array.isArray(matchingSubject.questions)) {
+      throw new Error('No questions found for this subject');
     }
 
     // Transform the questions to match the expected format
-    const transformedQuestions = examGroup.questions.map((q: any) => ({
-      id: q._id || q.id,
+    const transformedQuestions = matchingSubject.questions.map((q: any, index: number) => ({
+      id: q.id || index.toString(),
       question: q.question,
-      options: q.options.map((opt: any) => ({
-        id: opt._id || opt.id,
-        text: opt.text,
-        isCorrect: opt.isCorrect
+      options: q.options.map((opt: any, optIndex: number) => ({
+        id: optIndex.toString(),
+        text: opt,
+        isCorrect: optIndex === getCorrectAnswerIndex(q.correctAnswer)
       })),
       explanation: q.explanation || '',
       image_url: q.image_url || undefined,
-      subjectId: examGroup.subject,
-      yearId: examGroup.year,
-      gradeLevelId: examGroup.gradeLevel
+      subjectId: matchingSubject.name,
+      yearId: data.year,
+      gradeLevelId: data.grade
     }));
 
     return transformedQuestions;
@@ -243,7 +260,7 @@ export const getNationalExamAvailable = async (gradeNumber: number): Promise<Nat
       throw new Error('Invalid grade level. Must be 6, 8, or 12');
     }
 
-    const response = await fetch(`${BASE_URL}/national-exams/available/${validGrade}`, {
+    const response = await fetch(`${BASE_URL}/national-exams/${validGrade}`, {
       method: 'GET',
       headers: {
         'Authorization': `Bearer ${token}`,
@@ -256,11 +273,38 @@ export const getNationalExamAvailable = async (gradeNumber: number): Promise<Nat
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => null);
-      throw new Error(errorData?.message || 'Failed to fetch available national exam data');
+      throw new Error(errorData?.message || `HTTP ${response.status}: Failed to fetch available national exam data`);
     }
 
     const data = await response.json();
-    return data;
+    
+    // Extract subjects and years from the response
+    // The API returns years array with each year having subjects
+    const allSubjects = new Set<string>();
+    const years: number[] = [];
+    
+    if (data.data && data.data.years && Array.isArray(data.data.years)) {
+      data.data.years.forEach((yearData: any) => {
+        if (yearData.year) {
+          years.push(yearData.year);
+        }
+        if (yearData.subjects && Array.isArray(yearData.subjects)) {
+          yearData.subjects.forEach((subject: string) => {
+            allSubjects.add(subject);
+          });
+        }
+      });
+    }
+    
+    const subjects = Array.from(allSubjects);
+    
+    return {
+      success: true,
+      data: {
+        subjects,
+        years
+      }
+    };
   } catch (error) {
     throw error;
   }
