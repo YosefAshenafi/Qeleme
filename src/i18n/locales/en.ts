@@ -296,7 +296,15 @@ export default {
     title: 'Settings',
     about: 'About Qelem',
     aboutInfo: 'Qelem is an innovative educational platform designed to enhance learning through interactive content, personalized experiences, and comprehensive progress tracking.',
-    version: 'App Version'
+    version: 'App Version',
+    dangerZone: 'Danger Zone',
+    deleteAccount: 'Delete Account',
+    deleteAccountWarning: 'This action cannot be undone. This will permanently delete your account and remove all your data from our servers.',
+    deleteAccountConfirmation: 'Are you sure you want to delete your account? This action cannot be undone.',
+    enterOTPToDelete: 'Enter verification code to delete account',
+    deleteAccountOTPSubtitle: 'We sent a verification code to your phone number to confirm account deletion.',
+    confirmDelete: 'Delete Account',
+    accountDeleted: 'Account deleted successfully'
   },
   auth: {
     errors: {

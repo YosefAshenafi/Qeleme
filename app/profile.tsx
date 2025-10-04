@@ -8,6 +8,7 @@ import { router } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { AccountSettings } from '../components/profile/AccountSettings';
 import { ThemeChooser } from '../components/profile/ThemeChooser';
+import { DeleteAccount } from '../components/profile/DeleteAccount';
 import { getColors } from '../constants/Colors';
 import { useTheme } from '../contexts/ThemeContext';
 import { useAuth } from '../contexts/AuthContext';
@@ -367,6 +368,14 @@ export default function ProfileScreen() {
               )
             ))}
           </View>
+        </View>
+
+        {/* Danger Zone */}
+        <View style={styles.settingsContainer}>
+          <DeleteAccount 
+            colors={colors} 
+            userPhoneNumber={user?.phoneNumber} 
+          />
         </View>
       </ScrollView>
     </View>

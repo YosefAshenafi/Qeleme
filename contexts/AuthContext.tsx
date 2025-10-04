@@ -8,6 +8,7 @@ interface AuthContextType {
   isLoading: boolean;
   login: (userData: UserData) => Promise<void>;
   logout: () => Promise<void>;
+  deleteAccount: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -59,8 +60,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  const deleteAccount = async () => {
+    try {
+      // Clear all user data
+      await clearAuthData();
+      setUser(null);
+      setIsAuthenticated(false);
+      
+      // Navigate to onboarding after account deletion
+      router.replace('/(auth)/onboarding');
+    } catch (error) {
+      // Silently handle delete account error
+    }
+  };
+
   return (
-    <AuthContext.Provider value={{ isAuthenticated, user, isLoading, login, logout }}>
+    <AuthContext.Provider value={{ isAuthenticated, user, isLoading, login, logout, deleteAccount }}>
       {children}
     </AuthContext.Provider>
   );

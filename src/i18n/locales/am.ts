@@ -591,7 +591,15 @@ export default {
     title: 'ቅንብሮች',
     about: 'ስለ ቀለም',
     aboutInfo: 'ቀለም በመስተጣበቅ የተማሪዎችን ትምህርት ለማሻሻል የተቀየረ የትምህርት መድረክ ነው። በመስተጣበቅ የተሞላ ይዘት፣ የተገላገለ ልምዶች እና የተሟላ የሂደት መከታተያ በኩል ትምህርትን ለማሻሻል የተቀየረ ነው።',
-    version: 'የመተግበሪያ ሥሪት'
+    version: 'የመተግበሪያ ሥሪት',
+    dangerZone: 'አደጋ ዞን',
+    deleteAccount: 'መለያ ሰርዝ',
+    deleteAccountWarning: 'ይህ እርምጃ ሊመለስ አይችልም። ይህ የእርስዎን መለያ ለዘለቄታዊ ይሰርዛል እና ሁሉንም ውሂብዎን ከአገልጋዮቻችን ይወጣል።',
+    deleteAccountConfirmation: 'መለያዎን ለመሰረዝ እርግጠኛ ነዎት? ይህ እርምጃ ሊመለስ አይችልም።',
+    enterOTPToDelete: 'መለያ ለመሰረዝ የማረጋገጫ ኮድ ያስገቡ',
+    deleteAccountOTPSubtitle: 'መለያ ለመሰረዝ ማረጋገጫ ኮድ ወደ ስልክ ቁጥርዎ ላክን።',
+    confirmDelete: 'መለያ ሰርዝ',
+    accountDeleted: 'መለያ በተሳካ ሁኔታ ተሰርዟል'
   },
   auth: {
     errors: {
