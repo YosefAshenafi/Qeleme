@@ -14,6 +14,7 @@ export interface UserData {
   joinDate?: string; // ISO date string format (e.g., "2024-01-01T00:00:00.000Z")
   paymentPlan?: string;
   lastPaymentDate?: string; // ISO date string format (e.g., "2024-01-01T00:00:00.000Z")
+  phoneNumber?: string; // Phone number for OTP verification
 }
 
 export interface AuthResponse {

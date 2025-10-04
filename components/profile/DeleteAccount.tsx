@@ -18,6 +18,7 @@ export function DeleteAccount({ colors, userPhoneNumber }: DeleteAccountProps) {
   const { t } = useTranslation();
   const [showOTPModal, setShowOTPModal] = useState(false);
   const [otp, setOtp] = useState('');
+  const [phoneNumber, setPhoneNumber] = useState(userPhoneNumber || '');
   const [isLoading, setIsLoading] = useState(false);
   const [isSendingOTP, setIsSendingOTP] = useState(false);
 
@@ -34,13 +35,10 @@ export function DeleteAccount({ colors, userPhoneNumber }: DeleteAccountProps) {
           text: t('profile.confirmDelete'),
           style: 'destructive',
           onPress: () => {
+            setShowOTPModal(true);
+            // If we have a phone number, send OTP automatically
             if (userPhoneNumber) {
-              setShowOTPModal(true);
-            } else {
-              Alert.alert(
-                t('common.error', { defaultValue: 'Error' }),
-                'Phone number not available. Please contact support.'
-              );
+              handleSendOTP();
             }
           }
         }
@@ -49,11 +47,19 @@ export function DeleteAccount({ colors, userPhoneNumber }: DeleteAccountProps) {
   };
 
   const handleSendOTP = async () => {
-    if (!userPhoneNumber) return;
+    const phoneToUse = userPhoneNumber || phoneNumber;
+    
+    if (!phoneToUse.trim()) {
+      Alert.alert(
+        t('common.error', { defaultValue: 'Error' }),
+        'Please enter your phone number first.'
+      );
+      return;
+    }
     
     setIsSendingOTP(true);
     try {
-      const result = await sendOTP(userPhoneNumber);
+      const result = await sendOTP(phoneToUse);
       if (result.success) {
         Alert.alert(
           t('common.success', { defaultValue: 'Success' }),
@@ -76,17 +82,19 @@ export function DeleteAccount({ colors, userPhoneNumber }: DeleteAccountProps) {
   };
 
   const handleVerifyOTP = async () => {
-    if (!userPhoneNumber || !otp.trim()) {
+    const phoneToUse = userPhoneNumber || phoneNumber;
+    
+    if (!phoneToUse.trim() || !otp.trim()) {
       Alert.alert(
         t('common.error', { defaultValue: 'Error' }),
-        'Please enter the verification code'
+        'Please enter both phone number and verification code'
       );
       return;
     }
 
     setIsLoading(true);
     try {
-      const result = await verifyOTP(userPhoneNumber, otp);
+      const result = await verifyOTP(phoneToUse, otp);
       if (result.success) {
         // OTP verified, proceed with account deletion
         await deleteAccount();
@@ -114,6 +122,7 @@ export function DeleteAccount({ colors, userPhoneNumber }: DeleteAccountProps) {
 
   const handleCancelOTP = () => {
     setOtp('');
+    setPhoneNumber(userPhoneNumber || '');
     setShowOTPModal(false);
   };
 
@@ -164,6 +173,22 @@ export function DeleteAccount({ colors, userPhoneNumber }: DeleteAccountProps) {
             </Text>
             
             <View style={styles.otpContainer}>
+              {!userPhoneNumber && (
+                <TextInput
+                  style={[styles.phoneInput, { 
+                    color: colors.text, 
+                    borderColor: colors.tint,
+                    backgroundColor: isDarkMode ? colors.card : '#ffffff'
+                  }]}
+                  value={phoneNumber}
+                  onChangeText={setPhoneNumber}
+                  placeholder="Enter your phone number (+251...)"
+                  placeholderTextColor={isDarkMode ? 'rgba(255, 255, 255, 0.5)' : 'rgba(0, 0, 0, 0.5)'}
+                  keyboardType="phone-pad"
+                  autoFocus
+                />
+              )}
+              
               <TextInput
                 style={[styles.otpInput, { 
                   color: colors.text, 
@@ -176,19 +201,19 @@ export function DeleteAccount({ colors, userPhoneNumber }: DeleteAccountProps) {
                 placeholderTextColor={isDarkMode ? 'rgba(255, 255, 255, 0.5)' : 'rgba(0, 0, 0, 0.5)'}
                 keyboardType="numeric"
                 maxLength={6}
-                autoFocus
+                autoFocus={!!userPhoneNumber}
               />
               
               <TouchableOpacity
                 style={[styles.sendOTPButton, { backgroundColor: colors.tint }]}
                 onPress={handleSendOTP}
-                disabled={isSendingOTP}
+                disabled={isSendingOTP || (!userPhoneNumber && !phoneNumber.trim())}
               >
                 {isSendingOTP ? (
                   <ActivityIndicator color="#ffffff" size="small" />
                 ) : (
                   <Text style={styles.sendOTPButtonText}>
-                    {t('common.send', { defaultValue: 'Send' })}
+                    {userPhoneNumber ? t('common.resend', { defaultValue: 'Resend Code' }) : t('common.send', { defaultValue: 'Send Code' })}
                   </Text>
                 )}
               </TouchableOpacity>
@@ -205,9 +230,11 @@ export function DeleteAccount({ colors, userPhoneNumber }: DeleteAccountProps) {
               </TouchableOpacity>
               
               <TouchableOpacity
-                style={[styles.confirmButton, { backgroundColor: '#ff6b6b' }]}
+                style={[styles.confirmButton, { 
+                  backgroundColor: (isLoading || !otp.trim() || (!userPhoneNumber && !phoneNumber.trim())) ? '#ccc' : '#ff6b6b' 
+                }]}
                 onPress={handleVerifyOTP}
-                disabled={isLoading || !otp.trim()}
+                disabled={isLoading || !otp.trim() || (!userPhoneNumber && !phoneNumber.trim())}
               >
                 {isLoading ? (
                   <ActivityIndicator color="#ffffff" size="small" />
@@ -295,6 +322,14 @@ const styles = StyleSheet.create({
   },
   otpContainer: {
     marginBottom: 20,
+  },
+  phoneInput: {
+    borderWidth: 1,
+    borderRadius: 8,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    fontSize: 16,
+    marginBottom: 12,
   },
   otpInput: {
     borderWidth: 1,
