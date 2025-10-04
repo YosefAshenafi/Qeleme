@@ -271,7 +271,10 @@ export default function KGDashboard() {
                       if (category.has_subcategories) {
                         router.push(`/kg-subcategories?categoryId=${category.id}&categoryName=${categoryName}`);
                       } else {
-                        router.push(`/kg-category/instructions?category=${categoryName}&categoryId=${category.id}&hasSubcategories=false`);
+                        router.push({
+                          pathname: '/screens/PictureMCQScreen',
+                          params: { category: categoryName, categoryId: category.id }
+                        });
                       }
                     }}
                   >

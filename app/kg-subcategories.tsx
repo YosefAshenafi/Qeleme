@@ -206,7 +206,7 @@ export default function KGSubcategoriesScreen() {
               <Text style={styles.welcomeEmoji}>🌟</Text>
             </View>
             <Text style={styles.welcomeTitle}>
-              {t('kg.subcategories.welcome', { category: categoryName }, 'Ready to Explore!')}
+              {t('kg.subcategories.welcome', { category: categoryName as string })}
             </Text>
             <Text style={styles.welcomeSubtitle}>
               {t('kg.subcategories.subtitle', 'Pick a subcategory and start learning!')}
@@ -274,7 +274,16 @@ export default function KGSubcategoriesScreen() {
                       elevation: STYLE_CONFIG.card.elevation
                     }]}
                     onPress={() => {
-                      router.push(`/kg-category/instructions?category=${categoryName}&categoryId=${categoryId}&subcategory=${subcategoryName}&subcategoryId=${subcategory.id}&hasSubcategories=true`);
+                      router.push({
+                        pathname: '/screens/PictureMCQScreen',
+                        params: { 
+                          category: categoryName, 
+                          categoryId: categoryId,
+                          subcategory: subcategoryName, 
+                          subcategoryId: subcategory.id,
+                          isSubcategory: 'true'
+                        }
+                      });
                     }}
                   >
                     <LinearGradient
