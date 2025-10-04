@@ -476,7 +476,9 @@ export default {
         canDoBetter: 'ይማሩ! የበለጠ ማድረግ ይችላሉ!'
       },
       tryAgain: 'ሌሎች ቀሪ ጥያቄዎችን ይሞክሩ',
-      chooseAnotherSubject: 'ሌላ የትምህርት ዓይነት ይምረጡ'
+      chooseAnotherSubject: 'ሌላ የትምህርት ዓይነት ይምረጡ',
+      tryOtherNationalExam: 'ሌሎች ቀሪ የብሄራዊ ፈተናዎችን ይሞክሩ',
+      chooseAnotherNationalExamYear: 'ሌላ የብሄራዊ ፈተና ዓመት ይምረጡ'
     },
     selectAnswer: 'እባክዎ ከመቀጠልዎ በፊት መልስ ይምረጡ',
     noSubjectsFound: {

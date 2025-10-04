@@ -483,7 +483,9 @@ export default {
         canDoBetter: 'Keep learning! You can do better!'
       },
       tryAgain: 'Try Other Remaining Questions',
-      chooseAnotherSubject: 'Choose Another Subject'
+      chooseAnotherSubject: 'Choose Another Subject',
+      tryOtherNationalExam: 'Try Other Remaining National Exams',
+      chooseAnotherNationalExamYear: 'Choose Another National Exam Year'
     },
     selectAnswer: 'Please select an answer before proceeding',
     noSubjectsFound: {

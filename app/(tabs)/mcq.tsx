@@ -885,7 +885,9 @@ export default function MCQScreen() {
               style={[styles.button, styles.retryButton, { backgroundColor: colors.tint, marginBottom: 12 }]}
               onPress={handleRetry}
             >
-              <ThemedText style={[styles.retryButtonText, { color: '#fff' }]}>{t('mcq.results.tryAgain')}</ThemedText>
+              <ThemedText style={[styles.retryButtonText, { color: '#fff' }]}>
+                {selectedExamType === 'national' ? t('mcq.results.tryOtherNationalExam') : t('mcq.results.tryAgain')}
+              </ThemedText>
               <Ionicons name="refresh" size={24} color="#fff" />
             </TouchableOpacity>
             
@@ -903,6 +905,7 @@ export default function MCQScreen() {
                 setSelectedSubject('');
                 setSelectedChapter('');
                 setSelectedChapterName('');
+                setSelectedYear('');
                 setTime(0);
                 setIsTimerRunning(false);
                 setCurrentQuestionIndex(0);
@@ -910,10 +913,20 @@ export default function MCQScreen() {
                 setShowExplanation(false);
                 setAnsweredQuestions({});
                 setScore(0);
+                
+                // For National Exam results, set exam type to national to redirect to National Exam page
+                if (selectedExamType === 'national') {
+                  setSelectedExamType('national');
+                } else {
+                  setSelectedExamType(null);
+                }
+                
                 fetchMCQData();
               }}
             >
-              <ThemedText style={[styles.homeButtonText, { color: colors.text }]}>{t('mcq.results.chooseAnotherSubject')}</ThemedText>
+              <ThemedText style={[styles.homeButtonText, { color: colors.text }]}>
+                {selectedExamType === 'national' ? t('mcq.results.chooseAnotherNationalExamYear') : t('mcq.results.chooseAnotherSubject')}
+              </ThemedText>
             </TouchableOpacity>
           </ThemedView>
 
@@ -1103,6 +1116,56 @@ export default function MCQScreen() {
               {/* Subject and Chapter Selection - Only show after exam type is selected */}
               {selectedExamType && (
                 <>
+                  {/* Year Selection for National Exams - Show first for national exams */}
+                  {selectedExamType === 'national' && (
+                    <ThemedView style={[styles.formGroup, { backgroundColor: colors.background }]}>
+                      <ThemedText style={[styles.formLabel, { color: colors.tint }]}>
+                        {t('mcq.year')}
+                      </ThemedText>
+                      <TouchableOpacity
+                        style={[styles.formInput, { backgroundColor: colors.cardAlt, borderColor: colors.border }]}
+                        onPress={() => setShowYearDropdown(!showYearDropdown)}
+                      >
+                        <ThemedText style={[styles.formInputText, { color: colors.text }]}>
+                          {selectedYear || t('mcq.selectYear')}
+                        </ThemedText>
+                        <IconSymbol name="chevron.right" size={20} color={colors.tint} />
+                      </TouchableOpacity>
+                      {showYearDropdown && (
+                        <Modal
+                          visible={showYearDropdown}
+                          transparent={true}
+                          animationType="fade"
+                          onRequestClose={() => setShowYearDropdown(false)}
+                        >
+                          <TouchableOpacity
+                            style={[styles.modalOverlay, { backgroundColor: 'rgba(0, 0, 0, 0.5)' }]}
+                            activeOpacity={1}
+                            onPress={() => setShowYearDropdown(false)}
+                          >
+                            <ThemedView style={[styles.modalContent, { backgroundColor: colors.background }]}>
+                              <ScrollView showsVerticalScrollIndicator={false}>
+                                {availableYears.map((year) => (
+                                  <TouchableOpacity
+                                    key={year}
+                                    style={[styles.modalItem, { backgroundColor: colors.background, borderBottomColor: colors.border }]}
+                                    onPress={() => {
+                                      setSelectedYear(year.toString());
+                                      setShowYearDropdown(false);
+                                    }}
+                                  >
+                                    <ThemedText style={[styles.modalItemText, { color: colors.text }]}>{year}</ThemedText>
+                                    <IconSymbol name="chevron.right" size={20} color={colors.tint} />
+                                  </TouchableOpacity>
+                                ))}
+                              </ScrollView>
+                            </ThemedView>
+                          </TouchableOpacity>
+                        </Modal>
+                      )}
+                    </ThemedView>
+                  )}
+
                   {/* Subject Selection */}
                   <ThemedView style={[styles.formGroup, { backgroundColor: colors.background }]}>
                     <ThemedText style={[styles.formLabel, { color: colors.tint }]}>
@@ -1191,56 +1254,6 @@ export default function MCQScreen() {
                       </Modal>
                     )}
                   </ThemedView>
-
-                  {/* Year Selection for National Exams */}
-                  {selectedExamType === 'national' && (
-                    <ThemedView style={[styles.formGroup, { backgroundColor: colors.background }]}>
-                      <ThemedText style={[styles.formLabel, { color: colors.tint }]}>
-                        {t('mcq.year')}
-                      </ThemedText>
-                      <TouchableOpacity
-                        style={[styles.formInput, { backgroundColor: colors.cardAlt, borderColor: colors.border }]}
-                        onPress={() => setShowYearDropdown(!showYearDropdown)}
-                      >
-                        <ThemedText style={[styles.formInputText, { color: colors.text }]}>
-                          {selectedYear || t('mcq.selectYear')}
-                        </ThemedText>
-                        <IconSymbol name="chevron.right" size={20} color={colors.tint} />
-                      </TouchableOpacity>
-                      {showYearDropdown && (
-                        <Modal
-                          visible={showYearDropdown}
-                          transparent={true}
-                          animationType="fade"
-                          onRequestClose={() => setShowYearDropdown(false)}
-                        >
-                          <TouchableOpacity
-                            style={[styles.modalOverlay, { backgroundColor: 'rgba(0, 0, 0, 0.5)' }]}
-                            activeOpacity={1}
-                            onPress={() => setShowYearDropdown(false)}
-                          >
-                            <ThemedView style={[styles.modalContent, { backgroundColor: colors.background }]}>
-                              <ScrollView showsVerticalScrollIndicator={false}>
-                                {availableYears.map((year) => (
-                                  <TouchableOpacity
-                                    key={year}
-                                    style={[styles.modalItem, { backgroundColor: colors.background, borderBottomColor: colors.border }]}
-                                    onPress={() => {
-                                      setSelectedYear(year.toString());
-                                      setShowYearDropdown(false);
-                                    }}
-                                  >
-                                    <ThemedText style={[styles.modalItemText, { color: colors.text }]}>{year}</ThemedText>
-                                    <IconSymbol name="chevron.right" size={20} color={colors.tint} />
-                                  </TouchableOpacity>
-                                ))}
-                              </ScrollView>
-                            </ThemedView>
-                          </TouchableOpacity>
-                        </Modal>
-                      )}
-                    </ThemedView>
-                  )}
 
                   {/* Chapter Selection - Only show for MCQ exam type */}
                   {selectedExamType === 'mcq' && (
@@ -1396,20 +1409,36 @@ export default function MCQScreen() {
                       <IconSymbol name="chevron.right" size={16} color={colors.tint} />
                       <View style={[styles.breadcrumbItem, { backgroundColor: colors.background, borderColor: colors.border }]}>
                         <ThemedText style={[styles.breadcrumbText, { color: colors.tint }]}>
-                          {selectedSubject ? selectedGradeData?.subjects.find((s: Subject) => s.id === selectedSubject)?.name : 'Select Subject'}
+                          {selectedExamType === 'national' 
+                            ? (selectedYear || 'Select Year')
+                            : (selectedSubject ? selectedGradeData?.subjects.find((s: Subject) => s.id === selectedSubject)?.name : 'Select Subject')
+                          }
                         </ThemedText>
                       </View>
                     </>
                   )}
-                  {selectedSubject && (
-                    <>
-                      <IconSymbol name="chevron.right" size={16} color={colors.tint} />
-                      <View style={[styles.breadcrumbItem, { backgroundColor: colors.background, borderColor: colors.border }]}>
-                        <ThemedText style={[styles.breadcrumbText, { color: colors.tint }]}>
-                          {selectedChapter ? `Chapter ${selectedSubjectData?.chapters?.find((c: Chapter) => c.id === selectedChapter)?.name || selectedChapterName}` : 'Select Chapter'}
-                        </ThemedText>
-                      </View>
-                    </>
+                  {selectedExamType === 'national' ? (
+                    selectedYear && selectedSubject && (
+                      <>
+                        <IconSymbol name="chevron.right" size={16} color={colors.tint} />
+                        <View style={[styles.breadcrumbItem, { backgroundColor: colors.background, borderColor: colors.border }]}>
+                          <ThemedText style={[styles.breadcrumbText, { color: colors.tint }]}>
+                            {toTitleCase(selectedSubject)}
+                          </ThemedText>
+                        </View>
+                      </>
+                    )
+                  ) : (
+                    selectedSubject && (
+                      <>
+                        <IconSymbol name="chevron.right" size={16} color={colors.tint} />
+                        <View style={[styles.breadcrumbItem, { backgroundColor: colors.background, borderColor: colors.border }]}>
+                          <ThemedText style={[styles.breadcrumbText, { color: colors.tint }]}>
+                            {selectedChapter ? `Chapter ${selectedSubjectData?.chapters?.find((c: Chapter) => c.id === selectedChapter)?.name || selectedChapterName}` : 'Select Chapter'}
+                          </ThemedText>
+                        </View>
+                      </>
+                    )
                   )}
                 </View>
               </View>
@@ -1647,7 +1676,9 @@ export default function MCQScreen() {
                   style={[styles.button, styles.retryButton, { backgroundColor: colors.tint, marginBottom: 12 }]}
                   onPress={handleRetry}
                 >
-                  <ThemedText style={[styles.retryButtonText, { color: '#fff' }]}>{t('mcq.results.tryAgain')}</ThemedText>
+                  <ThemedText style={[styles.retryButtonText, { color: '#fff' }]}>
+                    {selectedExamType === 'national' ? t('mcq.results.tryOtherNationalExam') : t('mcq.results.tryAgain')}
+                  </ThemedText>
                   <Ionicons name="refresh" size={24} color="#fff" />
                 </TouchableOpacity>
                 
@@ -1665,6 +1696,7 @@ export default function MCQScreen() {
                     setSelectedSubject('');
                     setSelectedChapter('');
                     setSelectedChapterName('');
+                    setSelectedYear('');
                     setTime(0);
                     setIsTimerRunning(false);
                     setCurrentQuestionIndex(0);
@@ -1672,10 +1704,20 @@ export default function MCQScreen() {
                     setShowExplanation(false);
                     setAnsweredQuestions({});
                     setScore(0);
+                    
+                    // For National Exam results, set exam type to national to redirect to National Exam page
+                    if (selectedExamType === 'national') {
+                      setSelectedExamType('national');
+                    } else {
+                      setSelectedExamType(null);
+                    }
+                    
                     fetchMCQData();
                   }}
                 >
-                  <ThemedText style={[styles.homeButtonText, { color: colors.text }]}>{t('mcq.results.chooseAnotherSubject')}</ThemedText>
+                  <ThemedText style={[styles.homeButtonText, { color: colors.text }]}>
+                    {selectedExamType === 'national' ? t('mcq.results.chooseAnotherNationalExamYear') : t('mcq.results.chooseAnotherSubject')}
+                  </ThemedText>
                 </TouchableOpacity>
               </ThemedView>
             </ScrollView>
