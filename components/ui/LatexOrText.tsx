@@ -65,7 +65,7 @@ const latexToText = (input: string): string => {
     .replace(/\\right\}/g, '}')
     // Spacing
     .replace(/\\,|\\:|\\;|\\!/g, ' ')
-    .replace(/\\\\/g, '\n')
+    .replace(/\\\\/g, ' ') // Convert LaTeX line breaks to spaces instead of newlines
     .replace(/\\quad|\\qquad/g, '  ')
     // Fractions - convert to proper fraction format
     .replace(/\\frac{([^}]+)}{([^}]+)}/g, (_, numerator, denominator) => {

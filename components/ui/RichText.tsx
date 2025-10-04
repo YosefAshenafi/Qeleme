@@ -73,6 +73,14 @@ const ImageComponent: React.FC<{ imageUrl: string; style?: any }> = ({ imageUrl,
 
 // Custom text renderer that handles HTML tags properly
 const renderTextWithFormatting = (text: string, color: string, fontSize: number, lineHeight: number, textAlign: 'left' | 'center' | 'right'): React.ReactNode => {
+  // Clean up the text first to remove any unwanted characters that might cause issues
+  const cleanText = text
+    .replace(/\r\n/g, ' ') // Replace Windows line breaks with spaces
+    .replace(/\n/g, ' ') // Replace Unix line breaks with spaces
+    .replace(/\r/g, ' ') // Replace Mac line breaks with spaces
+    .replace(/\s+/g, ' ') // Replace multiple spaces with single space
+    .trim(); // Remove leading/trailing whitespace
+
   // Parse HTML tags recursively
   const parseHtml = (html: string): React.ReactNode[] => {
     const parts = html.split(/(<[^>]+>.*?<\/[^>]+>)/g);
@@ -127,14 +135,21 @@ const renderTextWithFormatting = (text: string, color: string, fontSize: number,
         }
       }
       
-      // Regular text
+      // Regular text - clean it up before processing
+      const cleanPart = part
+        .replace(/\r\n/g, ' ')
+        .replace(/\n/g, ' ')
+        .replace(/\r/g, ' ')
+        .replace(/\s+/g, ' ')
+        .trim();
+      
       return (
-        <LatexOrText key={uniqueKey} content={part} />
+        <LatexOrText key={uniqueKey} content={cleanPart} />
       );
     });
   };
   
-  return parseHtml(text);
+  return parseHtml(cleanText);
 };
 
 const RichText: React.FC<RichTextProps> = ({
