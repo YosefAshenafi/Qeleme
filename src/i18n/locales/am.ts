@@ -31,6 +31,12 @@ export default {
       reports: {
         title: 'የእድገት ሪፖርት',
         subtitle: 'የትምህርትዎን እድገት ይከታተሉ'
+      },
+      nationalExams: {
+        title: 'የብሔራዊ ፈተናዎች',
+        subtitle: 'በቀድሞ ፈተናዎች ይለማመዱ',
+        yearExam: 'የ{{year}} ብሔራዊ ፈተና',
+        grade: 'የ{{grade}} ክፍል'
       }
     },
     reportCards: {

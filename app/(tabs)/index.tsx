@@ -18,7 +18,7 @@ import { useTheme } from '@/contexts/ThemeContext';
 import { getColors } from '@/constants/Colors';
 import { BookCover } from '@/components/ui/BookCover';
 import { getBookCover } from '@/services/bookCoverService';
-import { getMCQData } from '@/services/mcqService';
+import { getMCQData, getNationalExamAvailable } from '@/services/mcqService';
 import { getFlashcardStructure } from '@/services/flashcardService';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
@@ -98,9 +98,37 @@ export default function HomeScreen() {
   const [flashcardBooks, setFlashcardBooks] = useState<BookItem[]>([]);
   const [isMCQLoading, setIsMCQLoading] = useState(false);
   const [isFlashcardLoading, setIsFlashcardLoading] = useState(false);
+  const [nationalExamYears, setNationalExamYears] = useState<number[]>([]);
+  const [isNationalExamLoading, setIsNationalExamLoading] = useState(false);
 
   // Check if user is KG student
   const isKGStudent = typeof user?.grade === 'string' && user.grade.toLowerCase().includes('kg');
+
+  // Check if current grade has national exams (grades 6, 8, 12)
+  const hasNationalExams = () => {
+    if (!user?.grade) return false;
+    const gradeNumber = user.grade.replace(/[^\d]/g, '');
+    return ['6', '8', '12'].includes(gradeNumber);
+  };
+
+  // Fetch national exam years for the current grade
+  const fetchNationalExamYears = async () => {
+    if (!hasNationalExams()) return;
+    
+    try {
+      setIsNationalExamLoading(true);
+      const gradeNumber = user?.grade?.replace(/[^\d]/g, '');
+      if (gradeNumber) {
+        const data = await getNationalExamAvailable(parseInt(gradeNumber));
+        setNationalExamYears(data.data.years);
+      }
+    } catch (error) {
+      console.error('Failed to fetch national exam years:', error);
+      setNationalExamYears([]);
+    } finally {
+      setIsNationalExamLoading(false);
+    }
+  };
 
   // Fetch real book data from API for non-KG students
   const fetchBooksFromAPI = async (type: 'mcq' | 'flashcard') => {
@@ -240,6 +268,10 @@ export default function HomeScreen() {
     if (!isKGStudent) {
       fetchBooksFromAPI('mcq');
       fetchBooksFromAPI('flashcard');
+      // Fetch national exam years if grade has national exams
+      if (hasNationalExams()) {
+        fetchNationalExamYears();
+      }
     }
   }, [isKGStudent, user?.grade]);
 
@@ -252,6 +284,10 @@ export default function HomeScreen() {
           await loadReportData();
           await fetchBooksFromAPI('mcq');
           await fetchBooksFromAPI('flashcard');
+          // Fetch national exam years if grade has national exams
+          if (hasNationalExams()) {
+            await fetchNationalExamYears();
+          }
         }
       };
       loadData();
@@ -290,7 +326,8 @@ export default function HomeScreen() {
         loadRecentActivities(), 
         !isKGStudent ? loadReportData() : Promise.resolve(),
         !isKGStudent ? fetchBooksFromAPI('mcq') : Promise.resolve(),
-        !isKGStudent ? fetchBooksFromAPI('flashcard') : Promise.resolve()
+        !isKGStudent ? fetchBooksFromAPI('flashcard') : Promise.resolve(),
+        !isKGStudent && hasNationalExams() ? fetchNationalExamYears() : Promise.resolve()
       ]);
     } catch (error) {
       // Silently handle refresh error
@@ -579,6 +616,18 @@ export default function HomeScreen() {
     }
   };
 
+  const handleNationalExamYearPress = (year: number) => {
+    console.log('National exam year pressed:', year);
+    // Navigate to MCQ screen with national exam type and pre-selected year
+    router.push({
+      pathname: '/(tabs)/mcq',
+      params: {
+        preSelectedExamType: 'national',
+        preSelectedYear: year.toString()
+      }
+    });
+  };
+
   return (
     <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]}>
       <Header 
@@ -735,6 +784,56 @@ export default function HomeScreen() {
                   </ScrollView>
                 )}
               </ThemedView>
+
+              {/* National Exams Carousel - Only show for grades 6, 8, 12 */}
+              {hasNationalExams() && (
+                <ThemedView style={[styles.bookCarouselSection, { backgroundColor: colors.background }]}>
+                  <View style={styles.bookCarouselHeader}>
+                    <ThemedText style={[styles.bookCarouselTitle, { color: colors.text }]}>
+                      {t('home.quickActions.nationalExams.title', t('home.quickActions.nationalExams.title'))}
+                    </ThemedText>
+                    <TouchableOpacity onPress={() => router.push('/(tabs)/mcq')}>
+                      <ThemedText style={[styles.seeAllButton, { color: colors.tint }]}>
+                        {t('home.seeAll')}
+                      </ThemedText>
+                    </TouchableOpacity>
+                  </View>
+                  {isNationalExamLoading ? (
+                    <View style={styles.bookCarouselSkeleton}>
+                      {[1, 2, 3, 4].map((index) => (
+                        <View key={index} style={styles.bookSkeletonItem}>
+                          <View style={[styles.bookSkeletonCover, { backgroundColor: colors.text + '20' }]} />
+                          <View style={[styles.bookSkeletonTitle, { backgroundColor: colors.text + '20' }]} />
+                          <View style={[styles.bookSkeletonSubtitle, { backgroundColor: colors.text + '20' }]} />
+                        </View>
+                      ))}
+                    </View>
+                  ) : (
+                    <ScrollView 
+                      horizontal 
+                      showsHorizontalScrollIndicator={false}
+                      contentContainerStyle={styles.bookCarouselContainer}
+                    >
+                      {nationalExamYears.map((year, index) => {
+                        const coverData = getBookCover('National Exam');
+                        return (
+                          <BookCover
+                            key={year}
+                            title={t('home.quickActions.nationalExams.yearExam', '{{year}} t({home.quickActions.nationalExams.title})', { year })}
+                            subtitle={t('home.quickActions.nationalExams.grade', 'Grade {{grade}}', { grade: user?.grade?.replace(/[^\d]/g, '') })}
+                            coverColor={coverData.coverColor}
+                            coverGradient={coverData.coverGradient}
+                            icon={coverData.icon as any}
+                            imageUrl=""
+                            onPress={() => handleNationalExamYearPress(year)}
+                            questionCount={Math.floor(Math.random() * 100) + 50}
+                          />
+                        );
+                      })}
+                    </ScrollView>
+                  )}
+                </ThemedView>
+              )}
 
               {/* Flashcard Books Carousel */}
               <ThemedView style={[styles.bookCarouselSection, { backgroundColor: colors.background }]}>

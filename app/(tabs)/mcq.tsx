@@ -255,6 +255,49 @@ export default function MCQScreen() {
     }
   }, [params.preSelectedSubject, params.preSelectedSubjectId, mcqData]);
 
+  // Handle pre-selected national exam from URL parameters
+  useEffect(() => {
+    if (params.preSelectedExamType === 'national' && params.preSelectedYear && mcqData) {
+      console.log('🎯 Pre-selected national exam detected:', {
+        examType: params.preSelectedExamType,
+        year: params.preSelectedYear
+      });
+      
+      // Reset any active MCQ session when navigating from home page
+      setShowTest(false);
+      setShowResult(false);
+      setCurrentQuestionIndex(0);
+      setSelectedAnswer(null);
+      setShowExplanation(false);
+      setAnsweredQuestions({});
+      setShowAnswerMessage(false);
+      setScore(0);
+      setShowPictureMCQ(false);
+      setIsPictureQuestions(false);
+      setNationalExamQuestions([]);
+      setShowChapterChooser(false);
+      
+      // Clear subject and chapter selections
+      setSelectedSubject('');
+      setSelectedChapter('');
+      setSelectedChapterName('');
+      
+      // Set the exam type to 'national' and pre-select the year
+      setSelectedExamType('national');
+      setSelectedYear(params.preSelectedYear as string);
+      setIsPreSelected(true); // Mark as pre-selected
+      
+      // Fetch available subjects and years for national exams
+      fetchNationalExamAvailable();
+      
+      console.log('✅ Pre-selected national exam set:', {
+        examType: 'national',
+        year: params.preSelectedYear
+      });
+      console.log('✅ Active MCQ session reset');
+    }
+  }, [params.preSelectedExamType, params.preSelectedYear, mcqData]);
+
   // Clear pre-selected flag when user manually changes subject
   useEffect(() => {
     if (isPreSelected && selectedSubject) {

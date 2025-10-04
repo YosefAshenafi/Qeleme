@@ -31,6 +31,12 @@ export default {
       reports: {
         title: 'Progress Report',
         subtitle: 'Track your learning'
+      },
+      nationalExams: {
+        title: 'National Exams',
+        subtitle: 'Practice with past papers',
+        yearExam: '{{year}} National Exam',
+        grade: 'Grade {{grade}}'
       }
     },
     reportCards: {
