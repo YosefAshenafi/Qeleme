@@ -246,16 +246,17 @@ export const getKGQuestions = async (categoryId: number): Promise<{category: any
 /**
  * Fetch questions for a specific KG subcategory
  * @param subcategoryId - The ID of the subcategory to fetch questions for
+ * @param categoryId - The ID of the parent category
  * @returns Promise<{subcategory: any, questions: KGQuestion[]}> - The subcategory and questions data
  */
-export const getKGSubcategoryQuestions = async (subcategoryId: number): Promise<{subcategory: any, questions: KGQuestion[]}> => {
+export const getKGSubcategoryQuestions = async (subcategoryId: number, categoryId: number): Promise<{subcategory: any, questions: KGQuestion[]}> => {
   try {
     const token = await getAuthToken();
     if (!token) {
       throw new Error('No authentication token found. Please login again.');
     }
 
-    const response = await fetch(`${BASE_URL}/kg/questions?category_id=${subcategoryId}`, {
+    const response = await fetch(`${BASE_URL}/kg/questions?category_id=${categoryId}&subcategory_id=${subcategoryId}`, {
       method: 'GET',
       headers: {
         'Authorization': `Bearer ${token}`,

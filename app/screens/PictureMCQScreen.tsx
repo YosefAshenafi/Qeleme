@@ -207,7 +207,7 @@ export default function PictureMCQScreen({ onBackToInstructions }: PictureMCQScr
       
       if (isSubcategory && subcategoryId) {
         // Fetch questions for subcategory
-        const { questions } = await getKGSubcategoryQuestions(parseInt(subcategoryId));
+        const { questions } = await getKGSubcategoryQuestions(parseInt(subcategoryId), parseInt(categoryId));
         apiQuestions = questions;
         console.log('Raw API subcategory questions:', apiQuestions); // DEBUG LOG
       } else {
