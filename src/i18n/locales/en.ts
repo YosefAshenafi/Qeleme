@@ -302,9 +302,11 @@ export default {
     deleteAccountWarning: 'This action cannot be undone. This will permanently delete your account and remove all your data from our servers.',
     deleteAccountConfirmation: 'Are you sure you want to delete your account? This action cannot be undone.',
     enterOTPToDelete: 'Enter verification code to delete account',
-    deleteAccountOTPSubtitle: 'We sent a verification code to your phone number to confirm account deletion.',
+    deleteAccountOTPSubtitle: 'We sent a verification code to your phone number to confirm account deletion. Please also enter your password.',
     confirmDelete: 'Delete Account',
-    accountDeleted: 'Account deleted successfully'
+    accountDeleted: 'Account deleted successfully',
+    enterPassword: 'Enter your password',
+    enterAllFields: 'Please enter phone number, verification code, and password'
   },
   auth: {
     errors: {

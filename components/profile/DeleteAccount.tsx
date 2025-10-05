@@ -6,6 +6,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useTranslation } from 'react-i18next';
 import { sendOTP, verifyOTP } from '@/utils/otpService';
 import { IconSymbol } from '@/components/ui/IconSymbol';
+import { PasswordInput } from '@/components/ui/PasswordInput';
 
 interface DeleteAccountProps {
   colors: ReturnType<typeof getColors>;
@@ -18,6 +19,7 @@ export function DeleteAccount({ colors, userPhoneNumber }: DeleteAccountProps) {
   const { t } = useTranslation();
   const [showOTPModal, setShowOTPModal] = useState(false);
   const [otp, setOtp] = useState('');
+  const [password, setPassword] = useState('');
   const [phoneNumber, setPhoneNumber] = useState(userPhoneNumber || '');
   const [isLoading, setIsLoading] = useState(false);
   const [isSendingOTP, setIsSendingOTP] = useState(false);
@@ -84,10 +86,10 @@ export function DeleteAccount({ colors, userPhoneNumber }: DeleteAccountProps) {
   const handleVerifyOTP = async () => {
     const phoneToUse = userPhoneNumber || phoneNumber;
     
-    if (!phoneToUse.trim() || !otp.trim()) {
+    if (!phoneToUse.trim() || !otp.trim() || !password.trim()) {
       Alert.alert(
         t('common.error', { defaultValue: 'Error' }),
-        'Please enter both phone number and verification code'
+        t('profile.enterAllFields', { defaultValue: 'Please enter phone number, verification code, and password' })
       );
       return;
     }
@@ -96,8 +98,8 @@ export function DeleteAccount({ colors, userPhoneNumber }: DeleteAccountProps) {
     try {
       const result = await verifyOTP(phoneToUse, otp);
       if (result.success) {
-        // OTP verified, proceed with account deletion
-        await deleteAccount();
+        // OTP verified, proceed with account deletion using password
+        await deleteAccount(password);
         Alert.alert(
           t('common.success', { defaultValue: 'Success' }),
           t('profile.accountDeleted'),
@@ -113,7 +115,7 @@ export function DeleteAccount({ colors, userPhoneNumber }: DeleteAccountProps) {
     } catch (error) {
       Alert.alert(
         t('common.error', { defaultValue: 'Error' }),
-        'Failed to verify code'
+        error instanceof Error ? error.message : 'Failed to delete account'
       );
     } finally {
       setIsLoading(false);
@@ -122,6 +124,7 @@ export function DeleteAccount({ colors, userPhoneNumber }: DeleteAccountProps) {
 
   const handleCancelOTP = () => {
     setOtp('');
+    setPassword('');
     setPhoneNumber(userPhoneNumber || '');
     setShowOTPModal(false);
   };
@@ -204,6 +207,15 @@ export function DeleteAccount({ colors, userPhoneNumber }: DeleteAccountProps) {
                 autoFocus={!!userPhoneNumber}
               />
               
+              <PasswordInput
+                value={password}
+                onChangeText={setPassword}
+                placeholder={t('profile.enterPassword')}
+                colors={colors}
+                isDarkMode={isDarkMode}
+                style={styles.passwordInput}
+              />
+              
               <TouchableOpacity
                 style={[styles.sendOTPButton, { backgroundColor: colors.tint }]}
                 onPress={handleSendOTP}
@@ -231,10 +243,10 @@ export function DeleteAccount({ colors, userPhoneNumber }: DeleteAccountProps) {
               
               <TouchableOpacity
                 style={[styles.confirmButton, { 
-                  backgroundColor: (isLoading || !otp.trim() || (!userPhoneNumber && !phoneNumber.trim())) ? '#ccc' : '#ff6b6b' 
+                  backgroundColor: (isLoading || !otp.trim() || !password.trim() || (!userPhoneNumber && !phoneNumber.trim())) ? '#ccc' : '#ff6b6b' 
                 }]}
                 onPress={handleVerifyOTP}
-                disabled={isLoading || !otp.trim() || (!userPhoneNumber && !phoneNumber.trim())}
+                disabled={isLoading || !otp.trim() || !password.trim() || (!userPhoneNumber && !phoneNumber.trim())}
               >
                 {isLoading ? (
                   <ActivityIndicator color="#ffffff" size="small" />
@@ -339,6 +351,9 @@ const styles = StyleSheet.create({
     fontSize: 16,
     marginBottom: 12,
     textAlign: 'center',
+  },
+  passwordInput: {
+    marginBottom: 12,
   },
   sendOTPButton: {
     paddingVertical: 12,

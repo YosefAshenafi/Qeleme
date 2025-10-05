@@ -597,9 +597,11 @@ export default {
     deleteAccountWarning: 'ይህ እርምጃ ሊመለስ አይችልም። ይህ የእርስዎን መለያ ለዘለቄታዊ ይሰርዛል እና ሁሉንም ውሂብዎን ከአገልጋዮቻችን ይወጣል።',
     deleteAccountConfirmation: 'መለያዎን ለመሰረዝ እርግጠኛ ነዎት? ይህ እርምጃ ሊመለስ አይችልም።',
     enterOTPToDelete: 'መለያ ለመሰረዝ የማረጋገጫ ኮድ ያስገቡ',
-    deleteAccountOTPSubtitle: 'መለያ ለመሰረዝ ማረጋገጫ ኮድ ወደ ስልክ ቁጥርዎ ላክን።',
+    deleteAccountOTPSubtitle: 'መለያ ለመሰረዝ ማረጋገጫ ኮድ ወደ ስልክ ቁጥርዎ ላክን። እባክዎ የይለፍ ቃልዎንም ያስገቡ።',
     confirmDelete: 'መለያ ሰርዝ',
-    accountDeleted: 'መለያ በተሳካ ሁኔታ ተሰርዟል'
+    accountDeleted: 'መለያ በተሳካ ሁኔታ ተሰርዟል',
+    enterPassword: 'የይለፍ ቃልዎን ያስገቡ',
+    enterAllFields: 'እባክዎ ስልክ ቁጥር፣ የማረጋገጫ ኮድ እና የይለፍ ቃል ያስገቡ'
   },
   auth: {
     errors: {

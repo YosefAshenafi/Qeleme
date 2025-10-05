@@ -1,6 +1,7 @@
 import { createContext, useContext, useState, useEffect } from 'react';
 import { router } from 'expo-router';
 import { getUserData, isAuthenticated as checkAuthState, clearAuthData, UserData } from '@/utils/authStorage';
+import { deleteAccountAPI } from '@/services/accountService';
 
 interface AuthContextType {
   isAuthenticated: boolean;
@@ -8,7 +9,7 @@ interface AuthContextType {
   isLoading: boolean;
   login: (userData: UserData) => Promise<void>;
   logout: () => Promise<void>;
-  deleteAccount: () => Promise<void>;
+  deleteAccount: (password: string) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -60,17 +61,25 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  const deleteAccount = async () => {
+  const deleteAccount = async (password: string) => {
     try {
-      // Clear all user data
-      await clearAuthData();
-      setUser(null);
-      setIsAuthenticated(false);
+      // Call the API to delete the account
+      const result = await deleteAccountAPI(password);
       
-      // Navigate to onboarding after account deletion
-      router.replace('/(auth)/onboarding');
+      if (result.success) {
+        // Clear all user data only after successful API call
+        await clearAuthData();
+        setUser(null);
+        setIsAuthenticated(false);
+        
+        // Navigate to onboarding after account deletion
+        router.replace('/(auth)/onboarding');
+      } else {
+        throw new Error(result.message || 'Failed to delete account');
+      }
     } catch (error) {
-      // Silently handle delete account error
+      // Re-throw the error so the calling component can handle it
+      throw error;
     }
   };
 
