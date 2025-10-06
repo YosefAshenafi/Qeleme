@@ -47,6 +47,8 @@
         },
         "package": "com.yosefashenafi.qelem",
         "versionCode": 4,
+        "compileSdkVersion": 35,
+        "targetSdkVersion": 35,
         "permissions": [
           "android.permission.INTERNET",
           "android.permission.ACCESS_NETWORK_STATE",
