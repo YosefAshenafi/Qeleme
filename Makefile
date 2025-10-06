@@ -10,8 +10,10 @@ help:
 	@echo ""
 	@echo "📱 Build Commands:"
 	@echo "  make build        - Build release APK"
+	@echo "  make aab          - Build release AAB (for Google Play)"
 	@echo "  make clean        - Clean previous builds"
 	@echo "  make release      - Clean + Build release APK"
+	@echo "  make release-aab  - Clean + Build release AAB"
 	@echo ""
 	@echo "📦 Install Commands:"
 	@echo "  make install      - Install APK to connected device"
@@ -23,6 +25,7 @@ help:
 	@echo ""
 	@echo "📁 File Locations:"
 	@echo "  APK: android/app/build/outputs/apk/release/app-release.apk"
+	@echo "  AAB: android/app/build/outputs/bundle/release/app-release.aab"
 	@echo ""
 
 # Start the app
@@ -44,10 +47,22 @@ build:
 	@echo "✅ Build completed!"
 	@echo "📦 APK location: android/app/build/outputs/apk/release/app-release.apk"
 
+# Build release AAB (for Google Play)
+aab:
+	@echo "🔨 Building release AAB..."
+	cd android && ./gradlew bundleRelease
+	@echo "✅ AAB build completed!"
+	@echo "📦 AAB location: android/app/build/outputs/bundle/release/app-release.aab"
+
 # Clean and build (recommended for releases)
 release: clean build
 	@echo "🎉 Release build completed!"
 	@ls -lh android/app/build/outputs/apk/release/app-release.apk
+
+# Clean and build AAB (for Google Play releases)
+release-aab: clean aab
+	@echo "🎉 AAB release build completed!"
+	@ls -lh android/app/build/outputs/bundle/release/app-release.aab
 
 # Install APK to connected device
 install:
@@ -120,4 +135,17 @@ apk-info:
 		aapt dump badging android/app/build/outputs/apk/release/app-release.apk | grep -E "(package|versionCode|versionName)"; \
 	else \
 		echo "❌ APK not found. Run 'make build' first."; \
+	fi
+
+# Show AAB info
+aab-info:
+	@if [ -f android/app/build/outputs/bundle/release/app-release.aab ]; then \
+		echo "📦 AAB Information:"; \
+		echo "=================="; \
+		ls -lh android/app/build/outputs/bundle/release/app-release.aab; \
+		echo ""; \
+		echo "📋 AAB Details:"; \
+		aapt dump badging android/app/build/outputs/bundle/release/app-release.aab | grep -E "(package|versionCode|versionName)"; \
+	else \
+		echo "❌ AAB not found. Run 'make aab' first."; \
 	fi

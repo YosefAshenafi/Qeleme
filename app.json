@@ -46,7 +46,7 @@
           "backgroundColor": "#6B54AE"
         },
         "package": "com.yosefashenafi.Qelem",
-        "versionCode": 3,
+        "versionCode": 4,
         "permissions": [
           "android.permission.INTERNET",
           "android.permission.ACCESS_NETWORK_STATE",
