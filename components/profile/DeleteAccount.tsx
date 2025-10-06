@@ -138,7 +138,9 @@ export function DeleteAccount({ colors, userPhoneNumber }: DeleteAccountProps) {
             {t('profile.dangerZone')}
           </Text>
         </View>
-        
+        <Text style={[styles.noticeTitle, { color: colors.text }]}>
+          {t('profile.importantNotice')}
+        </Text>
         <Text style={[styles.dangerWarning, { color: colors.text }]}>
           {t('profile.deleteAccountWarning')}
         </Text>
@@ -281,6 +283,12 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
     marginLeft: 8,
+  },
+  noticeTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    marginBottom: 6,
+    marginTop: 8,
   },
   dangerWarning: {
     fontSize: 14,

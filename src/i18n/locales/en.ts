@@ -298,6 +298,7 @@ export default {
     aboutInfo: 'Qelem is an innovative educational platform designed to enhance learning through interactive content, personalized experiences, and comprehensive progress tracking.',
     version: 'App Version',
     dangerZone: 'Danger Zone',
+    importantNotice: '',
     deleteAccount: 'Delete Account',
     deleteAccountWarning: 'This action cannot be undone. This will permanently delete your account and remove all your data from our servers.',
     deleteAccountConfirmation: 'Are you sure you want to delete your account? This action cannot be undone.',
