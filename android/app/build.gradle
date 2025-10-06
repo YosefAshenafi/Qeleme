@@ -86,9 +86,9 @@ android {
     buildToolsVersion rootProject.ext.buildToolsVersion
     compileSdk rootProject.ext.compileSdkVersion
 
-    namespace 'com.yosefashenafi.Qelem'
+    namespace 'com.yosefashenafi.qelem'
     defaultConfig {
-        applicationId 'com.yosefashenafi.Qelem'
+        applicationId 'com.yosefashenafi.qelem'
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 4

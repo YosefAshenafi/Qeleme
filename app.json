@@ -45,7 +45,7 @@
           "resizeMode": "contain",
           "backgroundColor": "#6B54AE"
         },
-        "package": "com.yosefashenafi.Qelem",
+        "package": "com.yosefashenafi.qelem",
         "versionCode": 4,
         "permissions": [
           "android.permission.INTERNET",

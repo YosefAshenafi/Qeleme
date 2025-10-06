@@ -1,4 +1,4 @@
-package com.yosefashenafi.Qelem
+package com.yosefashenafi.qelem
 
 import android.app.Application
 import android.content.res.Configuration

@@ -78,7 +78,7 @@ install:
 # Uninstall app from device
 uninstall:
 	@echo "🗑️  Uninstalling app from device..."
-	adb uninstall com.yosefashenafi.Qelem
+	adb uninstall com.yosefashenafi.qelem
 	@echo "✅ App uninstalled!"
 
 # Show version information
@@ -87,7 +87,7 @@ version:
 	@echo "=============================="
 	@echo "App Version: $$(grep '"version"' app.json | cut -d'"' -f4)"
 	@echo "Version Code: $$(grep '"versionCode"' app.json | cut -d':' -f2 | tr -d ' ,')"
-	@echo "Package: com.yosefashenafi.Qelem"
+	@echo "Package: com.yosefashenafi.qelem"
 	@if [ -f android/app/build/outputs/apk/release/app-release.apk ]; then \
 		echo "APK Size: $$(ls -lh android/app/build/outputs/apk/release/app-release.apk | awk '{print $$5}')"; \
 		echo "APK Date: $$(ls -l android/app/build/outputs/apk/release/app-release.apk | awk '{print $$6, $$7, $$8}')"; \

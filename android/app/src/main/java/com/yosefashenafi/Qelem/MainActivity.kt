@@ -1,4 +1,4 @@
-package com.yosefashenafi.Qelem
+package com.yosefashenafi.qelem
 import expo.modules.splashscreen.SplashScreenManager
 
 import android.os.Build
