@@ -598,7 +598,7 @@ export default {
     deleteAccountWarning: 'ይህ እርምጃ ሊቀለበስ አይችልም። ይህ የእርስዎን መለያ /አካውንት/ በቋሚነት ይሰርዘዋል፤ እንዲሁም ሁሉንም መረጃዎችዎን ከሰርቨር ላይ ያስወግዳል።',
     deleteAccountConfirmation: 'መለያዎን ለመሰረዝ እርግጠኛ ነዎት? ይህ እርምጃ ሊመለስ አይችልም።',
     enterOTPToDelete: 'መለያ ለመሰረዝ የማረጋገጫ ኮድ ያስገቡ',
-    deleteAccountOTPSubtitle: 'መለያ ለመሰረዝ ማረጋገጫ ኮድ ወደ ስልክ ቁጥርዎ ላክን። እባክዎ የይለፍ ቃልዎንም ያስገቡ።',
+    deleteAccountOTPSubtitle: 'መለያ ለመሰረዝ ማረጋገጫ ኮድ ወደ ስልክ ቁጥርዎ ይላኩ።',
     confirmDelete: 'መለያ ሰርዝ',
     accountDeleted: 'መለያ በተሳካ ሁኔታ ተሰርዟል',
     enterPassword: 'የይለፍ ቃልዎን ያስገቡ',
