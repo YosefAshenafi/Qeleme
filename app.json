@@ -2,7 +2,7 @@
   "expo": {
     "name": "Qelem",
     "slug": "Qelem",
-    "version": "1.0.5",
+    "version": "1.0.6",
     "orientation": "portrait",
     "icon": "./assets/images/logo/app-icon.png",
     "scheme": "qelem",
@@ -46,7 +46,7 @@
           "backgroundColor": "#6B54AE"
         },
         "package": "com.yosefashenafi.Qelem",
-        "versionCode": 8,
+        "versionCode": 9,
         "compileSdkVersion": 35,
         "targetSdkVersion": 35,
         "permissions": [
