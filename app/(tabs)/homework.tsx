@@ -1,4 +1,4 @@
-import { StyleSheet, TextInput, TouchableOpacity, ScrollView, Image, View, KeyboardAvoidingView, Platform, TouchableWithoutFeedback, Keyboard, Animated } from 'react-native';
+import { StyleSheet, TextInput, TouchableOpacity, ScrollView, Image, View, KeyboardAvoidingView, Platform, TouchableWithoutFeedback, Keyboard, Animated, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useState, useRef, useEffect } from 'react';
 import * as ImagePicker from 'expo-image-picker';
@@ -264,6 +264,41 @@ export default function HomeworkScreen() {
   };
 
   const pickImage = async () => {
+    // Show action sheet for camera vs photo library
+    Alert.alert(
+      "Select Image",
+      "Choose how you want to add an image",
+      [
+        {
+          text: "Camera",
+          onPress: () => takePhoto(),
+        },
+        {
+          text: "Photo Library",
+          onPress: () => selectFromLibrary(),
+        },
+        {
+          text: "Cancel",
+          style: "cancel",
+        },
+      ]
+    );
+  };
+
+  const takePhoto = async () => {
+    const result = await ImagePicker.launchCameraAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      aspect: [4, 3],
+      quality: 1,
+    });
+
+    if (!result.canceled) {
+      setSelectedImage(result.assets[0].uri);
+    }
+  };
+
+  const selectFromLibrary = async () => {
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
       allowsEditing: true,

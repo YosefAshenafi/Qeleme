@@ -2,7 +2,7 @@
   "expo": {
     "name": "Qelem",
     "slug": "Qelem",
-    "version": "1.0.0",
+    "version": "1.0.5",
     "orientation": "portrait",
     "icon": "./assets/images/logo/app-icon.png",
     "scheme": "qelem",
@@ -45,8 +45,8 @@
           "resizeMode": "contain",
           "backgroundColor": "#6B54AE"
         },
-        "package": "com.yosefashenafi.qelem",
-        "versionCode": 4,
+        "package": "com.yosefashenafi.Qelem",
+        "versionCode": 8,
         "compileSdkVersion": 35,
         "targetSdkVersion": 35,
         "permissions": [
@@ -55,7 +55,8 @@
           "android.permission.CAMERA",
           "android.permission.READ_MEDIA_IMAGES"
         ],
-        "playStoreUrl": "https://play.google.com/store/apps/details?id=com.yosefashenafi.Qelem"
+        "playStoreUrl": "https://play.google.com/store/apps/details?id=com.yosefashenafi.qelem",
+        "privacyPolicy": "https://qelem.com/privacy-policy"
       },
     "web": {
       "bundler": "metro",
