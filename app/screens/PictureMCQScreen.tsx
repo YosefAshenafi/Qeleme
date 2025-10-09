@@ -703,7 +703,7 @@ export default function PictureMCQScreen({ onBackToInstructions }: PictureMCQScr
               </View>
 
               {/* Sponsored By Section */}
-              <SponsoredBy style={{ marginTop: 20 }} />
+              {/* <SponsoredBy style={{ marginTop: 20 }} /> */}
             </ScrollView>
           </LinearGradient>
         </SafeAreaView>

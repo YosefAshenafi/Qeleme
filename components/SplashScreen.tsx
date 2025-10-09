@@ -12,8 +12,8 @@ export default function CustomSplashScreen() {
   const textOpacityAnim = useRef(new Animated.Value(0)).current;
   
   // Sponsor animation values
-  const sponsorSlideAnim = useRef(new Animated.Value(-width)).current;
-  const sponsorOpacityAnim = useRef(new Animated.Value(0)).current;
+  // const sponsorSlideAnim = useRef(new Animated.Value(-width)).current;
+  // const sponsorOpacityAnim = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
     // Start the zoom animation for icon
@@ -47,20 +47,20 @@ export default function CustomSplashScreen() {
     }, 300);
 
     // Start the sponsor animation after the main content is shown
-    setTimeout(() => {
-      Animated.parallel([
-        Animated.timing(sponsorSlideAnim, {
-          toValue: 0,
-          duration: 800,
-          useNativeDriver: true,
-        }),
-        Animated.timing(sponsorOpacityAnim, {
-          toValue: 1,
-          duration: 600,
-          useNativeDriver: true,
-        }),
-      ]).start();
-    }, 1200);
+    // setTimeout(() => {
+    //   Animated.parallel([
+    //     Animated.timing(sponsorSlideAnim, {
+    //       toValue: 0,
+    //       duration: 800,
+    //       useNativeDriver: true,
+    //     }),
+    //     Animated.timing(sponsorOpacityAnim, {
+    //       toValue: 1,
+    //       duration: 600,
+    //       useNativeDriver: true,
+    //     }),
+    //   ]).start();
+    // }, 1200);
   }, []);
 
   const themeColor = isDarkMode ? '#8B6BCE' : '#6B54AE';
@@ -113,7 +113,7 @@ export default function CustomSplashScreen() {
       </Animated.View>
 
       {/* Sponsored by section */}
-      <Animated.View
+      {/* <Animated.View
         style={{
           position: 'absolute',
           bottom: 60,
@@ -164,7 +164,7 @@ export default function CustomSplashScreen() {
             }}
           />
         </View>
-      </Animated.View>
+      </Animated.View> */}
     </View>
   );
 }

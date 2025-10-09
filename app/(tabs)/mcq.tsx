@@ -974,7 +974,7 @@ export default function MCQScreen() {
           </ThemedView>
 
           {/* Sponsored By Section */}
-          <SponsoredBy />
+          {/* <SponsoredBy /> */}
         </ScrollView>
       </ThemedView>
     );

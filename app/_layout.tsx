@@ -37,9 +37,14 @@ function RootLayoutNav() {
       
       // Show custom splash for a bit longer with animation
       // Sponsorship shows at 1.2s and completes at 2s, then we wait 4 more seconds
+      // setTimeout(() => {
+      //   setShowSplash(false);
+      // }, 6000); // Show splash for 6 seconds total (2s for sponsorship + 4s delay)
+      
+      // Reduced timer since Zemen advertisement is commented out
       setTimeout(() => {
         setShowSplash(false);
-      }, 6000); // Show splash for 6 seconds total (2s for sponsorship + 4s delay)
+      }, 2000); // Show splash for 2 seconds only
     }
   }, [loaded]);
 
