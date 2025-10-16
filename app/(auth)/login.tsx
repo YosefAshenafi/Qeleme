@@ -1,4 +1,4 @@
-import { StyleSheet, TextInput, TouchableOpacity, View, Animated, Dimensions, Image, KeyboardAvoidingView, Platform, ActivityIndicator } from 'react-native';
+import { StyleSheet, TextInput, TouchableOpacity, View, Animated, Dimensions, Image, KeyboardAvoidingView, Platform, ActivityIndicator, ScrollView } from 'react-native';
 import { Link, router } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useState, useEffect, useRef } from 'react';
@@ -14,6 +14,7 @@ import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 import { LanguageToggle } from '@/components/ui/LanguageToggle';
 import { PasswordInput } from '@/components/ui/PasswordInput';
+import { ContactFooter } from '@/components/ContactFooter';
 import { BASE_URL } from '@/config/constants';
 
 
@@ -160,33 +161,39 @@ export default function LoginScreen() {
           behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
           style={styles.keyboardView}
         >
-          <Animated.View 
-            style={[
-              styles.container, 
-              { 
-                opacity: fadeAnim,
-                transform: [{ translateY: slideAnim }]
-              }
-            ]}
+          <ScrollView
+            style={styles.scrollView}
+            contentContainerStyle={styles.scrollContent}
+            showsVerticalScrollIndicator={false}
+            keyboardShouldPersistTaps="handled"
           >
-            <View style={styles.header}>
-              <TouchableOpacity 
-                style={styles.backButton}
-                onPress={() => router.push('/(auth)/welcome')}
-              >
-                <Ionicons name="arrow-back" size={24} color={isDarkMode ? '#A0A0A5' : '#1F2937'} />
-              </TouchableOpacity>
-              <View style={styles.languageToggleContainer}>
-                <LanguageToggle colors={colors} />
+            <Animated.View 
+              style={[
+                styles.container, 
+                { 
+                  opacity: fadeAnim,
+                  transform: [{ translateY: slideAnim }]
+                }
+              ]}
+            >
+              <View style={styles.header}>
+                <TouchableOpacity 
+                  style={styles.backButton}
+                  onPress={() => router.push('/(auth)/welcome')}
+                >
+                  <Ionicons name="arrow-back" size={24} color={isDarkMode ? '#A0A0A5' : '#1F2937'} />
+                </TouchableOpacity>
+                <View style={styles.languageToggleContainer}>
+                  <LanguageToggle colors={colors} />
+                </View>
+                <Image 
+                  source={require('@/assets/images/logo.png')}
+                  style={styles.logoImage}
+                  resizeMode="contain"
+                />
+                <ThemedText style={[styles.welcomeText, { color: colors.text }]}>{t('login.welcome')}</ThemedText>
+                <ThemedText style={[styles.subtitleText, { color: colors.text + '80' }]}>{t('login.subtitle')}</ThemedText>
               </View>
-              <Image 
-                source={require('@/assets/images/logo.png')}
-                style={styles.logoImage}
-                resizeMode="contain"
-              />
-              <ThemedText style={[styles.welcomeText, { color: colors.text }]}>{t('login.welcome')}</ThemedText>
-              <ThemedText style={[styles.subtitleText, { color: colors.text + '80' }]}>{t('login.subtitle')}</ThemedText>
-            </View>
 
             <View style={[styles.formContainer, {
               backgroundColor: isDarkMode ? '#1C1C1E' : '#FFFFFF',
@@ -273,7 +280,11 @@ export default function LoginScreen() {
                 <ThemedText style={[styles.signupText, { color: '#4F46E5' }]}>{t('login.signUp')}</ThemedText>
               </TouchableOpacity>
             </View>
-          </Animated.View>
+
+              {/* Contact Footer */}
+              <ContactFooter />
+            </Animated.View>
+          </ScrollView>
         </KeyboardAvoidingView>
       </SafeAreaView>
     </LinearGradient>
@@ -289,6 +300,12 @@ const styles = StyleSheet.create({
   },
   keyboardView: {
     flex: 1,
+  },
+  scrollView: {
+    flex: 1,
+  },
+  scrollContent: {
+    flexGrow: 1,
   },
   container: {
     flex: 1,
@@ -316,6 +333,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#6B7280',
     textAlign: 'center',
+    marginVertical: 16,
   },
   formContainer: {
     width: '100%',
@@ -397,11 +415,12 @@ const styles = StyleSheet.create({
     fontSize: 14,
   },
   footer: {
+    marginTop: 20,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     gap: 8,
-    marginBottom: 24,
+    marginBottom: 16,
   },
   footerText: {
     color: '#6B7280',

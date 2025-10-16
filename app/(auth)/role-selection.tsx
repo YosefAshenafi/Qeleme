@@ -10,6 +10,7 @@ import { useTranslation } from 'react-i18next';
 
 import { ThemedText } from '@/components/ThemedText';
 import { LanguageToggle } from '@/components/ui/LanguageToggle';
+import { ContactFooter } from '@/components/ContactFooter';
 
 export default function RoleSelectionScreen() {
   const { t } = useTranslation();
@@ -206,6 +207,9 @@ export default function RoleSelectionScreen() {
               </TouchableOpacity>
             </Animated.View>
           </View>
+
+          {/* Contact Footer */}
+          <ContactFooter />
         </ScrollView>
       </SafeAreaView>
     </LinearGradient>

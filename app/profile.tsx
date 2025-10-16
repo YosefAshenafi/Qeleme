@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Animated, RefreshControl, Alert, Linking, Image } from 'react-native';
 import { useColorScheme } from '../hooks/useColorScheme';
 import { Colors } from '../constants/Colors';
@@ -187,6 +187,7 @@ export default function ProfileScreen() {
     });
   };
 
+
   const menuItems: MenuItem[] = React.useMemo(() => [
     { 
       title: t('profile.accountSettings'),
@@ -210,6 +211,63 @@ export default function ProfileScreen() {
           'Qelem is an innovative educational platform designed to enhance learning through interactive content, personalized experiences, and comprehensive progress tracking.'
         );
       }
+    },
+    { 
+      title: t('profile.contactUs'),
+      icon: 'phone.fill' as const,
+      content: (
+        <View style={styles.contactContainer}>
+          <View style={styles.contactSection}>
+            <View style={styles.contactRow}>
+              <View style={[styles.contactIconContainer, { backgroundColor: colors.tint + '15' }]}>
+                <IconSymbol name="phone.fill" size={18} color={colors.tint} />
+              </View>
+              <Text style={[styles.contactSectionTitle, { color: colors.text }]}>Phone</Text>
+            </View>
+            
+            <View style={styles.contactLinksContainer}>
+              <TouchableOpacity 
+                style={[styles.contactLink, { backgroundColor: colors.tint + '10' }]}
+                onPress={() => Linking.openURL('tel:+251911243867')}
+                activeOpacity={0.7}
+              >
+                <Text style={[styles.contactItem, { color: colors.tint }]}>+251 911 243 867</Text>
+              </TouchableOpacity>
+              <TouchableOpacity 
+                style={[styles.contactLink, { backgroundColor: colors.tint + '10' }]}
+                onPress={() => Linking.openURL('tel:+251911557216')}
+                activeOpacity={0.7}
+              >
+                <Text style={[styles.contactItem, { color: colors.tint }]}>+251 911 557 216</Text>
+              </TouchableOpacity>
+              <TouchableOpacity 
+                style={[styles.contactLink, { backgroundColor: colors.tint + '10' }]}
+                onPress={() => Linking.openURL('tel:+251913727300')}
+                activeOpacity={0.7}
+              >
+                <Text style={[styles.contactItem, { color: colors.tint }]}>+251 913 727 300</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+          
+          <View style={[styles.contactSection, { marginTop: 20 }]}>
+            <View style={styles.contactRow}>
+              <View style={[styles.contactIconContainer, { backgroundColor: colors.tint + '15' }]}>
+                <IconSymbol name="envelope.fill" size={18} color={colors.tint} />
+              </View>
+              <Text style={[styles.contactSectionTitle, { color: colors.text }]}>Email</Text>
+            </View>
+            
+            <TouchableOpacity 
+              style={[styles.contactLink, { backgroundColor: colors.tint + '10', marginTop: 8 }]}
+              onPress={() => Linking.openURL('mailto:contact@qelem.net')}
+              activeOpacity={0.7}
+            >
+              <Text style={[styles.contactItem, { color: colors.tint }]}>contact@qelem.net</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      )
     },
     { 
       title: t('profile.version'),
@@ -573,5 +631,46 @@ const styles = StyleSheet.create({
   themeToggleText: {
     fontSize: 14,
     fontWeight: '500',
+  },
+  contactContainer: {
+    paddingVertical: 12,
+    paddingHorizontal: 8,
+  },
+  contactSection: {
+    marginBottom: 0,
+  },
+  contactRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 12,
+    gap: 12,
+  },
+  contactIconContainer: {
+    width: 32,
+    height: 32,
+    borderRadius: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  contactSectionTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    marginBottom: 0,
+  },
+  contactLinksContainer: {
+    gap: 8,
+    paddingLeft: 44,
+  },
+  contactLink: {
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderRadius: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  contactItem: {
+    fontSize: 16,
+    fontWeight: '600',
+    textAlign: 'center',
   },
 }); 

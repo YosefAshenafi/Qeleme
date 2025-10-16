@@ -296,6 +296,7 @@ export default {
     title: 'Settings',
     about: 'About Qelem',
     aboutInfo: 'Qelem is an innovative educational platform designed to enhance learning through interactive content, personalized experiences, and comprehensive progress tracking.',
+    contactUs: 'Contact Us',
     version: 'App Version',
     dangerZone: 'Danger Zone',
     importantNotice: '',
@@ -663,6 +664,11 @@ export default {
     subtitle: 'If you are new, please sign up. If you already have an account, please sign in.',
     signIn: 'Sign In',
     signUp: 'Sign Up',
+    contactInfo: {
+      title: 'Contact Information',
+      phone: 'Phone',
+      email: 'Email'
+    }
   },
   onboarding: {
     language: {

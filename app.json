@@ -35,29 +35,29 @@
         "backgroundColor": "#6B54AE"
       }
     },
-          "android": {
-        "adaptiveIcon": {
-          "foregroundImage": "./assets/images/logo/app-icon.png",
-          "backgroundColor": "#6B54AE"
-        },
-        "splash": {
-          "image": "./assets/images/logo/white-logo.png",
-          "resizeMode": "contain",
-          "backgroundColor": "#6B54AE"
-        },
-        "package": "com.yosefashenafi.Qelem",
-        "versionCode": 9,
-        "compileSdkVersion": 35,
-        "targetSdkVersion": 35,
-        "permissions": [
-          "android.permission.INTERNET",
-          "android.permission.ACCESS_NETWORK_STATE",
-          "android.permission.CAMERA",
-          "android.permission.READ_MEDIA_IMAGES"
-        ],
-        "playStoreUrl": "https://play.google.com/store/apps/details?id=com.yosefashenafi.qelem",
-        "privacyPolicy": "https://qelem.com/privacy-policy"
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/images/logo/app-icon.png",
+        "backgroundColor": "#6B54AE"
       },
+      "splash": {
+        "image": "./assets/images/logo/white-logo.png",
+        "resizeMode": "contain",
+        "backgroundColor": "#6B54AE"
+      },
+      "package": "com.yosefashenafi.Qelem",
+      "versionCode": 9,
+      "compileSdkVersion": 35,
+      "targetSdkVersion": 35,
+      "permissions": [
+        "android.permission.INTERNET",
+        "android.permission.ACCESS_NETWORK_STATE",
+        "android.permission.CAMERA",
+        "android.permission.READ_MEDIA_IMAGES"
+      ],
+      "playStoreUrl": "https://play.google.com/store/apps/details?id=com.yosefashenafi.qelem",
+      "privacyPolicy": "https://qelem.com/privacy-policy"
+    },
     "web": {
       "bundler": "metro",
       "output": "static",
@@ -78,6 +78,7 @@
     ],
     "experiments": {
       "typedRoutes": true
-    }
+    },
+    "owner": "jossyfreelancer"
   }
 }

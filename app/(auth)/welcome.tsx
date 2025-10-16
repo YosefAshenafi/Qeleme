@@ -9,6 +9,7 @@ import { useTranslation } from 'react-i18next';
 
 import { ThemedText } from '@/components/ThemedText';
 import { LanguageToggle } from '@/components/ui/LanguageToggle';
+import { ContactFooter } from '@/components/ContactFooter';
 
 const { width, height } = Dimensions.get('window');
 
@@ -114,6 +115,9 @@ export default function WelcomeScreen() {
                 </ThemedText>
               </TouchableOpacity>
             </View>
+
+            {/* Contact Footer */}
+            <ContactFooter />
           </Animated.View>
         </View>
       </SafeAreaView>

@@ -591,6 +591,7 @@ export default {
     title: 'ቅንብሮች',
     about: 'ስለ ቀለም',
     aboutInfo: 'ቀለም በመስተጣበቅ የተማሪዎችን ትምህርት ለማሻሻል የተቀየረ የትምህርት መድረክ ነው። በመስተጣበቅ የተሞላ ይዘት፣ የተገላገለ ልምዶች እና የተሟላ የሂደት መከታተያ በኩል ትምህርትን ለማሻሻል የተቀየረ ነው።',
+    contactUs: 'እንገናኝ',
     version: 'የመተግበሪያ ሥሪት',
     dangerZone: 'አደጋ ዞን',
     importantNotice: 'ማሳሰቢያ!',
@@ -726,6 +727,11 @@ export default {
     subtitle: 'አዲስ ከሆኑ እባክዎ ይመዝገቡ። አስቀድመው መለያ ካለዎት እባክዎ በመለያዎ ይግቡ።',
     signIn: 'ይግቡ',
     signUp: 'ይመዝገቡ',
+    contactInfo: {
+      title: 'የምንገናኝ መረጃ',
+      phone: 'ስልክ',
+      email: 'ኢሜይል'
+    }
   },
   onboarding: {
     language: {

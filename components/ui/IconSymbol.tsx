@@ -41,6 +41,8 @@ const MAPPING = {
   'info.circle.fill': 'info',
   'app.badge': 'apps',
   'hand.raised.fill': 'security',
+  'phone.fill': 'phone',
+  'envelope.fill': 'email',
 } as const;
 
 export type IconSymbolName = keyof typeof MAPPING;
