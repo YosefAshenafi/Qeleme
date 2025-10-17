@@ -1,19 +1,28 @@
-# Qelem Android Build Makefile
+# Qelem Build Makefile
 # Quick commands for building and managing releases
 
-.PHONY: help clean build release install uninstall version bump-version
+.PHONY: help clean build release install uninstall version bump-version ios-build ios-submit ios-build-submit ios-simulator build-all
 
 # Default target
 help:
-	@echo "🚀 Qelem Android Build Commands"
-	@echo "================================"
+	@echo "🚀 Qelem Build Commands"
+	@echo "======================="
 	@echo ""
-	@echo "📱 Build Commands:"
+	@echo "📱 Android Build Commands:"
 	@echo "  make build        - Build release APK"
 	@echo "  make aab          - Build release AAB (for Google Play)"
 	@echo "  make clean        - Clean previous builds"
 	@echo "  make release      - Clean + Build release APK"
 	@echo "  make release-aab  - Clean + Build release AAB"
+	@echo ""
+	@echo "🍎 iOS Build Commands:"
+	@echo "  make ios-build         - Build iOS app for App Store"
+	@echo "  make ios-submit        - Submit iOS app to App Store"
+	@echo "  make ios-build-submit  - Build and submit iOS app"
+	@echo "  make ios-simulator     - Build for iOS simulator"
+	@echo ""
+	@echo "🌐 Multi-Platform:"
+	@echo "  make build-all    - Build for both Android and iOS"
 	@echo ""
 	@echo "📦 Install Commands:"
 	@echo "  make install      - Install APK to connected device"
@@ -150,3 +159,47 @@ aab-info:
 	else \
 		echo "❌ AAB not found. Run 'make aab' first."; \
 	fi
+
+# ========================================
+# iOS Build Commands (using EAS)
+# ========================================
+
+# Build iOS app for App Store distribution
+ios-build:
+	@echo "🍎 Building iOS app for App Store..."
+	@echo "This will build the app using EAS Build."
+	npx eas-cli build --platform ios --profile production
+	@echo "✅ iOS build started!"
+	@echo "📱 Check build status at: https://expo.dev"
+
+# Submit iOS app to App Store
+ios-submit:
+	@echo "📤 Submitting iOS app to App Store..."
+	@echo "This will submit the latest successful build to TestFlight/App Store."
+	npx eas-cli submit --platform ios --latest
+	@echo "✅ iOS submission started!"
+	@echo "📱 Check status at: https://expo.dev"
+
+# Build and submit iOS app in one command
+ios-build-submit:
+	@echo "🍎 Building and submitting iOS app..."
+	npx eas-cli build --platform ios --profile production --auto-submit
+	@echo "✅ iOS build and submit started!"
+	@echo "📱 Check status at: https://expo.dev"
+
+# Build for iOS simulator (for testing)
+ios-simulator:
+	@echo "🧪 Building for iOS simulator..."
+	npx eas-cli build --platform ios --profile preview
+	@echo "✅ iOS simulator build started!"
+	@echo "📱 Download and run with: npx expo run:ios"
+
+# Build both Android and iOS
+build-all:
+	@echo "📱 Building for all platforms..."
+	@echo "Starting Android build..."
+	make release-aab
+	@echo ""
+	@echo "Starting iOS build..."
+	make ios-build
+	@echo "✅ All platform builds initiated!"

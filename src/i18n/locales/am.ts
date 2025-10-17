@@ -728,7 +728,7 @@ export default {
     signIn: 'ይግቡ',
     signUp: 'ይመዝገቡ',
     contactInfo: {
-      title: 'የምንገናኝ መረጃ',
+      title: 'ያግኙን',
       phone: 'ስልክ',
       email: 'ኢሜይል'
     }
