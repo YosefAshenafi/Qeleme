@@ -300,7 +300,7 @@ export default function ReportsScreen() {
               {userStats.currentStreak > 0 && (
                 <ThemedView style={[styles.card, { backgroundColor: colors.background }]}>
                   <LinearGradient
-                    colors={gradients.blue}
+                    colors={gradients.purple}
                     style={styles.cardGradient}
                     start={{ x: 0, y: 0 }}
                     end={{ x: 1, y: 1 }}
@@ -470,11 +470,13 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: '700',
     marginBottom: 4,
+    color: 'white'
   },
   statLabel: {
     fontSize: 12,
     textAlign: 'center',
     fontWeight: '500',
+    color: 'white'
   },
   card: {
     borderRadius: 20,
