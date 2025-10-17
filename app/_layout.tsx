@@ -5,7 +5,7 @@ import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect, useState } from 'react';
 import 'react-native-reanimated';
-import { LogBox, View } from 'react-native';
+import { LogBox, View, Image } from 'react-native';
 
 import { useColorScheme } from '@/hooks/useColorScheme';
 import { ThemeProvider, useTheme } from '@/contexts/ThemeContext';
@@ -13,6 +13,7 @@ import { AuthProvider } from '@/contexts/AuthContext';
 import { LanguageProvider } from '@/contexts/LanguageContext';
 import i18n, { initI18n } from '../i18n/i18n';
 import CustomSplashScreen from '@/components/SplashScreen';
+import { ErrorBoundary } from '@/components/ErrorBoundary';
 
 // Ignore specific warnings
 LogBox.ignoreLogs([
@@ -69,15 +70,21 @@ function RootLayoutNav() {
 }
 
 export default function RootLayout() {
+  console.log('🚀 RootLayout rendering');
   const [isI18nReady, setIsI18nReady] = useState(false);
 
   useEffect(() => {
+    console.log('🚀 RootLayout useEffect running');
     const initializeI18n = async () => {
       try {
+        console.log('🚀 Initializing i18n...');
         await initI18n();
-        setIsI18nReady(true);
+        console.log('✅ i18n initialized');
       } catch (error) {
-        setIsI18nReady(true); // Still set to true to prevent app from being stuck
+        console.error('❌ i18n initialization error:', error);
+      } finally {
+        setIsI18nReady(true);
+        console.log('✅ i18n ready state set to true');
       }
     };
 
@@ -85,9 +92,18 @@ export default function RootLayout() {
   }, []);
 
   if (!isI18nReady) {
-    return null; // Or a loading screen
+    console.log('⏳ Showing loading screen, i18n not ready');
+    return (
+      <View style={{ flex: 1, backgroundColor: '#6B54AE', justifyContent: 'center', alignItems: 'center' }}>
+        <Image 
+          source={require('../assets/images/logo/white-logo.png')}
+          style={{ width: 150, height: 150 }}
+        />
+      </View>
+    );
   }
 
+  console.log('✅ Rendering main app, i18n is ready');
   return (
     <LanguageProvider>
       <ThemeProvider>

@@ -3,7 +3,7 @@
     "name": "Qelem",
     "slug": "Qelem",
     "version": "1.0.6",
-    "orientation": "portrait",
+    "orientation": "default",
     "icon": "./assets/images/logo/app-icon.png",
     "scheme": "qelem",
     "userInterfaceStyle": "automatic",
@@ -27,8 +27,14 @@
     },
     "ios": {
       "supportsTablet": true,
+      "requireFullScreen": false,
       "bundleIdentifier": "com.yosefashenafi.Qelem",
+      "buildNumber": "6",
       "icon": "./assets/images/logo/app-icon.png",
+      "infoPlist": {
+        "UIRequiresFullScreen": false,
+        "UIStatusBarStyle": "UIStatusBarStyleDefault"
+      },
       "splash": {
         "image": "./assets/images/logo/white-logo.png",
         "resizeMode": "contain",

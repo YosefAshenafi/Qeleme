@@ -1,11 +1,9 @@
 import React, { useEffect, useRef } from 'react';
-import { View, Image, Animated, Dimensions, Text } from 'react-native';
-import { useTheme } from '@/contexts/ThemeContext';
-
-const { width, height } = Dimensions.get('window');
+import { View, Image, Animated, Text, useColorScheme } from 'react-native';
 
 export default function CustomSplashScreen() {
-  const { isDarkMode } = useTheme();
+  const colorScheme = useColorScheme();
+  const isDarkMode = colorScheme === 'dark';
   const scaleAnim = useRef(new Animated.Value(0.3)).current;
   const opacityAnim = useRef(new Animated.Value(0)).current;
   const textScaleAnim = useRef(new Animated.Value(0.5)).current;
@@ -72,8 +70,6 @@ export default function CustomSplashScreen() {
         backgroundColor: themeColor,
         justifyContent: 'center',
         alignItems: 'center',
-        width: width,
-        height: height,
       }}
     >
       <Animated.View
