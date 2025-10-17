@@ -12,10 +12,25 @@
       "distribution": "internal"
     },
     "production": {
-      "autoIncrement": true
+      "releaseChannel": "production",
+      "distribution": "store",
+      "autoIncrement": true,
+      "node": "22.11.0",
+      "env": {
+        "NPM_CONFIG_LEGACY_PEER_DEPS": "true"
+      },
+      "ios": {
+        "cache": {
+          "paths": ["node_modules"]
+        }
+      }
     }
   },
   "submit": {
-    "production": {}
+    "production": {
+      "ios": {
+        "bundleIdentifier": "com.yosefashenafi.Qelem"
+      }
+    }
   }
 }
