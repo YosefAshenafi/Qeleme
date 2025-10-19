@@ -38,6 +38,8 @@ import ActivityTrackingService from '@/services/activityTrackingService';
 interface Option {
   id: string;
   text: string;
+  text_en: string;
+  text_am: string;
   isCorrect: boolean;
 }
 
@@ -150,11 +152,18 @@ export default function PictureMCQScreen({ onBackToInstructions }: PictureMCQScr
     return apiQuestions.map((apiQuestion, index) => ({
       id: apiQuestion.id,
       image: apiQuestion.image_url,
-      options: apiQuestion.choices.map((choice, choiceIndex) => ({
-        id: String.fromCharCode(65 + choiceIndex), // A, B, C, D...
-        text: choice.text_en, // Use English text for now
-        isCorrect: choice.is_correct
-      })),
+      options: apiQuestion.choices.map((choice, choiceIndex) => {
+        // Extract only the English part (before newline) from text_en
+        const englishOnly = choice.text_en.split('\n')[0].trim();
+        
+        return {
+          id: String.fromCharCode(65 + choiceIndex), // A, B, C, D...
+          text: choice.text_en, // Keep for backward compatibility
+          text_en: englishOnly, // English text only
+          text_am: choice.text_am, // Amharic text
+          isCorrect: choice.is_correct
+        };
+      }),
       explanation: `This is a ${apiQuestion.image_alt}.`
     }));
   }, []);
@@ -872,18 +881,28 @@ export default function PictureMCQScreen({ onBackToInstructions }: PictureMCQScr
                         }}
                     >
                       <View style={styles.optionContent}>
-                        <RichText 
-                          text={option.text}
-                          style={[
-                            styles.optionText,
-                            ...(selectedAnswer === option.id && option.isCorrect ? [styles.correctText] : []),
-                            ...(selectedAnswer === option.id && !option.isCorrect ? [styles.incorrectText] : []),
-                          ]}
-                          color={isDarkMode ? colors.text : '#333333'}
-                          fontSize={16}
-                          textAlign="center"
-                          lineHeight={22}
-                        />
+                        <View style={styles.bilingualTextContainer}>
+                          <ThemedText 
+                            style={[
+                              styles.optionTextEnglish,
+                              { color: isDarkMode ? colors.text : '#333333' },
+                              ...(selectedAnswer === option.id && option.isCorrect ? [styles.correctText] : []),
+                              ...(selectedAnswer === option.id && !option.isCorrect ? [styles.incorrectText] : []),
+                            ]}
+                          >
+                            {option.text_en}
+                          </ThemedText>
+                          <ThemedText 
+                            style={[
+                              styles.optionTextAmharic,
+                              { color: isDarkMode ? colors.text + 'CC' : '#666666' },
+                              ...(selectedAnswer === option.id && option.isCorrect ? [styles.correctText] : []),
+                              ...(selectedAnswer === option.id && !option.isCorrect ? [styles.incorrectText] : []),
+                            ]}
+                          >
+                            {option.text_am}
+                          </ThemedText>
+                        </View>
                       </View>
                     </View>
                   ))}
@@ -1089,12 +1108,32 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     padding: 12,
   },
+  bilingualTextContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 4,
+  },
   optionText: {
     fontSize: 18,
     color: '#333333',
     textAlign: 'center',
     flexWrap: 'wrap',
     fontWeight: '600',
+  },
+  optionTextEnglish: {
+    fontSize: 16,
+    color: '#333333',
+    textAlign: 'center',
+    flexWrap: 'wrap',
+    fontWeight: '600',
+  },
+  optionTextAmharic: {
+    fontSize: 14,
+    color: '#666666',
+    textAlign: 'center',
+    flexWrap: 'wrap',
+    fontWeight: '500',
+    marginTop: 2,
   },
   correctText: {
     color: '#2E7D32',
