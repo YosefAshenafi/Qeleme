@@ -1511,12 +1511,15 @@ export default function MCQScreen() {
                       }
                     ]} />
                   </View>
-                  <ThemedText style={[styles.progressText, { 
-                    color: colors.tint, 
-                    fontSize: 12, 
-                    textAlign: 'center',
-                    marginTop: 4,
-                  }]}>
+                  <ThemedText 
+                    numberOfLines={1}
+                    style={[styles.progressText, { 
+                      color: colors.tint, 
+                      fontSize: 12, 
+                      textAlign: 'center',
+                      marginTop: 4,
+                      flexShrink: 0,
+                    }]}>
                     {currentQuestionIndex + 1}/{totalQuestions}
                   </ThemedText>
                 </View>

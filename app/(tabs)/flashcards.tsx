@@ -742,13 +742,16 @@ export default function FlashcardsScreen() {
               progressBarStyle
             ]} />
           </View>
-          <ThemedText style={[styles.progressText, { 
-            color: colors.tint, 
-            fontSize: 12, 
-            fontWeight: '600',
-            textAlign: 'center',
-            marginTop: 2,
-          }]}>
+          <ThemedText 
+            numberOfLines={1}
+            style={[styles.progressText, { 
+              color: colors.tint, 
+              fontSize: 12, 
+              fontWeight: '600',
+              textAlign: 'center',
+              marginTop: 2,
+              flexShrink: 0,
+            }]}>
             Card {currentIndex + 1} of {currentFlashcards.length || 0}
           </ThemedText>
         </View>

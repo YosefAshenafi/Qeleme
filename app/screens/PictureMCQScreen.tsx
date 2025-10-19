@@ -43,7 +43,6 @@ interface Option {
 
 interface Question {
   id: number;
-  question: string;
   image: string;
   image_url?: string; // Added to support images in rich text
   options: Option[];
@@ -144,14 +143,12 @@ export default function PictureMCQScreen({ onBackToInstructions }: PictureMCQScr
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [imageStates, setImageStates] = useState<{ [key: number]: { loading: boolean; error: boolean; loaded: boolean } }>({});
-  const [showAnswerHint, setShowAnswerHint] = useState(false);
   const { t } = useTranslation();
 
   // Transform API questions to the expected format
   const transformQuestions = useCallback((apiQuestions: KGQuestion[]): Question[] => {
     return apiQuestions.map((apiQuestion, index) => ({
       id: apiQuestion.id,
-      question: `What is shown in this image?`,
       image: apiQuestion.image_url,
       options: apiQuestion.choices.map((choice, choiceIndex) => ({
         id: String.fromCharCode(65 + choiceIndex), // A, B, C, D...
@@ -340,7 +337,6 @@ export default function PictureMCQScreen({ onBackToInstructions }: PictureMCQScr
         if (selectedOption) {
           runOnJS(setDroppedOption)(hoveredOption);
           runOnJS(setSelectedAnswer)(hoveredOption);
-          runOnJS(setShowAnswerHint)(false); // Hide hint when answer is selected
           
           if (selectedOption.isCorrect) {
             // Simplified score update
@@ -393,7 +389,6 @@ export default function PictureMCQScreen({ onBackToInstructions }: PictureMCQScr
       setShowIncorrectVideo(false);
       setDroppedOption(null);
       setHoveredOption(null);
-      setShowAnswerHint(false);
     } else {
       console.log('Already at last question');
     }
@@ -409,7 +404,6 @@ export default function PictureMCQScreen({ onBackToInstructions }: PictureMCQScr
       setShowIncorrectVideo(false);
       setDroppedOption(null);
       setHoveredOption(null);
-      setShowAnswerHint(false);
     }
   };
 
@@ -423,7 +417,6 @@ export default function PictureMCQScreen({ onBackToInstructions }: PictureMCQScr
     setShowResult(false);
     setDroppedOption(null);
     setHoveredOption(null);
-    setShowAnswerHint(false);
   };
 
   const handleGoToInstructions = () => {
@@ -453,15 +446,8 @@ export default function PictureMCQScreen({ onBackToInstructions }: PictureMCQScr
     
     // Prevent navigation if no answer is selected
     if (!selectedAnswer) {
-      // Show hint that answer is required
-      setShowAnswerHint(true);
-      // Hide hint after 3 seconds
-      setTimeout(() => setShowAnswerHint(false), 3000);
       return;
     }
-    
-    // Hide hint if answer is selected
-    setShowAnswerHint(false);
     
     const currentScore = Number(score) || 0; // Ensure score is a number
     if (isLastQuestion) {
@@ -775,8 +761,8 @@ export default function PictureMCQScreen({ onBackToInstructions }: PictureMCQScr
                     </TouchableOpacity>
 
                     <View style={styles.questionCounterContainer}>
-                      <ThemedText style={styles.compactProgressText}>
-                        {currentQuestionIndex + 1} / {questions.length}
+                      <ThemedText style={styles.compactProgressText} numberOfLines={1}>
+                        {currentQuestionIndex + 1}/{questions.length}
                       </ThemedText>
                     </View>
 
@@ -811,28 +797,6 @@ export default function PictureMCQScreen({ onBackToInstructions }: PictureMCQScr
 
             {memoizedCurrentQuestion && (
               <>
-                <View style={styles.questionContainer}>
-                  <LinearGradient
-                    colors={[colors.tint + '20', colors.tint + '10']}
-                    style={styles.questionGradient}
-                  >
-                    <RichText 
-                      text={`🤔 ${memoizedCurrentQuestion.question} 🤔`}
-                      style={styles.questionText}
-                      color={colors.text}
-                      fontSize={18}
-                      textAlign="center"
-                      lineHeight={26}
-                      image_url={memoizedCurrentQuestion?.image_url}
-                    />
-                    {showAnswerHint && (
-                      <ThemedText style={[styles.answerRequiredText, { color: colors.tint }]}>
-                        {t('mcq.selectAnswer', 'Please select an answer to continue')}
-                      </ThemedText>
-                    )}
-                  </LinearGradient>
-                </View>
-
                 <GestureDetector gesture={imagePan}>
                   <Animated.View 
                     style={[
@@ -1052,32 +1016,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '700',
     textAlign: 'center',
-  },
-  questionContainer: {
-    marginBottom: 20,
-    paddingHorizontal: 20,
-  },
-  questionGradient: {
-    borderRadius: 16,
-    padding: 20,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
-  },
-  questionText: {
-    fontSize: 22,
-    lineHeight: 30,
-    fontWeight: '600',
-    textAlign: 'center',
-  },
-  answerRequiredText: {
-    fontSize: 14,
-    fontWeight: '500',
-    textAlign: 'center',
-    marginTop: 8,
-    fontStyle: 'italic',
+    flexShrink: 0,
   },
   imageContainer: {
     width: '100%',
