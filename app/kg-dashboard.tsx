@@ -147,7 +147,10 @@ export default function KGDashboard() {
       ]}>
         <View style={styles.headerLeft}>
           <Image
-            source={require('@/assets/images/logo/white-logo.png')}
+            source={isDarkMode 
+              ? require('@/assets/images/logo/white-logo.png')
+              : require('@/assets/images/logo/theme-logo.png')
+            }
             style={styles.logo}
             resizeMode="contain"
           />
