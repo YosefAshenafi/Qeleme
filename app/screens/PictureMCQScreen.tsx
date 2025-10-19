@@ -825,44 +825,6 @@ export default function PictureMCQScreen({ onBackToInstructions }: PictureMCQScr
                   </Animated.View>
                 </GestureDetector>
 
-                                {/* Correct Video Animation */}
-                {showCorrectVideo && (
-                  <View style={styles.inlineVideoContainer}>
-                    <Video
-                      source={require('@/assets/animations/correct.mp4')}
-                      style={styles.inlineVideo}
-                      shouldPlay
-                      isLooping={true}
-                      resizeMode={ResizeMode.CONTAIN}
-                      onPlaybackStatusUpdate={(status) => {
-                        if ('didJustFinish' in status && status.didJustFinish) {
-                          console.log('Correct video finished');
-                          // Don't hide the video - let the auto-advance timer handle it
-                        }
-                      }}
-                    />
-                  </View>
-                )}
-
-                {/* Incorrect Video Animation */}
-                {showIncorrectVideo && (
-                  <View style={styles.inlineVideoContainer}>
-                    <Video
-                      source={require('@/assets/animations/not-correct.mp4')}
-                      style={styles.inlineVideo}
-                      shouldPlay
-                      isLooping={true}
-                      resizeMode={ResizeMode.CONTAIN}
-                      onPlaybackStatusUpdate={(status) => {
-                        if ('didJustFinish' in status && status.didJustFinish) {
-                          console.log('Incorrect video finished');
-                          // Don't hide the video - let the auto-advance timer handle it
-                        }
-                      }}
-                    />
-                  </View>
-                )}
-
                 <View style={styles.optionsContainer}>
                   {memoizedCurrentQuestion.options.map((option) => (
                     <View
@@ -870,7 +832,8 @@ export default function PictureMCQScreen({ onBackToInstructions }: PictureMCQScr
                       style={[
                         styles.optionContainer,
                         hoveredOption === option.id && styles.optionHovered,
-                        droppedOption === option.id && styles.optionDropped,
+                        droppedOption === option.id && option.isCorrect && styles.optionDroppedCorrect,
+                        droppedOption === option.id && !option.isCorrect && styles.optionDroppedIncorrect,
                       ]}
                                               onLayout={(event) => {
                           const { x, y, width, height } = event.nativeEvent.layout;
@@ -907,6 +870,44 @@ export default function PictureMCQScreen({ onBackToInstructions }: PictureMCQScr
                     </View>
                   ))}
                 </View>
+
+                {/* Correct Video Animation */}
+                {showCorrectVideo && (
+                  <View style={styles.inlineVideoContainer}>
+                    <Video
+                      source={require('@/assets/animations/correct.mp4')}
+                      style={styles.inlineVideo}
+                      shouldPlay
+                      isLooping={true}
+                      resizeMode={ResizeMode.CONTAIN}
+                      onPlaybackStatusUpdate={(status) => {
+                        if ('didJustFinish' in status && status.didJustFinish) {
+                          console.log('Correct video finished');
+                          // Don't hide the video - let the auto-advance timer handle it
+                        }
+                      }}
+                    />
+                  </View>
+                )}
+
+                {/* Incorrect Video Animation */}
+                {showIncorrectVideo && (
+                  <View style={styles.inlineVideoContainer}>
+                    <Video
+                      source={require('@/assets/animations/not-correct.mp4')}
+                      style={styles.inlineVideo}
+                      shouldPlay
+                      isLooping={true}
+                      resizeMode={ResizeMode.CONTAIN}
+                      onPlaybackStatusUpdate={(status) => {
+                        if ('didJustFinish' in status && status.didJustFinish) {
+                          console.log('Incorrect video finished');
+                          // Don't hide the video - let the auto-advance timer handle it
+                        }
+                      }}
+                    />
+                  </View>
+                )}
 
                 {showExplanation && memoizedCurrentQuestion?.explanation && memoizedCurrentQuestion.explanation.trim() !== '' && memoizedCurrentQuestion.explanation !== 'No explanation available' && (
                   <View style={[styles.explanationContainer, { backgroundColor: isDarkMode ? '#1C1C1E' : '#F5F5F5' }]}>
@@ -1096,10 +1097,16 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(107, 84, 174, 0.1)',
     transform: [{ scale: 1.05 }],
   },
-  optionDropped: {
+  optionDroppedCorrect: {
     borderColor: '#4CAF50',
     borderWidth: 3,
     backgroundColor: 'rgba(76, 175, 80, 0.1)',
+    transform: [{ scale: 1.05 }],
+  },
+  optionDroppedIncorrect: {
+    borderColor: '#F44336',
+    borderWidth: 3,
+    backgroundColor: 'rgba(244, 67, 54, 0.1)',
     transform: [{ scale: 1.05 }],
   },
   optionContent: {
@@ -1140,10 +1147,8 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   incorrectText: {
-    fontSize: 24,
+    color: '#D32F2F',
     fontWeight: 'bold',
-    color: '#FF9800',
-    marginTop: 10,
   },
   explanationContainer: {
     backgroundColor: '#F5F5F5',
@@ -1505,16 +1510,16 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginLeft: 10,
   },
-      inlineVideoContainer: {
-      alignItems: 'center',
-      justifyContent: 'center',
-      marginVertical: -300,
-      paddingHorizontal: 20,
-      minHeight: 350,
-      zIndex: 1000,
-    },
-      inlineVideo: {
-      width: 300,
-      height: 300,
-    },
+  inlineVideoContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginVertical: 20,
+    paddingHorizontal: 20,
+    minHeight: 150,
+    zIndex: 10,
+  },
+  inlineVideo: {
+    width: 200,
+    height: 200,
+  },
 }); 
