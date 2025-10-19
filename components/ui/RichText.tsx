@@ -94,58 +94,80 @@ const renderTextWithFormatting = (text: string, color: string, fontSize: number,
         if (tagMatch) {
           const [, tag, content] = tagMatch;
           
-          // Recursively parse nested content
-          const nestedContent = parseHtml(content);
+          // Extract leading and trailing spaces
+          const leadingSpaces = content.match(/^\s*/)?.[0] || '';
+          const trailingSpaces = content.match(/\s*$/)?.[0] || '';
+          const trimmedContent = content.trim();
           
+          // Recursively parse nested content
+          const nestedContent = parseHtml(trimmedContent);
+          
+          let styledElement;
           switch (tag.toLowerCase()) {
             case 'strong':
             case 'b':
-              return (
+              styledElement = (
                 <Text key={uniqueKey} style={{ fontWeight: 'bold', color, fontSize, lineHeight, textAlign, fontFamily: 'System' }}>
                   {nestedContent}
                 </Text>
               );
+              break;
             case 'em':
             case 'i':
-              return (
+              styledElement = (
                 <Text key={uniqueKey} style={{ fontStyle: 'italic', color, fontSize, lineHeight, textAlign, fontFamily: 'System' }}>
                   {nestedContent}
                 </Text>
               );
+              break;
             case 'u':
-              return (
+              styledElement = (
                 <Text key={uniqueKey} style={{ textDecorationLine: 'underline', color, fontSize, lineHeight, textAlign, fontFamily: 'System' }}>
                   {nestedContent}
                 </Text>
               );
+              break;
             case 's':
             case 'strike':
-              return (
+              styledElement = (
                 <Text key={uniqueKey} style={{ textDecorationLine: 'line-through', color, fontSize, lineHeight, textAlign, fontFamily: 'System' }}>
                   {nestedContent}
                 </Text>
               );
+              break;
             default:
-              return (
+              styledElement = (
                 <Text key={uniqueKey} style={{ color, fontSize, lineHeight, textAlign, fontFamily: 'System' }}>
                   {nestedContent}
                 </Text>
               );
           }
+          
+          // Return styled element with spaces outside
+          return (
+            <React.Fragment key={uniqueKey}>
+              {leadingSpaces && <Text>{leadingSpaces}</Text>}
+              {styledElement}
+              {trailingSpaces && <Text>{trailingSpaces}</Text>}
+            </React.Fragment>
+          );
         }
       }
       
-      // Regular text - clean it up before processing
+      // Regular text - clean it up before processing but preserve spacing
       const cleanPart = part
         .replace(/\r\n/g, ' ')
         .replace(/\n/g, ' ')
         .replace(/\r/g, ' ')
-        .replace(/\s+/g, ' ')
-        .trim();
+        .replace(/\s+/g, ' '); // Don't trim - preserve spaces around words
       
-      return (
-        <LatexOrText key={uniqueKey} content={cleanPart} />
-      );
+      // Only return if there's actual content
+      if (cleanPart) {
+        return (
+          <LatexOrText key={uniqueKey} content={cleanPart} />
+        );
+      }
+      return null;
     });
   };
   
