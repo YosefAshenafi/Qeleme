@@ -305,7 +305,7 @@ export default {
       'Foods': 'ምግቦች',
       // UI text
       title: 'የመማሪያ ጉዞዎን ይምረጡ!',
-      subtitle: 'ርዕስ ይምረጡ እና የእርስዎን አስደናቂ ጉዞ ይጀምሩ!'
+      subtitle: 'ርዕስ መርጠው መማር ይጀምሩ!'
     },
     instructions: {
       subtitle: 'አዲስ ነገር ለመማር ዝግጁ ኖት?',

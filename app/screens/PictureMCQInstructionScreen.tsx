@@ -29,7 +29,7 @@ export default function PictureMCQInstructionScreen({ onStart }: PictureMCQInstr
           style={styles.headerGradient}
         >
           <ThemedText style={styles.subtitleText}>
-            {t('mcq.pictureQuiz.subtitle')}
+            
           </ThemedText>
         </LinearGradient>
 

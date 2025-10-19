@@ -731,7 +731,7 @@ export default {
       'Foods': 'Foods',
       // UI text
       title: 'Choose Your Learning Adventure!',
-      subtitle: 'Pick a topic and start your amazing journey!'
+      subtitle: 'Choose a topic and Start Learning!'
     },
     instructions: {
       subtitle: "Let's learn something new!",

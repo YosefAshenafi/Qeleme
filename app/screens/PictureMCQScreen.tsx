@@ -726,7 +726,6 @@ export default function PictureMCQScreen({ onBackToInstructions }: PictureMCQScr
               🎨 {t('mcq.pictureQuiz.title', 'Picture Quiz')} 🎨
             </ThemedText>
             <ThemedText style={[styles.headerSubtitle, { color: colors.text + '80' }]}>
-              {t('mcq.pictureQuiz.subtitle', 'Let\'s learn with pictures!')} 🖼️
             </ThemedText>
           </View>
           <View style={styles.headerRight}>
