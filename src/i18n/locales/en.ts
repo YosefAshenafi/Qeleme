@@ -299,7 +299,7 @@ export default {
     contactUs: 'Contact Us',
     version: 'App Version',
     dangerZone: 'Danger Zone',
-    importantNotice: '',
+    importantNotice: 'Important Notice',
     deleteAccount: 'Delete Account',
     deleteAccountWarning: 'This action cannot be undone. This will permanently delete your account and remove all your data from our servers.',
     deleteAccountConfirmation: 'Are you sure you want to delete your account? This action cannot be undone.',
