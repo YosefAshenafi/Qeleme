@@ -361,10 +361,10 @@ const styles = StyleSheet.create({
     fontFamily: 'System', // Ensure consistent system font
   },
   math: {
-    fontFamily: Platform.OS === 'android' ? 'monospace' : 'monospace',
+    fontFamily: 'System',
     fontWeight: '500',
     color: '#2c3e50',
-    fontSize: Platform.OS === 'android' ? 20 : 22, // Increased font size for better readability of fractions
+    fontSize: Platform.OS === 'android' ? 18 : 18,
   },
   inlineMath: {
     marginHorizontal: 2,

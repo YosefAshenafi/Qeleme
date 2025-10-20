@@ -258,12 +258,12 @@ const RichText: React.FC<RichTextProps> = ({
       marginVertical: 4,
     },
     code: {
-      backgroundColor: 'rgba(0,0,0,0.1)',
-      paddingHorizontal: 4,
-      paddingVertical: 2,
-      borderRadius: 3,
-      fontFamily: 'monospace',
-      fontSize: fontSize * 0.9,
+      backgroundColor: 'transparent',
+      paddingHorizontal: 0,
+      paddingVertical: 0,
+      borderRadius: 0,
+      fontFamily: 'System',
+      fontSize: fontSize,
     },
     pre: {
       backgroundColor: 'rgba(0,0,0,0.1)',
@@ -317,8 +317,8 @@ const RichText: React.FC<RichTextProps> = ({
         return content.replace(/<li\b[^>]*>(.*?)<\/li>/gi, () => `${counter++}. $1\n`);
       })
       .replace(/<blockquote\b[^>]*>(.*?)<\/blockquote>/gi, '> $1\n\n')
-      .replace(/<code\b[^>]*>(.*?)<\/code>/gi, '`$1`')
-      .replace(/<pre\b[^>]*>(.*?)<\/pre>/gi, '```\n$1\n```\n\n')
+      .replace(/<code\b[^>]*>(.*?)<\/code>/gi, '$1')
+      .replace(/<pre\b[^>]*>(.*?)<\/pre>/gi, '$1\n\n')
       .replace(/<a\b[^>]*href="([^"]*)"[^>]*>(.*?)<\/a>/gi, '[$2]($1)')
       .replace(/<img\b[^>]*src="([^"]*)"[^>]*alt="([^"]*)"[^>]*>/gi, '![$2]($1)')
       .replace(/<img\b[^>]*src="([^"]*)"[^>]*>/gi, '![]($1)')
