@@ -36,7 +36,7 @@ export default {
         title: 'የብሔራዊ ፈተናዎች',
         subtitle: 'በቀድሞ ፈተናዎች ይለማመዱ',
         yearExam: 'የ{{year}} ብሔራዊ ፈተና',
-        grade: 'የ{{grade}} ክፍል'
+        grade: '{{grade}}ተኛ ክፍል'
       }
     },
     reportCards: {
