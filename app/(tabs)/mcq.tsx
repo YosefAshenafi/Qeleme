@@ -879,12 +879,12 @@ export default function MCQScreen() {
                     },
                   ]}
                 >
-                  <IconSymbol 
-                    name="trophy.fill" 
-                    size={36} 
-                    color={index % 4 === 0 ? '#FFD700' : 
-                           index % 4 === 1 ? '#FFA500' : 
-                           index % 4 === 2 ? '#FF69B4' : '#FF1493'} 
+                  <IconSymbol
+                    name="trophy.fill"
+                    size={24}
+                    color={index % 4 === 0 ? '#FFD700' :
+                           index % 4 === 1 ? '#FFA500' :
+                           index % 4 === 2 ? '#FF69B4' : '#FF1493'}
                   />
                 </Animated.View>
               ))}
@@ -1696,7 +1696,7 @@ export default function MCQScreen() {
                 
                 <View style={styles.trophyContainer}>
                   <Animated.View style={{ transform: [{ scale: scaleAnim }, { rotate: spin }] }}>
-                    <IconSymbol name="trophy.fill" size={80} color={percentage >= 90 ? '#FFD700' : colors.tint} />
+                    <IconSymbol name="trophy.fill" size={50} color={percentage >= 90 ? '#FFD700' : colors.tint} />
                   </Animated.View>
                 </View>
                 
@@ -1784,12 +1784,12 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     flexGrow: 1,
-    paddingBottom: 60, // Increased padding for small screens to ensure Zemen Bank logo is fully visible
+    paddingBottom: 20,
   },
   title: {
-    fontSize: 24,
+    fontSize: 20,
     fontWeight: 'bold',
-    marginBottom: 20,
+    marginBottom: 12,
     textAlign: 'center',
   },
   mainContainer: {
@@ -2102,63 +2102,63 @@ const styles = StyleSheet.create({
   resultCard: {
     width: '100%',
     alignSelf: 'center',
-    borderRadius: 24,
-    padding: 20,
+    borderRadius: 20,
+    padding: 12,
     elevation: 8,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.2,
     shadowRadius: 12,
     overflow: 'hidden',
-    marginTop: 16,
+    marginTop: 8,
   },
   resultContent: {
-    gap: 16,
+    gap: 8,
   },
   trophyContainer: {
     alignItems: 'center',
-    paddingVertical: 16,
+    paddingVertical: 8,
     backgroundColor: 'transparent',
   },
   scoreText: {
-    paddingVertical: 35,
-    fontSize: 48,
+    paddingVertical: 12,
+    fontSize: 28,
     fontWeight: '700',
     textAlign: 'center',
     backgroundColor: 'transparent',
   },
   percentageContainer: {
     alignSelf: 'center',
-    paddingHorizontal: 20,
-    paddingVertical: 8,
-    borderRadius: 24,
+    paddingHorizontal: 16,
+    paddingVertical: 6,
+    borderRadius: 20,
     borderWidth: 2,
   },
   percentageText: {
-    fontSize: 22,
+    fontSize: 18,
     fontWeight: '600',
     textAlign: 'center',
   },
   messageContainer: {
-    padding: 16,
-    borderRadius: 16,
+    padding: 12,
+    borderRadius: 12,
     borderWidth: 2,
   },
   messageText: {
-    fontSize: 18,
+    fontSize: 15,
     textAlign: 'center',
-    lineHeight: 28,
+    lineHeight: 22,
     fontWeight: '600',
   },
   timerContainer: {
     alignSelf: 'center',
-    paddingHorizontal: 20,
-    paddingVertical: 8,
-    borderRadius: 20,
-    marginTop: -8,
+    paddingHorizontal: 16,
+    paddingVertical: 6,
+    borderRadius: 16,
+    marginTop: -4,
   },
   timerText: {
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: '600',
   },
   fireworkContainer: {
@@ -2205,16 +2205,16 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    padding: 16,
+    padding: 12,
     borderRadius: 12,
   },
   retryButtonText: {
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: '700',
   },
   button: {
     width: '100%',
-    padding: 15,
+    padding: 12,
     borderRadius: 8,
     alignItems: 'center',
     borderWidth: 1,
@@ -2226,7 +2226,7 @@ const styles = StyleSheet.create({
     borderWidth: 2,
   },
   homeButtonText: {
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: '600',
   },
   examTypeContainer: {
@@ -2269,7 +2269,7 @@ const styles = StyleSheet.create({
     lineHeight: 20,
   },
   actionButtons: {
-    marginTop: 20,
+    marginTop: 12,
     paddingHorizontal: 16,
   },
   backButton: {

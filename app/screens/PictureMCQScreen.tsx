@@ -633,10 +633,10 @@ export default function PictureMCQScreen({ onBackToInstructions }: PictureMCQScr
                 <View style={styles.resultContent}>
                   {/* Trophy Icon */}
                   <View style={styles.trophyContainer}>
-                    <IconSymbol 
-                      name="trophy.fill" 
-                      size={80} 
-                      color="#FFD700" 
+                    <IconSymbol
+                      name="trophy.fill"
+                      size={50}
+                      color="#FFD700"
                     />
                   </View>
 
@@ -655,7 +655,7 @@ export default function PictureMCQScreen({ onBackToInstructions }: PictureMCQScr
                       {percentage}%
                     </ThemedText>
                   </View>
-                  
+
                   {/* Encouraging Message */}
                   <View style={styles.messageContainer}>
                     <ThemedText style={styles.messageText}>
@@ -666,10 +666,10 @@ export default function PictureMCQScreen({ onBackToInstructions }: PictureMCQScr
                   {/* Stars Animation */}
                   <View style={styles.starsContainer}>
                     {[...Array(5)].map((_, index) => (
-                      <IconSymbol 
+                      <IconSymbol
                         key={index}
-                        name="trophy.fill" 
-                        size={30} 
+                        name="trophy.fill"
+                        size={20}
                         color={index < Math.ceil(percentage/20) ? "#FFD700" : "#E0E0E0"}
                         style={styles.star}
                       />
@@ -1205,72 +1205,72 @@ const styles = StyleSheet.create({
     width: '100%',
   },
   resultContainer: {
-    padding: 20,
+    padding: 12,
   },
   resultContent: {
     alignItems: 'center',
     backgroundColor: 'rgba(255, 255, 255, 0.15)',
-    borderRadius: 30,
-    padding: 20,
-    marginTop: 20,
+    borderRadius: 20,
+    padding: 12,
+    marginTop: 10,
   },
   trophyContainer: {
-    width: 120,
-    height: 120,
+    width: 70,
+    height: 70,
     backgroundColor: 'rgba(255, 255, 255, 0.2)',
-    borderRadius: 60,
+    borderRadius: 35,
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 20,
-    borderWidth: 3,
+    marginBottom: 10,
+    borderWidth: 2,
     borderColor: '#FFD700',
   },
   scoreContainer: {
     alignItems: 'center',
-    marginBottom: 20,
+    marginBottom: 10,
   },
   scoreCircle: {
-    width: 120,
-    height: 120,
-    borderRadius: 60,
+    width: 80,
+    height: 80,
+    borderRadius: 40,
     backgroundColor: 'rgba(255, 255, 255, 0.2)',
     justifyContent: 'center',
     alignItems: 'center',
-    borderWidth: 3,
+    borderWidth: 2,
     borderColor: '#FFFFFF',
   },
   scoreText: {
-    paddingTop: 15,
-    fontSize: 36,
+    paddingTop: 8,
+    fontSize: 24,
     fontWeight: 'bold',
     color: '#FFFFFF',
   },
   percentageContainer: {
     backgroundColor: 'rgba(255, 255, 255, 0.2)',
-    paddingHorizontal: 30,
-    paddingVertical: 15,
-    borderRadius: 25,
-    marginBottom: 20,
+    paddingHorizontal: 20,
+    paddingVertical: 8,
+    borderRadius: 20,
+    marginBottom: 10,
     borderWidth: 2,
     borderColor: '#FFFFFF',
   },
   percentageText: {
-    paddingTop: 10,
-    fontSize: 32,
+    paddingTop: 6,
+    fontSize: 22,
     fontWeight: 'bold',
     color: '#FFFFFF',
   },
   messageContainer: {
     backgroundColor: 'rgba(255, 255, 255, 0.2)',
-    padding: 20,
-    borderRadius: 20,
-    marginBottom: 20,
+    padding: 12,
+    borderRadius: 15,
+    marginBottom: 10,
     borderWidth: 2,
     borderColor: '#FFFFFF',
     width: '100%',
   },
   messageText: {
-    fontSize: 24,
+    fontSize: 16,
     textAlign: 'center',
     color: '#FFFFFF',
     fontWeight: 'bold',
@@ -1278,24 +1278,24 @@ const styles = StyleSheet.create({
   starsContainer: {
     flexDirection: 'row',
     justifyContent: 'center',
-    gap: 10,
-    marginTop: 10,
+    gap: 6,
+    marginTop: 6,
   },
   star: {
-    marginHorizontal: 5,
+    marginHorizontal: 3,
   },
   actionButtons: {
     paddingHorizontal: 20,
-    paddingVertical: 30,
-    gap: 15,
+    paddingVertical: 12,
+    gap: 10,
   },
   button: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    padding: 18,
-    borderRadius: 25,
-    gap: 12,
+    padding: 12,
+    borderRadius: 20,
+    gap: 8,
   },
   retryButton: {
     backgroundColor: '#4CAF50',
@@ -1314,12 +1314,12 @@ const styles = StyleSheet.create({
     elevation: 5,
   },
   retryButtonText: {
-    fontSize: 20,
+    fontSize: 16,
     fontWeight: 'bold',
     color: '#FFFFFF',
   },
   buttonText: {
-    fontSize: 20,
+    fontSize: 16,
     fontWeight: 'bold',
     color: '#FFFFFF',
   },
