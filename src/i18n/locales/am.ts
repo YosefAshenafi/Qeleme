@@ -423,6 +423,8 @@ export default {
   mcq: {
     question: 'ጥያቄ',
     title: 'ምርጫ',
+    'selectYear': 'አመት ይምረጡ',
+    'year': 'አመት',
     selectSubject: 'የትምህርት ዓይነት ይምረጡ',
     subject: 'የትምህርት ዓይነት',
     chapter: 'ምዕራፍ',
@@ -431,10 +433,10 @@ export default {
     selectSubjectPlaceholder: 'የትምህርት ዓይነት ይምረጡ',
     selectChapterPlaceholder: 'ምዕራፍ ይምረጡ',
     selectExamType: 'የፈተና ዓይነት ይምረጡ',
-    nationalExam: 'የብሄራዊ ፈተና ጥያቄዎች',
-    mcqExam: 'የምርጫ ፈተና ጥያቄዎች',
-    nationalExamDescription: 'የቀድሞ ብሔራዊ ፈተናዎች እውነተኛ ጥያቄዎችን ለማስተላለፍ ይረዳዎታል። ለፈተና አዘጋጅት እና ለራስ ግምገማ ተገቢ ነው።',
-    mcqExamDescription: 'ለእያንዳንዱ ምዕራፍ በርካታ የተመረጡ ብዙ ጥያቄዎችን ይሞክሩ። ለዕለታዊ ልምምድ እና ለድጋሚ እይታ ተገቢ ነው።',
+    nationalExam: 'የብሔራዊ ፈተና ጥያቄዎች',
+    mcqExam: 'የቀለም የምርጫ ጥያቄዎች',
+    nationalExamDescription: 'ያለፉትን ዓመታት የብሔራዊ ፈተና ጥያቄዎችን ይሞክሩ',
+    mcqExamDescription: 'በየምዕራፉ የተዘጋጁ የምርጫ ጥያቄዎች ይሞክሩ!',
     startQuiz: 'ፈተና ይጀምሩ',
     previous: 'ቀዳሚ',
     next: 'ቀጣይ',
@@ -483,8 +485,8 @@ export default {
       },
       tryAgain: 'ሌሎች ቀሪ ጥያቄዎችን ይሞክሩ',
       chooseAnotherSubject: 'ሌላ የትምህርት ዓይነት ይምረጡ',
-      tryOtherNationalExam: 'ሌሎች ቀሪ የብሄራዊ ፈተናዎችን ይሞክሩ',
-      chooseAnotherNationalExamYear: 'ሌላ የብሄራዊ ፈተና ዓመት ይምረጡ'
+      tryOtherNationalExam: 'ሌሎች ቀሪ የብሔራዊ ፈተናዎችን ይሞክሩ',
+      chooseAnotherNationalExamYear: 'ሌላ የብሔራዊ ፈተና ዓመት ይምረጡ'
     },
     selectAnswer: 'እባክዎ ከመቀጠልዎ በፊት መልስ ይምረጡ',
     noSubjectsFound: {
