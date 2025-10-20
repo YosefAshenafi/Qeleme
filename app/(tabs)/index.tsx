@@ -88,7 +88,6 @@ export default function HomeScreen() {
   const [activeIndex, setActiveIndex] = useState(0);
   const [quoteIndex, setQuoteIndex] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
-  const [recentActivities, setRecentActivities] = useState<RecentActivity[]>([]);
   const [refreshing, setRefreshing] = useState(false);
   const scrollViewRef = useRef<ScrollView>(null);
   const fadeAnim = useRef(new Animated.Value(0)).current;
@@ -236,34 +235,7 @@ export default function HomeScreen() {
     }
   };
 
-  const loadRecentActivities = async () => {
-    try {
-      const activitiesJson = await AsyncStorage.getItem('recentActivities');
-      if (!activitiesJson) {
-        setRecentActivities([]);
-        return;
-      }
-
-      const activities = JSON.parse(activitiesJson);
-      
-      // Filter activities for the current user
-      const userActivities = activities.filter((activity: any) => activity.username === user?.username);
-      
-      // Sort by timestamp and take top 5
-      const sortedActivities = userActivities
-        .sort((a: RecentActivity, b: RecentActivity) => b.timestamp - a.timestamp)
-        .slice(0, 5);
-      
-      setRecentActivities(sortedActivities);
-    } catch (error) {
-      // Silently handle recent activities loading error
-      setRecentActivities([]);
-    }
-  };
-
   useEffect(() => {
-    loadRecentActivities();
-    
     // Fetch real books from API for non-KG students
     if (!isKGStudent) {
       fetchBooksFromAPI('mcq');
@@ -279,7 +251,6 @@ export default function HomeScreen() {
   useFocusEffect(
     React.useCallback(() => {
       const loadData = async () => {
-        await loadRecentActivities();
         if (!isKGStudent) {
           await loadReportData();
           await fetchBooksFromAPI('mcq');
@@ -323,7 +294,6 @@ export default function HomeScreen() {
       }
 
       await Promise.all([
-        loadRecentActivities(), 
         !isKGStudent ? loadReportData() : Promise.resolve(),
         !isKGStudent ? fetchBooksFromAPI('mcq') : Promise.resolve(),
         !isKGStudent ? fetchBooksFromAPI('flashcard') : Promise.resolve(),
@@ -891,8 +861,8 @@ export default function HomeScreen() {
               {t('home.quickActions.title')}
             </ThemedText>
             <View style={[styles.gridContainer, { backgroundColor: colors.background }]}>
-              <TouchableOpacity 
-                style={[styles.gridItem, { backgroundColor: colors.background }]} 
+              <TouchableOpacity
+                style={[styles.gridItem, { backgroundColor: colors.background }]}
                 onPress={() => router.push('/(tabs)/homework')}
               >
                 <LinearGradient
@@ -915,8 +885,8 @@ export default function HomeScreen() {
                 </LinearGradient>
               </TouchableOpacity>
 
-              <TouchableOpacity 
-                style={[styles.gridItem, { backgroundColor: colors.background }]} 
+              <TouchableOpacity
+                style={[styles.gridItem, { backgroundColor: colors.background }]}
                 onPress={() => router.push('/(tabs)/reports')}
               >
                 <LinearGradient
@@ -939,52 +909,6 @@ export default function HomeScreen() {
                 </LinearGradient>
               </TouchableOpacity>
             </View>
-          </ThemedView>
-
-          {/* Recent Activity Section */}
-          <ThemedView style={[styles.recentActivitySection, { backgroundColor: colors.background }]}>
-            <ThemedText style={[styles.sectionTitle, { color: colors.text }]}>
-              {t('home.recentActivity.title')}
-            </ThemedText>
-            {recentActivities.length > 0 ? (
-              recentActivities.map((activity, index) => (
-                <ThemedView 
-                  key={index} 
-                  style={[styles.activityCard, { backgroundColor: colors.card }]}
-                >
-                  <View style={styles.activityHeader}>
-                    <IconSymbol 
-                      name={
-                        activity.type === 'mcq' ? 'questionmark.circle' : 
-                        activity.type === 'flashcard' ? 'rectangle.stack' :
-                        activity.type === 'homework' ? 'message' :
-                        'clock.fill'
-                      } 
-                      size={24} 
-                      color={colors.tint} 
-                    />
-                    <ThemedText style={[styles.activityType, { color: colors.text }]}>
-                      {t(`home.activityTypes.${activity.type}`)}
-                    </ThemedText>
-                  </View>
-                  <ThemedText style={[styles.activityDetails, { color: colors.text }]}>
-                    {activity.type === 'mcq' && t('home.activityDetails.questions.completed', { count: parseInt(activity.details.match(/\d+/)?.[0] || '0', 10) })}
-                    {activity.type === 'flashcard' && t('home.activityDetails.flashcards.reviewed', { count: parseInt(activity.details.match(/\d+/)?.[0] || '0', 10) })}
-                    {activity.type === 'homework' && t(`home.activityDetails.homework.${activity.status === 'Completed' ? 'submitted' : 'working'}`)}
-                    {activity.type === 'study' && t('home.activityDetails.study.session', { duration: activity.duration })}
-                  </ThemedText>
-                  <ThemedText style={[styles.activityMeta, { color: colors.text + '80' }]}>
-                    {t('home.activityDetails.grade')}: {activity.grade} • {t('home.activityDetails.subject')}: {activity.subject} • {t('home.activityDetails.chapter')}: {activity.chapter}
-                    {activity.status && ` • ${t(`home.activityDetails.${activity.status.toLowerCase()}`)}`}
-                    {activity.duration && ` • ${t('home.activityDetails.duration', { hours: activity.duration.replace('h', '') })}`}
-                  </ThemedText>
-                </ThemedView>
-              ))
-            ) : (
-              <ThemedText style={[styles.noActivity, { color: colors.text + '80' }]}>
-                {t('home.noActivity')}
-              </ThemedText>
-            )}
           </ThemedView>
 
         </ThemedView>
@@ -1049,7 +973,7 @@ const styles = StyleSheet.create({
   },
   quickActionsSection: {
     marginTop: 8,
-    marginBottom: 24,
+    marginBottom: 50,
   },
   gridContainer: {
     flexDirection: 'row',
@@ -1260,44 +1184,6 @@ const styles = StyleSheet.create({
   paginationDotActive: {
     backgroundColor: '#fff',
     width: 18,
-  },
-  recentActivitySection: {
-    padding: 20,
-    marginTop: 20,
-    marginBottom: 50,
-  },
-  activityCard: {
-    padding: 20,
-    borderRadius: 12,
-    marginBottom: 12,
-    marginHorizontal: -20,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
-  },
-  activityHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 12,
-  },
-  activityType: {
-    fontSize: 16,
-    fontWeight: '600',
-    marginLeft: 12,
-  },
-  activityDetails: {
-    fontSize: 15,
-    marginBottom: 6,
-  },
-  activityMeta: {
-    fontSize: 13,
-  },
-  noActivity: {
-    textAlign: 'center',
-    fontSize: 14,
-    marginTop: 20,
   },
   bookCarouselSection: {
     marginTop: 8,
