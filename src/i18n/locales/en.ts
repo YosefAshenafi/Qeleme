@@ -501,6 +501,7 @@ export default {
         canDoBetter: 'Keep learning! You can do better!'
       },
       tryAgain: 'Try Other Remaining Questions',
+      checkOtherQuestions: 'Check Other Questions',
       chooseAnotherSubject: 'Choose Another Subject',
       tryOtherNationalExam: 'Try Other Remaining National Exams',
       chooseAnotherNationalExamYear: 'Choose Another National Exam Year'

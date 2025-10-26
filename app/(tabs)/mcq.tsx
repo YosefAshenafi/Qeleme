@@ -423,6 +423,7 @@ export default function MCQScreen() {
     }
   }, [showResult]);
 
+
   // Debug logging for current question - removed for performance
 
   const spin = rotateAnim.interpolate({
@@ -535,6 +536,55 @@ export default function MCQScreen() {
     } catch (error) {
       console.error('Failed to track MCQ activity:', error);
       // Silently fail - activity tracking is not critical
+    }
+  };
+
+  const handleCheckOtherQuestions = () => {
+    // Clear existing timer first
+    if (timerRef.current) {
+      clearInterval(timerRef.current);
+      timerRef.current = null;
+    }
+    
+    // Reset test state
+    setCurrentQuestionIndex(0);
+    setSelectedAnswer(null);
+    setShowExplanation(false);
+    setShowAnswerMessage(false);
+    setScore(0);
+    setShowResult(false);
+    setShowTest(false);
+    setAnsweredQuestions({});
+    setTime(0);
+    setIsTimerRunning(false);
+    
+    // Find the next chapter in the same subject
+    if (selectedSubjectData && selectedChapterData) {
+      const sortedChapters = [...selectedSubjectData.chapters].sort((a, b) => {
+        // Extract numbers from chapter names for proper sorting
+        const getChapterNumber = (name: string) => {
+          const match = name.match(/(\d+)/);
+          return match ? parseInt(match[1], 10) : 0;
+        };
+        return getChapterNumber(a.name) - getChapterNumber(b.name);
+      });
+      
+      const currentChapterIndex = sortedChapters.findIndex((chapter: Chapter) => chapter.id === selectedChapter);
+      const nextChapterIndex = currentChapterIndex + 1;
+      
+      if (nextChapterIndex < sortedChapters.length) {
+        const nextChapter = sortedChapters[nextChapterIndex];
+        setSelectedChapter(nextChapter.id);
+        setSelectedChapterName(nextChapter.name);
+      } else {
+        // No more chapters, reset to first chapter
+        const firstChapter = sortedChapters[0];
+        setSelectedChapter(firstChapter.id);
+        setSelectedChapterName(firstChapter.name);
+      }
+      
+      // Show the chapter chooser modal with the new selection
+      setShowChapterChooser(true);
     }
   };
 
@@ -926,12 +976,12 @@ export default function MCQScreen() {
           <ThemedView style={styles.actionButtons}>
             <TouchableOpacity
               style={[styles.button, styles.retryButton, { backgroundColor: colors.tint, marginBottom: 12 }]}
-              onPress={handleRetry}
+              onPress={selectedExamType === 'national' ? handleRetry : handleCheckOtherQuestions}
             >
               <ThemedText style={[styles.retryButtonText, { color: '#fff' }]}>
-                {selectedExamType === 'national' ? t('mcq.results.tryOtherNationalExam') : t('mcq.results.tryAgain')}
+                {selectedExamType === 'national' ? t('mcq.results.tryOtherNationalExam') : t('mcq.results.checkOtherQuestions')}
               </ThemedText>
-              <Ionicons name="refresh" size={24} color="#fff" />
+              <Ionicons name={selectedExamType === 'national' ? "refresh" : "arrow-forward"} size={24} color="#fff" />
             </TouchableOpacity>
             
             <TouchableOpacity
@@ -1025,55 +1075,105 @@ export default function MCQScreen() {
             {/* Chapter Selection */}
             <ThemedView style={[styles.formGroup, { backgroundColor: colors.background }]}>
               <ThemedText style={[styles.formLabel, { color: colors.tint }]}>
-                Select Chapter
+                {t('mcq.selectChapter')}
               </ThemedText>
-              <ScrollView style={styles.chapterList} showsVerticalScrollIndicator={false}>
-                {selectedSubjectData.chapters?.sort((a, b) => {
-                  // Extract numbers from chapter names for proper sorting
-                  const getChapterNumber = (name: string) => {
-                    const match = name.match(/(\d+)/);
-                    return match ? parseInt(match[1], 10) : 0;
-                  };
-                  return getChapterNumber(a.name) - getChapterNumber(b.name);
-                }).map((chapter: Chapter) => (
-                  <TouchableOpacity
-                    key={chapter.id}
-                    style={[styles.chapterItem, { backgroundColor: colors.cardAlt, borderColor: colors.border }]}
-                    onPress={() => {
-                      setSelectedChapter(chapter.id);
-                      setSelectedChapterName(chapter.name);
-                      setShowChapterChooser(false);
-                      // Start the test after a short delay to ensure state is updated
-                      setTimeout(() => {
-                        handleStartTest();
-                      }, 100);
-                    }}
-                  >
-                    <View style={styles.chapterItemContent}>
-                      <View style={[styles.chapterIcon, { backgroundColor: colors.tint }]}>
-                        <IconSymbol name="doc.text.fill" size={20} color="#fff" />
-                      </View>
-                      <View style={styles.chapterTextContainer}>
-                        <ThemedText style={[styles.chapterTitle, { color: colors.text }]}>
+              <TouchableOpacity
+                style={[styles.formInput, { backgroundColor: colors.cardAlt, borderColor: colors.border }]}
+                onPress={() => setShowChapterDropdown(true)}
+              >
+                <ThemedText 
+                  style={[
+                    styles.formInputText, 
+                    { color: colors.text }
+                  ]}
+                >
+                  {selectedChapter ? selectedSubjectData?.chapters?.find((c: Chapter) => c.id === selectedChapter)?.name : t('mcq.selectChapter')}
+                </ThemedText>
+                <IconSymbol 
+                  name="chevron.right" 
+                  size={20} 
+                  color={colors.tint} 
+                />
+              </TouchableOpacity>
+            </ThemedView>
+
+            {/* Start Test Button */}
+            <TouchableOpacity
+              style={[
+                styles.startButton,
+                { backgroundColor: colors.tint, marginTop: 20 }
+              ]}
+              onPress={() => {
+                setShowChapterChooser(false);
+                // Start the test after a short delay to ensure state is updated
+                setTimeout(() => {
+                  handleStartTest();
+                }, 100);
+              }}
+            >
+              <ThemedText style={[styles.startButtonText, { color: '#fff' }]}>
+                {t('mcq.startQuiz')}
+              </ThemedText>
+            </TouchableOpacity>
+          </ThemedView>
+
+          {/* Chapter Dropdown Modal */}
+          {showChapterDropdown && (
+            <Modal
+              visible={showChapterDropdown}
+              transparent={true}
+              animationType="fade"
+              onRequestClose={() => setShowChapterDropdown(false)}
+            >
+              <TouchableOpacity
+                style={[styles.modalOverlay, { backgroundColor: 'rgba(0, 0, 0, 0.5)' }]}
+                activeOpacity={1}
+                onPress={() => setShowChapterDropdown(false)}
+              >
+                <ThemedView style={[styles.modalContent, { backgroundColor: colors.background }]}>
+                  <ScrollView showsVerticalScrollIndicator={false}>
+                    {selectedSubjectData?.chapters?.sort((a, b) => {
+                      // Extract numbers from chapter names for proper sorting
+                      const getChapterNumber = (name: string) => {
+                        const match = name.match(/(\d+)/);
+                        return match ? parseInt(match[1], 10) : 0;
+                      };
+                      return getChapterNumber(a.name) - getChapterNumber(b.name);
+                    }).map((chapter: Chapter) => (
+                      <TouchableOpacity
+                        key={chapter.id}
+                        style={[
+                          styles.modalItem, 
+                          { 
+                            backgroundColor: chapter.id === selectedChapter ? colors.cardAlt : colors.background, 
+                            borderBottomColor: colors.border 
+                          }
+                        ]}
+                        onPress={() => {
+                          setSelectedChapter(chapter.id);
+                          setSelectedChapterName(chapter.name);
+                          setShowChapterDropdown(false);
+                        }}
+                      >
+                        <ThemedText style={[styles.modalItemText, { color: chapter.id === selectedChapter ? colors.tint : colors.text }]}>
                           {chapter.name}
                         </ThemedText>
-                        <ThemedText style={[styles.chapterSubtitle, { color: colors.text, opacity: 0.7 }]}>
-                          {Math.floor(Math.random() * 50) + 10} questions
+                        {chapter.id === selectedChapter && (
+                          <IconSymbol name="checkmark.circle.fill" size={20} color={colors.tint} />
+                        )}
+                      </TouchableOpacity>
+                    )) || (
+                      <View style={[styles.modalItem, { backgroundColor: colors.background, borderBottomColor: colors.border }]}>
+                        <ThemedText style={[styles.modalItemText, { color: colors.text, opacity: 0.7 }]}>
+                          No chapters available
                         </ThemedText>
                       </View>
-                    </View>
-                    <IconSymbol name="chevron.right" size={20} color={colors.tint} />
-                  </TouchableOpacity>
-                )) || (
-                  <View style={[styles.chapterItem, { backgroundColor: colors.cardAlt, borderColor: colors.border, justifyContent: 'center', alignItems: 'center' }]}>
-                    <ThemedText style={[styles.chapterTitle, { color: colors.text, opacity: 0.7 }]}>
-                      No chapters available
-                    </ThemedText>
-                  </View>
-                )}
-              </ScrollView>
-            </ThemedView>
-          </ThemedView>
+                    )}
+                  </ScrollView>
+                </ThemedView>
+              </TouchableOpacity>
+            </Modal>
+          )}
         </ThemedView>
       </SafeAreaView>
     );
@@ -1720,12 +1820,12 @@ export default function MCQScreen() {
               <ThemedView style={styles.actionButtons}>
                 <TouchableOpacity
                   style={[styles.button, styles.retryButton, { backgroundColor: colors.tint, marginBottom: 12 }]}
-                  onPress={handleRetry}
+                  onPress={selectedExamType === 'national' ? handleRetry : handleCheckOtherQuestions}
                 >
                   <ThemedText style={[styles.retryButtonText, { color: '#fff' }]}>
-                    {selectedExamType === 'national' ? t('mcq.results.tryOtherNationalExam') : t('mcq.results.tryAgain')}
+                    {selectedExamType === 'national' ? t('mcq.results.tryOtherNationalExam') : t('mcq.results.checkOtherQuestions')}
                   </ThemedText>
-                  <Ionicons name="refresh" size={24} color="#fff" />
+                  <Ionicons name={selectedExamType === 'national' ? "refresh" : "arrow-forward"} size={24} color="#fff" />
                 </TouchableOpacity>
                 
                 <TouchableOpacity

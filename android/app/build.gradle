@@ -86,9 +86,9 @@ android {
     buildToolsVersion rootProject.ext.buildToolsVersion
     compileSdk rootProject.ext.compileSdkVersion
 
-    namespace 'com.yosefashenafi.Qelem'
+    namespace 'com.yosefashenafi.qelem'
     defaultConfig {
-        applicationId 'com.yosefashenafi.Qelem'
+        applicationId 'com.yosefashenafi.qelem'
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 9
@@ -114,8 +114,8 @@ android {
         }
         release {
             signingConfig signingConfigs.release
-            shrinkResources (findProperty('android.enableShrinkResourcesInReleaseBuilds')?.toBoolean() ?: true)
-            minifyEnabled enableProguardInReleaseBuilds
+            shrinkResources false
+            minifyEnabled false
             proguardFiles getDefaultProguardFile("proguard-android.txt"), "proguard-rules.pro"
             crunchPngs (findProperty('android.enablePngCrunchInReleaseBuilds')?.toBoolean() ?: true)
             debuggable false

@@ -7,7 +7,7 @@
     "icon": "./assets/images/logo/app-icon.png",
     "scheme": "qelem",
     "userInterfaceStyle": "automatic",
-    "newArchEnabled": true,
+    "newArchEnabled": false,
     "description": "Qelem - Educational platform for interactive learning",
     "splash": {
       "image": "./assets/images/logo/white-logo.png",

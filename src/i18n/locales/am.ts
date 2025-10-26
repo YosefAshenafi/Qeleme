@@ -484,6 +484,7 @@ export default {
         canDoBetter: 'ይማሩ! የበለጠ ማድረግ ይችላሉ!'
       },
       tryAgain: 'ሌሎች ቀሪ ጥያቄዎችን ይሞክሩ',
+      checkOtherQuestions: 'ሌሎች ቀሪ ጥያቄዎችን ይሞክሩ',
       chooseAnotherSubject: 'ሌላ የትምህርት ዓይነት ይምረጡ',
       tryOtherNationalExam: 'ሌሎች ቀሪ የብሔራዊ ፈተናዎችን ይሞክሩ',
       chooseAnotherNationalExamYear: 'ሌላ የብሔራዊ ፈተና ዓመት ይምረጡ'

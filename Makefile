@@ -87,7 +87,7 @@ install:
 # Uninstall app from device
 uninstall:
 	@echo "🗑️  Uninstalling app from device..."
-	adb uninstall com.yosefashenafi.Qelem
+	adb uninstall com.yosefashenafi.qelem
 	@echo "✅ App uninstalled!"
 
 # Show version information
