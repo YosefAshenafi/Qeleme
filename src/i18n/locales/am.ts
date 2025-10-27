@@ -423,8 +423,8 @@ export default {
   mcq: {
     question: 'ጥያቄ',
     title: 'ምርጫ',
-    'selectYear': 'አመት ይምረጡ',
-    'year': 'አመት',
+    'selectYear': 'ዓመት ይምረጡ',
+    'year': 'ዓመት',
     selectSubject: 'የትምህርት ዓይነት ይምረጡ',
     subject: 'የትምህርት ዓይነት',
     chapter: 'ምዕራፍ',

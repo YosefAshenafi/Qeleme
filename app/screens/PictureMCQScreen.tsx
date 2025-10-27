@@ -255,6 +255,7 @@ export default function PictureMCQScreen({ onBackToInstructions }: PictureMCQScr
   const imagePosition = useSharedValue({ x: 0, y: 0 });
   const imageScale = useSharedValue(1);
   const isDraggingShared = useSharedValue(false);
+  const hoveredOptionShared = useSharedValue<string | null>(null);
   
   // Video animation states
   const [showCorrectVideo, setShowCorrectVideo] = useState(false);
@@ -288,6 +289,23 @@ export default function PictureMCQScreen({ onBackToInstructions }: PictureMCQScr
   const updateDropZones = useCallback((zones: { [key: string]: { x: number, y: number, width: number, height: number } }) => {
     setDropZones(zones);
   }, []);
+
+  const handleAnswerSelection = useCallback((optionId: string) => {
+    if (!currentQuestion) return;
+    
+    const selectedOption = currentQuestion.options.find(opt => opt.id === optionId);
+    if (selectedOption) {
+      setDroppedOption(optionId);
+      setSelectedAnswer(optionId);
+      
+      if (selectedOption.isCorrect) {
+        setScore(prev => prev + 1);
+        setShowCorrectVideo(true);
+      } else {
+        setShowIncorrectVideo(true);
+      }
+    }
+  }, [currentQuestion]);
 
   const imagePan = Gesture.Pan()
     .onStart(() => {
@@ -330,6 +348,7 @@ export default function PictureMCQScreen({ onBackToInstructions }: PictureMCQScr
       });
 
       runOnJS(updateHoveredOption)(closestOption);
+      hoveredOptionShared.value = closestOption;
     })
     .onEnd(() => {
       'worklet';
@@ -341,22 +360,11 @@ export default function PictureMCQScreen({ onBackToInstructions }: PictureMCQScr
       imagePosition.value = withSpring({ x: 0, y: 0 });
       runOnJS(updateHoveredOption)(null);
 
-      if (hoveredOption && currentQuestion) {
-        const selectedOption = currentQuestion.options.find(opt => opt.id === hoveredOption);
-        if (selectedOption) {
-          runOnJS(setDroppedOption)(hoveredOption);
-          runOnJS(setSelectedAnswer)(hoveredOption);
-          
-          if (selectedOption.isCorrect) {
-            // Simplified score update
-            runOnJS(setScore)(score + 1);
-            runOnJS(setShowCorrectVideo)(true);
-          } else {
-            // Incorrect animation
-            runOnJS(setShowIncorrectVideo)(true);
-          }
-        }
+      const currentHoveredOption = hoveredOptionShared.value;
+      if (currentHoveredOption) {
+        runOnJS(handleAnswerSelection)(currentHoveredOption);
       }
+      hoveredOptionShared.value = null;
     });
 
   useEffect(() => {
@@ -822,6 +830,44 @@ export default function PictureMCQScreen({ onBackToInstructions }: PictureMCQScr
                        colors={colors}
                        t={t}
                      />
+                     
+                     {/* Correct Video Animation on top of image */}
+                     {showCorrectVideo && (
+                       <View style={styles.overlayVideoContainer}>
+                         <Video
+                           source={require('@/assets/animations/correct.mp4')}
+                           style={styles.inlineVideo}
+                           shouldPlay
+                           isLooping={true}
+                           resizeMode={ResizeMode.CONTAIN}
+                           onPlaybackStatusUpdate={(status) => {
+                             if ('didJustFinish' in status && status.didJustFinish) {
+                               console.log('Correct video finished');
+                               // Don't hide the video - let the auto-advance timer handle it
+                             }
+                           }}
+                         />
+                       </View>
+                     )}
+
+                     {/* Incorrect Video Animation on top of image */}
+                     {showIncorrectVideo && (
+                       <View style={styles.overlayVideoContainer}>
+                         <Video
+                           source={require('@/assets/animations/not-correct.mp4')}
+                           style={styles.inlineVideo}
+                           shouldPlay
+                           isLooping={true}
+                           resizeMode={ResizeMode.CONTAIN}
+                           onPlaybackStatusUpdate={(status) => {
+                             if ('didJustFinish' in status && status.didJustFinish) {
+                               console.log('Incorrect video finished');
+                               // Don't hide the video - let the auto-advance timer handle it
+                             }
+                           }}
+                         />
+                       </View>
+                     )}
                   </Animated.View>
                 </GestureDetector>
 
@@ -870,44 +916,6 @@ export default function PictureMCQScreen({ onBackToInstructions }: PictureMCQScr
                     </View>
                   ))}
                 </View>
-
-                {/* Correct Video Animation */}
-                {showCorrectVideo && (
-                  <View style={styles.inlineVideoContainer}>
-                    <Video
-                      source={require('@/assets/animations/correct.mp4')}
-                      style={styles.inlineVideo}
-                      shouldPlay
-                      isLooping={true}
-                      resizeMode={ResizeMode.CONTAIN}
-                      onPlaybackStatusUpdate={(status) => {
-                        if ('didJustFinish' in status && status.didJustFinish) {
-                          console.log('Correct video finished');
-                          // Don't hide the video - let the auto-advance timer handle it
-                        }
-                      }}
-                    />
-                  </View>
-                )}
-
-                {/* Incorrect Video Animation */}
-                {showIncorrectVideo && (
-                  <View style={styles.inlineVideoContainer}>
-                    <Video
-                      source={require('@/assets/animations/not-correct.mp4')}
-                      style={styles.inlineVideo}
-                      shouldPlay
-                      isLooping={true}
-                      resizeMode={ResizeMode.CONTAIN}
-                      onPlaybackStatusUpdate={(status) => {
-                        if ('didJustFinish' in status && status.didJustFinish) {
-                          console.log('Incorrect video finished');
-                          // Don't hide the video - let the auto-advance timer handle it
-                        }
-                      }}
-                    />
-                  </View>
-                )}
 
                 {showExplanation && memoizedCurrentQuestion?.explanation && memoizedCurrentQuestion.explanation.trim() !== '' && memoizedCurrentQuestion.explanation !== 'No explanation available' && (
                   <View style={[styles.explanationContainer, { backgroundColor: isDarkMode ? '#1C1C1E' : '#F5F5F5' }]}>
@@ -1047,6 +1055,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFFFFF',
     alignItems: 'center',
     justifyContent: 'center',
+    position: 'relative',
     zIndex: 2,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },
@@ -1135,7 +1144,7 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   optionTextAmharic: {
-    fontSize: 14,
+    fontSize: 17,
     color: '#666666',
     textAlign: 'center',
     flexWrap: 'wrap',
@@ -1518,8 +1527,19 @@ const styles = StyleSheet.create({
     minHeight: 150,
     zIndex: 10,
   },
+  overlayVideoContainer: {
+    position: 'absolute',
+    top: 8,
+    left: 8,
+    right: 8,
+    bottom: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+    zIndex: 100,
+    backgroundColor: 'rgba(0, 0, 0, 0.3)',
+  },
   inlineVideo: {
-    width: 200,
-    height: 200,
+    width: '100%',
+    height: '100%',
   },
 }); 
