@@ -30,7 +30,7 @@ import { LanguageToggle } from '@/components/ui/LanguageToggle';
 import { ImageSkeleton } from '@/components/ui/ImageSkeleton';
 import SponsoredBy from '@/components/SponsoredBy';
 import RichText from '@/components/ui/RichText';
-import { getKGQuestions, getKGSubcategoryQuestions, KGQuestion } from '@/services/kgService';
+import { getKGQuestions, getKGSubcategoryQuestions, getKGCategories, KGQuestion, KGCategory } from '@/services/kgService';
 import ActivityTrackingService from '@/services/activityTrackingService';
 
 // No local image mapping needed - we'll use remote images from the API
@@ -145,6 +145,8 @@ export default function PictureMCQScreen({ onBackToInstructions }: PictureMCQScr
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [imageStates, setImageStates] = useState<{ [key: number]: { loading: boolean; error: boolean; loaded: boolean } }>({});
+  const [allCategories, setAllCategories] = useState<KGCategory[]>([]);
+  const [nextCategory, setNextCategory] = useState<KGCategory | null>(null);
   const { t } = useTranslation();
 
   // Transform API questions to the expected format
@@ -195,7 +197,7 @@ export default function PictureMCQScreen({ onBackToInstructions }: PictureMCQScr
     Promise.allSettled(imagePromises);
   }, []);
 
-  // Fetch questions from API
+   // Fetch questions from API
   const fetchQuestions = async () => {
     try {
       setLoading(true);
@@ -235,6 +237,24 @@ export default function PictureMCQScreen({ onBackToInstructions }: PictureMCQScr
       setError(err instanceof Error ? err.message : 'Failed to fetch questions');
     } finally {
       setLoading(false);
+    }
+  };
+
+  // Fetch all categories to find next category
+  const fetchAllCategories = async () => {
+    try {
+      const categories = await getKGCategories();
+      setAllCategories(categories);
+      
+      // Find next category after current one
+      const currentCategoryId = parseInt(params.categoryId as string);
+      const currentIndex = categories.findIndex(cat => cat.id === currentCategoryId);
+      
+      if (currentIndex !== -1 && currentIndex < categories.length - 1) {
+        setNextCategory(categories[currentIndex + 1]);
+      }
+    } catch (err) {
+      console.error('Error fetching all categories:', err);
     }
   };
 
@@ -386,9 +406,10 @@ export default function PictureMCQScreen({ onBackToInstructions }: PictureMCQScr
     checkPhoneNumber();
   }, [params]);
 
-  // Fetch questions when component mounts
+   // Fetch questions when component mounts
   useEffect(() => {
     fetchQuestions();
+    fetchAllCategories();
   }, []);
 
   const handleNextQuestion = () => {
@@ -425,15 +446,21 @@ export default function PictureMCQScreen({ onBackToInstructions }: PictureMCQScr
   };
 
   const handleRetry = () => {
-    setCurrentQuestionIndex(0);
-    setSelectedAnswer(null);
-    setShowExplanation(false);
-    setShowCorrectVideo(false);
-    setShowIncorrectVideo(false);
-    setScore(0);
-    setShowResult(false);
-    setDroppedOption(null);
-    setHoveredOption(null);
+    if (nextCategory) {
+      // If there's a next category, go to it instead of retrying current one
+      handleTryOtherQuestions();
+    } else {
+      // If no next category, retry current category
+      setCurrentQuestionIndex(0);
+      setSelectedAnswer(null);
+      setShowExplanation(false);
+      setShowCorrectVideo(false);
+      setShowIncorrectVideo(false);
+      setScore(0);
+      setShowResult(false);
+      setDroppedOption(null);
+      setHoveredOption(null);
+    }
   };
 
   const handleGoToInstructions = () => {
@@ -449,6 +476,33 @@ export default function PictureMCQScreen({ onBackToInstructions }: PictureMCQScr
     setShowIncorrectVideo(false);
     // Navigate to the KG dashboard instead of regular MCQ
     router.push('/kg-dashboard');
+  };
+
+  const handleTryOtherQuestions = () => {
+    if (nextCategory) {
+      // Reset states for next category
+      setCurrentQuestionIndex(0);
+      setSelectedAnswer(null);
+      setShowExplanation(false);
+      setShowResult(false);
+      setScore(0);
+      setDroppedOption(null);
+      setHoveredOption(null);
+      setShowCorrectVideo(false);
+      setShowIncorrectVideo(false);
+      
+      // Navigate to next category questions
+      const categoryName = nextCategory.name_en; // Could use i18n.language for localized name
+      
+      if (nextCategory.has_subcategories) {
+        router.push(`/kg-subcategories?categoryId=${nextCategory.id}&categoryName=${categoryName}`);
+      } else {
+        router.push({
+          pathname: '/screens/PictureMCQScreen',
+          params: { category: categoryName, categoryId: nextCategory.id }
+        });
+      }
+    }
   };
 
   const getMessage = () => {
@@ -686,14 +740,20 @@ export default function PictureMCQScreen({ onBackToInstructions }: PictureMCQScr
                 </View>
               </Animated.View>
 
-              {/* Action Buttons */}
+               {/* Action Buttons */}
               <View style={styles.actionButtons}>
                 <TouchableOpacity
-                  style={[styles.button, styles.retryButton]}
+                  style={[
+                    styles.button, 
+                    styles.retryButton,
+                    nextCategory && { backgroundColor: '#FF9800' }
+                  ]}
                   onPress={handleRetry}
                 >
-                  <IconSymbol name="chevron.right" size={24} color="#FFFFFF" />
-                  <ThemedText style={styles.retryButtonText}>{t('mcq.results.tryAgain')}</ThemedText>
+                  <IconSymbol name={nextCategory ? "arrow.right.circle.fill" : "chevron.right"} size={24} color="#FFFFFF" />
+                  <ThemedText style={styles.retryButtonText}>
+                    {nextCategory ? t('mcq.results.tryOtherQuestions', 'Try other remaining Questions') : t('mcq.results.tryAgain')}
+                  </ThemedText>
                 </TouchableOpacity>
                 
                 <TouchableOpacity
@@ -728,8 +788,12 @@ export default function PictureMCQScreen({ onBackToInstructions }: PictureMCQScr
             <ThemedText style={[styles.headerTitle, { color: colors.text }]}>
               🎨 {t('mcq.pictureQuiz.title', 'Picture Quiz')} 🎨
             </ThemedText>
-            <ThemedText style={[styles.headerSubtitle, { color: colors.text + '80' }]}>
-            </ThemedText>
+            <View style={[styles.categoryBadge, { backgroundColor: colors.tint + '15', borderColor: colors.tint + '40' }]}>
+              <IconSymbol name="folder.fill" size={16} color={colors.tint} />
+              <ThemedText style={[styles.categoryText, { color: colors.tint }]}>
+                {params.category as string || 'Category'}
+              </ThemedText>
+            </View>
           </View>
           <View style={styles.headerRight}>
             <LanguageToggle colors={colors} />
@@ -745,6 +809,14 @@ export default function PictureMCQScreen({ onBackToInstructions }: PictureMCQScr
                 style={styles.progressGradient}
               >
                 <View style={styles.progressContent}>
+                  {/* Category Display */}
+                  <View style={styles.progressCategoryContainer}>
+                    <IconSymbol name="folder.fill" size={18} color="#FFFFFF" />
+                    <ThemedText style={styles.progressCategoryText}>
+                      {params.category as string || 'Category'}
+                    </ThemedText>
+                  </View>
+                  
                   <View style={styles.progressBarContainer}>
                     <View style={[styles.progressBar, { backgroundColor: 'rgba(255, 255, 255, 0.3)' }]}>
                       <View 
@@ -969,6 +1041,25 @@ const styles = StyleSheet.create({
   },
   progressContent: {
     alignItems: 'center',
+  },
+  progressCategoryContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'rgba(255, 255, 255, 0.15)',
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 20,
+    marginBottom: 12,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.3)',
+  },
+  progressCategoryText: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontWeight: '600',
+    marginLeft: 8,
+    letterSpacing: 0.5,
   },
   progressBarContainer: {
     width: '100%',
@@ -1505,6 +1596,27 @@ const styles = StyleSheet.create({
   headerSubtitle: {
     fontSize: 14,
     textAlign: 'center',
+  },
+  categoryBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 16,
+    borderWidth: 1,
+    marginTop: 6,
+    alignSelf: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+    elevation: 2,
+  },
+  categoryText: {
+    fontSize: 14,
+    fontWeight: '600',
+    marginLeft: 6,
+    letterSpacing: 0.3,
   },
   headerRight: {
     flexDirection: 'row',
