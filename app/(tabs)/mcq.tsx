@@ -539,12 +539,15 @@ export default function MCQScreen() {
     }
   };
 
-  const handleCheckOtherQuestions = () => {
+  const handleCheckOtherQuestions = async () => {
     // Clear existing timer first
     if (timerRef.current) {
       clearInterval(timerRef.current);
       timerRef.current = null;
     }
+    
+    // Check if user is KG student
+    const isKGStudent = typeof user?.grade === 'string' && user.grade.toLowerCase().includes('kg');
     
     // Reset test state
     setCurrentQuestionIndex(0);
@@ -558,33 +561,85 @@ export default function MCQScreen() {
     setTime(0);
     setIsTimerRunning(false);
     
-    // Find the next chapter in the same subject
-    if (selectedSubjectData && selectedChapterData) {
-      const sortedChapters = [...selectedSubjectData.chapters].sort((a, b) => {
-        // Extract numbers from chapter names for proper sorting
-        const getChapterNumber = (name: string) => {
-          const match = name.match(/(\d+)/);
-          return match ? parseInt(match[1], 10) : 0;
-        };
-        return getChapterNumber(a.name) - getChapterNumber(b.name);
-      });
-      
-      const currentChapterIndex = sortedChapters.findIndex((chapter: Chapter) => chapter.id === selectedChapter);
-      const nextChapterIndex = currentChapterIndex + 1;
-      
-      if (nextChapterIndex < sortedChapters.length) {
-        const nextChapter = sortedChapters[nextChapterIndex];
-        setSelectedChapter(nextChapter.id);
-        setSelectedChapterName(nextChapter.name);
-      } else {
-        // No more chapters, reset to first chapter
-        const firstChapter = sortedChapters[0];
-        setSelectedChapter(firstChapter.id);
-        setSelectedChapterName(firstChapter.name);
+    if (isKGStudent) {
+      // For KG students, go to next chapter (existing behavior)
+      if (selectedSubjectData && selectedChapterData) {
+        const sortedChapters = [...selectedSubjectData.chapters].sort((a, b) => {
+          // Extract numbers from chapter names for proper sorting
+          const getChapterNumber = (name: string) => {
+            const match = name.match(/(\d+)/);
+            return match ? parseInt(match[1], 10) : 0;
+          };
+          return getChapterNumber(a.name) - getChapterNumber(b.name);
+        });
+        
+        const currentChapterIndex = sortedChapters.findIndex((chapter: Chapter) => chapter.id === selectedChapter);
+        const nextChapterIndex = currentChapterIndex + 1;
+        
+        if (nextChapterIndex < sortedChapters.length) {
+          const nextChapter = sortedChapters[nextChapterIndex];
+          setSelectedChapter(nextChapter.id);
+          setSelectedChapterName(nextChapter.name);
+        } else {
+          // No more chapters, reset to first chapter
+          const firstChapter = sortedChapters[0];
+          setSelectedChapter(firstChapter.id);
+          setSelectedChapterName(firstChapter.name);
+        }
+        
+        // Show the chapter chooser modal with the new selection
+        setShowChapterChooser(true);
       }
-      
-      // Show the chapter chooser modal with the new selection
-      setShowChapterChooser(true);
+    } else {
+      // For non-KG students, get new questions for the current chapter
+      try {
+        if (selectedExamType === 'national') {
+          // For national exams, fetch new questions with same parameters
+          if (!selectedYear || !selectedSubject) {
+            setError('Missing required parameters for national exam');
+            return;
+          }
+          
+          const gradeNumber = getGradeNumber(user?.grade);
+          const questions = await getNationalExamQuestions(
+            gradeNumber,
+            parseInt(selectedYear),
+            selectedSubject
+          );
+          
+          if (questions && questions.length > 0) {
+            setNationalExamQuestions(questions);
+            setShowTest(true);
+            startTimer();
+          } else {
+            setError('No more questions available for this exam');
+          }
+        } else {
+          // For regular MCQ, fetch new questions for current chapter
+          if (!selectedSubject || !selectedChapter) {
+            setError('Missing required parameters for MCQ');
+            return;
+          }
+          
+          const gradeNumber = getGradeNumber(user?.grade);
+          const questions = await getRegularMCQQuestions(
+            gradeNumber,
+            selectedSubject,
+            selectedChapter
+          );
+          
+          if (questions && questions.length > 0) {
+            setNationalExamQuestions(questions);
+            setShowTest(true);
+            startTimer();
+          } else {
+            setError('No more questions available for this chapter');
+          }
+        }
+      } catch (error) {
+        console.error('Failed to load new questions:', error);
+        setError('Failed to load new questions. Please try again.');
+      }
     }
   };
 
