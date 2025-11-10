@@ -19,6 +19,7 @@ import Animated, {
   useAnimatedReaction,
 } from 'react-native-reanimated';
 import { useTranslation } from 'react-i18next';
+import i18n from 'i18next';
 import { Video, ResizeMode } from 'expo-av';
 
 import { Header } from '@/components/Header';
@@ -148,6 +149,21 @@ export default function PictureMCQScreen({ onBackToInstructions }: PictureMCQScr
   const [allCategories, setAllCategories] = useState<KGCategory[]>([]);
   const [nextCategory, setNextCategory] = useState<KGCategory | null>(null);
   const { t } = useTranslation();
+
+  // Get localized category name based on current language
+  const getLocalizedCategoryName = useCallback(() => {
+    const categoryId = params.categoryId as string;
+    if (!categoryId || allCategories.length === 0) {
+      return params.category as string || 'Category';
+    }
+
+    const category = allCategories.find(cat => cat.id === parseInt(categoryId));
+    if (!category) {
+      return params.category as string || 'Category';
+    }
+
+    return i18n.language === 'am' ? (category.name_am || category.name_en) : category.name_en;
+  }, [params.categoryId, params.category, allCategories, i18n.language]);
 
   // Transform API questions to the expected format
   const transformQuestions = useCallback((apiQuestions: KGQuestion[]): Question[] => {
@@ -492,8 +508,8 @@ export default function PictureMCQScreen({ onBackToInstructions }: PictureMCQScr
       setShowIncorrectVideo(false);
       
       // Navigate to next category questions
-      const categoryName = nextCategory.name_en; // Could use i18n.language for localized name
-      
+      const categoryName = i18n.language === 'am' ? (nextCategory.name_am || nextCategory.name_en) : nextCategory.name_en;
+
       if (nextCategory.has_subcategories) {
         router.push(`/kg-subcategories?categoryId=${nextCategory.id}&categoryName=${categoryName}`);
       } else {
@@ -791,7 +807,7 @@ export default function PictureMCQScreen({ onBackToInstructions }: PictureMCQScr
             <View style={[styles.categoryBadge, { backgroundColor: colors.tint + '15', borderColor: colors.tint + '40' }]}>
               <IconSymbol name="folder.fill" size={16} color={colors.tint} />
               <ThemedText style={[styles.categoryText, { color: colors.tint }]}>
-                {params.category as string || 'Category'}
+                {getLocalizedCategoryName()}
               </ThemedText>
             </View>
           </View>
@@ -813,7 +829,7 @@ export default function PictureMCQScreen({ onBackToInstructions }: PictureMCQScr
                   <View style={styles.progressCategoryContainer}>
                     <IconSymbol name="folder.fill" size={18} color="#FFFFFF" />
                     <ThemedText style={styles.progressCategoryText}>
-                      {params.category as string || 'Category'}
+                      {getLocalizedCategoryName()}
                     </ThemedText>
                   </View>
                   

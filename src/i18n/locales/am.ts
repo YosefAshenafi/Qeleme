@@ -11,7 +11,7 @@ export default {
   },
   home: {
     welcome: 'እንኳን ደህና መጡ {{name}}!',
-    subtitle: 'ዛሬ አዲስ ነገር ለመማር ዝግጁ ኖት?',
+    subtitle: 'መጻሕፍቶቹን ካነበባችሁ በኋላ በጥያቄዎቹ እውቀትዎን ይመዝኑ!',
     noActivity: 'ምንም የቅርብ እንቅስቃሴ የለም። መማር ይጀምሩ!',
     goto: 'ወደ መግቢያ ይመለሱ',
     quickActions: {
@@ -275,9 +275,9 @@ export default {
   },
   kg: {
     welcome: 'እንኳን ደህና መጡ {{name}}!',
-    subtitle: 'ዛሬ አዲስ ነገር ለመማር ዝግጁ ኖት?',
+    subtitle: 'መጻሕፍቶቹን ካነበባችሁ በኋላ በጥያቄዎቹ እውቀትዎን ይመዝኑ!',
     howToPlay: 'አጠቃቀም',
-    letsHaveFun: 'እየተደሰትን እንማር!',
+    letsHaveFun: '',
     categories: {
       // Fallback categories
       'Animals': 'እንስሳት',
@@ -308,7 +308,7 @@ export default {
       subtitle: 'ርዕስ መርጠው መማር ይጀምሩ!'
     },
     instructions: {
-      subtitle: 'አዲስ ነገር ለመማር ዝግጁ ኖት?',
+      subtitle: 'መጻሕፍቶቹን ካነበባችሁ በኋላ በጥያቄዎቹ እውቀትዎን ይመዝኑ!',
       look: {
         title: 'በጥንቃቄ ተመልከት',
         description: 'ለምስሎቹ ጊዜ ይውሰዱ እና ምን እንደሚያሳዩ ይረዱ።'
@@ -484,6 +484,7 @@ export default {
         canDoBetter: 'ይማሩ! የበለጠ ማድረግ ይችላሉ!'
       },
       tryAgain: 'ሌሎች ቀሪ ጥያቄዎችን ይሞክሩ',
+      tryOtherQuestions: 'ሌሎች ቀሪ ጥያቄዎችን ይሞክሩ',
       checkOtherQuestions: 'ሌሎች ቀሪ ጥያቄዎችን ይሞክሩ',
       chooseAnotherSubject: 'ሌላ የትምህርት ዓይነት ይምረጡ',
       tryOtherNationalExam: 'ሌሎች ቀሪ የብሔራዊ ፈተናዎችን ይሞክሩ',
@@ -754,7 +755,7 @@ export default {
     flashcards: {
       title: 'በፍላሽ ካርዶች ይማሩ',
       subtitle: 'ቁልፍ ጽንሰ-ሀሳቦችን ይማሩ!',
-      description: 'ዕውቀትን ለማበልጸግ ፍላሽ ካርዶችን ይመልከቱ!'
+      description: 'ዕውቀትዎን ለማበልጸግ ፍላሽ ካርዶችን ይመልከቱ!'
     },
     homework: {
       title: 'ለቤት ሥራ አጋዥ ይጠቀሙ!',

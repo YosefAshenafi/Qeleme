@@ -501,6 +501,7 @@ export default {
         canDoBetter: 'Keep learning! You can do better!'
       },
       tryAgain: 'Try Other Remaining Questions',
+      tryOtherQuestions: 'Try Other Remaining Questions',
       checkOtherQuestions: 'Check Other Questions',
       chooseAnotherSubject: 'Choose Another Subject',
       tryOtherNationalExam: 'Try Other Remaining National Exams',
@@ -703,8 +704,8 @@ export default {
   kg: {
     welcome: 'Welcome {{name}}!',
     howToPlay: 'How to Play',
-    subtitle: "Let's learn something new today!",
-    letsHaveFun: "Let's have fun learning!",
+    subtitle: "Read the books and evaluate yourself with the questions!",
+    letsHaveFun: "",
     categories: {
       // Fallback categories
       'Animals': 'Animals',
@@ -735,7 +736,7 @@ export default {
       subtitle: 'Choose a topic and Start Learning!'
     },
     instructions: {
-      subtitle: "Let's learn something new!",
+      subtitle: "Read the books and evaluate yourself with the questions!",
       look: {
         title: 'Look Carefully',
         description: 'Take your time to look at the pictures and understand what they show.'
