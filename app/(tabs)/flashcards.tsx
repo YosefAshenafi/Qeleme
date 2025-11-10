@@ -67,6 +67,7 @@ export default function FlashcardsScreen() {
   const scrollViewRef = useRef<ScrollView>(null);
   const [previousLanguage, setPreviousLanguage] = useState(i18n.language);
   const [isPreSelected, setIsPreSelected] = useState(false);
+  const preSelectionAttempted = useRef(false);
 
   const revealAnimation = useSharedValue(0);
   const progressAnimation = useSharedValue(0);
@@ -107,25 +108,38 @@ export default function FlashcardsScreen() {
     }
   }, [selectedGradeId]);
 
+  // Reset pre-selection tracking when params change
+  useEffect(() => {
+    if (params.preSelectedSubject) {
+      console.log('Pre-selection parameter detected:', params.preSelectedSubject);
+      preSelectionAttempted.current = false;
+      setHasAppliedPreSelection(false);
+    }
+  }, [params.preSelectedSubject]);
+
   // Update the selected grade when flashcards data is loaded
   useEffect(() => {
     if (flashcardsData && flashcardsData.length > 0) {
       const grade = flashcardsData[0];
       if (grade && grade.name) {
         setSelectedGrade(grade.name);
-        
+
         // Handle pre-selected subject from route parameters
-        if (params.preSelectedSubject && !hasAppliedPreSelection) {
+        if (params.preSelectedSubject && !preSelectionAttempted.current) {
+          console.log('=== Starting Pre-Selection Process ===');
           console.log('Looking for subject:', params.preSelectedSubject);
-          console.log('Available subjects:', grade.subjects?.map(s => s.name));
-          
+          console.log('Available subjects:', grade.subjects?.map(s => ({ id: s.id, name: s.name })));
+
+          // Mark that we've attempted pre-selection
+          preSelectionAttempted.current = true;
+
           // Reset any active flashcard session when navigating from home page
           setShowFlashcards(false);
           setCurrentIndex(0);
           setIsRevealed(false);
           setCurrentFlashcards([]);
           setSessionStartTime(null);
-          
+
           // Reset animations
           revealAnimation.value = withSpring(0, {
             damping: 12,
@@ -133,60 +147,63 @@ export default function FlashcardsScreen() {
             mass: 0.8,
           });
           progressAnimation.value = withTiming(0);
-          
-          // Try exact match first
-          let subject = grade.subjects?.find(s => 
-            s.name.toLowerCase() === (params.preSelectedSubject as string).toLowerCase()
+
+          // Try exact match first (case-insensitive with trimming)
+          const searchTerm = (params.preSelectedSubject as string).toLowerCase().trim();
+          let subject = grade.subjects?.find(s =>
+            s.name.toLowerCase().trim() === searchTerm
           );
-          
+
           // If not found, try partial match
           if (!subject) {
             console.log('Exact match not found, trying partial match...');
-            subject = grade.subjects?.find(s => 
-              s.name.toLowerCase().includes((params.preSelectedSubject as string).toLowerCase()) ||
-              (params.preSelectedSubject as string).toLowerCase().includes(s.name.toLowerCase())
-            );
+            subject = grade.subjects?.find(s => {
+              const subjectName = s.name.toLowerCase();
+              return subjectName.includes(searchTerm) || searchTerm.includes(subjectName);
+            });
           }
-          
-          console.log('Found subject:', subject);
+
           if (subject) {
+            console.log('✓ Found subject:', { id: subject.id, name: subject.name });
             console.log('Setting selected subject to:', subject.id);
             setSelectedSubject(subject.id);
             setSelectedChapter(''); // Reset chapter when subject changes
             setIsPreSelected(true); // Mark as pre-selected
             setHasAppliedPreSelection(true);
           } else {
-            console.log('Subject not found, resetting selection');
-            // Reset subject and chapter if pre-selected subject not found
+            console.warn('✗ Subject not found!');
+            console.log('Searched for:', params.preSelectedSubject);
+            console.log('Available options:', grade.subjects?.map(s => s.name).join(', '));
+            // Don't select anything if not found
             setSelectedSubject('');
             setSelectedChapter('');
             setIsPreSelected(false);
             setHasAppliedPreSelection(true);
           }
-        } else if (!params.preSelectedSubject) {
-          // Reset subject and chapter when grade changes (no pre-selection)
+          console.log('=== Pre-Selection Process Complete ===');
+        } else if (!params.preSelectedSubject && !hasAppliedPreSelection) {
+          // Reset subject and chapter when there's no pre-selection
           setSelectedSubject('');
           setSelectedChapter('');
+          setHasAppliedPreSelection(true);
         }
       }
     }
-  }, [flashcardsData, params.preSelectedSubject, hasAppliedPreSelection]);
+  }, [flashcardsData, params.preSelectedSubject]);
 
-  // Reset chapter when subject changes
+  // Reset chapter when subject changes (but don't clear during pre-selection)
   useEffect(() => {
-    if (selectedSubject) {
-      setSelectedChapter('');
-      // Clear pre-selected flag when user manually changes subject
+    if (selectedSubject && hasAppliedPreSelection) {
+      // Only clear chapter if this is a manual change (after pre-selection has been applied)
       if (isPreSelected) {
+        // This is the first time setting from pre-selection, don't clear chapter
         setIsPreSelected(false);
+      } else {
+        // This is a manual change, clear chapter
+        setSelectedChapter('');
       }
     }
-  }, [selectedSubject, isPreSelected]);
-
-  // Reset pre-selection flag when parameters change
-  useEffect(() => {
-    setHasAppliedPreSelection(false);
-  }, [params.preSelectedSubject]);
+  }, [selectedSubject]);
 
   const selectedGradeData = selectedGrade && flashcardsData ? flashcardsData.find(g => g.name === selectedGrade) : null;
   const selectedSubjectData = selectedSubject && selectedGradeData && selectedGradeData.subjects
@@ -711,7 +728,38 @@ export default function FlashcardsScreen() {
   return (
     <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]}>
       <Header title={t('flashcards.title')} />
-      
+
+      {/* Breadcrumb */}
+      <View style={[styles.headerContainer, { backgroundColor: colors.background, borderBottomColor: colors.border }]}>
+        <View style={[styles.breadcrumbContainer, { backgroundColor: colors.cardAlt }]}>
+          <View style={[styles.breadcrumbItem, { backgroundColor: colors.background, borderColor: colors.border }]}>
+            <ThemedText style={[styles.breadcrumbText, { color: colors.tint }]}>
+              {selectedGrade || (user?.grade ? `${t('common.grade')} ${user.grade.replace(/\D/g, '')}` : t('common.grade'))}
+            </ThemedText>
+          </View>
+          {selectedSubject && selectedSubjectData && (
+            <>
+              <IconSymbol name="chevron.right" size={16} color={colors.tint} />
+              <View style={[styles.breadcrumbItem, { backgroundColor: colors.background, borderColor: colors.border }]}>
+                <ThemedText style={[styles.breadcrumbText, { color: colors.tint }]}>
+                  {selectedSubjectData.name}
+                </ThemedText>
+              </View>
+            </>
+          )}
+          {selectedChapter && selectedChapterData && (
+            <>
+              <IconSymbol name="chevron.right" size={16} color={colors.tint} />
+              <View style={[styles.breadcrumbItem, { backgroundColor: colors.background, borderColor: colors.border }]}>
+                <ThemedText style={[styles.breadcrumbText, { color: colors.tint }]}>
+                  {t('flashcards.chapter')} {selectedChapterData.name}
+                </ThemedText>
+              </View>
+            </>
+          )}
+        </View>
+      </View>
+
       {/* Ultra-Compact Sticky Header */}
       <View style={{
         position: 'sticky',
@@ -835,26 +883,48 @@ export default function FlashcardsScreen() {
         >
 
           <View style={[styles.cardContainer, { marginHorizontal: 20 }]}>
-            <TouchableOpacity onPress={handleReveal} activeOpacity={0.9} style={styles.cardWrapper}>
+            <TouchableOpacity
+              onPress={handleReveal}
+              activeOpacity={0.9}
+              style={styles.cardWrapper}
+            >
               <Animated.View style={[styles.card, frontAnimatedStyle, { borderColor: colors.border, backgroundColor: colors.cardAlt }]}>
-                <RichText 
-                  text={getQuestionText(currentCard)}
-                  style={styles.cardText}
-                  color={isDarkMode ? '#FFFFFF' : colors.tint}
-                  fontSize={20}
-                  textAlign="center"
-                  lineHeight={28}
-                />
+                <ScrollView
+                  style={styles.cardScrollView}
+                  contentContainerStyle={styles.cardScrollContent}
+                  showsVerticalScrollIndicator={true}
+                  nestedScrollEnabled={true}
+                  scrollEnabled={true}
+                  bounces={false}
+                >
+                  <RichText
+                    text={getQuestionText(currentCard)}
+                    style={styles.cardText}
+                    color={isDarkMode ? '#FFFFFF' : colors.tint}
+                    fontSize={20}
+                    textAlign="center"
+                    lineHeight={28}
+                  />
+                </ScrollView>
               </Animated.View>
               <Animated.View style={[styles.card, styles.cardBack, backAnimatedStyle, { borderColor: colors.border, backgroundColor: colors.cardAlt }]}>
-                <RichText 
-                  text={getAnswerText(currentCard)}
-                  style={styles.cardText}
-                  color={isDarkMode ? '#FFFFFF' : colors.tint}
-                  fontSize={20}
-                  textAlign="center"
-                  lineHeight={28}
-                />
+                <ScrollView
+                  style={styles.cardScrollView}
+                  contentContainerStyle={styles.cardScrollContent}
+                  showsVerticalScrollIndicator={true}
+                  nestedScrollEnabled={true}
+                  scrollEnabled={true}
+                  bounces={false}
+                >
+                  <RichText
+                    text={getAnswerText(currentCard)}
+                    style={styles.cardText}
+                    color={isDarkMode ? '#FFFFFF' : colors.tint}
+                    fontSize={20}
+                    textAlign="center"
+                    lineHeight={28}
+                  />
+                </ScrollView>
               </Animated.View>
             </TouchableOpacity>
             
@@ -944,8 +1014,6 @@ const styles = StyleSheet.create({
     height: '100%',
     borderRadius: 12,
     padding: 20,
-    justifyContent: 'center',
-    alignItems: 'center',
     backfaceVisibility: 'hidden',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
@@ -959,6 +1027,17 @@ const styles = StyleSheet.create({
   },
   cardBack: {
     transform: [{ rotateY: '180deg' }],
+  },
+  cardScrollView: {
+    flex: 1,
+    width: '100%',
+  },
+  cardScrollContent: {
+    flexGrow: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingVertical: 10,
+    minHeight: '100%',
   },
   cardText: {
     fontSize: 20,
@@ -1133,5 +1212,29 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '500',
     textAlign: 'center',
+  },
+  headerContainer: {
+    backgroundColor: '#fff',
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+  },
+  breadcrumbContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderRadius: 12,
+    gap: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+  },
+  breadcrumbItem: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 8,
+    borderWidth: 1,
+  },
+  breadcrumbText: {
+    fontSize: 14,
+    fontWeight: '600',
   },
 }); 

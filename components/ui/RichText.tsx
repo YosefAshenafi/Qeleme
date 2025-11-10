@@ -122,7 +122,16 @@ const renderTextWithFormatting = (text: string, color: string, fontSize: number,
               break;
             case 'u':
               styledElement = (
-                <Text key={uniqueKey} style={{ textDecorationLine: 'underline', color, fontSize, lineHeight, textAlign, fontFamily: 'System' }}>
+                <Text key={uniqueKey} style={{
+                  textDecorationLine: 'underline',
+                  textDecorationStyle: 'solid',
+                  textDecorationColor: color,
+                  color,
+                  fontSize,
+                  lineHeight,
+                  textAlign,
+                  fontFamily: 'System'
+                }}>
                   {nestedContent}
                 </Text>
               );
@@ -204,6 +213,8 @@ const RichText: React.FC<RichTextProps> = ({
     },
     u: {
       textDecorationLine: 'underline' as const,
+      textDecorationStyle: 'solid' as const,
+      textDecorationColor: color,
       color,
     },
     s: {

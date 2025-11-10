@@ -1599,7 +1599,7 @@ export default function MCQScreen() {
                 <View style={[styles.breadcrumbContainer, { backgroundColor: colors.cardAlt }]}>
                   <View style={[styles.breadcrumbItem, { backgroundColor: colors.background, borderColor: colors.border }]}>
                     <ThemedText style={[styles.breadcrumbText, { color: colors.tint }]}>
-                      {user?.grade ? user.grade.charAt(0).toUpperCase() + user.grade.slice(1) : 'Select Grade'}
+                      {user?.grade ? `${t('common.grade')} ${user.grade.replace(/\D/g, '')}` : t('mcq.selectSubject')}
                     </ThemedText>
                   </View>
                   {selectedGrade && (
@@ -1607,9 +1607,9 @@ export default function MCQScreen() {
                       <IconSymbol name="chevron.right" size={16} color={colors.tint} />
                       <View style={[styles.breadcrumbItem, { backgroundColor: colors.background, borderColor: colors.border }]}>
                         <ThemedText style={[styles.breadcrumbText, { color: colors.tint }]}>
-                          {selectedExamType === 'national' 
-                            ? (selectedYear || 'Select Year')
-                            : (selectedSubject ? selectedGradeData?.subjects.find((s: Subject) => s.id === selectedSubject)?.name : 'Select Subject')
+                          {selectedExamType === 'national'
+                            ? (selectedYear || t('mcq.selectYear'))
+                            : (selectedSubject ? selectedGradeData?.subjects.find((s: Subject) => s.id === selectedSubject)?.name : t('mcq.selectSubject'))
                           }
                         </ThemedText>
                       </View>
@@ -1632,7 +1632,7 @@ export default function MCQScreen() {
                         <IconSymbol name="chevron.right" size={16} color={colors.tint} />
                         <View style={[styles.breadcrumbItem, { backgroundColor: colors.background, borderColor: colors.border }]}>
                           <ThemedText style={[styles.breadcrumbText, { color: colors.tint }]}>
-                            {selectedChapter ? `Chapter ${selectedSubjectData?.chapters?.find((c: Chapter) => c.id === selectedChapter)?.name || selectedChapterName}` : 'Select Chapter'}
+                            {selectedChapter ? `${t('mcq.chapter')} ${selectedSubjectData?.chapters?.find((c: Chapter) => c.id === selectedChapter)?.name || selectedChapterName}` : t('mcq.selectChapter')}
                           </ThemedText>
                         </View>
                       </>
