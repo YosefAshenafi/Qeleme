@@ -52,7 +52,7 @@
         "backgroundColor": "#6B54AE"
       },
       "package": "com.qelemapp.qelem",
-      "versionCode": 9,
+      "versionCode": 10,
       "compileSdkVersion": 35,
       "targetSdkVersion": 35,
       "permissions": [
@@ -62,7 +62,7 @@
         "android.permission.READ_MEDIA_IMAGES"
       ],
       "playStoreUrl": "https://play.google.com/store/apps/details?id=com.qelemapp.qelem",
-      "privacyPolicy": "https://qelem.com/privacy-policy"
+      "privacyPolicy": "https://qelem.net/privacy-policy"
     },
     "web": {
       "bundler": "metro",

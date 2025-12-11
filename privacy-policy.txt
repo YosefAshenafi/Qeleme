@@ -1,44 +1,86 @@
 PRIVACY POLICY FOR QELEM
-Last updated: September 5, 2024
+Last updated: Dec 11, 2025
 
 ABOUT QELEM
-Qelem is an educational platform designed to provide interactive learning experiences for students of all ages through multiple choice questions, flashcards, and homework assistance.
+Qelem is an educational platform designed to provide interactive learning experiences for Ethiopian students of all ages through multiple choice questions, flashcards, quizzes, and homework assistance.
 
 INFORMATION WE COLLECT
 
-Camera and Photo Access:
-- Qelem requests camera permission to allow users to take photos for homework assignments, upload images from their device's photo library, and share visual content related to their learning.
-- IMPORTANT: We do not store, transmit, or share your photos with third parties. Photos are only used locally within the app for educational purposes.
+Camera Permission (android.permission.CAMERA)
+Qelem requests access to your device's camera for the following purposes:
+- Homework Assistance: Take photos of homework questions or assignments for analysis and help
+- Chat Support: Share images in chat to ask questions about educational content
 
-Other Information:
-- Account Information: Email address, phone number, and profile details you provide
-- Learning Data: Progress, scores, and educational content interactions
-- Device Information: Basic device information for app functionality
+Important Privacy Commitment:
+- Camera access is optional and only activated when you choose to use camera features
+- Photos taken are processed locally on your device
+- We do NOT store your photos on our servers without your explicit consent
+- We do NOT share your photos with third parties
+- You can revoke camera permission at any time through your device settings
+
+Media/Photo Library Access (android.permission.READ_MEDIA_IMAGES)
+We request access to your photo library to allow you to:
+- Select existing photos for homework help
+- Upload educational images in chat for questions
+
+Account Information
+- Registration Data: Email address, phone number, name, and profile details you provide
+- Authentication: Login credentials securely stored and encrypted
+
+Learning and Usage Data
+- Progress Data: Quiz scores, completed lessons, and learning achievements
+- Educational Content: Questions asked, study materials accessed
+- App Usage: Features used and time spent learning
+
+Device Information
+- Device type and operating system version
+- App version and crash reports for improving stability
+- Network status for connectivity features
 
 HOW WE USE YOUR INFORMATION
-- Provide educational services and personalized learning experiences
-- Track your progress and learning achievements
+- Provide personalized educational services and learning experiences
+- Track your progress and celebrate learning achievements
 - Improve our app's functionality and user experience
-- Communicate with you about your account and our services
+- Send important updates about your account and our services
+- Respond to your questions and support requests
 
 INFORMATION SHARING
-We do not sell, trade, or share your personal information with third parties, except:
-- When required by law
-- To protect our rights and safety
+We do NOT sell, trade, or share your personal information with third parties, except:
+- When required by law or legal process
+- To protect our rights, privacy, safety, or property
 - With your explicit consent
+- With service providers who assist in app operation (under strict confidentiality agreements)
 
 DATA SECURITY
-We implement appropriate security measures to protect your personal information against unauthorized access, alteration, disclosure, or destruction.
+We implement industry-standard security measures to protect your personal information:
+- Encrypted data transmission (HTTPS/SSL)
+- Secure storage of credentials
+- Regular security audits and updates
+- Access controls and authentication protocols
+
+DATA RETENTION
+We retain your personal information only for as long as necessary to provide our services and fulfill the purposes described in this policy. You may request deletion of your data at any time by contacting us.
 
 CHILDREN'S PRIVACY
-Qelem is designed for educational use and may be used by children under parental supervision. We do not knowingly collect personal information from children under 13 without parental consent.
+Qelem is designed for educational use and may be used by children under parental supervision. We are committed to protecting children's privacy:
+- We do not knowingly collect personal information from children under 13 without parental consent
+- Parents may review, modify, or delete their child's information by contacting us
+- We encourage parental involvement in children's use of the app
+
+YOUR RIGHTS
+You have the right to:
+- Access and review your personal data
+- Request correction of inaccurate information
+- Request deletion of your account and data
+- Revoke permissions through your device settings
+- Opt-out of promotional communications
 
 CONTACT US
-If you have any questions about this Privacy Policy, please contact us at:
-- Email: privacy@qelem.com
-- Website: www.qelem.com
+If you have any questions about this Privacy Policy or our data practices, please contact us at:
+- Email: contact@qelem.net
+- Website: www.qelem.net
 
 CHANGES TO THIS POLICY
-We may update this Privacy Policy from time to time. We will notify you of any changes by posting the new Privacy Policy on this page and updating the "Last updated" date.
+We may update this Privacy Policy from time to time. We will notify you of any material changes by posting the new Privacy Policy on this page and updating the "Last updated" date. We encourage you to review this policy periodically.
 
 By using Qelem, you agree to the collection and use of information in accordance with this Privacy Policy.
