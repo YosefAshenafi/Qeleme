@@ -25,7 +25,7 @@
         <category android:name="android.intent.category.DEFAULT"/>
         <category android:name="android.intent.category.BROWSABLE"/>
         <data android:scheme="qelem"/>
-        <data android:scheme="com.yosefashenafi.Qelem"/>
+        <data android:scheme="com.qelemapp.qelem"/>
       </intent-filter>
     </activity>
   </application>

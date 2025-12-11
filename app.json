@@ -28,7 +28,7 @@
     "ios": {
       "supportsTablet": true,
       "requireFullScreen": false,
-      "bundleIdentifier": "com.yosefashenafi.Qelem",
+      "bundleIdentifier": "com.qelemapp.qelem",
       "buildNumber": "6",
       "icon": "./assets/images/logo/app-icon.png",
       "infoPlist": {
@@ -51,7 +51,7 @@
         "resizeMode": "contain",
         "backgroundColor": "#6B54AE"
       },
-      "package": "com.yosefashenafi.Qelem",
+      "package": "com.qelemapp.qelem",
       "versionCode": 9,
       "compileSdkVersion": 35,
       "targetSdkVersion": 35,
@@ -61,7 +61,7 @@
         "android.permission.CAMERA",
         "android.permission.READ_MEDIA_IMAGES"
       ],
-      "playStoreUrl": "https://play.google.com/store/apps/details?id=com.yosefashenafi.qelem",
+      "playStoreUrl": "https://play.google.com/store/apps/details?id=com.qelemapp.qelem",
       "privacyPolicy": "https://qelem.com/privacy-policy"
     },
     "web": {

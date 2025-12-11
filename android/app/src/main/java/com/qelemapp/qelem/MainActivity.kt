@@ -1,4 +1,4 @@
-package com.yosefashenafi.qelem
+package com.qelemapp.qelem
 
 import android.os.Build
 import android.os.Bundle
