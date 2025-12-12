@@ -33,9 +33,9 @@
 -keep class com.facebook.react.views.** { *; }
 
 # Keep your app's main classes
--keep class com.yosefashenafi.qelem.** { *; }
--keep class com.yosefashenafi.qelem.MainApplication { *; }
--keep class com.yosefashenafi.qelem.MainActivity { *; }
+-keep class com.qelemapp.qelem.** { *; }
+-keep class com.qelemapp.qelem.MainApplication { *; }
+-keep class com.qelemapp.qelem.MainActivity { *; }
 
 # Hermes specific rules
 -keep class com.facebook.hermes.unicode.** { *; }

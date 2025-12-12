@@ -52,7 +52,7 @@
         "backgroundColor": "#6B54AE"
       },
       "package": "com.qelemapp.qelem",
-      "versionCode": 10,
+      "versionCode": 12,
       "compileSdkVersion": 35,
       "targetSdkVersion": 35,
       "permissions": [

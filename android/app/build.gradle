@@ -91,7 +91,7 @@ android {
         applicationId 'com.qelemapp.qelem'
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 10
+        versionCode 13
         versionName "1.0.6"
     }
     signingConfigs {
@@ -114,9 +114,9 @@ android {
         }
         release {
             signingConfig signingConfigs.release
-            shrinkResources false
-            minifyEnabled false
-            proguardFiles getDefaultProguardFile("proguard-android.txt"), "proguard-rules.pro"
+            shrinkResources true
+            minifyEnabled true
+            proguardFiles getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro"
             crunchPngs (findProperty('android.enablePngCrunchInReleaseBuilds')?.toBoolean() ?: true)
             debuggable false
         }
@@ -129,6 +129,9 @@ android {
     androidResources {
         ignoreAssetsPattern '!.svn:!.git:!.ds_store:!*.scc:!CVS:!thumbs.db:!picasa.ini:!*~'
     }
+    
+    // Enable 16KB page size support for Android 15+ compatibility
+    experimentalProperties["android.experimental.art.profileBasedDexOrder"] = true
 }
 
 // Apply static values from `gradle.properties` to the `android.packagingOptions`
