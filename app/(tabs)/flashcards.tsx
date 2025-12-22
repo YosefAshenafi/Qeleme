@@ -54,6 +54,7 @@ export default function FlashcardsScreen() {
   const [selectedSubject, setSelectedSubject] = useState<string>('');
   const [selectedChapter, setSelectedChapter] = useState<string>('');
   const [showFlashcards, setShowFlashcards] = useState(false);
+  const [showResult, setShowResult] = useState(false);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isRevealed, setIsRevealed] = useState(false);
   const [showSubjectDropdown, setShowSubjectDropdown] = useState(false);
@@ -516,6 +517,117 @@ export default function FlashcardsScreen() {
     );
   }
 
+  // Show result page after finishing flashcards - CHECK THIS FIRST
+  if (showResult) {
+    const totalCards = currentFlashcards.length;
+    const timeSpent = sessionStartTime ? Date.now() - sessionStartTime : 0;
+    const formatTime = (ms: number) => {
+      const seconds = Math.floor(ms / 1000);
+      const minutes = Math.floor(seconds / 60);
+      const hours = Math.floor(minutes / 60);
+      if (hours > 0) {
+        return `${hours}h ${minutes % 60}m`;
+      } else if (minutes > 0) {
+        return `${minutes}m ${seconds % 60}s`;
+      } else {
+        return `${seconds}s`;
+      }
+    };
+
+    return (
+      <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]}>
+        <ThemedView style={[styles.container, { backgroundColor: colors.background }]}>
+          <ScrollView 
+            contentContainerStyle={styles.scrollContent}
+            showsVerticalScrollIndicator={false}
+          >
+            <ThemedText style={[styles.resultTitle, { color: colors.text }]}>
+              {t('flashcards.results.title', 'Flashcard Session Complete!')}
+            </ThemedText>
+            
+            <ThemedView style={[styles.resultCard, { backgroundColor: colors.card }]}>
+              <LinearGradient
+                colors={[colors.cardGradientStart || colors.tint, colors.cardGradientEnd || colors.tint]}
+                style={StyleSheet.absoluteFill}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+              />
+              
+              <View style={styles.trophyContainer}>
+                <IconSymbol name="trophy.fill" size={80} color={colors.tabIconSelected} />
+              </View>
+              
+              <View style={styles.resultContent}>
+                <ThemedText style={[styles.scoreText, { color: colors.text }]}>
+                  {t('flashcards.results.cardsReviewed', 'Cards Reviewed: {{count}}', { count: totalCards })}
+                </ThemedText>
+                
+                <View style={[styles.percentageContainer, { backgroundColor: colors.cardAlt, borderColor: colors.border }]}>
+                  <ThemedText style={[styles.percentageText, { color: colors.text }]}>
+                    {formatTime(timeSpent)}
+                  </ThemedText>
+                </View>
+                
+                <View style={[styles.messageContainer, { backgroundColor: colors.cardAlt, borderColor: colors.border }]}>
+                  <ThemedText style={[styles.messageText, { color: colors.text }]}>
+                    {t('flashcards.results.message', 'Great job! You\'ve completed all flashcards in this chapter.')}
+                  </ThemedText>
+                </View>
+              </View>
+            </ThemedView>
+
+            <ThemedView style={styles.actionButtons}>
+              <TouchableOpacity
+                style={[styles.button, styles.retryButton, { backgroundColor: colors.tint, marginBottom: 12 }]}
+                onPress={() => {
+                  setShowResult(false);
+                  setShowFlashcards(true);
+                  setCurrentIndex(0);
+                  setIsRevealed(false);
+                  setSessionStartTime(Date.now());
+                  revealAnimation.value = withSpring(0, {
+                    damping: 12,
+                    stiffness: 80,
+                    mass: 0.8,
+                  });
+                  progressAnimation.value = withTiming(0);
+                }}
+              >
+                <ThemedText style={[styles.retryButtonText, { color: '#fff' }]}>
+                  {t('flashcards.results.reviewAgain', 'Review Again')}
+                </ThemedText>
+                <IconSymbol name="chevron.right" size={24} color="#fff" />
+              </TouchableOpacity>
+              
+              <TouchableOpacity
+                style={[styles.button, styles.homeButton, { backgroundColor: colors.cardAlt, borderColor: colors.border }]}
+                onPress={() => {
+                  setShowResult(false);
+                  setShowFlashcards(false);
+                  setCurrentIndex(0);
+                  setIsRevealed(false);
+                  setCurrentFlashcards([]);
+                  setSessionStartTime(null);
+                  revealAnimation.value = withSpring(0, {
+                    damping: 12,
+                    stiffness: 80,
+                    mass: 0.8,
+                  });
+                  progressAnimation.value = withTiming(0);
+                }}
+              >
+                <ThemedText style={[styles.homeButtonText, { color: colors.text }]}>
+                  {t('flashcards.results.chooseAnotherChapter', 'Choose Another Chapter')}
+                </ThemedText>
+              </TouchableOpacity>
+            </ThemedView>
+          </ScrollView>
+        </ThemedView>
+      </SafeAreaView>
+    );
+  }
+
+  // Show selection screen when not showing flashcards
   if (!showFlashcards) {
     return (
       <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]}>
@@ -848,18 +960,9 @@ export default function FlashcardsScreen() {
             ]}
             onPress={() => {
               if (currentFlashcards.length > 0 && currentIndex === currentFlashcards.length - 1) {
-                // Reset everything when Finish is clicked
+                // Show result page when Finish is clicked
                 setShowFlashcards(false);
-                setSelectedSubject('');
-                setSelectedChapter('');
-                setCurrentIndex(0);
-                setIsRevealed(false);
-                setCurrentFlashcards([]);
-                revealAnimation.value = withSpring(0, {
-                  damping: 12,
-                  stiffness: 80,
-                  mass: 0.8,
-                });
+                setShowResult(true);
               } else {
                 handleNext();
               }
@@ -1236,5 +1339,87 @@ const styles = StyleSheet.create({
   breadcrumbText: {
     fontSize: 14,
     fontWeight: '600',
+  },
+  resultTitle: {
+    fontSize: 28,
+    fontWeight: '700',
+    textAlign: 'center',
+    marginTop: 20,
+    marginBottom: 20,
+  },
+  resultCard: {
+    width: '100%',
+    alignSelf: 'center',
+    borderRadius: 20,
+    padding: 24,
+    elevation: 8,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 12,
+    overflow: 'hidden',
+    marginTop: 8,
+    marginBottom: 20,
+  },
+  resultContent: {
+    gap: 16,
+    alignItems: 'center',
+  },
+  trophyContainer: {
+    alignItems: 'center',
+    paddingVertical: 16,
+    backgroundColor: 'transparent',
+  },
+  scoreText: {
+    paddingVertical: 12,
+    fontSize: 24,
+    fontWeight: '700',
+    textAlign: 'center',
+    backgroundColor: 'transparent',
+  },
+  percentageContainer: {
+    alignSelf: 'center',
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    borderRadius: 20,
+    borderWidth: 2,
+  },
+  percentageText: {
+    fontSize: 18,
+    fontWeight: '600',
+    textAlign: 'center',
+  },
+  messageContainer: {
+    padding: 16,
+    borderRadius: 12,
+    borderWidth: 2,
+    width: '100%',
+  },
+  messageText: {
+    fontSize: 15,
+    textAlign: 'center',
+    lineHeight: 22,
+    fontWeight: '600',
+  },
+  actionButtons: {
+    gap: 12,
+    marginTop: 20,
+    paddingBottom: 40,
+  },
+  button: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 16,
+    borderRadius: 12,
+    gap: 8,
+  },
+  homeButton: {
+    borderWidth: 2,
+    // backgroundColor and borderColor set inline
+  },
+  homeButtonText: {
+    fontSize: 18,
+    fontWeight: '700',
   },
 }); 

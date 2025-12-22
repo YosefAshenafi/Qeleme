@@ -1565,7 +1565,7 @@ export default function MCQScreen() {
       {/* Timer in top right */}
       <View style={{
         position: 'absolute',
-        top: 60,
+        top: 40,
         right: 20,
         zIndex: 1000,
       }}>
@@ -2138,7 +2138,7 @@ const styles = StyleSheet.create({
     padding: 20,
     borderRadius: 12,
     marginTop: 20,
-    marginBottom: 20,
+    marginBottom: 40,
   },
   explanationTitle: {
     marginBottom: 10,
