@@ -18,10 +18,14 @@ Important Privacy Commitment:
 - We do NOT share your photos with third parties
 - You can revoke camera permission at any time through your device settings
 
-Media/Photo Library Access (android.permission.READ_MEDIA_IMAGES)
-We request access to your photo library to allow you to:
-- Select existing photos for homework help
-- Upload educational images in chat for questions
+Media Selection
+We allow you to select images from your device for homework help or chat. This is done using the system's secure photo picker, which allows you to choose specific images to share with the app without granting the app full access to your photo library.
+
+AI Assistance
+Our app uses artificial intelligence (AI) to provide homework assistance. Please note:
+- AI-generated responses may occasionally be inaccurate or inappropriate
+- Users should verify important information
+- You can report inappropriate content using the "Report Issue" button in the chat
 
 Account Information
 - Registration Data: Email address, phone number, name, and profile details you provide

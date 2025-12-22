@@ -29,7 +29,7 @@
   "submit": {
     "production": {
       "ios": {
-        "bundleIdentifier": "com.yosefashenafi.Qelem"
+        "bundleIdentifier": "com.qelemapp.qelem"
       }
     }
   }

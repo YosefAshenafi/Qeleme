@@ -21,6 +21,7 @@ type Message = {
   text: string;
   isUser: boolean;
   imageUri?: string;
+  isReported?: boolean;
 };
 
 type RecentActivity = {
@@ -48,7 +49,7 @@ const containsMarkdown = (text: string): boolean => {
     /^\|.*\|$/, // Tables
     /^---$/, // Horizontal rules
   ];
-  
+
   return markdownPatterns.some(pattern => pattern.test(text));
 };
 
@@ -338,7 +339,7 @@ export default function HomeworkScreen() {
 
       // Prepare the message content for the API
       const messageContent: ChatMessage['content'] = [];
-      
+
       if (inputText.trim()) {
         messageContent.push({
           type: 'text',
@@ -383,11 +384,11 @@ export default function HomeworkScreen() {
           try {
             const trackingService = ActivityTrackingService.getInstance();
             await trackingService.initialize();
-            
+
             const questionCount = inputText.trim().split('?').length; // Simple question count
             const hasImage = !!selectedImage;
             const responseTime = Date.now() - (sessionStartTime || Date.now());
-            
+
             await trackingService.trackHomeworkActivity({
               grade: user?.grade || 'unknown',
               subject: 'General', // Could be enhanced to detect subject from question
@@ -400,7 +401,7 @@ export default function HomeworkScreen() {
             // Silently fail - activity tracking is not critical
           }
         };
-        
+
         trackActivity();
       }
     } catch (error) {
@@ -416,18 +417,38 @@ export default function HomeworkScreen() {
     }
   };
 
+  const handleReport = (messageId: string) => {
+    Alert.alert(
+      "Report Content",
+      "Do you want to report this response as inappropriate or incorrect?",
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Report",
+          style: "destructive",
+          onPress: () => {
+            setMessages(prev => prev.map(msg =>
+              msg.id === messageId ? { ...msg, isReported: true } : msg
+            ));
+            Alert.alert("Thank you", "The content has been reported and will be reviewed.");
+          }
+        }
+      ]
+    );
+  };
+
   return (
     <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]}>
       <View style={[styles.header, { backgroundColor: colors.background }]}>
         <ThemedText style={styles.headerTitle}>Homework Help</ThemedText>
       </View>
-      <KeyboardAvoidingView 
+      <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
         style={styles.keyboardAvoidingView}
         keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}
       >
         <ThemedView style={[styles.container, { backgroundColor: colors.background }]}>
-          <ScrollView 
+          <ScrollView
             ref={scrollViewRef}
             style={styles.messagesContainer}
             contentContainerStyle={styles.messagesContent}
@@ -446,27 +467,38 @@ export default function HomeworkScreen() {
                 </ThemedView>
               )}
               {messages.map((message) => (
-                <ThemedView 
-                  key={message.id} 
+                <ThemedView
+                  key={message.id}
                   style={[
                     styles.messageContainer,
-                    message.isUser 
+                    message.isUser
                       ? [styles.userMessage, { backgroundColor: colors.tint }]
                       : [styles.botMessage, { backgroundColor: colors.cardAlt }]
                   ]}
                 >
                   {message.imageUri && (
-                    <Image 
-                      source={{ uri: message.imageUri }} 
+                    <Image
+                      source={{ uri: message.imageUri }}
                       style={styles.messageImage}
                       resizeMode="cover"
                     />
                   )}
-                  <MarkdownRenderer 
+                  <MarkdownRenderer
                     text={message.text}
                     isUser={message.isUser}
                     colors={colors}
                   />
+                  {!message.isUser && (
+                    <TouchableOpacity
+                      style={styles.reportButton}
+                      onPress={() => handleReport(message.id)}
+                      disabled={message.isReported}
+                    >
+                      <ThemedText style={[styles.reportText, message.isReported && { color: colors.tint }]}>
+                        {message.isReported ? "Reported" : "Report Issue"}
+                      </ThemedText>
+                    </TouchableOpacity>
+                  )}
                 </ThemedView>
               ))}
               {isLoading && (
@@ -503,12 +535,12 @@ export default function HomeworkScreen() {
 
           {selectedImage && (
             <ThemedView style={[styles.selectedImagePreviewContainer, { backgroundColor: colors.cardAlt }]}>
-              <Image 
-                source={{ uri: selectedImage }} 
-                style={styles.selectedImagePreview} 
+              <Image
+                source={{ uri: selectedImage }}
+                style={styles.selectedImagePreview}
                 resizeMode="cover"
               />
-              <TouchableOpacity 
+              <TouchableOpacity
                 style={[styles.removeImageButton, { backgroundColor: 'rgba(0, 0, 0, 0.5)' }]}
                 onPress={() => setSelectedImage(null)}
               >
@@ -517,13 +549,13 @@ export default function HomeworkScreen() {
             </ThemedView>
           )}
 
-          <ThemedView style={[styles.inputContainer, { 
+          <ThemedView style={[styles.inputContainer, {
             backgroundColor: colors.background,
             borderTopColor: colors.border,
           }]}>
             <TextInput
               ref={inputRef}
-              style={[styles.input, { 
+              style={[styles.input, {
                 backgroundColor: colors.cardAlt,
                 color: colors.text,
                 borderColor: colors.border,
@@ -536,28 +568,28 @@ export default function HomeworkScreen() {
               multiline
               editable={!isLoading}
             />
-            
+
             <View style={styles.buttonContainer}>
-              <TouchableOpacity 
+              <TouchableOpacity
                 style={[
-                  styles.imageButton, 
+                  styles.imageButton,
                   { backgroundColor: colors.cardAlt },
                   isLoading && { backgroundColor: isDarkMode ? 'rgba(0, 0, 0, 0.3)' : 'rgba(0, 0, 0, 0.1)' }
                 ]}
                 onPress={pickImage}
                 disabled={isLoading}
               >
-                <IconSymbol 
-                  name="photo" 
-                  size={24} 
-                  color={isLoading 
-                    ? (isDarkMode ? 'rgba(255, 255, 255, 0.3)' : 'rgba(0, 0, 0, 0.3)') 
+                <IconSymbol
+                  name="photo"
+                  size={24}
+                  color={isLoading
+                    ? (isDarkMode ? 'rgba(255, 255, 255, 0.3)' : 'rgba(0, 0, 0, 0.3)')
                     : colors.tint
-                  } 
+                  }
                 />
               </TouchableOpacity>
-              
-              <TouchableOpacity 
+
+              <TouchableOpacity
                 style={[
                   styles.sendButton,
                   { backgroundColor: colors.tint },
@@ -568,13 +600,13 @@ export default function HomeworkScreen() {
                 onPress={handleSend}
                 disabled={!inputText.trim() && !selectedImage || isLoading}
               >
-                <IconSymbol 
-                  name="paperplane.fill" 
-                  size={24} 
+                <IconSymbol
+                  name="paperplane.fill"
+                  size={24}
                   color={((!inputText.trim() && !selectedImage) || isLoading)
                     ? (isDarkMode ? 'rgba(255, 255, 255, 0.5)' : 'rgba(255, 255, 255, 0.8)')
                     : '#fff'
-                  } 
+                  }
                 />
               </TouchableOpacity>
             </View>
@@ -714,5 +746,16 @@ const styles = StyleSheet.create({
   headerRight: {
     flexDirection: 'row',
     alignItems: 'center',
+  },
+  reportButton: {
+    marginTop: 8,
+    alignSelf: 'flex-start',
+    paddingVertical: 4,
+    paddingHorizontal: 8,
+  },
+  reportText: {
+    fontSize: 12,
+    color: 'gray',
+    textDecorationLine: 'underline',
   },
 }); 
