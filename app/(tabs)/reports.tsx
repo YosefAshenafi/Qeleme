@@ -30,7 +30,7 @@ export default function ReportsScreen() {
     { label: t('profile.stats.mcqsCompleted'), value: '0', icon: 'questionmark.circle.fill' as const },
     { label: t('profile.stats.flashcardsClicked'), value: '0', icon: 'rectangle.stack.fill' as const },
     { label: t('profile.stats.homeworkQuestions'), value: '0', icon: 'message.fill' as const },
-    { label: t('profile.stats.studyHours'), value: '0', icon: 'clock.fill' as const },
+    { label: t('profile.stats.totalQuestions', 'Total Questions'), value: '0', icon: 'chart.bar.fill' as const },
   ]);
 
   const [kgStats, setKgStats] = useState([
@@ -131,9 +131,9 @@ export default function ReportsScreen() {
             icon: 'message.fill' as const 
           },
           { 
-            label: t('profile.stats.studyHours'), 
-            value: `${Math.round(userStats.totalStudyTime / 60)}h`, 
-            icon: 'clock.fill' as const 
+            label: t('profile.stats.totalQuestions', 'Total Questions'), 
+            value: userStats.totalQuestionsAnswered.toString(), 
+            icon: 'chart.bar.fill' as const 
           },
         ]);
       }
