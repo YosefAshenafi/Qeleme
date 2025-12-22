@@ -166,7 +166,12 @@ export default {
       study: 'Study',
       homework: 'Homework',
       completed: 'Completed',
-      duration: '{hours} hours'
+      duration: '{hours} hours',
+      activity: 'activity',
+      activities: 'activities',
+      chapter: 'chapter',
+      chapters: 'chapters',
+      noChapter: 'No Chapter'
     },
     howCalculated: {
       title: 'How Reports are Calculated',

@@ -18,6 +18,27 @@ import { ThemedView } from '@/components/ThemedView';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
+// Helper function to format chapter names
+const formatChapterName = (chapter: string, language: string): string => {
+  if (!chapter || chapter === '' || chapter.toLowerCase() === 'unknown' || chapter.toLowerCase() === 'undefined') {
+    return chapter;
+  }
+  
+  // Check if chapter is already formatted
+  if (chapter.toLowerCase().startsWith('ch-') || chapter.startsWith('ምዕ-')) {
+    return chapter;
+  }
+  
+  // Check if it's just a number
+  const chapterNum = chapter.trim();
+  if (/^\d+$/.test(chapterNum)) {
+    return language === 'am' ? `ምዕ-${chapterNum}` : `ch-${chapterNum}`;
+  }
+  
+  // If it's not a number, return as is
+  return chapter;
+};
+
 export default function ReportsScreen() {
   const { t, i18n } = useTranslation();
   const { isDarkMode } = useTheme();
@@ -58,17 +79,43 @@ export default function ReportsScreen() {
     },
     subjectBreakdown: [] as Array<{ subject: string; progress: number; score: number }>,
     recentActivity: [] as Array<{
-      type: string;
       subject: string;
-      score?: number;
-      duration?: string;
-      status?: string;
-      date: string;
+      chapters: Array<{
+        chapter: string;
+        chapterFormatted: string;
+        activities: Array<{
+          type: string;
+          subject: string;
+          chapter?: string;
+          chapterFormatted?: string;
+          score?: number;
+          duration?: string;
+          status?: string;
+          date: string;
+          timestamp: number;
+        }>;
+        completedTypes: string[];
+      }>;
+      count: number;
+      latestDate: string;
     }>,
   });
   const [isInfoExpanded, setIsInfoExpanded] = useState(false);
+  const [expandedSubjects, setExpandedSubjects] = useState<Set<string>>(new Set());
   const animatedHeight = useRef(new Animated.Value(0)).current;
   const animatedRotate = useRef(new Animated.Value(0)).current;
+
+  const toggleSubject = (subject: string) => {
+    setExpandedSubjects(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(subject)) {
+        newSet.delete(subject);
+      } else {
+        newSet.add(subject);
+      }
+      return newSet;
+    });
+  };
 
   // Initialize tracking service
   useEffect(() => {
@@ -139,21 +186,144 @@ export default function ReportsScreen() {
       }
 
       // Update report data with real statistics
-      const subjectBreakdown = Object.entries(userStats.subjectBreakdown).map(([subject, data]) => ({
-        subject: subject,
-        progress: Math.min(100, Math.round((data.questionsAnswered / Math.max(1, userStats.totalQuestionsAnswered)) * 100)),
-        score: data.averageScore
-      })).sort((a, b) => b.progress - a.progress);
+      const subjectBreakdown = Object.entries(userStats.subjectBreakdown)
+        .filter(([subject]) => {
+          // Filter out subjects that are empty or unknown
+          return subject && subject.trim() !== '' && 
+                 subject.toLowerCase() !== 'unknown' && 
+                 subject.toLowerCase() !== 'undefined';
+        })
+        .map(([subject, data]) => ({
+          subject: subject.trim(),
+          progress: Math.min(100, Math.round((data.questionsAnswered / Math.max(1, userStats.totalQuestionsAnswered)) * 100)),
+          score: data.averageScore
+        }))
+        .sort((a, b) => b.progress - a.progress);
 
       const trackingService = ActivityTrackingService.getInstance();
-      const recentActivities = trackingService.getRecentActivities(5).map(activity => ({
-        type: activity.type,
-        subject: activity.subject,
-        score: activity.score,
-        duration: activity.duration ? `${Math.round(activity.duration)}m` : undefined,
-        status: activity.status === 'completed' ? t('reports.status.completed') : activity.status,
-        date: new Date(activity.timestamp).toLocaleDateString(i18n.language === 'am' ? 'am-ET' : 'en-US')
-      }));
+      const allActivities = trackingService.getRecentActivities(50)
+        .filter(activity => {
+          // Only include completed activities with valid subject
+          return activity.status === 'completed' && 
+                 activity.subject && 
+                 activity.subject.trim() !== '' &&
+                 activity.subject.toLowerCase() !== 'unknown' &&
+                 activity.subject.toLowerCase() !== 'undefined';
+        })
+        .map(activity => {
+          const rawChapter = activity.chapter && activity.chapter.trim() !== '' && activity.chapter.toLowerCase() !== 'unknown' && activity.chapter.toLowerCase() !== 'undefined'
+            ? activity.chapter.trim()
+            : t('reports.recentActivity.noChapter', 'No Chapter');
+          
+          return {
+            type: activity.type,
+            subject: activity.subject.trim(),
+            chapter: rawChapter,
+            chapterFormatted: rawChapter !== t('reports.recentActivity.noChapter', 'No Chapter') 
+              ? formatChapterName(rawChapter, i18n.language)
+              : rawChapter,
+            score: activity.score,
+            duration: activity.duration ? `${Math.round(activity.duration)}m` : undefined,
+            status: activity.status === 'completed' ? t('reports.status.completed') : activity.status,
+            date: new Date(activity.timestamp).toLocaleDateString(i18n.language === 'am' ? 'am-ET' : 'en-US'),
+            timestamp: activity.timestamp
+          };
+        });
+
+      // Group activities by subject, then by chapter
+      const groupedBySubject = allActivities.reduce((acc, activity) => {
+        if (!acc[activity.subject]) {
+          acc[activity.subject] = {};
+        }
+        if (!acc[activity.subject][activity.chapter]) {
+          acc[activity.subject][activity.chapter] = [];
+        }
+        acc[activity.subject][activity.chapter].push(activity);
+        return acc;
+      }, {} as Record<string, Record<string, typeof allActivities>>);
+
+      // Convert to array and process chapters
+      const recentActivities = Object.entries(groupedBySubject)
+        .filter(([subject]) => {
+          // Filter out subjects that are empty or unknown
+          return subject && subject.trim() !== '' && 
+                 subject.toLowerCase() !== 'unknown' && 
+                 subject.toLowerCase() !== 'undefined';
+        })
+        .map(([subject, chaptersObj]) => {
+          const chapters = Object.entries(chaptersObj)
+            .filter(([chapter]) => {
+              // Filter out chapters that are empty or unknown
+              return chapter && chapter.trim() !== '' && 
+                     chapter.toLowerCase() !== 'unknown' && 
+                     chapter.toLowerCase() !== 'undefined';
+            })
+            .map(([chapter, activities]) => {
+              // Get unique activity types for this chapter (all valid types)
+              const validTypes = activities
+                .map(a => a.type)
+                .filter(type => type && (type === 'mcq' || type === 'flashcard' || type === 'homework' || type === 'study' || type === 'kg_question' || type === 'picture_mcq'));
+              
+              const completedTypes = Array.from(new Set(validTypes))
+                .map(type => {
+                  if (type === 'mcq') {
+                    return t('reports.activityTypes.mcq');
+                  } else if (type === 'flashcard') {
+                    return t('reports.activityTypes.flashcard');
+                  } else if (type === 'homework') {
+                    return t('reports.activityTypes.homework');
+                  } else if (type === 'study') {
+                    return t('reports.activityTypes.study');
+                  } else if (type === 'kg_question') {
+                    return t('reports.activityTypes.kg_question');
+                  } else if (type === 'picture_mcq') {
+                    return t('reports.activityTypes.picture_mcq');
+                  }
+                  return null;
+                })
+                .filter((type): type is string => type !== null);
+            
+              const chapterFormatted = chapter !== t('reports.recentActivity.noChapter', 'No Chapter')
+                ? formatChapterName(chapter.trim(), i18n.language)
+                : chapter.trim();
+            
+              return {
+                chapter: chapter.trim(),
+                chapterFormatted,
+                activities: activities.sort((a, b) => b.timestamp - a.timestamp),
+                completedTypes
+              };
+            })
+            .filter(chapter => chapter.activities.length > 0); // Only include chapters with activities
+
+          const allSubjectActivities = Object.values(chaptersObj).flat();
+          const latestActivity = allSubjectActivities.sort((a, b) => b.timestamp - a.timestamp)[0];
+
+          // Only include subjects with valid chapters
+          if (chapters.length === 0) {
+            return null;
+          }
+
+          return {
+            subject: subject.trim(),
+            chapters: chapters.sort((a, b) => {
+              // Sort chapters by most recent activity
+              const aLatest = a.activities[0].timestamp;
+              const bLatest = b.activities[0].timestamp;
+              return bLatest - aLatest;
+            }),
+            count: allSubjectActivities.length,
+            latestDate: latestActivity.date
+          };
+        })
+        .filter((group): group is NonNullable<typeof group> => group !== null) // Remove null entries
+        .sort((a, b) => {
+          // Sort subjects by most recent activity
+          const aLatest = a.chapters[0].activities[0].timestamp;
+          const bLatest = b.chapters[0].activities[0].timestamp;
+          return bLatest - aLatest;
+        })
+        .slice(0, 5); // Show top 5 subjects
 
       setReportData({
         overallProgress: {
@@ -336,40 +506,150 @@ export default function ReportsScreen() {
                   <ThemedText style={[styles.sectionTitle, { color: colors.text }]}>
                     {t('reports.recentActivity.title')}
                   </ThemedText>
-                  {reportData.recentActivity.map((activity, index) => (
-                    <ThemedView 
-                      key={index} 
-                      style={[styles.activityCard, { 
-                        backgroundColor: colors.cardAlt,
-                        borderColor: colors.border,
-                        borderWidth: isDarkMode ? 1 : 0
-                      }]}
-                    >
-                      <View style={[styles.activityIcon, { 
-                        backgroundColor: isDarkMode ? 'rgba(107, 84, 174, 0.2)' : '#F3E5F5'
-                      }]}>
-                        <IconSymbol 
-                          name={activity.type === 'quiz' ? 'message.fill' : 
-                                activity.type === 'study' ? 'house.fill' : 'message'} 
-                          size={24} 
-                          color={colors.tint}
-                        />
-                      </View>
-                      <View style={styles.activityContent}>
-                        <ThemedText style={[styles.activityTitle, { color: colors.text }]}>
-                          {activity.subject} - {t(`reports.activityTypes.${activity.type}`, { defaultValue: activity.type })}
-                        </ThemedText>
-                        <ThemedText style={[styles.activitySubtitle, { color: colors.text }]}>
-                          {activity.score ? 
-                            `${activity.score}%` :
-                           activity.duration ? 
-                            activity.duration :
-                           activity.status ? 
-                            t('reports.recentActivity.completed') : ''}
-                        </ThemedText>
-                      </View>
-                    </ThemedView>
-                  ))}
+                  {reportData.recentActivity.map((group, groupIndex) => {
+                    const isExpanded = expandedSubjects.has(group.subject);
+                    return (
+                      <ThemedView 
+                        key={groupIndex}
+                        style={[styles.subjectGroup, { 
+                          backgroundColor: colors.card,
+                          borderColor: colors.border,
+                          borderWidth: isDarkMode ? 1 : 0
+                        }]}
+                      >
+                        {/* Subject Header - Clickable */}
+                        <TouchableOpacity 
+                          style={[styles.subjectHeader, { borderBottomColor: colors.border }]}
+                          onPress={() => toggleSubject(group.subject)}
+                          activeOpacity={0.7}
+                        >
+                          <View style={[styles.subjectIconContainer, { backgroundColor: colors.tint + '15' }]}>
+                            <IconSymbol 
+                              name="chart.bar.fill" 
+                              size={20} 
+                              color={colors.tint}
+                            />
+                          </View>
+                          <View style={styles.subjectHeaderContent}>
+                            <ThemedText style={[styles.subjectTitle, { color: colors.text }]}>
+                              {group.subject}
+                            </ThemedText>
+                            <View style={styles.chapterSummary}>
+                              <View style={styles.typeBadges}>
+                                {Array.from(new Set(group.chapters.flatMap(c => c.completedTypes))).map((type, typeIdx) => (
+                                  <View 
+                                    key={typeIdx} 
+                                    style={[styles.typeBadge, { backgroundColor: colors.tint + '20' }]}
+                                  >
+                                    <ThemedText style={[styles.typeBadgeText, { color: colors.tint }]}>
+                                      {type}
+                                    </ThemedText>
+                                  </View>
+                                ))}
+                              </View>
+                            </View>
+                          </View>
+                          <View style={styles.subjectHeaderRight}>
+                            <ThemedText style={[styles.subjectDate, { color: colors.text + '60' }]}>
+                              {group.latestDate}
+                            </ThemedText>
+                            <IconSymbol 
+                              name={isExpanded ? 'chevron.up' : 'chevron.down'} 
+                              size={20} 
+                              color={colors.text + '60'}
+                            />
+                          </View>
+                        </TouchableOpacity>
+
+                        {/* Chapters List - Expandable */}
+                        {isExpanded && (
+                          <View style={styles.chaptersList}>
+                            {group.chapters.map((chapter, chapterIndex) => (
+                              <View 
+                                key={chapterIndex}
+                                style={[
+                                  styles.chapterItem,
+                                  chapterIndex < group.chapters.length - 1 && { borderBottomColor: colors.border, borderBottomWidth: 1 }
+                                ]}
+                              >
+                                <View style={styles.chapterHeader}>
+                                  <ThemedText style={[styles.chapterTitle, { color: colors.text }]}>
+                                    {chapter.chapterFormatted}
+                                  </ThemedText>
+                                  {chapter.completedTypes.length > 0 && (
+                                    <View style={styles.completedTypesContainer}>
+                                      {chapter.completedTypes.map((type, typeIdx) => (
+                                        <View 
+                                          key={typeIdx} 
+                                          style={[styles.completedTypeBadge, { backgroundColor: colors.tint + '15' }]}
+                                        >
+                                          <IconSymbol 
+                                            name={type.includes('MCQ') ? 'checkmark.circle.fill' : 'checkmark.circle.fill'} 
+                                            size={14} 
+                                            color={colors.tint}
+                                          />
+                                          <ThemedText style={[styles.completedTypeText, { color: colors.tint }]}>
+                                            {type}
+                                          </ThemedText>
+                                        </View>
+                                      ))}
+                                    </View>
+                                  )}
+                                </View>
+                                <View style={styles.activitiesList}>
+                                  {chapter.activities.map((activity, activityIndex) => (
+                                    <View 
+                                      key={activityIndex}
+                                      style={styles.activityItem}
+                                    >
+                                      <View style={[styles.activityIcon, { 
+                                        backgroundColor: isDarkMode ? 'rgba(107, 84, 174, 0.2)' : '#F3E5F5'
+                                      }]}>
+                                        <IconSymbol 
+                                          name={activity.type === 'mcq' ? 'questionmark.circle.fill' : 
+                                                activity.type === 'flashcard' ? 'rectangle.stack.fill' :
+                                                activity.type === 'homework' ? 'message.fill' : 
+                                                activity.type === 'study' ? 'house.fill' : 'message'} 
+                                          size={18} 
+                                          color={colors.tint}
+                                        />
+                                      </View>
+                                      <View style={styles.activityContent}>
+                                        <ThemedText style={[styles.activityTitle, { color: colors.text }]}>
+                                          {activity.type === 'mcq' ? t('reports.activityTypes.mcq') :
+                                           activity.type === 'flashcard' ? t('reports.activityTypes.flashcard') :
+                                           activity.type === 'homework' ? t('reports.activityTypes.homework') :
+                                           activity.type === 'study' ? t('reports.activityTypes.study') :
+                                           activity.type === 'kg_question' ? t('reports.activityTypes.kg_question') :
+                                           activity.type === 'picture_mcq' ? t('reports.activityTypes.picture_mcq') :
+                                           ''} {activity.chapter && activity.chapter !== t('reports.recentActivity.noChapter', 'No Chapter') 
+                                            ? `• ${activity.chapterFormatted}` 
+                                            : activity.type !== 'homework' && activity.chapter === t('reports.recentActivity.noChapter', 'No Chapter')
+                                            ? `• ${activity.chapter}`
+                                            : ''}
+                                        </ThemedText>
+                                        <ThemedText style={[styles.activitySubtitle, { color: colors.text + '80' }]}>
+                                          {activity.score ? 
+                                            `${activity.score}%` :
+                                           activity.duration ? 
+                                            activity.duration :
+                                           activity.status ? 
+                                            activity.status : ''}
+                                        </ThemedText>
+                                      </View>
+                                      <ThemedText style={[styles.activityDate, { color: colors.text + '60' }]}>
+                                        {activity.date}
+                                      </ThemedText>
+                                    </View>
+                                  ))}
+                                </View>
+                              </View>
+                            ))}
+                          </View>
+                        )}
+                      </ThemedView>
+                    );
+                  })}
                 </ThemedView>
               )}
 
@@ -531,17 +811,122 @@ const styles = StyleSheet.create({
   section: {
     gap: 16,
   },
-  activityCard: {
+  subjectGroup: {
+    borderRadius: 12,
+    marginBottom: 12,
+    overflow: 'hidden',
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 1,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  subjectHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    borderRadius: 12,
     padding: 16,
+    borderBottomWidth: 1,
+    gap: 12,
+  },
+  subjectIconContainer: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  subjectHeaderContent: {
+    flex: 1,
+  },
+  subjectTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    marginBottom: 6,
+  },
+  subjectHeaderRight: {
+    alignItems: 'flex-end',
+    gap: 4,
+  },
+  subjectCount: {
+    fontSize: 12,
+  },
+  subjectDate: {
+    fontSize: 12,
+  },
+  chapterSummary: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flexWrap: 'wrap',
+    gap: 8,
+    marginTop: 4,
+  },
+  typeBadges: {
+    flexDirection: 'row',
+    gap: 4,
+    flexWrap: 'wrap',
+  },
+  typeBadge: {
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 6,
+  },
+  typeBadgeText: {
+    fontSize: 10,
+    fontWeight: '600',
+  },
+  chaptersList: {
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+  },
+  chapterItem: {
+    paddingVertical: 12,
+    gap: 8,
+  },
+  chapterHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 8,
+  },
+  chapterTitle: {
+    fontSize: 14,
+    fontWeight: '600',
+    flex: 1,
+  },
+  completedTypesContainer: {
+    flexDirection: 'row',
+    gap: 6,
+    flexWrap: 'wrap',
+  },
+  completedTypeBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 8,
+  },
+  completedTypeText: {
+    fontSize: 11,
+    fontWeight: '600',
+  },
+  activitiesList: {
+    paddingLeft: 8,
+    gap: 4,
+  },
+  activityItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 12,
     gap: 12,
   },
   activityIcon: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+    width: 32,
+    height: 32,
+    borderRadius: 16,
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -549,12 +934,15 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   activityTitle: {
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: '500',
-    marginBottom: 4,
+    marginBottom: 2,
   },
   activitySubtitle: {
-    fontSize: 14,
+    fontSize: 12,
+  },
+  activityDate: {
+    fontSize: 11,
   },
   accordionHeader: {
     flexDirection: 'row',

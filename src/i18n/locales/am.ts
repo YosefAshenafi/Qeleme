@@ -374,7 +374,12 @@ export default {
       study: 'ትምህርት',
       homework: 'የቤት ስራ',
       completed: 'ተጠናቅቋል',
-      duration: '{hours} ሰዓታት'
+      duration: '{hours} ሰዓታት',
+      activity: 'እንቅስቃሴ',
+      activities: 'እንቅስቃሴዎች',
+      chapter: 'ምዕራፍ',
+      chapters: 'ምዕራፎች',
+      noChapter: 'ምንም ምዕራፍ የለም'
     },
     howCalculated: {
       title: 'ሪፖርቶች እንዴት እንደሚሰሉ',
