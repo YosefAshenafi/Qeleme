@@ -18,6 +18,8 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { LanguageToggle } from '../components/ui/LanguageToggle';
 import { BASE_URL } from '../config/constants';
 import Constants from 'expo-constants';
+import ActivityTrackingService from '../services/activityTrackingService';
+import { PasswordInput } from '../components/ui/PasswordInput';
 
 interface AccordionItemProps {
   title: string;
@@ -86,6 +88,12 @@ export default function ProfileScreen() {
   const [showAboutModal, setShowAboutModal] = useState(false);
   const [showVersionModal, setShowVersionModal] = useState(false);
   const [showResetModal, setShowResetModal] = useState(false);
+  const [showResetPasswordModal, setShowResetPasswordModal] = useState(false);
+  const [showResetSuccessModal, setShowResetSuccessModal] = useState(false);
+  const [showResetErrorModal, setShowResetErrorModal] = useState(false);
+  const [resetErrorMessage, setResetErrorMessage] = useState('');
+  const [resetPassword, setResetPassword] = useState('');
+  const [isResetting, setIsResetting] = useState(false);
   const colors = getColors(isDarkMode);
 
   const onRefresh = React.useCallback(async () => {
@@ -592,7 +600,7 @@ export default function ProfileScreen() {
             
             <View style={styles.modalBody}>
               <Text style={[styles.modalText, { color: colors.text }]}>
-                {t('profile.resetConfirmation', 'Are you sure you want to reset the app? This will take you back to the onboarding screen.')}
+                {t('profile.resetConfirmation', 'Are you sure you want to reset app data? This will clear all your progress and reports, but you will remain logged in.')}
               </Text>
               <View style={[styles.warningBox, { backgroundColor: '#F44336' + '15', borderColor: '#F44336' + '40' }]}>
                 <IconSymbol name="info.circle.fill" size={20} color="#F44336" />
@@ -615,11 +623,282 @@ export default function ProfileScreen() {
                 style={[styles.modalButton, { backgroundColor: '#F44336' }]}
                 onPress={() => {
                   setShowResetModal(false);
-                  router.replace('/(auth)/onboarding');
+                  setShowResetPasswordModal(true);
                 }}
               >
                 <Text style={styles.modalButtonText}>
                   {t('common.confirm', 'Confirm')}
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </TouchableOpacity>
+        </TouchableOpacity>
+      </Modal>
+
+      {/* Reset App Password Modal */}
+      <Modal
+        visible={showResetPasswordModal}
+        transparent={true}
+        animationType="fade"
+        onRequestClose={() => {
+          setShowResetPasswordModal(false);
+          setResetPassword('');
+        }}
+      >
+        <TouchableOpacity
+          style={styles.modalOverlay}
+          activeOpacity={1}
+          onPress={() => {
+            setShowResetPasswordModal(false);
+            setResetPassword('');
+          }}
+        >
+          <TouchableOpacity
+            activeOpacity={1}
+            onPress={(e) => e.stopPropagation()}
+            style={[styles.modalContent, { backgroundColor: colors.card }]}
+          >
+            <View style={[styles.modalHeader, { borderBottomColor: colors.border }]}>
+              <View style={[styles.modalIconContainer, { backgroundColor: '#F44336' + '15' }]}>
+                <IconSymbol name="lock.fill" size={32} color="#F44336" />
+              </View>
+              <Text style={[styles.modalTitle, { color: colors.text }]}>
+                {t('profile.enterPassword', 'Enter Password')}
+              </Text>
+              <TouchableOpacity
+                onPress={() => {
+                  setShowResetPasswordModal(false);
+                  setResetPassword('');
+                }}
+                style={[styles.modalCloseButton, { backgroundColor: colors.cardAlt }]}
+              >
+                <IconSymbol name="xmark.circle.fill" size={24} color={colors.text} />
+              </TouchableOpacity>
+            </View>
+            
+            <View style={styles.modalBody}>
+              <Text style={[styles.modalText, { color: colors.text }]}>
+                {t('profile.resetPasswordPrompt', 'Please enter your password to reset app data. This will clear all your progress and reports, but you will remain logged in.')}
+              </Text>
+              
+              <View style={styles.passwordContainer}>
+                <PasswordInput
+                  value={resetPassword}
+                  onChangeText={setResetPassword}
+                  placeholder={t('profile.enterPassword', 'Enter Password')}
+                  colors={colors}
+                  isDarkMode={isDarkMode}
+                  style={styles.passwordInputStyle}
+                />
+              </View>
+            </View>
+
+            <View style={styles.modalButtonContainer}>
+              <TouchableOpacity
+                style={[styles.modalButtonSecondary, { backgroundColor: colors.cardAlt, borderColor: colors.border }]}
+                onPress={() => {
+                  setShowResetPasswordModal(false);
+                  setResetPassword('');
+                }}
+              >
+                <Text style={[styles.modalButtonSecondaryText, { color: colors.text }]}>
+                  {t('common.cancel', 'Cancel')}
+                </Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.modalButton, { backgroundColor: '#F44336', opacity: isResetting || !resetPassword.trim() ? 0.6 : 1 }]}
+                onPress={async () => {
+                  if (!resetPassword.trim()) {
+                    return;
+                  }
+                  
+                  setIsResetting(true);
+                  try {
+                    // Get authentication token
+                    const token = await AsyncStorage.getItem('@auth_token');
+                    if (!token) {
+                      throw new Error('No authentication token found');
+                    }
+
+                    // Verify password using the delete account endpoint pattern
+                    // We'll send confirmation: false to verify password without deleting
+                    try {
+                      const verifyResponse = await fetch(`${BASE_URL}/api/account`, {
+                        method: 'DELETE',
+                        headers: {
+                          'Authorization': `Bearer ${token}`,
+                          'Accept': 'application/json',
+                          'Content-Type': 'application/json',
+                          'X-Requested-With': 'XMLHttpRequest',
+                        },
+                        body: JSON.stringify({ 
+                          password: resetPassword,
+                          confirmation: false // Set to false so we only verify, don't delete
+                        }),
+                      });
+
+                      const responseData = await verifyResponse.json().catch(() => null);
+                      
+                      // If status is 400 with message about confirmation, password was correct
+                      // If status is 401/403, password is invalid
+                      // If status is 200, password is verified (but we won't actually delete)
+                      if (verifyResponse.status === 401 || verifyResponse.status === 403) {
+                        throw new Error(responseData?.message || 'Invalid password');
+                      }
+                      
+                      // For status 400 (confirmation required) or 200, password is verified
+                      // Status 400 typically means "password correct but confirmation needed"
+                      if (verifyResponse.status === 400 && responseData?.message) {
+                        // Check if the error is about confirmation (password was correct)
+                        if (responseData.message.toLowerCase().includes('confirmation') || 
+                            responseData.message.toLowerCase().includes('confirm')) {
+                          // Password is correct, just needs confirmation
+                          // We'll proceed with reset
+                        } else {
+                          // Some other error, might be invalid password
+                          throw new Error(responseData.message || 'Invalid password');
+                        }
+                      }
+                    } catch (verifyError) {
+                      // If it's already an Error with message, re-throw it
+                      if (verifyError instanceof Error) {
+                        throw verifyError;
+                      }
+                      // Otherwise, it's a network error or unexpected response
+                      throw new Error('Failed to verify password. Please try again.');
+                    }
+
+                    // Password verified, now clear only report/activity data
+                    const trackingService = ActivityTrackingService.getInstance();
+                    await trackingService.clearAllData();
+                    
+                    setShowResetPasswordModal(false);
+                    setResetPassword('');
+                    setShowResetSuccessModal(true);
+                  } catch (error) {
+                    console.error('Error resetting app:', error);
+                    setResetErrorMessage(
+                      error instanceof Error ? error.message : t('profile.resetAppError', 'Failed to reset app data. Please try again.')
+                    );
+                    setShowResetErrorModal(true);
+                  } finally {
+                    setIsResetting(false);
+                  }
+                }}
+                disabled={isResetting || !resetPassword.trim()}
+              >
+                <Text style={styles.modalButtonText}>
+                  {isResetting ? t('common.processing', 'Processing...') : t('common.confirm', 'Confirm')}
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </TouchableOpacity>
+        </TouchableOpacity>
+      </Modal>
+
+      {/* Reset App Success Modal */}
+      <Modal
+        visible={showResetSuccessModal}
+        transparent={true}
+        animationType="fade"
+        onRequestClose={() => setShowResetSuccessModal(false)}
+      >
+        <TouchableOpacity
+          style={styles.modalOverlay}
+          activeOpacity={1}
+          onPress={() => setShowResetSuccessModal(false)}
+        >
+          <TouchableOpacity
+            activeOpacity={1}
+            onPress={(e) => e.stopPropagation()}
+            style={[styles.modalContent, { backgroundColor: colors.card }]}
+          >
+            <View style={[styles.modalHeader, { borderBottomColor: colors.border }]}>
+              <View style={[styles.modalIconContainer, { backgroundColor: '#4CAF50' + '15' }]}>
+                <IconSymbol name="checkmark.circle.fill" size={32} color="#4CAF50" />
+              </View>
+              <Text style={[styles.modalTitle, { color: colors.text }]}>
+                {t('common.success', 'Success')}
+              </Text>
+              <TouchableOpacity
+                onPress={() => setShowResetSuccessModal(false)}
+                style={[styles.modalCloseButton, { backgroundColor: colors.cardAlt }]}
+              >
+                <IconSymbol name="xmark.circle.fill" size={24} color={colors.text} />
+              </TouchableOpacity>
+            </View>
+            
+            <View style={styles.modalBody}>
+              <Text style={[styles.modalText, { color: colors.text }]}>
+                {t('profile.resetAppSuccess', 'App data has been reset successfully. Your progress and reports have been cleared.')}
+              </Text>
+              <View style={[styles.warningBox, { backgroundColor: '#4CAF50' + '15', borderColor: '#4CAF50' + '40' }]}>
+                <IconSymbol name="info.circle.fill" size={20} color="#4CAF50" />
+                <Text style={[styles.warningText, { color: '#4CAF50' }]}>
+                  {t('profile.resetAppSuccessNote', 'You are still logged in and can continue using the app.')}
+                </Text>
+              </View>
+            </View>
+
+            <View style={styles.modalButtonContainer}>
+              <TouchableOpacity
+                style={[styles.modalButton, { backgroundColor: '#4CAF50' }]}
+                onPress={() => setShowResetSuccessModal(false)}
+              >
+                <Text style={styles.modalButtonText}>
+                  {t('common.ok', 'OK')}
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </TouchableOpacity>
+        </TouchableOpacity>
+      </Modal>
+
+      {/* Reset App Error Modal */}
+      <Modal
+        visible={showResetErrorModal}
+        transparent={true}
+        animationType="fade"
+        onRequestClose={() => setShowResetErrorModal(false)}
+      >
+        <TouchableOpacity
+          style={styles.modalOverlay}
+          activeOpacity={1}
+          onPress={() => setShowResetErrorModal(false)}
+        >
+          <TouchableOpacity
+            activeOpacity={1}
+            onPress={(e) => e.stopPropagation()}
+            style={[styles.modalContent, { backgroundColor: colors.card }]}
+          >
+            <View style={[styles.modalHeader, { borderBottomColor: colors.border }]}>
+              <View style={[styles.modalIconContainer, { backgroundColor: '#F44336' + '15' }]}>
+                <IconSymbol name="exclamationmark.triangle.fill" size={32} color="#F44336" />
+              </View>
+              <Text style={[styles.modalTitle, { color: colors.text }]}>
+                {t('common.error', 'Error')}
+              </Text>
+              <TouchableOpacity
+                onPress={() => setShowResetErrorModal(false)}
+                style={[styles.modalCloseButton, { backgroundColor: colors.cardAlt }]}
+              >
+                <IconSymbol name="xmark.circle.fill" size={24} color={colors.text} />
+              </TouchableOpacity>
+            </View>
+            
+            <View style={styles.modalBody}>
+              <Text style={[styles.modalText, { color: colors.text }]}>
+                {resetErrorMessage}
+              </Text>
+            </View>
+
+            <View style={styles.modalButtonContainer}>
+              <TouchableOpacity
+                style={[styles.modalButton, { backgroundColor: '#F44336' }]}
+                onPress={() => setShowResetErrorModal(false)}
+              >
+                <Text style={styles.modalButtonText}>
+                  {t('common.ok', 'OK')}
                 </Text>
               </TouchableOpacity>
             </View>
@@ -1001,5 +1280,12 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '600',
     flex: 1,
+  },
+  passwordContainer: {
+    marginTop: 16,
+    marginBottom: 8,
+  },
+  passwordInputStyle: {
+    marginBottom: 0,
   },
 }); 
