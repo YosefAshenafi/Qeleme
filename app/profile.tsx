@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Animated, RefreshControl, Alert, Linking, Image } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Animated, RefreshControl, Alert, Linking, Image, Modal } from 'react-native';
 import { useColorScheme } from '../hooks/useColorScheme';
 import { Colors } from '../constants/Colors';
 import { IconSymbol, IconSymbolName } from '../components/ui/IconSymbol';
@@ -83,6 +83,9 @@ export default function ProfileScreen() {
   const { t, i18n } = useTranslation();
   const [openAccordion, setOpenAccordion] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
+  const [showAboutModal, setShowAboutModal] = useState(false);
+  const [showVersionModal, setShowVersionModal] = useState(false);
+  const [showResetModal, setShowResetModal] = useState(false);
   const colors = getColors(isDarkMode);
 
   const onRefresh = React.useCallback(async () => {
@@ -206,10 +209,7 @@ export default function ProfileScreen() {
       title: t('profile.about'),
       icon: 'info.circle.fill' as const,
       action: () => {
-        Alert.alert(
-          'About Qelem',
-          'Qelem is an innovative educational platform designed to enhance learning through interactive content, personalized experiences, and comprehensive progress tracking.'
-        );
+        setShowAboutModal(true);
       }
     },
     { 
@@ -275,31 +275,14 @@ export default function ProfileScreen() {
       subtitle: Constants.expoConfig?.version || '1.0.0',
       showChevron: false,
       action: () => {
-        Alert.alert(
-          t('profile.version'),
-          `Version ${Constants.expoConfig?.version || '1.0.0'}`
-        );
+        setShowVersionModal(true);
       }
     },
     { 
       title: t('profile.resetApp'),
       icon: 'house.fill' as const, 
       action: () => {
-        Alert.alert(
-          t('common.confirmation', { defaultValue: 'Confirmation' }),
-          t('profile.resetConfirmation', { defaultValue: 'Are you sure you want to reset the app? This will take you back to the onboarding screen.' }),
-          [
-            {
-              text: t('common.cancel', { defaultValue: 'Cancel' }),
-              style: 'cancel'
-            },
-            {
-              text: t('common.confirm', { defaultValue: 'Confirm' }),
-              onPress: () => router.replace('/(auth)/onboarding'),
-              style: 'destructive'
-            }
-          ]
-        );
+        setShowResetModal(true);
       }
     },
     { 
@@ -323,11 +306,9 @@ export default function ProfileScreen() {
           <IconSymbol name="chevron.right" size={24} color={colors.background} style={{ transform: [{ rotate: '180deg' }] }} />
         </TouchableOpacity>
         <View style={styles.headerCenter}>
-          <Image
-            source={require('../assets/images/logo/theme-logo.png')}
-            style={styles.logo}
-            resizeMode="contain"
-          />
+          <Text style={[styles.headerTitle, { color: colors.background }]}>
+            {t('profile.title')}
+          </Text>
         </View>
         <View style={[styles.headerRight, { paddingBottom: 10 }]}>
           <LanguageToggle colors={{ card: colors.background, text: colors.tint }} />
@@ -436,6 +417,215 @@ export default function ProfileScreen() {
           />
         </View>
       </ScrollView>
+
+      {/* About Qelem Modal */}
+      <Modal
+        visible={showAboutModal}
+        transparent={true}
+        animationType="fade"
+        onRequestClose={() => setShowAboutModal(false)}
+      >
+        <TouchableOpacity
+          style={styles.modalOverlay}
+          activeOpacity={1}
+          onPress={() => setShowAboutModal(false)}
+        >
+          <TouchableOpacity
+            activeOpacity={1}
+            onPress={(e) => e.stopPropagation()}
+            style={[styles.modalContent, { backgroundColor: colors.card }]}
+          >
+            <View style={[styles.modalHeader, { borderBottomColor: colors.border }]}>
+              <View style={[styles.modalIconContainer, { backgroundColor: colors.tint + '15' }]}>
+                <IconSymbol name="info.circle.fill" size={32} color={colors.tint} />
+              </View>
+              <Text style={[styles.modalTitle, { color: colors.text }]}>
+                {t('profile.about')}
+              </Text>
+              <TouchableOpacity
+                onPress={() => setShowAboutModal(false)}
+                style={[styles.modalCloseButton, { backgroundColor: colors.cardAlt }]}
+              >
+                <IconSymbol name="xmark.circle.fill" size={24} color={colors.text} />
+              </TouchableOpacity>
+            </View>
+            
+            <ScrollView style={styles.modalBody} showsVerticalScrollIndicator={false}>
+              <Text style={[styles.modalText, { color: colors.text }]}>
+                {t('profile.aboutInfo', 'Qelem is an innovative educational platform designed to enhance learning through interactive content, personalized experiences, and comprehensive progress tracking.')}
+              </Text>
+              
+              <View style={[styles.modalFeatureSection, { backgroundColor: colors.cardAlt }]}>
+                <Text style={[styles.modalFeatureTitle, { color: colors.tint }]}>
+                  {t('profile.aboutFeatures', 'Key Features')}
+                </Text>
+                <View style={styles.modalFeatureList}>
+                  <View style={styles.modalFeatureItem}>
+                    <IconSymbol name="questionmark.circle.fill" size={20} color={colors.tint} />
+                    <Text style={[styles.modalFeatureText, { color: colors.text }]}>
+                      {t('profile.aboutFeature1', 'Interactive MCQ Questions')}
+                    </Text>
+                  </View>
+                  <View style={styles.modalFeatureItem}>
+                    <IconSymbol name="rectangle.stack.fill" size={20} color={colors.tint} />
+                    <Text style={[styles.modalFeatureText, { color: colors.text }]}>
+                      {t('profile.aboutFeature2', 'Flashcards for Active Learning')}
+                    </Text>
+                  </View>
+                  <View style={styles.modalFeatureItem}>
+                    <IconSymbol name="message.fill" size={20} color={colors.tint} />
+                    <Text style={[styles.modalFeatureText, { color: colors.text }]}>
+                      {t('profile.aboutFeature3', 'AI-Powered Homework Help')}
+                    </Text>
+                  </View>
+                  <View style={styles.modalFeatureItem}>
+                    <IconSymbol name="chart.bar.fill" size={20} color={colors.tint} />
+                    <Text style={[styles.modalFeatureText, { color: colors.text }]}>
+                      {t('profile.aboutFeature4', 'Comprehensive Progress Tracking')}
+                    </Text>
+                  </View>
+                </View>
+              </View>
+            </ScrollView>
+
+            <TouchableOpacity
+              style={[styles.modalButton, { backgroundColor: colors.tint }]}
+              onPress={() => setShowAboutModal(false)}
+            >
+              <Text style={styles.modalButtonText}>
+                {t('common.close', 'Close')}
+              </Text>
+            </TouchableOpacity>
+          </TouchableOpacity>
+        </TouchableOpacity>
+      </Modal>
+
+      {/* App Version Modal */}
+      <Modal
+        visible={showVersionModal}
+        transparent={true}
+        animationType="fade"
+        onRequestClose={() => setShowVersionModal(false)}
+      >
+        <TouchableOpacity
+          style={styles.modalOverlay}
+          activeOpacity={1}
+          onPress={() => setShowVersionModal(false)}
+        >
+          <TouchableOpacity
+            activeOpacity={1}
+            onPress={(e) => e.stopPropagation()}
+            style={[styles.modalContent, { backgroundColor: colors.card }]}
+          >
+            <View style={[styles.modalHeader, { borderBottomColor: colors.border }]}>
+              <View style={[styles.modalIconContainer, { backgroundColor: colors.tint + '15' }]}>
+                <IconSymbol name="app.badge" size={32} color={colors.tint} />
+              </View>
+              <Text style={[styles.modalTitle, { color: colors.text }]}>
+                {t('profile.version')}
+              </Text>
+              <TouchableOpacity
+                onPress={() => setShowVersionModal(false)}
+                style={[styles.modalCloseButton, { backgroundColor: colors.cardAlt }]}
+              >
+                <IconSymbol name="xmark.circle.fill" size={24} color={colors.text} />
+              </TouchableOpacity>
+            </View>
+            
+            <View style={styles.modalBody}>
+              <View style={[styles.versionContainer, { backgroundColor: colors.cardAlt }]}>
+                <Text style={[styles.versionLabel, { color: colors.text + '80' }]}>
+                  {t('profile.version', 'App Version')}
+                </Text>
+                <Text style={[styles.versionNumber, { color: colors.tint }]}>
+                  {Constants.expoConfig?.version || '1.0.0'}
+                </Text>
+              </View>
+              <Text style={[styles.modalText, { color: colors.text }]}>
+                {t('profile.versionInfo', 'You are using the latest version of Qelem. Keep learning and growing!')}
+              </Text>
+            </View>
+
+            <TouchableOpacity
+              style={[styles.modalButton, { backgroundColor: colors.tint }]}
+              onPress={() => setShowVersionModal(false)}
+            >
+              <Text style={styles.modalButtonText}>
+                {t('common.close', 'Close')}
+              </Text>
+            </TouchableOpacity>
+          </TouchableOpacity>
+        </TouchableOpacity>
+      </Modal>
+
+      {/* Reset App Modal */}
+      <Modal
+        visible={showResetModal}
+        transparent={true}
+        animationType="fade"
+        onRequestClose={() => setShowResetModal(false)}
+      >
+        <TouchableOpacity
+          style={styles.modalOverlay}
+          activeOpacity={1}
+          onPress={() => setShowResetModal(false)}
+        >
+          <TouchableOpacity
+            activeOpacity={1}
+            onPress={(e) => e.stopPropagation()}
+            style={[styles.modalContent, { backgroundColor: colors.card }]}
+          >
+            <View style={[styles.modalHeader, { borderBottomColor: colors.border }]}>
+              <View style={[styles.modalIconContainer, { backgroundColor: '#F44336' + '15' }]}>
+                <IconSymbol name="house.fill" size={32} color="#F44336" />
+              </View>
+              <Text style={[styles.modalTitle, { color: colors.text }]}>
+                {t('common.confirmation', 'Confirmation')}
+              </Text>
+              <TouchableOpacity
+                onPress={() => setShowResetModal(false)}
+                style={[styles.modalCloseButton, { backgroundColor: colors.cardAlt }]}
+              >
+                <IconSymbol name="xmark.circle.fill" size={24} color={colors.text} />
+              </TouchableOpacity>
+            </View>
+            
+            <View style={styles.modalBody}>
+              <Text style={[styles.modalText, { color: colors.text }]}>
+                {t('profile.resetConfirmation', 'Are you sure you want to reset the app? This will take you back to the onboarding screen.')}
+              </Text>
+              <View style={[styles.warningBox, { backgroundColor: '#F44336' + '15', borderColor: '#F44336' + '40' }]}>
+                <IconSymbol name="info.circle.fill" size={20} color="#F44336" />
+                <Text style={[styles.warningText, { color: '#F44336' }]}>
+                  {t('profile.resetWarning', 'This action cannot be undone.')}
+                </Text>
+              </View>
+            </View>
+
+            <View style={styles.modalButtonContainer}>
+              <TouchableOpacity
+                style={[styles.modalButtonSecondary, { backgroundColor: colors.cardAlt, borderColor: colors.border }]}
+                onPress={() => setShowResetModal(false)}
+              >
+                <Text style={[styles.modalButtonSecondaryText, { color: colors.text }]}>
+                  {t('common.cancel', 'Cancel')}
+                </Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.modalButton, { backgroundColor: '#F44336' }]}
+                onPress={() => {
+                  setShowResetModal(false);
+                  router.replace('/(auth)/onboarding');
+                }}
+              >
+                <Text style={styles.modalButtonText}>
+                  {t('common.confirm', 'Confirm')}
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </TouchableOpacity>
+        </TouchableOpacity>
+      </Modal>
     </View>
   );
 }
@@ -464,6 +654,7 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: 20,
     fontWeight: '700',
+    color: '#fff',
   },
   backButton: {
     padding: 8,
@@ -672,5 +863,143 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
     textAlign: 'center',
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  modalContent: {
+    width: '100%',
+    maxWidth: 500,
+    borderRadius: 20,
+    maxHeight: '80%',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 4,
+    },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 8,
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 20,
+    borderBottomWidth: 1,
+    gap: 12,
+  },
+  modalIconContainer: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  modalTitle: {
+    flex: 1,
+    fontSize: 20,
+    fontWeight: '700',
+  },
+  modalCloseButton: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  modalBody: {
+    padding: 20,
+    maxHeight: 400,
+  },
+  modalText: {
+    fontSize: 16,
+    lineHeight: 24,
+    marginBottom: 20,
+  },
+  modalFeatureSection: {
+    borderRadius: 12,
+    padding: 16,
+    marginTop: 8,
+  },
+  modalFeatureTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    marginBottom: 16,
+  },
+  modalFeatureList: {
+    gap: 12,
+  },
+  modalFeatureItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  modalFeatureText: {
+    fontSize: 15,
+    lineHeight: 22,
+    flex: 1,
+  },
+  modalButton: {
+    margin: 20,
+    marginTop: 0,
+    padding: 16,
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  modalButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  versionContainer: {
+    borderRadius: 12,
+    padding: 20,
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+  versionLabel: {
+    fontSize: 14,
+    marginBottom: 8,
+  },
+  versionNumber: {
+    fontSize: 32,
+    fontWeight: '700',
+  },
+  modalButtonContainer: {
+    flexDirection: 'row',
+    gap: 12,
+    padding: 20,
+    paddingTop: 0,
+  },
+  modalButtonSecondary: {
+    flex: 1,
+    padding: 16,
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+  },
+  modalButtonSecondaryText: {
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  warningBox: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    padding: 16,
+    borderRadius: 12,
+    borderWidth: 1,
+    marginTop: 16,
+  },
+  warningText: {
+    fontSize: 14,
+    fontWeight: '600',
+    flex: 1,
   },
 }); 

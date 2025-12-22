@@ -17,6 +17,7 @@ export function DeleteAccount({ colors, userPhoneNumber }: DeleteAccountProps) {
   const { isDarkMode } = useTheme();
   const { deleteAccount } = useAuth();
   const { t } = useTranslation();
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [showOTPModal, setShowOTPModal] = useState(false);
   const [otp, setOtp] = useState('');
   const [password, setPassword] = useState('');
@@ -25,27 +26,16 @@ export function DeleteAccount({ colors, userPhoneNumber }: DeleteAccountProps) {
   const [isSendingOTP, setIsSendingOTP] = useState(false);
 
   const handleDeleteAccountPress = () => {
-    Alert.alert(
-      t('profile.deleteAccount'),
-      t('profile.deleteAccountConfirmation'),
-      [
-        {
-          text: t('common.cancel', { defaultValue: 'Cancel' }),
-          style: 'cancel'
-        },
-        {
-          text: t('profile.confirmDelete'),
-          style: 'destructive',
-          onPress: () => {
-            setShowOTPModal(true);
-            // If we have a phone number, send OTP automatically
-            if (userPhoneNumber) {
-              handleSendOTP();
-            }
-          }
-        }
-      ]
-    );
+    setShowConfirmModal(true);
+  };
+
+  const handleConfirmDelete = () => {
+    setShowConfirmModal(false);
+    setShowOTPModal(true);
+    // If we have a phone number, send OTP automatically
+    if (userPhoneNumber) {
+      handleSendOTP();
+    }
   };
 
   const handleSendOTP = async () => {
@@ -155,6 +145,72 @@ export function DeleteAccount({ colors, userPhoneNumber }: DeleteAccountProps) {
           </Text>
         </TouchableOpacity>
       </View>
+
+      {/* Delete Account Confirmation Modal */}
+      <Modal
+        visible={showConfirmModal}
+        transparent={true}
+        animationType="fade"
+        onRequestClose={() => setShowConfirmModal(false)}
+      >
+        <TouchableOpacity
+          style={styles.confirmModalOverlay}
+          activeOpacity={1}
+          onPress={() => setShowConfirmModal(false)}
+        >
+          <TouchableOpacity
+            activeOpacity={1}
+            onPress={(e) => e.stopPropagation()}
+            style={[styles.confirmModalContent, { backgroundColor: colors.card }]}
+          >
+            <View style={[styles.confirmModalHeader, { borderBottomColor: colors.border }]}>
+              <View style={[styles.confirmModalIconContainer, { backgroundColor: '#F44336' + '15' }]}>
+                <IconSymbol name="hand.raised.fill" size={32} color="#F44336" />
+              </View>
+              <Text style={[styles.confirmModalTitle, { color: colors.text }]}>
+                {t('profile.deleteAccount')}
+              </Text>
+              <TouchableOpacity
+                onPress={() => setShowConfirmModal(false)}
+                style={[styles.confirmModalCloseButton, { backgroundColor: colors.cardAlt }]}
+              >
+                <IconSymbol name="xmark.circle.fill" size={24} color={colors.text} />
+              </TouchableOpacity>
+            </View>
+            
+            <View style={styles.confirmModalBody}>
+              <Text style={[styles.confirmModalText, { color: colors.text }]}>
+                {t('profile.deleteAccountConfirmation')}
+              </Text>
+              <View style={[styles.confirmWarningBox, { backgroundColor: '#F44336' + '15', borderColor: '#F44336' + '40' }]}>
+                <IconSymbol name="info.circle.fill" size={20} color="#F44336" />
+                <Text style={[styles.confirmWarningText, { color: '#F44336' }]}>
+                  {t('profile.deleteAccountWarning')}
+                </Text>
+              </View>
+            </View>
+
+            <View style={styles.confirmModalButtonContainer}>
+              <TouchableOpacity
+                style={[styles.confirmModalButtonSecondary, { backgroundColor: colors.cardAlt, borderColor: colors.border }]}
+                onPress={() => setShowConfirmModal(false)}
+              >
+                <Text style={[styles.confirmModalButtonSecondaryText, { color: colors.text }]}>
+                  {t('common.cancel', 'Cancel')}
+                </Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.confirmModalButton, { backgroundColor: '#F44336' }]}
+                onPress={handleConfirmDelete}
+              >
+                <Text style={styles.confirmModalButtonText}>
+                  {t('profile.confirmDelete')}
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </TouchableOpacity>
+        </TouchableOpacity>
+      </Modal>
 
       <Modal
         visible={showOTPModal}
@@ -399,6 +455,104 @@ const styles = StyleSheet.create({
   },
   confirmButtonText: {
     color: '#ffffff',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  confirmModalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  confirmModalContent: {
+    width: '100%',
+    maxWidth: 500,
+    borderRadius: 20,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 4,
+    },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 8,
+  },
+  confirmModalHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 20,
+    borderBottomWidth: 1,
+    gap: 12,
+  },
+  confirmModalIconContainer: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  confirmModalTitle: {
+    flex: 1,
+    fontSize: 20,
+    fontWeight: '700',
+  },
+  confirmModalCloseButton: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  confirmModalBody: {
+    padding: 20,
+  },
+  confirmModalText: {
+    fontSize: 16,
+    lineHeight: 24,
+    marginBottom: 16,
+  },
+  confirmWarningBox: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 12,
+    padding: 16,
+    borderRadius: 12,
+    borderWidth: 1,
+  },
+  confirmWarningText: {
+    fontSize: 14,
+    lineHeight: 20,
+    fontWeight: '600',
+    flex: 1,
+  },
+  confirmModalButtonContainer: {
+    flexDirection: 'row',
+    gap: 12,
+    padding: 20,
+    paddingTop: 0,
+  },
+  confirmModalButtonSecondary: {
+    flex: 1,
+    padding: 16,
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+  },
+  confirmModalButtonSecondaryText: {
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  confirmModalButton: {
+    flex: 1,
+    padding: 16,
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  confirmModalButtonText: {
+    color: '#fff',
     fontSize: 16,
     fontWeight: '600',
   },
