@@ -1,0 +1,57 @@
+# Dependencies (will be installed during build)
+node_modules/
+
+# Build artifacts
+dist/
+.expo/
+web-build/
+android/app/build/
+android/build/
+ios/build/
+ios/Pods/
+ios/Podfile.lock
+
+# Development files
+*.log
+.DS_Store
+*.pem
+*.orig.*
+
+# Keystores (should not be in build)
+android/keystore/
+*.keystore
+*.jks
+*.p8
+*.p12
+*.key
+*.mobileprovision
+
+# Test files
+**/__tests__/
+**/*.test.*
+**/*.spec.*
+
+# Documentation
+*.md
+!README.md
+
+# Scripts (unless needed for build)
+scripts/
+Makefile
+
+# Large media files that might not be needed
+# Note: NOT excluding *.mp4 as the app needs assets/animations/*.mp4 files
+*.mov
+*.avi
+
+# Old build files
+*.ipa
+*.apk
+*.aab
+
+# Environment files
+.env*.local
+
+# TypeScript build info
+*.tsbuildinfo
+
