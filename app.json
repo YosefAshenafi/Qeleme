@@ -14,8 +14,7 @@
       "resizeMode": "contain",
       "backgroundColor": "#6B54AE"
     },
-    "privacy": "public",
-    "sdkVersion": "53.0.0",
+    "sdkVersion": "54.0.0",
     "extra": {
       "apiUrl": "https://api.qelem.com",
       "router": {
@@ -57,15 +56,12 @@
       },
       "package": "com.qelemapp.qelem",
       "versionCode": 15,
-      "compileSdkVersion": 35,
-      "targetSdkVersion": 35,
       "permissions": [
         "android.permission.INTERNET",
         "android.permission.ACCESS_NETWORK_STATE",
         "android.permission.CAMERA"
       ],
-      "playStoreUrl": "https://play.google.com/store/apps/details?id=com.qelemapp.qelem",
-      "privacyPolicy": "https://qelem.net/privacy-policy"
+      "playStoreUrl": "https://play.google.com/store/apps/details?id=com.qelemapp.qelem"
     },
     "web": {
       "bundler": "metro",
@@ -83,7 +79,9 @@
           "backgroundColor": "#6B54AE"
         }
       ],
-      "expo-secure-store"
+      "expo-secure-store",
+      "expo-font",
+      "expo-web-browser"
     ],
     "experiments": {
       "typedRoutes": true

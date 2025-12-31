@@ -1,7 +1,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // Activity types
-export type ActivityType = 'mcq' | 'flashcard' | 'homework' | 'study' | 'kg_question' | 'picture_mcq';
+export type ActivityType = 'mcq' | 'flashcard' | 'study' | 'kg_question' | 'picture_mcq';
 
 // Base activity interface
 export interface BaseActivity {
@@ -35,13 +35,6 @@ export interface FlashcardActivity extends BaseActivity {
   timeSpent: number; // in seconds
 }
 
-export interface HomeworkActivity extends BaseActivity {
-  type: 'homework';
-  questionCount: number;
-  hasImage: boolean;
-  responseTime: number; // in seconds
-}
-
 export interface KGQuestionActivity extends BaseActivity {
   type: 'kg_question';
   categoryId: number;
@@ -62,7 +55,7 @@ export interface PictureMCQActivity extends BaseActivity {
   timeSpent: number; // in seconds
 }
 
-export type Activity = MCQActivity | FlashcardActivity | HomeworkActivity | KGQuestionActivity | PictureMCQActivity;
+export type Activity = MCQActivity | FlashcardActivity | KGQuestionActivity | PictureMCQActivity;
 
 // User statistics interface
 export interface UserStats {
@@ -251,7 +244,6 @@ class ActivityTrackingService {
         activityTypeBreakdown: {
           mcq: { count: 0, timeSpent: 0, lastActivity: 0 },
           flashcard: { count: 0, timeSpent: 0, lastActivity: 0 },
-          homework: { count: 0, timeSpent: 0, lastActivity: 0 },
           study: { count: 0, timeSpent: 0, lastActivity: 0 },
           kg_question: { count: 0, timeSpent: 0, lastActivity: 0 },
           picture_mcq: { count: 0, timeSpent: 0, lastActivity: 0 },
@@ -319,13 +311,6 @@ class ActivityTrackingService {
             subjectStats.correctAnswers += flashcardActivity.cardsMastered;
             gradeStats.questionsAnswered += flashcardActivity.cardsReviewed;
             gradeStats.correctAnswers += flashcardActivity.cardsMastered;
-            break;
-
-          case 'homework':
-            const homeworkActivity = activity as HomeworkActivity;
-            stats.totalQuestionsAnswered += homeworkActivity.questionCount;
-            subjectStats.questionsAnswered += homeworkActivity.questionCount;
-            gradeStats.questionsAnswered += homeworkActivity.questionCount;
             break;
 
           case 'kg_question':
@@ -497,26 +482,6 @@ class ActivityTrackingService {
       timeSpent: data.timeSpent,
       duration: Math.round(data.timeSpent / 60), // Convert to minutes
       details: `Reviewed ${data.cardsReviewed} flashcards in ${data.subject}`,
-      status: 'completed',
-    });
-  }
-
-  public async trackHomeworkActivity(data: {
-    grade: string;
-    subject: string;
-    questionCount: number;
-    hasImage: boolean;
-    responseTime: number;
-  }): Promise<void> {
-    await this.addActivity({
-      type: 'homework',
-      grade: data.grade,
-      subject: data.subject,
-      questionCount: data.questionCount,
-      hasImage: data.hasImage,
-      responseTime: data.responseTime,
-      duration: Math.round(data.responseTime / 60), // Convert to minutes
-      details: `Asked ${data.questionCount} homework question${data.questionCount > 1 ? 's' : ''} in ${data.subject}`,
       status: 'completed',
     });
   }

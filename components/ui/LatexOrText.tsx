@@ -5,6 +5,7 @@ interface LatexOrTextProps {
   content: string;
   inline?: boolean;        // Inline math or block math
   textStyle?: TextStyle;   // Optional styling for plain text
+  color?: string;          // Text color for formulas
 }
 
 // Regex patterns for LaTeX detection
@@ -305,7 +306,7 @@ const parseMixedContent = (content: string): Array<{ type: 'text' | 'latex'; con
   return parts;
 };
 
-const LatexOrText: React.FC<LatexOrTextProps> = ({ content, inline = true, textStyle }) => {
+const LatexOrText: React.FC<LatexOrTextProps> = ({ content, inline = true, textStyle, color }) => {
   const hasLatex = /\\\(|\\\)|\\\[|\\\]/.test(content);
   // Very specific chemical formula detection - only match clear chemical patterns
   const hasChemicalFormula = /[A-Z][a-z]?\d+[A-Z]|[A-Z][a-z]?\d+[_{]|[A-Z][a-z]?\d+|[A-Z][a-z]?[+-]|\\(rightleftharpoons|rightarrow|leftarrow\\)/.test(content);
@@ -316,13 +317,17 @@ const LatexOrText: React.FC<LatexOrTextProps> = ({ content, inline = true, textS
   // Check for common non-mathematical patterns that might cause false positives
   const hasCommonTextPatterns = /[a-z]+_[a-z]+|\s+_\s+|\s+\^\s+/.test(content);
 
+  // Check if content has subscript/superscript patterns that need processing
+  const hasSubscriptPattern = /_{[^}]+}|_[0-9a-zA-Z]/.test(content);
+  const hasSuperscriptPattern = /\^{[^}]+}|\^[0-9a-zA-Z]/.test(content);
+  
   // Only process as LaTeX if there are clear LaTeX delimiters or very specific mathematical patterns
   // Be very conservative to avoid false positives - exclude if it has common text patterns
-  if (!hasLatex && !hasCommonTextPatterns && (hasChemicalFormula || hasFraction || hasMathSubscript)) {
+  if (!hasLatex && !hasCommonTextPatterns && (hasChemicalFormula || hasFraction || hasMathSubscript || hasSubscriptPattern || hasSuperscriptPattern)) {
     const processedContent = latexToText(content);
     return (
-      <Text style={[styles.text, textStyle]}>
-        <Text style={[styles.math, styles.inlineMath]}>
+      <Text style={[styles.text, textStyle, color ? { color } : {}]}>
+        <Text style={[styles.math, styles.inlineMath, color ? { color } : {}]}>
           {processedContent}
         </Text>
       </Text>
@@ -330,7 +335,16 @@ const LatexOrText: React.FC<LatexOrTextProps> = ({ content, inline = true, textS
   }
 
   if (!hasLatex) {
-    return <Text style={[styles.text, textStyle]}>{content}</Text>;
+    // Even if no LaTeX, check for subscript/superscript patterns and process them
+    if (hasSubscriptPattern || hasSuperscriptPattern) {
+      const processedContent = latexToText(content);
+      return (
+        <Text style={[styles.text, textStyle, color ? { color } : {}]}>
+          {processedContent}
+        </Text>
+      );
+    }
+    return <Text style={[styles.text, textStyle, color ? { color } : {}]}>{content}</Text>;
   }
 
   const parts = parseMixedContent(content);
@@ -342,7 +356,7 @@ const LatexOrText: React.FC<LatexOrTextProps> = ({ content, inline = true, textS
         
         if (part.type === 'latex') {
           return (
-            <Text key={uniqueKey} style={[styles.math, part.inline ? styles.inlineMath : styles.blockMath]}>
+            <Text key={uniqueKey} style={[styles.math, part.inline ? styles.inlineMath : styles.blockMath, color ? { color } : {}]}>
               {part.content}
             </Text>
           );
@@ -363,7 +377,6 @@ const styles = StyleSheet.create({
   math: {
     fontFamily: 'System',
     fontWeight: '500',
-    color: '#2c3e50',
     fontSize: Platform.OS === 'android' ? 18 : 18,
   },
   inlineMath: {

@@ -64,13 +64,6 @@ export default function OnboardingScreen() {
       image: require('@/assets/images/onboarding/flashcard.png'),
       description: t('onboarding.flashcards.description'),
     },
-    {
-      title: t('onboarding.homework.title'),
-      subtitle: t('onboarding.homework.subtitle'),
-      icon: 'message.fill',
-      image: require('@/assets/images/onboarding/homework.png'),
-      description: t('onboarding.homework.description'),
-    },
   ];
 
   const handleNext = () => {

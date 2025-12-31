@@ -562,13 +562,13 @@ export default function FlashcardsScreen() {
                   {t('flashcards.results.cardsReviewed', 'Cards Reviewed: {{count}}', { count: totalCards })}
                 </ThemedText>
                 
-                <View style={[styles.percentageContainer, { backgroundColor: colors.cardAlt, borderColor: colors.border }]}>
+                <View style={[styles.percentageContainer, { backgroundColor: colors.cardAlt, borderColor: isDarkMode ? '#FFFFFF' : colors.border }]}>
                   <ThemedText style={[styles.percentageText, { color: colors.text }]}>
                     {formatTime(timeSpent)}
                   </ThemedText>
                 </View>
                 
-                <View style={[styles.messageContainer, { backgroundColor: colors.cardAlt, borderColor: colors.border }]}>
+                <View style={[styles.messageContainer, { backgroundColor: colors.cardAlt, borderColor: isDarkMode ? '#FFFFFF' : colors.border }]}>
                   <ThemedText style={[styles.messageText, { color: colors.text }]}>
                     {t('flashcards.results.message', 'Great job! You\'ve completed all flashcards in this chapter.')}
                   </ThemedText>
@@ -576,7 +576,7 @@ export default function FlashcardsScreen() {
               </View>
             </ThemedView>
 
-            <ThemedView style={styles.actionButtons}>
+            <ThemedView style={[styles.actionButtons, { backgroundColor: colors.background }]}>
               <TouchableOpacity
                 style={[styles.button, styles.retryButton, { backgroundColor: colors.tint, marginBottom: 12 }]}
                 onPress={() => {
@@ -600,7 +600,7 @@ export default function FlashcardsScreen() {
               </TouchableOpacity>
               
               <TouchableOpacity
-                style={[styles.button, styles.homeButton, { backgroundColor: colors.cardAlt, borderColor: colors.border }]}
+                style={[styles.button, styles.homeButton, { backgroundColor: colors.cardAlt, borderColor: isDarkMode ? '#FFFFFF' : colors.border }]}
                 onPress={() => {
                   setShowResult(false);
                   setShowFlashcards(false);
@@ -650,7 +650,7 @@ export default function FlashcardsScreen() {
                     styles.formInput, 
                     { 
                       backgroundColor: colors.cardAlt, 
-                      borderColor: isPreSelected ? colors.tint : colors.border,
+                      borderColor: isPreSelected ? (isDarkMode ? '#FFFFFF' : colors.tint) : (isDarkMode ? '#FFFFFF' : colors.border),
                       borderWidth: isPreSelected ? 2 : 1,
                     }
                   ]}
@@ -711,7 +711,7 @@ export default function FlashcardsScreen() {
                 <TouchableOpacity
                   style={[
                     styles.formInput,
-                    { backgroundColor: colors.cardAlt, borderColor: colors.border },
+                    { backgroundColor: colors.cardAlt, borderColor: isDarkMode ? '#FFFFFF' : colors.border },
                     !selectedSubject && { 
                       backgroundColor: isDarkMode ? 'rgba(0, 0, 0, 0.3)' : 'rgba(0, 0, 0, 0.05)',
                       borderColor: isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'
@@ -845,15 +845,15 @@ export default function FlashcardsScreen() {
       <View style={[styles.headerContainer, { backgroundColor: colors.background, borderBottomColor: colors.border }]}>
         <View style={[styles.breadcrumbContainer, { backgroundColor: colors.cardAlt }]}>
           <View style={[styles.breadcrumbItem, { backgroundColor: colors.background, borderColor: colors.border }]}>
-            <ThemedText style={[styles.breadcrumbText, { color: colors.tint }]}>
+            <ThemedText style={[styles.breadcrumbText, { color: isDarkMode ? '#FFFFFF' : colors.tint }]}>
               {selectedGrade || (user?.grade ? `${t('common.grade')} ${user.grade.replace(/\D/g, '')}` : t('common.grade'))}
             </ThemedText>
           </View>
           {selectedSubject && selectedSubjectData && (
             <>
-              <IconSymbol name="chevron.right" size={16} color={colors.tint} />
+              <IconSymbol name="chevron.right" size={16} color={isDarkMode ? '#FFFFFF' : colors.tint} />
               <View style={[styles.breadcrumbItem, { backgroundColor: colors.background, borderColor: colors.border }]}>
-                <ThemedText style={[styles.breadcrumbText, { color: colors.tint }]}>
+                <ThemedText style={[styles.breadcrumbText, { color: isDarkMode ? '#FFFFFF' : colors.tint }]}>
                   {selectedSubjectData.name}
                 </ThemedText>
               </View>
@@ -861,9 +861,9 @@ export default function FlashcardsScreen() {
           )}
           {selectedChapter && selectedChapterData && (
             <>
-              <IconSymbol name="chevron.right" size={16} color={colors.tint} />
+              <IconSymbol name="chevron.right" size={16} color={isDarkMode ? '#FFFFFF' : colors.tint} />
               <View style={[styles.breadcrumbItem, { backgroundColor: colors.background, borderColor: colors.border }]}>
-                <ThemedText style={[styles.breadcrumbText, { color: colors.tint }]}>
+                <ThemedText style={[styles.breadcrumbText, { color: isDarkMode ? '#FFFFFF' : colors.tint }]}>
                   {t('flashcards.chapter')} {selectedChapterData.name}
                 </ThemedText>
               </View>

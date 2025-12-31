@@ -173,7 +173,7 @@ const renderTextWithFormatting = (text: string, color: string, fontSize: number,
       // Only return if there's actual content
       if (cleanPart) {
         return (
-          <LatexOrText key={uniqueKey} content={cleanPart} />
+          <LatexOrText key={uniqueKey} content={cleanPart} color={color} />
         );
       }
       return null;

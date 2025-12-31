@@ -1105,7 +1105,7 @@ export default function MCQScreen() {
               setShowYearDropdown(false);
             }}
           >
-            <IconSymbol name="chevron.left" size={24} color={colors.tint} />
+            <IconSymbol name="chevron.left" size={24} color={isDarkMode ? '#FFFFFF' : colors.tint} />
           </TouchableOpacity>
           <ThemedText style={[styles.headerTitle, { color: colors.text }]}>
             Choose Chapter
@@ -1123,7 +1123,7 @@ export default function MCQScreen() {
                 <ThemedText style={[styles.selectedSubjectText, { color: colors.text }]}>
                   {selectedSubjectData.name}
                 </ThemedText>
-                <IconSymbol name="checkmark.circle.fill" size={20} color={colors.tint} />
+                <IconSymbol name="checkmark.circle.fill" size={20} color={isDarkMode ? '#FFFFFF' : colors.tint} />
               </View>
             </ThemedView>
 
@@ -1144,11 +1144,11 @@ export default function MCQScreen() {
                 >
                   {selectedChapter ? selectedSubjectData?.chapters?.find((c: Chapter) => c.id === selectedChapter)?.name : t('mcq.selectChapter')}
                 </ThemedText>
-                <IconSymbol 
-                  name="chevron.right" 
-                  size={20} 
-                  color={colors.tint} 
-                />
+                        <IconSymbol 
+                          name="chevron.right" 
+                          size={20} 
+                          color={isDarkMode ? '#FFFFFF' : colors.tint} 
+                        />
               </TouchableOpacity>
             </ThemedView>
 
@@ -1214,7 +1214,7 @@ export default function MCQScreen() {
                           {chapter.name}
                         </ThemedText>
                         {chapter.id === selectedChapter && (
-                          <IconSymbol name="checkmark.circle.fill" size={20} color={colors.tint} />
+                          <IconSymbol name="checkmark.circle.fill" size={20} color={isDarkMode ? '#FFFFFF' : colors.tint} />
                         )}
                       </TouchableOpacity>
                     )) || (
@@ -1252,7 +1252,7 @@ export default function MCQScreen() {
                   setSelectedYear(null);
                 }}
               >
-                <IconSymbol name="chevron.left" size={24} color={colors.tint} />
+                <IconSymbol name="chevron.left" size={24} color={isDarkMode ? '#FFFFFF' : colors.tint} />
               </TouchableOpacity>
             )}
             <ThemedText style={[styles.headerTitle, { color: colors.text }]}>
@@ -1280,7 +1280,7 @@ export default function MCQScreen() {
                       onPress={() => setSelectedExamType('national')}
                     >
                       <View style={styles.examTypeContent}>
-                        <IconSymbol name="trophy.fill" size={40} color={colors.tint} style={styles.examTypeIcon} />
+                        <IconSymbol name="trophy.fill" size={40} color={isDarkMode ? '#FFFFFF' : colors.tint} style={styles.examTypeIcon} />
                         <View style={styles.examTypeTextContainer}>
                           <ThemedText style={[styles.examTypeText, { color: colors.text }]}>
                             {t('mcq.nationalExam')}
@@ -1296,7 +1296,7 @@ export default function MCQScreen() {
                       onPress={() => setSelectedExamType('mcq')}
                     >
                       <View style={styles.examTypeContent}>
-                        <IconSymbol name="questionmark.circle.fill" size={40} color={colors.tint} style={styles.examTypeIcon} />
+                        <IconSymbol name="questionmark.circle.fill" size={40} color={isDarkMode ? '#FFFFFF' : colors.tint} style={styles.examTypeIcon} />
                         <View style={styles.examTypeTextContainer}>
                           <ThemedText style={[styles.examTypeText, { color: colors.text }]}>
                             {t('mcq.mcqExam')}
@@ -1327,7 +1327,7 @@ export default function MCQScreen() {
                         <ThemedText style={[styles.formInputText, { color: colors.text }]}>
                           {selectedYear || t('mcq.selectYear')}
                         </ThemedText>
-                        <IconSymbol name="chevron.right" size={20} color={colors.tint} />
+                        <IconSymbol name="chevron.right" size={20} color={isDarkMode ? '#FFFFFF' : colors.tint} />
                       </TouchableOpacity>
                       {showYearDropdown && (
                         <Modal
@@ -1353,7 +1353,7 @@ export default function MCQScreen() {
                                     }}
                                   >
                                     <ThemedText style={[styles.modalItemText, { color: colors.text }]}>{year}</ThemedText>
-                                    <IconSymbol name="chevron.right" size={20} color={colors.tint} />
+                                    <IconSymbol name="chevron.right" size={20} color={isDarkMode ? '#FFFFFF' : colors.tint} />
                                   </TouchableOpacity>
                                 ))}
                               </ScrollView>
@@ -1388,7 +1388,7 @@ export default function MCQScreen() {
                       <ThemedText style={[styles.formInputText, { color: colors.text }]}>
                         {selectedSubject ? (selectedExamType === 'national' ? toTitleCase(selectedSubject) : selectedGradeData?.subjects.find((s: Subject) => s.id === selectedSubject)?.name) : t('mcq.selectSubject')}
                       </ThemedText>
-                      <IconSymbol name="chevron.right" size={20} color={colors.tint} />
+                      <IconSymbol name="chevron.right" size={20} color={isDarkMode ? '#FFFFFF' : colors.tint} />
                     </TouchableOpacity>
                     {showSubjectDropdown && (
                       <Modal
@@ -1418,7 +1418,7 @@ export default function MCQScreen() {
                                     }}
                                   >
                                     <ThemedText style={[styles.modalItemText, { color: colors.text }]}>{toTitleCase(subject)}</ThemedText>
-                                    <IconSymbol name="chevron.right" size={20} color={colors.tint} />
+                                    <IconSymbol name="chevron.right" size={20} color={isDarkMode ? '#FFFFFF' : colors.tint} />
                                   </TouchableOpacity>
                                 ))
                               ) : (
@@ -1442,7 +1442,7 @@ export default function MCQScreen() {
                                     }}
                                   >
                                     <ThemedText style={[styles.modalItemText, { color: colors.text }]}>{subject.name}</ThemedText>
-                                    <IconSymbol name="chevron.right" size={20} color={colors.tint} />
+                                    <IconSymbol name="chevron.right" size={20} color={isDarkMode ? '#FFFFFF' : colors.tint} />
                                   </TouchableOpacity>
                                 ))
                               )}
@@ -1520,7 +1520,7 @@ export default function MCQScreen() {
                                     }}
                                   >
                                     <ThemedText style={[styles.modalItemText, { color: colors.text }]}>{chapter.name}</ThemedText>
-                                    <IconSymbol name="chevron.right" size={20} color={colors.tint} />
+                                    <IconSymbol name="chevron.right" size={20} color={isDarkMode ? '#FFFFFF' : colors.tint} />
                                   </TouchableOpacity>
                                 )) || (
                                   <View style={[styles.modalItem, { backgroundColor: colors.background, borderBottomColor: colors.border }]}>
@@ -1598,15 +1598,15 @@ export default function MCQScreen() {
               <View style={[styles.headerContainer, { backgroundColor: colors.background, borderBottomColor: colors.border }]}>
                 <View style={[styles.breadcrumbContainer, { backgroundColor: colors.cardAlt }]}>
                   <View style={[styles.breadcrumbItem, { backgroundColor: colors.background, borderColor: colors.border }]}>
-                    <ThemedText style={[styles.breadcrumbText, { color: colors.tint }]}>
+                    <ThemedText style={[styles.breadcrumbText, { color: isDarkMode ? '#FFFFFF' : colors.tint }]}>
                       {user?.grade ? `${t('common.grade')} ${user.grade.replace(/\D/g, '')}` : t('mcq.selectSubject')}
                     </ThemedText>
                   </View>
                   {selectedGrade && (
                     <>
-                      <IconSymbol name="chevron.right" size={16} color={colors.tint} />
+                      <IconSymbol name="chevron.right" size={16} color={isDarkMode ? '#FFFFFF' : colors.tint} />
                       <View style={[styles.breadcrumbItem, { backgroundColor: colors.background, borderColor: colors.border }]}>
-                        <ThemedText style={[styles.breadcrumbText, { color: colors.tint }]}>
+                        <ThemedText style={[styles.breadcrumbText, { color: isDarkMode ? '#FFFFFF' : colors.tint }]}>
                           {selectedExamType === 'national'
                             ? (selectedYear || t('mcq.selectYear'))
                             : (selectedSubject ? selectedGradeData?.subjects.find((s: Subject) => s.id === selectedSubject)?.name : t('mcq.selectSubject'))
@@ -1618,9 +1618,9 @@ export default function MCQScreen() {
                   {selectedExamType === 'national' ? (
                     selectedYear && selectedSubject && (
                       <>
-                        <IconSymbol name="chevron.right" size={16} color={colors.tint} />
+                        <IconSymbol name="chevron.right" size={16} color={isDarkMode ? '#FFFFFF' : colors.tint} />
                         <View style={[styles.breadcrumbItem, { backgroundColor: colors.background, borderColor: colors.border }]}>
-                          <ThemedText style={[styles.breadcrumbText, { color: colors.tint }]}>
+                          <ThemedText style={[styles.breadcrumbText, { color: isDarkMode ? '#FFFFFF' : colors.tint }]}>
                             {toTitleCase(selectedSubject)}
                           </ThemedText>
                         </View>
@@ -1629,9 +1629,9 @@ export default function MCQScreen() {
                   ) : (
                     selectedSubject && (
                       <>
-                        <IconSymbol name="chevron.right" size={16} color={colors.tint} />
+                        <IconSymbol name="chevron.right" size={16} color={isDarkMode ? '#FFFFFF' : colors.tint} />
                         <View style={[styles.breadcrumbItem, { backgroundColor: colors.background, borderColor: colors.border }]}>
-                          <ThemedText style={[styles.breadcrumbText, { color: colors.tint }]}>
+                          <ThemedText style={[styles.breadcrumbText, { color: isDarkMode ? '#FFFFFF' : colors.tint }]}>
                             {selectedChapter ? `${t('mcq.chapter')} ${selectedSubjectData?.chapters?.find((c: Chapter) => c.id === selectedChapter)?.name || selectedChapterName}` : t('mcq.selectChapter')}
                           </ThemedText>
                         </View>
@@ -1669,7 +1669,7 @@ export default function MCQScreen() {
                   <ThemedText 
                     numberOfLines={1}
                     style={[styles.progressText, { 
-                      color: colors.tint, 
+                      color: isDarkMode ? '#FFFFFF' : colors.tint, 
                       fontSize: 12, 
                       textAlign: 'center',
                       marginTop: 4,
@@ -1696,8 +1696,8 @@ export default function MCQScreen() {
                     onPress={handlePreviousQuestion}
                     disabled={isFirstQuestion}
                   >
-                    <IconSymbol name="chevron.left" size={18} color={colors.tint} />
-                    <ThemedText style={[styles.prevButtonText, { color: colors.tint, fontSize: 14 }]}>
+                    <IconSymbol name="chevron.left" size={18} color={isDarkMode ? '#FFFFFF' : colors.tint} />
+                    <ThemedText style={[styles.prevButtonText, { color: isDarkMode ? '#FFFFFF' : colors.tint, fontSize: 14 }]}>
                       {t('mcq.previous')}
                     </ThemedText>
                   </TouchableOpacity>
@@ -1778,15 +1778,15 @@ export default function MCQScreen() {
                       key={option.id}
                       style={[
                         styles.optionContainer,
-                        { backgroundColor: colors.background, borderColor: colors.border },
+                        { backgroundColor: colors.background, borderColor: isDarkMode ? '#FFFFFF' : colors.border },
                         getOptionStyle(String(option.id))
                       ]}
                       onPress={() => handleAnswerSelect(String(option.id))}
                       disabled={!!selectedAnswer}
                     >
                       <View style={styles.optionContent}>
-                        <View style={[styles.optionId, { backgroundColor: colors.cardAlt, borderColor: colors.border }]}>
-                          <ThemedText style={[styles.optionIdText, { color: colors.tint }]}>
+                        <View style={[styles.optionId, { backgroundColor: colors.cardAlt, borderColor: isDarkMode ? '#FFFFFF' : colors.border }]}>
+                          <ThemedText style={[styles.optionIdText, { color: isDarkMode ? '#FFFFFF' : colors.tint }]}>
                             {selectedExamType === 'national' ? String.fromCharCode(65 + index) : String(option.id)}
                           </ThemedText>
                         </View>
@@ -1801,7 +1801,7 @@ export default function MCQScreen() {
                       </View>
                     </TouchableOpacity>
                   )) || (
-                    <View style={[styles.optionContainer, { backgroundColor: colors.background, borderColor: colors.border, justifyContent: 'center', alignItems: 'center' }]}>
+                    <View style={[styles.optionContainer, { backgroundColor: colors.background, borderColor: isDarkMode ? '#FFFFFF' : colors.border, justifyContent: 'center', alignItems: 'center' }]}>
                       <ThemedText style={[styles.optionText, { color: colors.text, opacity: 0.7 }]}>
                         No options available
                       </ThemedText>

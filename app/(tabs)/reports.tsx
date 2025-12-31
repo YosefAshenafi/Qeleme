@@ -50,7 +50,6 @@ export default function ReportsScreen() {
   const [stats, setStats] = useState([
     { label: t('profile.stats.mcqsCompleted'), value: '0', icon: 'questionmark.circle.fill' as const },
     { label: t('profile.stats.flashcardsClicked'), value: '0', icon: 'rectangle.stack.fill' as const },
-    { label: t('profile.stats.homeworkQuestions'), value: '0', icon: 'message.fill' as const },
     { label: t('profile.stats.totalQuestions', 'Total Questions'), value: '0', icon: 'chart.bar.fill' as const },
   ]);
 
@@ -173,11 +172,6 @@ export default function ReportsScreen() {
             icon: 'rectangle.stack.fill' as const 
           },
           { 
-            label: t('profile.stats.homeworkQuestions'), 
-            value: userStats.activityTypeBreakdown.homework.count.toString(), 
-            icon: 'message.fill' as const 
-          },
-          { 
             label: t('profile.stats.totalQuestions', 'Total Questions'), 
             value: userStats.totalQuestionsAnswered.toString(), 
             icon: 'chart.bar.fill' as const 
@@ -262,7 +256,7 @@ export default function ReportsScreen() {
               // Get unique activity types for this chapter (all valid types)
               const validTypes = activities
                 .map(a => a.type)
-                .filter(type => type && (type === 'mcq' || type === 'flashcard' || type === 'homework' || type === 'study' || type === 'kg_question' || type === 'picture_mcq'));
+                .filter(type => type && (type === 'mcq' || type === 'flashcard' || type === 'study' || type === 'kg_question' || type === 'picture_mcq'));
               
               const completedTypes = Array.from(new Set(validTypes))
                 .map(type => {
@@ -270,8 +264,6 @@ export default function ReportsScreen() {
                     return t('reports.activityTypes.mcq');
                   } else if (type === 'flashcard') {
                     return t('reports.activityTypes.flashcard');
-                  } else if (type === 'homework') {
-                    return t('reports.activityTypes.homework');
                   } else if (type === 'study') {
                     return t('reports.activityTypes.study');
                   } else if (type === 'kg_question') {
@@ -608,8 +600,9 @@ export default function ReportsScreen() {
                                         <IconSymbol 
                                           name={activity.type === 'mcq' ? 'questionmark.circle.fill' : 
                                                 activity.type === 'flashcard' ? 'rectangle.stack.fill' :
-                                                activity.type === 'homework' ? 'message.fill' : 
-                                                activity.type === 'study' ? 'house.fill' : 'message'} 
+                                                activity.type === 'study' ? 'house.fill' : 
+                                                activity.type === 'kg_question' ? 'questionmark.circle.fill' :
+                                                activity.type === 'picture_mcq' ? 'photo' : 'message'} 
                                           size={18} 
                                           color={colors.tint}
                                         />
@@ -618,13 +611,12 @@ export default function ReportsScreen() {
                                         <ThemedText style={[styles.activityTitle, { color: colors.text }]}>
                                           {activity.type === 'mcq' ? t('reports.activityTypes.mcq') :
                                            activity.type === 'flashcard' ? t('reports.activityTypes.flashcard') :
-                                           activity.type === 'homework' ? t('reports.activityTypes.homework') :
                                            activity.type === 'study' ? t('reports.activityTypes.study') :
                                            activity.type === 'kg_question' ? t('reports.activityTypes.kg_question') :
                                            activity.type === 'picture_mcq' ? t('reports.activityTypes.picture_mcq') :
                                            ''} {activity.chapter && activity.chapter !== t('reports.recentActivity.noChapter', 'No Chapter') 
                                             ? `• ${activity.chapterFormatted}` 
-                                            : activity.type !== 'homework' && activity.chapter === t('reports.recentActivity.noChapter', 'No Chapter')
+                                            : activity.chapter === t('reports.recentActivity.noChapter', 'No Chapter')
                                             ? `• ${activity.chapter}`
                                             : ''}
                                         </ThemedText>

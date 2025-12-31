@@ -1,6 +1,6 @@
-# Qelem - Educational Platform
+# Qeleme - Educational Platform
 
-Qelem is a comprehensive educational platform that provides interactive learning experiences through various features including MCQs, flashcards, and more.
+Qeleme is a comprehensive educational platform that provides interactive learning experiences through various features including MCQs, flashcards, and more.
 
 ## Features
 

@@ -481,12 +481,6 @@ export default function ProfileScreen() {
                     </Text>
                   </View>
                   <View style={styles.modalFeatureItem}>
-                    <IconSymbol name="message.fill" size={20} color={colors.tint} />
-                    <Text style={[styles.modalFeatureText, { color: colors.text }]}>
-                      {t('profile.aboutFeature3', 'AI-Powered Homework Help')}
-                    </Text>
-                  </View>
-                  <View style={styles.modalFeatureItem}>
                     <IconSymbol name="chart.bar.fill" size={20} color={colors.tint} />
                     <Text style={[styles.modalFeatureText, { color: colors.text }]}>
                       {t('profile.aboutFeature4', 'Comprehensive Progress Tracking')}

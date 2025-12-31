@@ -1,4 +1,4 @@
-import { Tabs, Redirect, usePathname } from 'expo-router';
+import { Tabs, Redirect } from 'expo-router';
 import React from 'react';
 import { Platform, TouchableOpacity, View, StyleSheet, Image, Text } from 'react-native';
 import { router } from 'expo-router';
@@ -18,7 +18,6 @@ export default function TabLayout() {
   const colors = getColors(isDarkMode);
   const { t } = useTranslation();
   const { user } = useAuth();
-  const pathname = usePathname();
 
   // Redirect KG students to KG dashboard
   if (typeof user?.grade === 'string' && user.grade.toLowerCase().includes('kg')) {
@@ -28,8 +27,8 @@ export default function TabLayout() {
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: colors.background,
-        tabBarInactiveTintColor: colors.background + 'CC',
+        tabBarActiveTintColor: isDarkMode ? '#FFFFFF' : colors.background,
+        tabBarInactiveTintColor: isDarkMode ? '#FFFFFFCC' : colors.background + 'CC',
         headerShown: true,
         headerShadowVisible: false,
         headerTitleAlign: 'center',
@@ -43,30 +42,28 @@ export default function TabLayout() {
               style={styles.logo}
               resizeMode="contain"
             />
-            <Text style={[styles.logoText, { color: colors.background }]}>
+            <Text style={[styles.logoText, { color: isDarkMode ? '#FFFFFF' : colors.background }]}>
               Qelem
             </Text>
           </View>
         ),
         headerTitle: () => (
-          <View style={[styles.gradeContainer, { backgroundColor: colors.background + '20', borderColor: colors.background }]}>
+          <View style={[styles.gradeContainer, { backgroundColor: colors.background + '20', borderColor: isDarkMode ? '#FFFFFF' : colors.background }]}>
             <Text style={styles.gradeIcon}>🎓</Text>
-            <Text style={[styles.gradeText, { color: colors.background }]}>
+            <Text style={[styles.gradeText, { color: isDarkMode ? '#FFFFFF' : colors.background }]}>
               {t('common.grade')}: {user?.grade?.replace(/\D/g, '')}
             </Text>
           </View>
         ),
         headerRight: () => (
           <View style={styles.headerRight}>
-            {pathname !== '/homework' && (
-              <LanguageToggle 
-                colors={{ 
-                  card: 'transparent', 
-                  text: colors.background,
-                  tint: colors.background 
-                }} 
-              />
-            )}
+            <LanguageToggle 
+              colors={{ 
+                card: 'transparent', 
+                text: isDarkMode ? '#FFFFFF' : colors.background,
+                tint: isDarkMode ? '#FFFFFF' : colors.background 
+              }} 
+            />
             <TouchableOpacity 
               onPress={() => router.push('/profile')}
               style={styles.profileButton}
@@ -75,7 +72,7 @@ export default function TabLayout() {
                 <IconSymbol 
                   name="person.fill" 
                   size={20} 
-                  color={colors.background} 
+                  color={isDarkMode ? '#FFFFFF' : colors.background} 
                 />
               </View>
             </TouchableOpacity>
@@ -105,7 +102,7 @@ export default function TabLayout() {
               <IconSymbol 
                 size={focused ? 30 : 26} 
                 name={focused ? "house.fill" : "house"} 
-                color={focused ? colors.background : colors.background + 'CC'} 
+                color={focused ? (isDarkMode ? '#FFFFFF' : colors.background) : (isDarkMode ? '#FFFFFFCC' : colors.background + 'CC')} 
               />
             </View>
           ),
@@ -120,7 +117,7 @@ export default function TabLayout() {
               <IconSymbol 
                 size={focused ? 30 : 26} 
                 name={focused ? "questionmark.circle.fill" : "questionmark.circle"} 
-                color={focused ? colors.background : colors.background + 'CC'} 
+                color={focused ? (isDarkMode ? '#FFFFFF' : colors.background) : (isDarkMode ? '#FFFFFFCC' : colors.background + 'CC')} 
               />
             </View>
           ),
@@ -135,22 +132,7 @@ export default function TabLayout() {
               <IconSymbol 
                 size={focused ? 30 : 26} 
                 name={focused ? "rectangle.stack.fill" : "rectangle.stack"} 
-                color={focused ? colors.background : colors.background + 'CC'} 
-              />
-            </View>
-          ),
-        }}
-      />
-      <Tabs.Screen
-        name="homework"
-        options={{
-          title: t('navigation.tabs.homework'),
-          tabBarIcon: ({ color, focused }) => (
-            <View style={[styles.tabIconContainer, focused && { backgroundColor: colors.background + '20' }]}>
-              <IconSymbol 
-                size={focused ? 30 : 26} 
-                name={focused ? "message.fill" : "message"} 
-                color={focused ? colors.background : colors.background + 'CC'} 
+                color={focused ? (isDarkMode ? '#FFFFFF' : colors.background) : (isDarkMode ? '#FFFFFFCC' : colors.background + 'CC')} 
               />
             </View>
           ),
@@ -165,7 +147,7 @@ export default function TabLayout() {
               <IconSymbol 
                 size={focused ? 30 : 26} 
                 name={focused ? "chart.bar.fill" : "chart.bar"} 
-                color={focused ? colors.background : colors.background + 'CC'} 
+                color={focused ? (isDarkMode ? '#FFFFFF' : colors.background) : (isDarkMode ? '#FFFFFFCC' : colors.background + 'CC')} 
               />
             </View>
           ),

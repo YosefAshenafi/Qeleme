@@ -8,7 +8,7 @@ const tintColorDark = '#8B6BCE';
 
 export const getColors = (isDark: boolean) => ({
   text: isDark ? '#FFFFFF' : '#000000',
-  background: isDark ? '#121212' : '#FFFFFF',
+  background: isDark ? '#2A2A2A' : '#FFFFFF',
   tint: isDark ? tintColorDark : tintColorLight,
   icon: isDark ? '#FFFFFF' : '#000000',
   tabIconDefault: isDark ? '#999999' : '#666666',

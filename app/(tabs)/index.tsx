@@ -58,7 +58,7 @@ type ReportCard = {
 };
 
 type RecentActivity = {
-  type: 'mcq' | 'flashcard' | 'homework' | 'study';
+  type: 'mcq' | 'flashcard' | 'study';
   grade: string;
   subject: string;
   chapter: string;
@@ -861,30 +861,6 @@ export default function HomeScreen() {
               {t('home.quickActions.title')}
             </ThemedText>
             <View style={[styles.gridContainer, { backgroundColor: colors.background }]}>
-              <TouchableOpacity
-                style={[styles.gridItem, { backgroundColor: colors.background }]}
-                onPress={() => router.push('/(tabs)/homework')}
-              >
-                <LinearGradient
-                  colors={isDarkMode ? ['#0A1F2F', '#0D3B71'] : ['#E3F2FD', '#BBDEFB']}
-                  style={[styles.gridItemContent, { backgroundColor: colors.card }]}
-                  start={{ x: 0, y: 0 }}
-                  end={{ x: 1, y: 1 }}
-                >
-                  <View style={[styles.gridIconContainer, { backgroundColor: isDarkMode ? '#1976D230' : '#1976D220' }]}>
-                    <IconSymbol name="message" size={32} color="#1976D2" />
-                  </View>
-                  <View style={styles.gridTextContainer}>
-                    <ThemedText numberOfLines={1} style={[styles.gridItemTitle, { color: colors.text }]}>
-                      {t('home.quickActions.homework.title')}
-                    </ThemedText>
-                    <ThemedText numberOfLines={1} style={[styles.gridItemSubtitle, { color: colors.text + '80' }]}>
-                      {t('home.quickActions.homework.subtitle')}
-                    </ThemedText>
-                  </View>
-                </LinearGradient>
-              </TouchableOpacity>
-
               <TouchableOpacity
                 style={[styles.gridItem, { backgroundColor: colors.background }]}
                 onPress={() => router.push('/(tabs)/reports')}
