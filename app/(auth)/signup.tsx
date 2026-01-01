@@ -237,33 +237,37 @@ export default function SignupScreen() {
   const validateAllFields = (): {isValid: boolean, errors: {[key: string]: string}} => {
     const errors: {[key: string]: string} = {};
 
-    // Validate main user fields
-    const fullNameError = validateFullName(fullName);
-    if (fullNameError) errors.fullName = fullNameError;
+    // Only validate full name for single student (not for multiple students - parent name generated in backend)
+    if (role === 'student') {
+      const fullNameError = validateFullName(fullName);
+      if (fullNameError) errors.fullName = fullNameError;
+    }
 
     const phoneError = validatePhoneNumber(phoneNumber);
     if (phoneError) errors.phoneNumber = phoneError;
 
-    const usernameError = validateUsername(username);
-    if (usernameError) errors.username = usernameError;
-
-    const passwordError = validatePassword(password);
-    if (passwordError) errors.password = passwordError;
-
-    const confirmPasswordError = validatePasswordConfirmation(password, confirmPassword);
-    if (confirmPasswordError) errors.confirmPassword = confirmPasswordError;
-
-    // Only validate grade for students
+    // Only validate username and password for single student (not for multiple students)
     if (role === 'student') {
+      const usernameError = validateUsername(username);
+      if (usernameError) errors.username = usernameError;
+
+      const passwordError = validatePassword(password);
+      if (passwordError) errors.password = passwordError;
+
+      const confirmPasswordError = validatePasswordConfirmation(password, confirmPassword);
+      if (confirmPasswordError) errors.confirmPassword = confirmPasswordError;
+
       const gradeError = validateGrade(grade);
       if (gradeError) errors.grade = gradeError;
     }
 
-    // Validate region for both students and parents
-    const regionError = validateRegion(region);
-    if (regionError) errors.region = regionError;
+    // Only validate region for single students (not for multiple students - parent credentials generated in backend)
+    if (role === 'student') {
+      const regionError = validateRegion(region);
+      if (regionError) errors.region = regionError;
+    }
 
-    // Validate children data if role is parent
+    // Validate children data if role is parent (multiple students)
     if (role === 'parent') {
       childrenData.forEach((child, index) => {
         const childErrors = validateChildData(child, index);
@@ -276,8 +280,8 @@ export default function SignupScreen() {
       errors.acceptTerms = t('signup.errors.acceptTerms');
     }
 
-    // Check username availability
-    if (usernameValid === false) {
+    // Check username availability (only for single student)
+    if (role === 'student' && usernameValid === false) {
       errors.username = t('signup.errors.usernameTaken');
     }
 
@@ -479,11 +483,13 @@ export default function SignupScreen() {
         pathname: '/(auth)/otp',
         params: {
           phoneNumber: fullPhoneNumber, // Pass the full phone number with country code
-          fullName,
-          username,
-          password,
+          // For multiple students (parent role), send empty strings - backend will generate credentials
+          fullName: role === 'parent' ? '' : fullName,
+          username: role === 'parent' ? '' : username,
+          password: role === 'parent' ? '' : password,
           grade,
-          region,
+          // For multiple students, send empty region - backend will generate
+          region: role === 'parent' ? '' : region,
           role,
           numberOfChildren: numberOfChildren.toString(),
           childrenData: JSON.stringify(childrenData)
@@ -537,53 +543,63 @@ export default function SignupScreen() {
                 backgroundColor: isDarkMode ? '#1C1C1E' : '#FFFFFF',
               }]}>
                 <View style={styles.inputWrapper}>
-                  <View style={[styles.inputContainer, {
-                    backgroundColor: isDarkMode ? '#2C2C2E' : '#F9FAFB',
-                    borderColor: validationErrors.fullName ? '#F44336' : (isDarkMode ? '#3C3C3E' : '#E5E7EB'),
-                  }]}>
-                    <Ionicons name="person-outline" size={20} color={isDarkMode ? '#A0A0A5' : '#6B7280'} style={styles.inputIcon} />
-                    <TextInput
-                      style={[styles.input, { color: colors.text }]}
-                      placeholder={t('signup.fullName')}
-                      placeholderTextColor={isDarkMode ? '#A0A0A5' : '#9CA3AF'}
-                      value={fullName}
-                      onChangeText={handleFullNameChange}
-                    />
-                  </View>
-                  {validationErrors.fullName ? (
-                    <ThemedText style={[styles.errorText, { color: '#F44336' }]}>{validationErrors.fullName}</ThemedText>
+                  {/* Full Name field - only for single student */}
+                  {role === 'student' ? (
+                    <>
+                      <View style={[styles.inputContainer, {
+                        backgroundColor: isDarkMode ? '#2C2C2E' : '#F9FAFB',
+                        borderColor: validationErrors.fullName ? '#F44336' : (isDarkMode ? '#3C3C3E' : '#E5E7EB'),
+                      }]}>
+                        <Ionicons name="person-outline" size={20} color={isDarkMode ? '#A0A0A5' : '#6B7280'} style={styles.inputIcon} />
+                        <TextInput
+                          style={[styles.input, { color: colors.text }]}
+                          placeholder={t('signup.fullName')}
+                          placeholderTextColor={isDarkMode ? '#A0A0A5' : '#9CA3AF'}
+                          value={fullName}
+                          onChangeText={handleFullNameChange}
+                        />
+                      </View>
+                      {validationErrors.fullName ? (
+                        <ThemedText style={[styles.errorText, { color: '#F44336' }]}>{validationErrors.fullName}</ThemedText>
+                      ) : null}
+                    </>
                   ) : null}
 
-                  <View style={[styles.inputContainer, {
-                    backgroundColor: isDarkMode ? '#2C2C2E' : '#F9FAFB',
-                    borderColor: (validationErrors.username || usernameError) ? '#F44336' : (isDarkMode ? '#3C3C3E' : '#E5E7EB'),
-                  }]}>
-                    <Ionicons name="at-outline" size={20} color={isDarkMode ? '#A0A0A5' : '#6B7280'} style={styles.inputIcon} />
-                    <TextInput
-                      style={[styles.input, { color: colors.text }]}
-                      placeholder={t('signup.username')}
-                      placeholderTextColor={isDarkMode ? '#A0A0A5' : '#9CA3AF'}
-                      value={username}
-                      onChangeText={handleUsernameChange}
-                      autoCapitalize="none"
-                      autoCorrect={false}
-                      textContentType="username"
-                      keyboardType="default"
-                      keyboardAppearance={isDarkMode ? 'dark' : 'light'}
-                    />
-                    {usernameChecking && (
-                      <Ionicons name="time-outline" size={20} color={isDarkMode ? '#A0A0A5' : '#6B7280'} style={styles.inputIcon} />
-                    )}
-                    {usernameValid === true && (
-                      <Ionicons name="checkmark-circle" size={20} color="#4CAF50" style={styles.inputIcon} />
-                    )}
-                    {usernameValid === false && (
-                      <Ionicons name="close-circle" size={20} color="#F44336" style={styles.inputIcon} />
-                    )}
-                  </View>
+                  {/* Username field - only for single student */}
+                  {role === 'student' ? (
+                    <>
+                      <View style={[styles.inputContainer, {
+                        backgroundColor: isDarkMode ? '#2C2C2E' : '#F9FAFB',
+                        borderColor: (validationErrors.username || usernameError) ? '#F44336' : (isDarkMode ? '#3C3C3E' : '#E5E7EB'),
+                      }]}>
+                        <Ionicons name="at-outline" size={20} color={isDarkMode ? '#A0A0A5' : '#6B7280'} style={styles.inputIcon} />
+                        <TextInput
+                          style={[styles.input, { color: colors.text }]}
+                          placeholder={t('signup.username')}
+                          placeholderTextColor={isDarkMode ? '#A0A0A5' : '#9CA3AF'}
+                          value={username}
+                          onChangeText={handleUsernameChange}
+                          autoCapitalize="none"
+                          autoCorrect={false}
+                          textContentType="username"
+                          keyboardType="default"
+                          keyboardAppearance={isDarkMode ? 'dark' : 'light'}
+                        />
+                        {usernameChecking && (
+                          <Ionicons name="time-outline" size={20} color={isDarkMode ? '#A0A0A5' : '#6B7280'} style={styles.inputIcon} />
+                        )}
+                        {usernameValid === true && (
+                          <Ionicons name="checkmark-circle" size={20} color="#4CAF50" style={styles.inputIcon} />
+                        )}
+                        {usernameValid === false && (
+                          <Ionicons name="close-circle" size={20} color="#F44336" style={styles.inputIcon} />
+                        )}
+                      </View>
 
-                  {(validationErrors.username || usernameError) ? (
-                    <ThemedText style={[styles.errorText, { color: '#F44336' }]}>{validationErrors.username || usernameError}</ThemedText>
+                      {(validationErrors.username || usernameError) ? (
+                        <ThemedText style={[styles.errorText, { color: '#F44336' }]}>{validationErrors.username || usernameError}</ThemedText>
+                      ) : null}
+                    </>
                   ) : null}
 
                   <View style={[styles.inputContainer, {
@@ -612,53 +628,31 @@ export default function SignupScreen() {
                     <ThemedText style={[styles.errorText, { color: '#F44336' }]}>{validationErrors.phoneNumber}</ThemedText>
                   ) : null}
 
-                  <PasswordInput
-                    value={password}
-                    onChangeText={setPassword}
-                    placeholder={t('signup.password')}
-                    autoCapitalize="none"
-                    textContentType="newPassword"
-                    keyboardType="default"
-                    keyboardAppearance={isDarkMode ? 'dark' : 'light'}
-                    error={!!validationErrors.password}
-                    errorMessage={validationErrors.password}
-                  />
-
-                  <PasswordInput
-                    value={confirmPassword}
-                    onChangeText={setConfirmPassword}
-                    placeholder={t('signup.confirmPassword')}
-                    autoCapitalize="none"
-                    textContentType="newPassword"
-                    error={!!validationErrors.confirmPassword}
-                    errorMessage={validationErrors.confirmPassword}
-                  />
-
-                  {/* Parent region selection - only for parent role */}
-                  {role === 'parent' ? (
+                  {/* Password fields - only for single student */}
+                  {role === 'student' ? (
                     <>
-                      <ThemedText style={[styles.sectionTitle, { color: colors.text }]}>
-                        Your Region
-                      </ThemedText>
-                      <View style={[styles.inputContainer, {
-                        backgroundColor: isDarkMode ? '#2C2C2E' : '#F9FAFB',
-                        borderColor: validationErrors.region ? '#F44336' : (isDarkMode ? '#3C3C3E' : '#E5E7EB'),
-                      }]}>
-                        <Ionicons name="location-outline" size={20} color={isDarkMode ? '#A0A0A5' : '#6B7280'} style={styles.inputIcon} />
-                        <TouchableOpacity 
-                          style={styles.dropdownButton}
-                          onPress={() => openRegionModal()}
-                        >
-                          <ThemedText style={[styles.input, { color: region ? colors.text : (isDarkMode ? '#A0A0A5' : '#9CA3AF') }]}>
-                            {region ? regions.find(r => r.name === region)?.name || t('signup.region.label') : t('signup.region.label')}
-                          </ThemedText>
-                          <Ionicons name="chevron-down" size={20} color={isDarkMode ? '#A0A0A5' : '#6B7280'} />
-                        </TouchableOpacity>
-                      </View>
+                      <PasswordInput
+                        value={password}
+                        onChangeText={setPassword}
+                        placeholder={t('signup.password')}
+                        autoCapitalize="none"
+                        textContentType="newPassword"
+                        keyboardType="default"
+                        keyboardAppearance={isDarkMode ? 'dark' : 'light'}
+                        error={!!validationErrors.password}
+                        errorMessage={validationErrors.password}
+                      />
+
+                      <PasswordInput
+                        value={confirmPassword}
+                        onChangeText={setConfirmPassword}
+                        placeholder={t('signup.confirmPassword')}
+                        autoCapitalize="none"
+                        textContentType="newPassword"
+                        error={!!validationErrors.confirmPassword}
+                        errorMessage={validationErrors.confirmPassword}
+                      />
                     </>
-                  ) : null}
-                  {role === 'parent' && validationErrors.region ? (
-                    <ThemedText style={[styles.errorText, { color: '#F44336' }]}>{validationErrors.region}</ThemedText>
                   ) : null}
 
                   {role === 'parent' && numberOfChildren >= 1 ? (

@@ -586,7 +586,7 @@ export default {
       title: 'Register',
       subtitle: 'Choose how you want to use Qelem',
       student: {
-        title: 'Student',
+        title: 'Single Student',
         description: 'I want to learn and practice',
         features: {
           materials: 'Access study materials',
@@ -595,28 +595,28 @@ export default {
         }
       },
       parent: {
-        title: 'Parent',
-        description: 'I want to manage my children\'s learning',
+        title: 'Multiple Students',
+        description: 'I want to register multiple students with one phone number',
         features: {
-          monitor: 'Monitor progress',
-          manage: 'Manage children',
-          updates: 'Get updates'
+          monitor: 'Register multiple students',
+          manage: 'One phone number for all',
+          updates: 'Easy management'
         }
       }
     },
     childrenSelection: {
-      title: 'Add Your Children',
-      subtitle: 'How many children do you want to register?',
-      addChild: 'Add Child',
-      child1: 'Child 1',
-      child2: 'Child 2',
-      child3: 'Child 3',
-      child4: 'Child 4',
-      child5: 'Child 5',
-      child: 'Child',
-      childNumber: 'Child {number}',
+      title: 'Register Multiple Students',
+      subtitle: 'How many students do you want to register?',
+      addChild: 'Add Student',
+      child1: 'Student 1',
+      child2: 'Student 2',
+      child3: 'Student 3',
+      child4: 'Student 4',
+      child5: 'Student 5',
+      child: 'Student',
+      childNumber: 'Student {number}',
       continue: 'Continue',
-      howManyChildren: 'How many children do you have?',
+      howManyChildren: 'How many students do you want to register?',
       enterNumberGreaterThanOne: 'Enter a number greater than 1'
     },
     fullName: 'Full Name',

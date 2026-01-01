@@ -190,7 +190,7 @@ export default {
       title: 'ይመዝገቡ',
       subtitle: 'በቀለም እንዴት መጠቀም እንደሚፈልጉ ይምረጡ',
       student: {
-        title: 'ተማሪ',
+        title: 'አንድ ተማሪ',
         description: 'መማር እና መለማመድ እፈልጋለሁ',
         features: {
           materials: 'የጥናት አጋዦችን ያግኙ!',
@@ -199,27 +199,27 @@ export default {
         }
       },
       parent: {
-        title: 'ወላጅ',
-        description: 'የልጆቼን መማር መከታተል እፈልጋለሁ',
+        title: 'በርካታ ተማሪዎች',
+        description: 'አንድ ስልክ ቁጥር በመጠቀም በርካታ ተማሪዎችን ለመመዝገብ እፈልጋለሁ',
         features: {
-          monitor: 'የጥናት እድገታቸውን ይከታተሉ',
-          manage: 'ልጆችዎን ይከታተሉ',
-          updates: 'አዳዲስ መረጃዎችን ይከታተሉ'
+          monitor: 'በርካታ ተማሪዎችን ይመዝግቡ',
+          manage: 'ለሁሉም አንድ ስልክ ቁጥር',
+          updates: 'ቀላል አስተዳደር'
         }
       }
     },
     childrenSelection: {
-      title: 'ልጆችዎን ያስመዝግቡ',
-      subtitle: 'ስንት ልጆች መመዝገብ ይፈልጋሉ?',
-      addChild: 'ልጅ ያስመዝግቡ',
-      child1: 'ልጅ 1',
-      child2: 'ልጅ 2',
-      child3: 'ልጅ 3',
-      child4: 'ልጅ 4',
-      child5: 'ልጅ 5',
-      child: 'ልጅ',
+      title: 'በርካታ ተማሪዎችን ይመዝግቡ',
+      subtitle: 'ስንት ተማሪዎች መመዝገብ ይፈልጋሉ?',
+      addChild: 'ተማሪ ያስመዝግቡ',
+      child1: 'ተማሪ 1',
+      child2: 'ተማሪ 2',
+      child3: 'ተማሪ 3',
+      child4: 'ተማሪ 4',
+      child5: 'ተማሪ 5',
+      child: 'ተማሪ',
       continue: 'ይቀጥሉ',
-      howManyChildren: 'ስንት ልጆች አሉዎት?',
+      howManyChildren: 'ስንት ተማሪዎች መመዝገብ ይፈልጋሉ?',
       enterNumberGreaterThanOne: '1 እና ከ1 በላይ የሆነ ቁጥር ያስገቡ'
     },
     fullName: 'ሙሉ ስም',
