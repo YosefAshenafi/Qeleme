@@ -8,6 +8,7 @@ export interface BaseActivity {
   id: string;
   type: ActivityType;
   timestamp: number;
+  username: string; // Username of the user who performed this activity
   grade: string;
   subject: string;
   chapter?: string;
@@ -93,15 +94,16 @@ export interface UserStats {
   };
 }
 
-// Storage keys
-const ACTIVITIES_KEY = '@user_activities';
-const STATS_KEY = '@user_stats';
+// Storage key helper - activities are stored per username
+const getActivitiesKey = (username: string) => `@user_activities_${username}`;
+const getStatsKey = (username: string) => `@user_stats_${username}`;
 const RECENT_ACTIVITIES_KEY = '@recentActivities'; // Keep for backward compatibility
 
 class ActivityTrackingService {
   private static instance: ActivityTrackingService;
   private activities: Activity[] = [];
   private stats: UserStats | null = null;
+  private currentUsername: string | null = null;
 
   private constructor() {}
 
@@ -112,24 +114,35 @@ class ActivityTrackingService {
     return ActivityTrackingService.instance;
   }
 
-  // Initialize the service by loading data from storage
-  public async initialize(): Promise<void> {
+  // Initialize the service by loading data from storage for a specific user
+  public async initialize(username?: string): Promise<void> {
     try {
-      await this.loadActivities();
-      // Always recalculate stats from activities to ensure consistency
-      // Don't load stale stats from storage
-      await this.updateStats();
+      if (username) {
+        this.currentUsername = username;
+        await this.loadActivities(username);
+        // Always recalculate stats from activities to ensure consistency
+        await this.updateStats();
+      } else {
+        // If no username provided, clear activities (user not logged in)
+        this.activities = [];
+        this.stats = null;
+        this.currentUsername = null;
+      }
     } catch (error) {
       console.error('Failed to initialize ActivityTrackingService:', error);
     }
   }
 
-  // Load activities from AsyncStorage
-  private async loadActivities(): Promise<void> {
+  // Load activities from AsyncStorage for a specific user
+  private async loadActivities(username: string): Promise<void> {
     try {
-      const activitiesJson = await AsyncStorage.getItem(ACTIVITIES_KEY);
+      const activitiesJson = await AsyncStorage.getItem(getActivitiesKey(username));
       if (activitiesJson) {
-        this.activities = JSON.parse(activitiesJson);
+        const allActivities = JSON.parse(activitiesJson);
+        // Filter to only include activities for this username (for safety)
+        this.activities = allActivities.filter((activity: Activity) => activity.username === username);
+      } else {
+        this.activities = [];
       }
     } catch (error) {
       console.error('Failed to load activities:', error);
@@ -150,20 +163,22 @@ class ActivityTrackingService {
     }
   }
 
-  // Save activities to AsyncStorage
+  // Save activities to AsyncStorage for current user
   private async saveActivities(): Promise<void> {
     try {
-      await AsyncStorage.setItem(ACTIVITIES_KEY, JSON.stringify(this.activities));
+      if (this.currentUsername) {
+        await AsyncStorage.setItem(getActivitiesKey(this.currentUsername), JSON.stringify(this.activities));
+      }
     } catch (error) {
       console.error('Failed to save activities:', error);
     }
   }
 
-  // Save stats to AsyncStorage
+  // Save stats to AsyncStorage for current user
   private async saveStats(): Promise<void> {
     try {
-      if (this.stats) {
-        await AsyncStorage.setItem(STATS_KEY, JSON.stringify(this.stats));
+      if (this.stats && this.currentUsername) {
+        await AsyncStorage.setItem(getStatsKey(this.currentUsername), JSON.stringify(this.stats));
       }
     } catch (error) {
       console.error('Failed to save stats:', error);
@@ -171,10 +186,16 @@ class ActivityTrackingService {
   }
 
   // Add a new activity
-  public async addActivity(activity: Omit<Activity, 'id' | 'timestamp'>): Promise<void> {
+  public async addActivity(activity: Omit<Activity, 'id' | 'timestamp' | 'username'>): Promise<void> {
     try {
+      if (!this.currentUsername) {
+        console.warn('Cannot add activity: no current user set. Please initialize with a username first.');
+        return;
+      }
+      
       const newActivity: Activity = {
         ...activity,
+        username: this.currentUsername,
         id: `${activity.type}_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
         timestamp: Date.now(),
       };
@@ -435,16 +456,33 @@ class ActivityTrackingService {
     );
   }
 
-  // Clear all data (for testing or reset)
+  // Clear all data for current user (for testing or reset)
   public async clearAllData(): Promise<void> {
     try {
+      if (this.currentUsername) {
+        await AsyncStorage.removeItem(getActivitiesKey(this.currentUsername));
+        await AsyncStorage.removeItem(getStatsKey(this.currentUsername));
+      }
       this.activities = [];
       this.stats = null;
-      await AsyncStorage.removeItem(ACTIVITIES_KEY);
-      await AsyncStorage.removeItem(STATS_KEY);
       await AsyncStorage.removeItem(RECENT_ACTIVITIES_KEY);
     } catch (error) {
       console.error('Failed to clear all data:', error);
+    }
+  }
+
+  // Clear data for a specific username (useful when user logs out)
+  public async clearUserData(username: string): Promise<void> {
+    try {
+      await AsyncStorage.removeItem(getActivitiesKey(username));
+      await AsyncStorage.removeItem(getStatsKey(username));
+      if (this.currentUsername === username) {
+        this.activities = [];
+        this.stats = null;
+        this.currentUsername = null;
+      }
+    } catch (error) {
+      console.error('Failed to clear user data:', error);
     }
   }
 

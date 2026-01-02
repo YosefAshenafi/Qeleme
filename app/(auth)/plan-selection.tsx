@@ -92,17 +92,13 @@ export default function PlanSelectionScreen() {
       // Debug: Log the plans before sorting
       console.log('Plans before sorting:', data.map((p: PaymentPlan) => ({ name: p.name, duration: p.durationInMonths, id: getPlanId(p) })));
       
-      // Separate paid and free plans
-      const paidPlans = data.filter((plan: PaymentPlan) => plan.durationInMonths > 0);
-      const freePlans = data.filter((plan: PaymentPlan) => plan.durationInMonths === 0);
+      // Filter out free plans and only show paid plans
+      const paidPlans = data.filter((plan: PaymentPlan) => plan.durationInMonths > 0 && plan.amount > 0);
       
       // Sort paid plans by duration in descending order
-      const sortedPaidPlans = paidPlans.sort((a: PaymentPlan, b: PaymentPlan) => {
+      const sortedPlans = paidPlans.sort((a: PaymentPlan, b: PaymentPlan) => {
         return b.durationInMonths - a.durationInMonths;
       });
-      
-      // Combine free plans first, then paid plans
-      const sortedPlans = [...freePlans, ...sortedPaidPlans];
       
       // Debug: Log the plans after sorting
       console.log('Plans after sorting:', sortedPlans.map((p: PaymentPlan) => ({ name: p.name, duration: p.durationInMonths, id: getPlanId(p) })));
@@ -183,14 +179,7 @@ export default function PlanSelectionScreen() {
 
   const getButtonText = () => {
     if (selectedPlans.length === 0) return t('auth.planSelection.continue');
-    
-    const selectedPlan = plans.find(p => getPlanId(p) === selectedPlans[0].plan);
-    if (!selectedPlan) return t('auth.planSelection.continue');
-    
-    // Check if it's a free plan (amount is 0 or durationInMonths is 999 for free)
-    const isFreePlan = selectedPlan.amount === 0 || selectedPlan.durationInMonths === 999 || selectedPlan.durationInMonths === 0;
-    
-    return isFreePlan ? t('auth.planSelection.finish') : t('auth.planSelection.pay');
+    return t('auth.planSelection.pay');
   };
 
   const handleContinue = async () => {
@@ -209,133 +198,7 @@ export default function PlanSelectionScreen() {
         throw new Error('Selected plan not found');
       }
 
-      // Check if it's a free plan
-      const isFreePlan = selectedPlan.amount === 0 || selectedPlan.durationInMonths === 999 || selectedPlan.durationInMonths === 0;
-      
-      if (isFreePlan) {
-        // For free plans, register directly without payment
-        
-        // Validate that grade is present for student registration
-        if (userData.role === 'student' && !userData.grade) {
-          console.error('Grade is missing from userData:', userData);
-          Alert.alert(
-            'Grade Required',
-            'Please select your grade before proceeding. You will be redirected to the signup screen.',
-            [
-              {
-                text: 'OK',
-                onPress: () => router.replace('/(auth)/signup'),
-                style: 'default'
-              }
-            ],
-            {
-              cancelable: false
-            }
-          );
-          return;
-        }
-
-        // For parent registration, validate that children have grades (region is optional)
-        if (userData.role === 'parent') {
-          const childrenWithoutGrades = userData.childrenData?.filter((child: any) => !child.grade) || [];
-          
-          if (childrenWithoutGrades.length > 0) {
-            console.error('Children missing grades:', childrenWithoutGrades);
-            Alert.alert(
-              'Grade Required',
-              'Please select grades for all children before proceeding. You will be redirected to the signup screen.',
-              [
-                {
-                  text: 'OK',
-                  onPress: () => router.replace('/(auth)/signup'),
-                  style: 'default'
-                }
-              ],
-              {
-                cancelable: false
-              }
-            );
-            return;
-          }
-        }
-        
-        const endpoint = userData.role === 'parent' 
-          ? `${BASE_URL}/api/auth/register/parent`
-          : `${BASE_URL}/api/auth/register/student`;
-        
-        // Generate parent credentials if role is parent (multiple students)
-        const parentCredentials = userData.role === 'parent' 
-          ? generateParentCredentials(userData.phoneNumber || '', userData.childrenData)
-          : null;
-        
-        const requestBody = userData.role === 'parent' ? {
-          parent: {
-            name: parentCredentials!.name,
-            username: parentCredentials!.username,
-            password: parentCredentials!.password,
-            phoneNumber: userData.phoneNumber?.replace('+251', '').replace(/^9/, '09') || userData.phoneNumber,
-            region: parentCredentials!.region
-          },
-          students: userData.childrenData?.map((child: any) => ({
-            name: child.fullName,
-            username: child.username,
-            password: child.password,
-            grade: child.grade === 'KG' ? 'kg' : `grade ${child.grade}`,
-            plan: selectedPlan.name,
-            region: child.region
-          })) || []
-        } : {
-          name: userData.fullName,
-          username: userData.username,
-          password: userData.password,
-          phoneNumber: userData.phoneNumber?.replace('+251', '').replace(/^9/, '09') || userData.phoneNumber,
-          Plan: selectedPlan.name,
-          region: userData.region,
-          grade: userData.grade === 'KG' ? 'kg' : `grade ${userData.grade}`
-        };
-
-        console.log('Plan Selection - Sending registration request:', requestBody);
-        console.log('Plan Selection - Region being sent:', userData.region);
-        console.log('Plan Selection - Children data being sent:', userData.childrenData);
-
-        const response = await fetch(endpoint, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-            'X-Requested-With': 'XMLHttpRequest',
-          },
-          body: JSON.stringify(requestBody),
-        });
-
-        const data = await response.json();
-
-        if (!response.ok) {
-          console.error('Registration failed:', data);
-          // Don't throw error - just log it and show success to user
-          // The backend will handle the registration in the background
-          console.log('Registration error logged, but continuing with success flow');
-        }
-        
-        Alert.alert(
-          t('auth.planSelection.success.title'),
-          t('auth.planSelection.success.message'),
-          [
-            {
-              text: t('auth.planSelection.success.button'),
-              onPress: () => router.replace('/(auth)/login'),
-              style: 'default'
-            }
-          ],
-          {
-            cancelable: false
-          }
-        );
-        
-        return;
-      }
-
-      // For paid plans, proceed with payment
+      // All plans are paid plans, proceed with payment
       const amount = getTotalCostAsNumber();
 
       // Use Chappa service to initiate payment
@@ -553,7 +416,6 @@ export default function PlanSelectionScreen() {
                 const planColors = getPlanColors(plan);
                 const isRecommended = plan.durationInMonths === 6;
                 const isSelected = selectedPlans.some(p => p.plan === getPlanId(plan));
-                const isFree = plan.durationInMonths === 0;
                 
                 return (
                   <TouchableOpacity
@@ -604,12 +466,11 @@ export default function PlanSelectionScreen() {
                         
                         <View style={styles.priceContainer}>
                           <ThemedText style={[styles.planPrice, { color: planColors.text }]}>
-                            {isFree ? t('auth.planSelection.free') : `ETB ${typeof plan.amount === 'string' ? parseFloat(plan.amount).toFixed(2) : plan.amount.toFixed(2)}`}
+                            ETB {typeof plan.amount === 'string' ? parseFloat(plan.amount).toFixed(2) : plan.amount.toFixed(2)}
                           </ThemedText>
-                          {!isFree && (
-                            <ThemedText style={[styles.planDuration, { color: planColors.subtitle }]}>
-                            </ThemedText>
-                          )}
+                          <ThemedText style={[styles.planDuration, { color: planColors.subtitle }]}>
+                            {plan.durationInMonths} {t('auth.planSelection.months')}
+                          </ThemedText>
                         </View>
                       </View>
 
@@ -697,10 +558,10 @@ const styles = StyleSheet.create({
   },
   container: {
     flex: 1,
-    padding: 12,
+    padding: 16,
   },
   header: {
-    marginBottom: 12,
+    marginBottom: 16,
   },
   backButton: {
     marginBottom: 8,
@@ -714,39 +575,40 @@ const styles = StyleSheet.create({
     zIndex: 1,
   },
   title: {
-    fontSize: 24,
-    fontWeight: '700',
+    fontSize: 26,
+    fontWeight: '800',
     marginBottom: 4,
     paddingTop: 6,
+    letterSpacing: -0.5,
   },
   subtitle: {
     fontSize: 12,
   },
   plansContainer: {
     flex: 1,
-    gap: 6,
+    gap: 10,
     paddingBottom: 6,
   },
   planCard: {
-    borderRadius: 12,
+    borderRadius: 16,
     position: 'relative',
     overflow: 'hidden',
-    marginBottom: 8,
-    minHeight: 95,
+    marginBottom: 10,
+    minHeight: 110,
     backgroundColor: 'transparent',
     shadowColor: '#000000',
     shadowOffset: {
       width: 0,
-      height: 1,
+      height: 2,
     },
-    shadowOpacity: 0.08,
-    shadowRadius: 4,
-    elevation: 2,
+    shadowOpacity: 0.12,
+    shadowRadius: 8,
+    elevation: 4,
   },
   planCardGradient: {
     flex: 1,
-    padding: 14,
-    borderRadius: 10,
+    padding: 18,
+    borderRadius: 14,
   },
   recommendedBadge: {
     marginLeft: 8,
@@ -768,7 +630,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'flex-start',
-    marginBottom: 6,
+    marginBottom: 10,
   },
   planTitleContainer: {
     flexDirection: 'row',
@@ -776,45 +638,48 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   planName: {
-    fontSize: 16,
+    fontSize: 18,
     fontWeight: '700',
+    letterSpacing: 0.3,
   },
   priceContainer: {
     alignItems: 'flex-end',
   },
   planPrice: {
-    fontSize: 22,
+    fontSize: 24,
     fontWeight: '900',
-    marginBottom: 2,
-    paddingTop: 4,
-    marginTop: 2,
+    marginBottom: 4,
+    letterSpacing: -0.5,
   },
   planDuration: {
-    fontSize: 11,
-    fontWeight: '500',
+    fontSize: 12,
+    fontWeight: '600',
+    opacity: 0.8,
   },
   descriptionContainer: {
-    marginBottom: 4,
+    marginBottom: 6,
   },
   planDescription: {
-    fontSize: 12,
-    lineHeight: 16,
-    opacity: 0.85,
+    fontSize: 13,
+    lineHeight: 18,
+    opacity: 0.9,
+    fontWeight: '500',
   },
   remarkContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 4,
-    paddingVertical: 3,
-    paddingHorizontal: 6,
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
-    borderRadius: 6,
+    gap: 6,
+    paddingVertical: 6,
+    paddingHorizontal: 10,
+    backgroundColor: 'rgba(255, 255, 255, 0.15)',
+    borderRadius: 8,
+    marginTop: 4,
   },
   planRemark: {
-    fontSize: 9,
+    fontSize: 11,
     flex: 1,
-    opacity: 0.9,
-    fontWeight: '500',
+    opacity: 0.95,
+    fontWeight: '600',
   },
   ribbonBadge: {
     position: 'absolute',
@@ -858,8 +723,8 @@ const styles = StyleSheet.create({
     backgroundColor: 'transparent',
   },
   footer: {
-    paddingTop: 12,
-    borderTopWidth: 1,
+    paddingTop: 16,
+    borderTopWidth: 1.5,
     borderTopColor: '#E5E7EB',
     backgroundColor: 'transparent',
   },
@@ -867,21 +732,23 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 12,
+    marginBottom: 16,
+    paddingHorizontal: 4,
   },
   totalLabel: {
-    fontSize: 14,
-    fontWeight: '600',
+    fontSize: 16,
+    fontWeight: '700',
+    letterSpacing: 0.2,
   },
   totalAmount: {
-    paddingTop: 8,
-    fontSize: 20,
-    fontWeight: '800',
+    fontSize: 22,
+    fontWeight: '900',
+    letterSpacing: -0.5,
   },
   continueButton: {
     width: '100%',
-    height: 44,
-    borderRadius: 12,
+    height: 52,
+    borderRadius: 14,
     overflow: 'hidden',
     opacity: 0.5,
   },
@@ -906,7 +773,8 @@ const styles = StyleSheet.create({
   },
   buttonText: {
     color: '#FFFFFF',
-    fontSize: 14,
-    fontWeight: '600',
+    fontSize: 16,
+    fontWeight: '700',
+    letterSpacing: 0.5,
   },
 }); 

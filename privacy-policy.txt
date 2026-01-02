@@ -2,34 +2,16 @@ PRIVACY POLICY FOR QELEM
 Last updated: Dec 11, 2025
 
 ABOUT QELEM
-Qelem is an educational platform designed to provide interactive learning experiences for Ethiopian students of all ages through multiple choice questions, flashcards, quizzes, and homework assistance.
+Qelem is an educational platform designed to provide interactive learning experiences for Ethiopian students of all ages through multiple choice questions (MCQ), flashcards, and progress tracking.
 
 INFORMATION WE COLLECT
 
-Camera Permission (android.permission.CAMERA)
-Qelem requests access to your device's camera for the following purposes:
-- Homework Assistance: Take photos of homework questions or assignments for analysis and help
-- Chat Support: Share images in chat to ask questions about educational content
-
-Important Privacy Commitment:
-- Camera access is optional and only activated when you choose to use camera features
-- Photos taken are processed locally on your device
-- We do NOT store your photos on our servers without your explicit consent
-- We do NOT share your photos with third parties
-- You can revoke camera permission at any time through your device settings
-
-Media Selection
-We allow you to select images from your device for homework help or chat. This is done using the system's secure photo picker, which allows you to choose specific images to share with the app without granting the app full access to your photo library.
-
-AI Assistance
-Our app uses artificial intelligence (AI) to provide homework assistance. Please note:
-- AI-generated responses may occasionally be inaccurate or inappropriate
-- Users should verify important information
-- You can report inappropriate content using the "Report Issue" button in the chat
-
 Account Information
-- Registration Data: Email address, phone number, name, and profile details you provide
-- Authentication: Login credentials securely stored and encrypted
+- Registration Data: Full name, phone number, username, region, grade level, and profile details you provide during account registration
+- Authentication: Login credentials (username and password) securely stored and encrypted
+- Profile Information: Any additional profile information you choose to provide
+
+Important: All personal information collected during registration (full name, phone number, username, region, etc.) is used exclusively for app functionality, account management, and service delivery. This information is not shared with or sold to third parties for marketing, advertising, or commercial purposes.
 
 Learning and Usage Data
 - Progress Data: Quiz scores, completed lessons, and learning achievements
@@ -48,12 +30,23 @@ HOW WE USE YOUR INFORMATION
 - Send important updates about your account and our services
 - Respond to your questions and support requests
 
-INFORMATION SHARING
-We do NOT sell, trade, or share your personal information with third parties, except:
-- When required by law or legal process
-- To protect our rights, privacy, safety, or property
-- With your explicit consent
-- With service providers who assist in app operation (under strict confidentiality agreements)
+INFORMATION SHARING AND THIRD-PARTY DISCLOSURE
+
+WE DO NOT SELL, RENT, OR SHARE YOUR PERSONAL INFORMATION WITH THIRD PARTIES FOR MARKETING OR COMMERCIAL PURPOSES.
+
+Your personal information, including but not limited to your full name, phone number, email address, region, grade level, and any other personal data you provide, is collected and used SOLELY FOR THE PURPOSE OF PROVIDING AND IMPROVING OUR EDUCATIONAL SERVICES. We do not monetize your personal data or share it with advertisers, data brokers, or other third parties for their marketing purposes.
+
+We may share your information only in the following limited circumstances:
+
+- Service Providers: With trusted third-party service providers who assist in operating the App (such as cloud hosting, analytics, and payment processing). These providers are bound by strict confidentiality agreements and are only permitted to use your data for the specific purposes of providing services to us. They are prohibited from using your personal information for their own marketing purposes or sharing it with other parties.
+
+- Legal Requirements: When required by law, legal process, or government request, or to protect our rights, privacy, safety, or property, or that of our users.
+
+- With Your Explicit Consent: When you have explicitly consented to the sharing of your information for a specific purpose.
+
+- Business Transfers: In the event of a merger, acquisition, or sale of assets, your information may be transferred, but you will be notified and the new entity will be bound by this Privacy Policy.
+
+We do not engage in cross-context behavioral advertising or sell your personal information to data brokers or advertisers.
 
 DATA SECURITY
 We implement industry-standard security measures to protect your personal information:

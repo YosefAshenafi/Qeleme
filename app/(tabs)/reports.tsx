@@ -116,12 +116,18 @@ export default function ReportsScreen() {
     });
   };
 
-  // Initialize tracking service
+  // Initialize tracking service when user changes
   useEffect(() => {
     const initializeTracking = async () => {
       try {
+        if (!user?.username) {
+          setUserStats(null);
+          setLoading(false);
+          return;
+        }
+        
         const trackingService = ActivityTrackingService.getInstance();
-        await trackingService.initialize();
+        await trackingService.initialize(user.username);
         const stats = trackingService.getStats();
         setUserStats(stats);
         setLoading(false);
@@ -132,13 +138,13 @@ export default function ReportsScreen() {
     };
 
     initializeTracking();
-  }, []);
+  }, [user?.username]);
 
   // Auto-refresh data when tab is focused
   useFocusEffect(
     React.useCallback(() => {
       loadReportData();
-    }, [])
+    }, [user?.username])
   );
 
   // Update stats when language changes or userStats changes
@@ -368,8 +374,14 @@ export default function ReportsScreen() {
 
   const loadReportData = async () => {
     try {
+      if (!user?.username) {
+        console.warn('Cannot load report data: no user logged in');
+        setUserStats(null);
+        return;
+      }
+      
       const trackingService = ActivityTrackingService.getInstance();
-      await trackingService.initialize();
+      await trackingService.initialize(user.username);
       const stats = trackingService.getStats();
       setUserStats(stats);
     } catch (error) {

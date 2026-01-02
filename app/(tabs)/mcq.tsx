@@ -514,8 +514,13 @@ export default function MCQScreen() {
     
     // Track activity using the new tracking service
     try {
+      if (!user?.username) {
+        console.warn('Cannot track MCQ activity: no user logged in');
+        return;
+      }
+      
       const trackingService = ActivityTrackingService.getInstance();
-      await trackingService.initialize();
+      await trackingService.initialize(user.username);
       
       const totalQuestions = nationalExamQuestions.length;
       const correctAnswers = score;

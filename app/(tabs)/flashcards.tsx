@@ -329,8 +329,13 @@ export default function FlashcardsScreen() {
       if (currentIndex + 1 === currentFlashcards.length - 1) {
         const trackActivity = async () => {
           try {
+            if (!user?.username) {
+              console.warn('Cannot track flashcard activity: no user logged in');
+              return;
+            }
+            
             const trackingService = ActivityTrackingService.getInstance();
-            await trackingService.initialize();
+            await trackingService.initialize(user.username);
             
             const cardsReviewed = currentIndex + 1;
             const cardsMastered = currentFlashcards.filter(card => card.isChecked).length;

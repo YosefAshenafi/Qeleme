@@ -950,28 +950,40 @@ export default function SignupScreen() {
                   animationType="fade"
                   onRequestClose={() => setShowTermsModal(false)}
                 >
-                  <Pressable 
-                    style={styles.modalOverlay}
-                    onPress={() => setShowTermsModal(false)}
-                  >
-                    <View style={[styles.modalContent, {
-                      backgroundColor: isDarkMode ? '#1C1C1E' : '#FFFFFF',
-                    }]}>
-                      <View style={[styles.modalHeader, {
-                        borderBottomColor: isDarkMode ? '#3C3C3E' : '#E5E7EB',
-                      }]}>
-                        <ThemedText style={[styles.modalTitle, { color: colors.text }]}>{t('signup.terms.title')}</ThemedText>
-                        <TouchableOpacity onPress={() => setShowTermsModal(false)}>
-                          <Ionicons name="close" size={24} color={isDarkMode ? '#A0A0A5' : '#6B7280'} />
-                        </TouchableOpacity>
+                  <View style={styles.modalOverlay}>
+                    <TouchableOpacity 
+                      style={StyleSheet.absoluteFill}
+                      activeOpacity={1}
+                      onPress={() => setShowTermsModal(false)}
+                    />
+                    <View 
+                      style={[styles.modalContent, {
+                        backgroundColor: isDarkMode ? '#1C1C1E' : '#FFFFFF',
+                      }]}
+                      pointerEvents="box-none"
+                    >
+                      <View pointerEvents="auto">
+                        <View style={[styles.modalHeader, {
+                          borderBottomColor: isDarkMode ? '#3C3C3E' : '#E5E7EB',
+                        }]}>
+                          <ThemedText style={[styles.modalTitle, { color: colors.text }]}>{t('signup.terms.title')}</ThemedText>
+                          <TouchableOpacity onPress={() => setShowTermsModal(false)}>
+                            <Ionicons name="close" size={24} color={isDarkMode ? '#A0A0A5' : '#6B7280'} />
+                          </TouchableOpacity>
+                        </View>
+                        <ScrollView 
+                          style={styles.termsModalContent}
+                          showsVerticalScrollIndicator={true}
+                          nestedScrollEnabled={true}
+                          contentContainerStyle={styles.termsModalScrollContent}
+                        >
+                          <ThemedText style={[styles.termsModalText, { color: colors.text }]}>
+                            {t('signup.terms.content')}
+                          </ThemedText>
+                        </ScrollView>
                       </View>
-                      <ScrollView style={styles.termsModalContent}>
-                        <ThemedText style={[styles.termsModalText, { color: colors.text }]}>
-                          {t('signup.terms.content')}
-                        </ThemedText>
-                      </ScrollView>
                     </View>
-                  </Pressable>
+                  </View>
                 </Modal>
 
                 <TouchableOpacity 
@@ -1227,11 +1239,17 @@ const styles = StyleSheet.create({
   termsModalContent: {
     marginTop: 16,
     paddingRight: 8,
+    paddingBottom: 16,
+    maxHeight: 500,
+  },
+  termsModalScrollContent: {
+    paddingBottom: 20,
   },
   termsModalText: {
     fontSize: 14,
     color: '#1F2937',
-    lineHeight: 24,
+    lineHeight: 22,
+    paddingHorizontal: 4,
   },
   phoneInputContainer: {
     flexDirection: 'row',
