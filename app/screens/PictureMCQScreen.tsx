@@ -880,54 +880,11 @@ export default function PictureMCQScreen({ onBackToInstructions }: PictureMCQScr
                     </View>
                   </View>
                   
-                  {/* Question Counter and Navigation on Same Line */}
-                  <View style={styles.compactNavigationContainer}>
-                    <TouchableOpacity
-                      style={[
-                        styles.compactNavButton,
-                        styles.compactPrevButton,
-                        { borderColor: 'rgba(255, 255, 255, 0.3)' },
-                        isFirstQuestion && styles.compactNavButtonDisabled
-                      ]}
-                      onPress={handlePreviousQuestion}
-                      disabled={memoizedIsFirstQuestion}
-                    >
-                      <IconSymbol name="chevron.left" size={14} color="#FFFFFF" />
-                      <ThemedText style={styles.compactNavButtonText}>
-                        {t('mcq.previous')}
-                      </ThemedText>
-                    </TouchableOpacity>
-
-                    <View style={styles.questionCounterContainer}>
-                      <ThemedText style={styles.compactProgressText} numberOfLines={1}>
-                        {currentQuestionIndex + 1}/{questions.length}
-                      </ThemedText>
-                    </View>
-
-                    <TouchableOpacity
-                      style={[
-                        styles.compactNavButton,
-                        styles.compactNextButton,
-                        { 
-                          backgroundColor: 'rgba(255, 255, 255, 0.2)',
-                          opacity: 1
-                        }
-                      ]}
-                      onPress={handleNavigation}
-                      testID="next-button"
-                    >
-                      <ThemedText style={[
-                        styles.compactNavButtonText,
-                        { opacity: 1 }
-                      ]}>
-                        {memoizedIsLastQuestion ? t('mcq.finish') : t('mcq.next')}
-                      </ThemedText>
-                      <IconSymbol 
-                        name="chevron.right" 
-                        size={14} 
-                        color="#FFFFFF"
-                      />
-                    </TouchableOpacity>
+                  {/* Question Counter */}
+                  <View style={styles.questionCounterContainer}>
+                    <ThemedText style={styles.compactProgressText} numberOfLines={1}>
+                      {currentQuestionIndex + 1}/{questions.length}
+                    </ThemedText>
                   </View>
                 </View>
               </LinearGradient>
@@ -1182,10 +1139,10 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   questionCounterContainer: {
-    flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
     paddingHorizontal: 16,
+    marginTop: 12,
   },
   compactProgressText: {
     color: '#FFFFFF',
