@@ -927,7 +927,7 @@ export default function FlashcardsScreen() {
               styles.navButton,
               styles.prevButton,
               { 
-                borderColor: colors.border,
+                borderColor: isDarkMode ? '#FFFFFF' : colors.border,
                 paddingHorizontal: 12,
                 paddingVertical: 6,
                 flex: 1,
@@ -991,7 +991,7 @@ export default function FlashcardsScreen() {
               activeOpacity={0.9}
               style={styles.cardWrapper}
             >
-              <Animated.View style={[styles.card, frontAnimatedStyle, { borderColor: colors.border, backgroundColor: colors.cardAlt }]}>
+              <Animated.View style={[styles.card, frontAnimatedStyle, { borderColor: isDarkMode ? '#FFFFFF' : colors.border, backgroundColor: colors.cardAlt }]}>
                 <ScrollView
                   style={styles.cardScrollView}
                   contentContainerStyle={styles.cardScrollContent}
@@ -1010,7 +1010,7 @@ export default function FlashcardsScreen() {
                   />
                 </ScrollView>
               </Animated.View>
-              <Animated.View style={[styles.card, styles.cardBack, backAnimatedStyle, { borderColor: colors.border, backgroundColor: colors.cardAlt }]}>
+              <Animated.View style={[styles.card, styles.cardBack, backAnimatedStyle, { borderColor: isDarkMode ? '#FFFFFF' : colors.border, backgroundColor: colors.cardAlt }]}>
                 <ScrollView
                   style={styles.cardScrollView}
                   contentContainerStyle={styles.cardScrollContent}

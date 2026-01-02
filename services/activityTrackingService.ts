@@ -116,7 +116,9 @@ class ActivityTrackingService {
   public async initialize(): Promise<void> {
     try {
       await this.loadActivities();
-      await this.loadStats();
+      // Always recalculate stats from activities to ensure consistency
+      // Don't load stale stats from storage
+      await this.updateStats();
     } catch (error) {
       console.error('Failed to initialize ActivityTrackingService:', error);
     }
@@ -230,8 +232,17 @@ class ActivityTrackingService {
       const oneDay = 24 * 60 * 60 * 1000;
 
       // Initialize stats
+      // Only count completed activities with valid subjects for consistency with display
+      const completedActivities = this.activities.filter(activity => {
+        return activity.status === 'completed' &&
+               activity.subject &&
+               activity.subject.trim() !== '' &&
+               activity.subject.toLowerCase() !== 'unknown' &&
+               activity.subject.toLowerCase() !== 'undefined';
+      });
+      
       const stats: UserStats = {
-        totalActivities: this.activities.length,
+        totalActivities: completedActivities.length,
         totalStudyTime: 0,
         totalQuestionsAnswered: 0,
         totalCorrectAnswers: 0,
@@ -250,8 +261,9 @@ class ActivityTrackingService {
         },
       };
 
-      // Process each activity
-      this.activities.forEach(activity => {
+      // Process each completed activity
+      
+      completedActivities.forEach(activity => {
         // Basic stats
         stats.totalStudyTime += activity.duration || 0;
         stats.lastActivityDate = Math.max(stats.lastActivityDate, activity.timestamp);
@@ -287,9 +299,14 @@ class ActivityTrackingService {
 
         // Activity type breakdown
         const typeStats = stats.activityTypeBreakdown[activity.type];
-        typeStats.count++;
-        typeStats.timeSpent += activity.duration || 0;
-        typeStats.lastActivity = Math.max(typeStats.lastActivity, activity.timestamp);
+        if (typeStats) {
+          typeStats.count++;
+          typeStats.timeSpent += activity.duration || 0;
+          typeStats.lastActivity = Math.max(typeStats.lastActivity, activity.timestamp);
+        } else {
+          // Handle unknown activity types gracefully
+          console.warn(`Unknown activity type: ${activity.type}`);
+        }
 
         // Type-specific processing
         switch (activity.type) {
@@ -304,13 +321,9 @@ class ActivityTrackingService {
             break;
 
           case 'flashcard':
-            const flashcardActivity = activity as FlashcardActivity;
-            stats.totalQuestionsAnswered += flashcardActivity.cardsReviewed;
-            stats.totalCorrectAnswers += flashcardActivity.cardsMastered;
-            subjectStats.questionsAnswered += flashcardActivity.cardsReviewed;
-            subjectStats.correctAnswers += flashcardActivity.cardsMastered;
-            gradeStats.questionsAnswered += flashcardActivity.cardsReviewed;
-            gradeStats.correctAnswers += flashcardActivity.cardsMastered;
+            // Flashcards are NOT counted as questions - they are card reviews, not questions
+            // Only the activity count is incremented, not questionsAnswered
+            // This ensures "Total Questions" only shows actual questions (MCQ, KG, Picture MCQ)
             break;
 
           case 'kg_question':
@@ -339,8 +352,8 @@ class ActivityTrackingService {
         }
       });
 
-      // Calculate learning streak
-      const sortedActivities = [...this.activities].sort((a, b) => b.timestamp - a.timestamp);
+      // Calculate learning streak - only from completed activities
+      const sortedActivities = [...completedActivities].sort((a, b) => b.timestamp - a.timestamp);
       let currentStreak = 0;
       let bestStreak = 0;
       let tempStreak = 0;

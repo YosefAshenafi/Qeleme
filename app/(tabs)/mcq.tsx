@@ -1262,7 +1262,7 @@ export default function MCQScreen() {
         )}
         <ThemedView style={[styles.container, { backgroundColor: colors.background }]}>
           <ThemedView style={[styles.formContainer, { backgroundColor: colors.background }]}>
-            <ThemedText style={[styles.formTitle, { color: colors.tint, marginTop: (selectedGrade && needsExamTypeSelection(selectedGrade) && !selectedExamType) ? 40 : 0 }]}>
+            <ThemedText style={[styles.formTitle, { color: (selectedGrade && needsExamTypeSelection(selectedGrade) && !selectedExamType) ? (isDarkMode ? '#FFFFFF' : colors.tint) : colors.tint, marginTop: (selectedGrade && needsExamTypeSelection(selectedGrade) && !selectedExamType) ? 40 : 0 }]}>
               {selectedGrade && needsExamTypeSelection(selectedGrade) && !selectedExamType 
                 ? t('mcq.selectExamType')
                 : selectedExamType === 'national'
@@ -1276,7 +1276,7 @@ export default function MCQScreen() {
                 <ThemedView style={[styles.formGroup, { backgroundColor: colors.background }]}>
                   <View style={styles.examTypeContainer}>
                     <TouchableOpacity
-                      style={[styles.examTypeButton, { backgroundColor: colors.cardAlt }]}
+                      style={[styles.examTypeButton, { backgroundColor: colors.cardAlt, borderColor: isDarkMode ? '#FFFFFF' : colors.border }]}
                       onPress={() => setSelectedExamType('national')}
                     >
                       <View style={styles.examTypeContent}>
@@ -1292,7 +1292,7 @@ export default function MCQScreen() {
                       </View>
                     </TouchableOpacity>
                     <TouchableOpacity
-                      style={[styles.examTypeButton, { backgroundColor: colors.cardAlt }]}
+                      style={[styles.examTypeButton, { backgroundColor: colors.cardAlt, borderColor: isDarkMode ? '#FFFFFF' : colors.border }]}
                       onPress={() => setSelectedExamType('mcq')}
                     >
                       <View style={styles.examTypeContent}>

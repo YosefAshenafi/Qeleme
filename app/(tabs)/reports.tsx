@@ -247,10 +247,12 @@ export default function ReportsScreen() {
         .map(([subject, chaptersObj]) => {
           const chapters = Object.entries(chaptersObj)
             .filter(([chapter]) => {
-              // Filter out chapters that are empty or unknown
+              const noChapterText = t('reports.recentActivity.noChapter', 'No Chapter');
+              // Filter out chapters that are empty, unknown, undefined, or "No Chapter"
               return chapter && chapter.trim() !== '' && 
                      chapter.toLowerCase() !== 'unknown' && 
-                     chapter.toLowerCase() !== 'undefined';
+                     chapter.toLowerCase() !== 'undefined' &&
+                     chapter.trim() !== noChapterText;
             })
             .map(([chapter, activities]) => {
               // Get unique activity types for this chapter (all valid types)
@@ -368,6 +370,9 @@ export default function ReportsScreen() {
     blue: isDarkMode
       ? ['#0D47A1', '#1976D2', '#2196F3'] as const
       : ['#1976D2', '#2196F3', '#64B5F6'] as const,
+    streak: isDarkMode
+      ? ['#FF6B35', '#FF8C42', '#FFA366'] as const
+      : ['#FF6B35', '#FF8C42', '#FFB366'] as const,
   };
 
   const toggleInfo = () => {
@@ -425,6 +430,54 @@ export default function ReportsScreen() {
           {/* Only show content if we have user stats */}
           {userStats ? (
             <>
+              {/* Learning Streak - Only show if there's actual streak data */}
+              {userStats.currentStreak > 0 && (
+                <ThemedView style={[styles.card, styles.streakCard, { backgroundColor: colors.background }]}>
+                  <LinearGradient
+                    colors={gradients.purple}
+                    style={styles.cardGradient}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 1 }}
+                  >
+                    <View style={styles.streakHeader}>
+                      <ThemedText style={styles.streakTitle}>{t('reports.learningStreak.title')}</ThemedText>
+                    </View>
+                    <View style={styles.streakContent}>
+                      <View style={styles.streakNumberContainer}>
+                        <View style={styles.streakIconWrapper}>
+                          <IconSymbol name="flame.fill" size={48} color="#FFF" />
+                        </View>
+                        <ThemedText style={styles.streakNumber}>
+                          {userStats.currentStreak ?? 0}
+                        </ThemedText>
+                      </View>
+                      <ThemedText style={styles.streakSubtitle}>
+                        {t('reports.learningStreak.currentStreak')}
+                      </ThemedText>
+                      <View style={styles.streakStatsRow}>
+                        <View style={styles.streakStatItem}>
+                          <ThemedText style={styles.streakStatValue}>
+                            {String(userStats.bestStreak || 0)}
+                          </ThemedText>
+                          <ThemedText style={styles.streakStatLabel}>
+                            {t('reports.learningStreak.bestStreak')}
+                          </ThemedText>
+                        </View>
+                        <View style={styles.streakStatDivider} />
+                        <View style={styles.streakStatItem}>
+                          <ThemedText style={styles.streakStatValue}>
+                            {String(Math.ceil((Date.now() - (userStats.lastActivityDate || Date.now())) / (1000 * 60 * 60 * 24)) || 0)}
+                          </ThemedText>
+                          <ThemedText style={styles.streakStatLabel}>
+                            {t('reports.learningStreak.totalDaysActive')}
+                          </ThemedText>
+                        </View>
+                      </View>
+                    </View>
+                  </LinearGradient>
+                </ThemedView>
+              )}
+
               {/* Progress Stats Section - Only show if there's actual data */}
               {(userStats.totalActivities > 0 || userStats.totalStudyTime > 0) && (
                 <ThemedView style={[styles.statsSection, { backgroundColor: colors.background }]}>
@@ -454,41 +507,6 @@ export default function ReportsScreen() {
                       ))
                     )}
                   </View>
-                </ThemedView>
-              )}
-
-
-              {/* Learning Streak - Only show if there's actual streak data */}
-              {userStats.currentStreak > 0 && (
-                <ThemedView style={[styles.card, { backgroundColor: colors.background }]}>
-                  <LinearGradient
-                    colors={gradients.purple}
-                    style={styles.cardGradient}
-                    start={{ x: 0, y: 0 }}
-                    end={{ x: 1, y: 1 }}
-                  >
-                    <View style={styles.cardHeader}>
-                      <View style={[styles.iconContainer, { backgroundColor: 'rgba(255, 255, 255, 0.2)' }]}>
-                        <IconSymbol name="house.fill" size={24} color="#fff" />
-                      </View>
-                      <ThemedText style={styles.cardTitle}>{t('reports.learningStreak.title')}</ThemedText>
-                    </View>
-                    <View style={styles.progressContent}>
-                      <ThemedText style={styles.progressPercentage}>
-                        {`${reportData.learningStreak.currentStreak} ${t('reports.learningStreak.currentStreak')}`}
-                      </ThemedText>
-                      <View style={styles.progressStats}>
-                        <View style={styles.statItem}>
-                          <ThemedText style={styles.statValue}>
-                            {`${reportData.learningStreak.bestStreak} ${t('reports.learningStreak.bestStreak')}`}
-                          </ThemedText>
-                          <ThemedText style={styles.statLabel}>
-                            {`${reportData.learningStreak.totalDaysActive} ${t('reports.learningStreak.totalDaysActive')}`}
-                          </ThemedText>
-                        </View>
-                      </View>
-                    </View>
-                  </LinearGradient>
                 </ThemedView>
               )}
 
@@ -799,6 +817,85 @@ const styles = StyleSheet.create({
   },
   statItem: {
     alignItems: 'center',
+  },
+  streakCard: {
+    marginBottom: 24,
+  },
+  streakHeader: {
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  streakTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#fff',
+    opacity: 0.95,
+  },
+  streakContent: {
+    alignItems: 'center',
+    gap: 12,
+  },
+  streakNumberContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 12,
+  },
+  streakIconWrapper: {
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+    elevation: 5,
+  },
+  streakNumber: {
+    fontSize: 72,
+    fontWeight: '800',
+    color: '#fff',
+    textShadowColor: 'rgba(0, 0, 0, 0.2)',
+    textShadowOffset: { width: 0, height: 2 },
+    textShadowRadius: 4,
+    letterSpacing: 0,
+  },
+  streakSubtitle: {
+    fontSize: 16,
+    fontWeight: '500',
+    color: '#fff',
+    opacity: 0.9,
+    marginTop: 4,
+  },
+  streakStatsRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 20,
+    paddingTop: 20,
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(255, 255, 255, 0.2)',
+    width: '100%',
+  },
+  streakStatItem: {
+    flex: 1,
+    alignItems: 'center',
+    gap: 4,
+  },
+  streakStatDivider: {
+    width: 1,
+    height: 40,
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    marginHorizontal: 20,
+  },
+  streakStatValue: {
+    fontSize: 24,
+    fontWeight: '700',
+    color: '#fff',
+  },
+  streakStatLabel: {
+    fontSize: 12,
+    fontWeight: '500',
+    color: '#fff',
+    opacity: 0.85,
+    textAlign: 'center',
   },
   section: {
     gap: 16,

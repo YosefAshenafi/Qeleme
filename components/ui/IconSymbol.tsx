@@ -43,6 +43,10 @@ const MAPPING = {
   'hand.raised.fill': 'security',
   'phone.fill': 'phone',
   'envelope.fill': 'email',
+  'flame.fill': 'local-fire-department',
+  'flame': 'local-fire-department',
+  'gearshape.fill': 'settings',
+  'gearshape': 'settings',
 } as const;
 
 export type IconSymbolName = keyof typeof MAPPING;
