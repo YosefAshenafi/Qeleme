@@ -55,6 +55,8 @@ const AccordionItem: React.FC<AccordionItemProps> = ({ title, icon, children, is
     outputRange: ['0deg', '90deg'],
   });
 
+  const { isDarkMode } = useTheme();
+  
   return (
     <View style={[styles.accordionItem, { backgroundColor: colors.card }]}>
       <TouchableOpacity
@@ -62,7 +64,7 @@ const AccordionItem: React.FC<AccordionItemProps> = ({ title, icon, children, is
         onPress={onToggle}
       >
         <View style={styles.accordionHeaderLeft}>
-          <IconSymbol name={icon} size={24} color={colors.tint} />
+          <IconSymbol name={icon} size={24} color={isDarkMode ? '#FFFFFF' : colors.tint} />
           <Text style={[styles.accordionTitle, { color: colors.text }]}>{title}</Text>
         </View>
         <Animated.View style={{ transform: [{ rotate }] }}>
@@ -222,7 +224,7 @@ export default function ProfileScreen() {
           <View style={styles.contactSection}>
             <View style={styles.contactRow}>
               <View style={[styles.contactIconContainer, { backgroundColor: colors.tint + '15' }]}>
-                <IconSymbol name="phone.fill" size={18} color={colors.tint} />
+                <IconSymbol name="phone.fill" size={18} color={isDarkMode ? '#FFFFFF' : colors.tint} />
               </View>
               <Text style={[styles.contactSectionTitle, { color: colors.text }]}>Phone</Text>
             </View>
@@ -233,21 +235,21 @@ export default function ProfileScreen() {
                 onPress={() => Linking.openURL('tel:+251911243867')}
                 activeOpacity={0.7}
               >
-                <Text style={[styles.contactItem, { color: colors.tint }]}>+251 911 243 867</Text>
+                <Text style={[styles.contactItem, { color: isDarkMode ? '#FFFFFF' : colors.tint }]}>+251 911 243 867</Text>
               </TouchableOpacity>
               <TouchableOpacity 
                 style={[styles.contactLink, { backgroundColor: colors.tint + '10' }]}
                 onPress={() => Linking.openURL('tel:+251911557216')}
                 activeOpacity={0.7}
               >
-                <Text style={[styles.contactItem, { color: colors.tint }]}>+251 911 557 216</Text>
+                <Text style={[styles.contactItem, { color: isDarkMode ? '#FFFFFF' : colors.tint }]}>+251 911 557 216</Text>
               </TouchableOpacity>
               <TouchableOpacity 
                 style={[styles.contactLink, { backgroundColor: colors.tint + '10' }]}
                 onPress={() => Linking.openURL('tel:+251913727300')}
                 activeOpacity={0.7}
               >
-                <Text style={[styles.contactItem, { color: colors.tint }]}>+251 913 727 300</Text>
+                <Text style={[styles.contactItem, { color: isDarkMode ? '#FFFFFF' : colors.tint }]}>+251 913 727 300</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -255,7 +257,7 @@ export default function ProfileScreen() {
           <View style={[styles.contactSection, { marginTop: 20 }]}>
             <View style={styles.contactRow}>
               <View style={[styles.contactIconContainer, { backgroundColor: colors.tint + '15' }]}>
-                <IconSymbol name="envelope.fill" size={18} color={colors.tint} />
+                <IconSymbol name="envelope.fill" size={18} color={isDarkMode ? '#FFFFFF' : colors.tint} />
               </View>
               <Text style={[styles.contactSectionTitle, { color: colors.text }]}>Email</Text>
             </View>
@@ -265,7 +267,7 @@ export default function ProfileScreen() {
               onPress={() => Linking.openURL('mailto:contact@qelem.net')}
               activeOpacity={0.7}
             >
-              <Text style={[styles.contactItem, { color: colors.tint }]}>contact@qelem.net</Text>
+              <Text style={[styles.contactItem, { color: isDarkMode ? '#FFFFFF' : colors.tint }]}>contact@qelem.net</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -303,17 +305,17 @@ export default function ProfileScreen() {
       <StatusBar style="light" backgroundColor={colors.tint} />
       
       {/* Clean Header */}
-      <View style={[styles.header, { backgroundColor: colors.tint }]}>
+      <View style={[styles.header, { backgroundColor: isDarkMode ? colors.background : colors.tint }]}>
         <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
-          <IconSymbol name="chevron.right" size={24} color={colors.background} style={{ transform: [{ rotate: '180deg' }] }} />
+          <IconSymbol name="chevron.right" size={24} color={isDarkMode ? '#FFFFFF' : colors.background} style={{ transform: [{ rotate: '180deg' }] }} />
         </TouchableOpacity>
         <View style={styles.headerCenter}>
-          <Text style={[styles.headerTitle, { color: colors.background }]}>
+          <Text style={[styles.headerTitle, { color: isDarkMode ? '#FFFFFF' : colors.background }]}>
             {t('profile.title')}
           </Text>
         </View>
         <View style={[styles.headerRight, { paddingBottom: 10 }]}>
-          <LanguageToggle colors={{ card: colors.background, text: colors.tint }} />
+          <LanguageToggle colors={{ card: isDarkMode ? 'transparent' : colors.background, text: isDarkMode ? '#FFFFFF' : colors.tint }} />
         </View>
       </View>
 
@@ -333,7 +335,7 @@ export default function ProfileScreen() {
         <View style={[styles.userInfoCard, { backgroundColor: colors.card }]}>
           <View style={styles.userInfoHeader}>
             <View style={[styles.userAvatar, { backgroundColor: colors.tint + '20' }]}>
-              <IconSymbol name="person.fill" size={32} color={colors.tint} />
+              <IconSymbol name="person.fill" size={32} color={isDarkMode ? '#FFFFFF' : colors.tint} />
             </View>
             <View style={styles.userInfoText}>
               <Text style={[styles.userName, { color: colors.text }]}>
@@ -379,7 +381,7 @@ export default function ProfileScreen() {
                   >
                     <View style={styles.menuItemLeft}>
                       <View style={[styles.menuIconContainer, { backgroundColor: colors.tint + '15' }]}>
-                        <IconSymbol name={item.icon} size={20} color={colors.tint} />
+                        <IconSymbol name={item.icon} size={20} color={isDarkMode ? '#FFFFFF' : colors.tint} />
                       </View>
                       <View style={styles.menuTextContainer}>
                         <Text style={[styles.menuItemText, { color: colors.text }]}>{item.title}</Text>
@@ -402,6 +404,7 @@ export default function ProfileScreen() {
                     isOpen={openAccordion === item.title}
                     onToggle={() => handleAccordionToggle(item.title)}
                     colors={colors}
+                    isDarkMode={isDarkMode}
                   >
                     {item.content}
                   </AccordionItem>

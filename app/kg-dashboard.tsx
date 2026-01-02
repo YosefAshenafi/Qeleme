@@ -8,7 +8,6 @@ import { useTranslation } from 'react-i18next';
 import { LanguageToggle } from '@/components/ui/LanguageToggle';
 import { IconSymbol } from '@/components/ui/IconSymbol';
 import { useAuth } from '@/contexts/AuthContext';
-import { ProfileAvatar } from '@/components/ui/ProfileAvatar';
 import { CategoryImage } from '@/components/ui/CategoryImage';
 import { GradeBadge } from '@/components/ui/GradeBadge';
 import { getKGCategories, KGCategory } from '@/services/kgService';
@@ -154,7 +153,7 @@ export default function KGDashboard() {
             style={styles.logo}
             resizeMode="contain"
           />
-          <Text style={[styles.logoText, { color: colors.tint }]}>
+          <Text style={[styles.logoText, { color: isDarkMode ? '#FFFFFF' : colors.tint }]}>
             Qelem
           </Text>
         </View>
@@ -164,7 +163,7 @@ export default function KGDashboard() {
             borderColor: colors.tint + '40'
           }]}>
             <Text style={styles.gradeIcon}>🎓</Text>
-            <Text style={[styles.gradeText, { color: colors.tint }]}>
+            <Text style={[styles.gradeText, { color: isDarkMode ? '#FFFFFF' : colors.tint }]}>
               {user?.grade ? (user.grade.toLowerCase() === 'kg' ? t('common.kindergarten') : `Grade ${user.grade.replace('grade ', '')}`) : t('common.kindergarten')}
             </Text>
           </View>
@@ -173,11 +172,19 @@ export default function KGDashboard() {
           <LanguageToggle 
             colors={{ 
               card: 'transparent', 
-              text: colors.tint,
+              text: isDarkMode ? '#FFFFFF' : colors.tint,
               tint: colors.tint 
             }} 
           />
-          <ProfileAvatar colors={colors} />
+          <TouchableOpacity 
+            onPress={() => router.push('/profile')}
+            style={[
+              styles.settingsButton,
+              { backgroundColor: colors.tint + '20' }
+            ]}
+          >
+            <IconSymbol name="gearshape.fill" size={24} color={isDarkMode ? '#FFFFFF' : colors.tint} />
+          </TouchableOpacity>
         </View>
       </Animated.View>
 
@@ -367,6 +374,13 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'flex-end',
     gap: 8,
+  },
+  settingsButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   logo: {
     width: 32,

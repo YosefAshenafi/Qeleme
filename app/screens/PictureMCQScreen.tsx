@@ -197,9 +197,77 @@ export default function PictureMCQScreen({ onBackToInstructions }: PictureMCQScr
     }));
   }, []);
 
-  // Preload images for better performance using React Native Image.prefetch
-  const preloadImages = useCallback(async (questions: Question[]) => {
-    const imagePromises = questions.map(async (question) => {
+  // Cache utility functions
+  const getCacheKey = useCallback((categoryId: string, subcategoryId?: string): string => {
+    if (subcategoryId) {
+      return `kg_questions_${categoryId}_${subcategoryId}`;
+    }
+    return `kg_questions_${categoryId}`;
+  }, []);
+
+  const getCachedQuestions = useCallback(async (categoryId: string, subcategoryId?: string): Promise<KGQuestion[] | null> => {
+    try {
+      const cacheKey = getCacheKey(categoryId, subcategoryId);
+      const cachedData = await AsyncStorage.getItem(cacheKey);
+      if (cachedData) {
+        const parsed = JSON.parse(cachedData);
+        // Check if cache is less than 24 hours old
+        const cacheAge = Date.now() - parsed.timestamp;
+        const maxAge = 24 * 60 * 60 * 1000; // 24 hours
+        if (cacheAge < maxAge) {
+          console.log('Using cached questions for', cacheKey);
+          return parsed.questions;
+        } else {
+          // Cache expired, remove it
+          await AsyncStorage.removeItem(cacheKey);
+        }
+      }
+      return null;
+    } catch (error) {
+      console.error('Error reading cache:', error);
+      return null;
+    }
+  }, [getCacheKey]);
+
+  const cacheQuestions = useCallback(async (categoryId: string, questions: KGQuestion[], subcategoryId?: string): Promise<void> => {
+    try {
+      const cacheKey = getCacheKey(categoryId, subcategoryId);
+      const cacheData = {
+        questions,
+        timestamp: Date.now()
+      };
+      await AsyncStorage.setItem(cacheKey, JSON.stringify(cacheData));
+      console.log('Cached questions for', cacheKey);
+    } catch (error) {
+      console.error('Error caching questions:', error);
+    }
+  }, [getCacheKey]);
+
+  // Preload image for a single question (awaited for first question)
+  const preloadSingleImage = useCallback(async (question: Question): Promise<void> => {
+    if (question.image) {
+      try {
+        // Use React Native's Image.prefetch for better performance
+        await Image.prefetch(question.image);
+        
+        // Mark as preloaded
+        setImageStates(prev => ({ 
+          ...prev, 
+          [question.id]: { loading: false, error: false, loaded: true } 
+        }));
+      } catch (error) {
+        // Mark as error
+        setImageStates(prev => ({ 
+          ...prev, 
+          [question.id]: { loading: false, error: true, loaded: false } 
+        }));
+      }
+    }
+  }, []);
+
+  // Preload images for specific questions in background (non-blocking)
+  const preloadImages = useCallback(async (questionsToPreload: Question[]) => {
+    const imagePromises = questionsToPreload.map(async (question) => {
       if (question.image) {
         try {
           // Use React Native's Image.prefetch for better performance
@@ -220,16 +288,14 @@ export default function PictureMCQScreen({ onBackToInstructions }: PictureMCQScr
       }
     });
 
-    // Start preloading in background
+    // Start preloading in background (don't await, let it run)
     Promise.allSettled(imagePromises);
   }, []);
 
-   // Fetch questions from API
+  // Fetch questions with caching and progressive loading
   const fetchQuestions = async () => {
     try {
-      setLoading(true);
       setError(null);
-      
       const categoryId = params.categoryId as string;
       const subcategoryId = params.subcategoryId as string;
       const isSubcategory = params.isSubcategory === 'true';
@@ -238,32 +304,122 @@ export default function PictureMCQScreen({ onBackToInstructions }: PictureMCQScr
         throw new Error('Category ID is required');
       }
 
+      // Check cache first
+      const cachedQuestions = await getCachedQuestions(categoryId, isSubcategory ? subcategoryId : undefined);
+      
+      if (cachedQuestions && cachedQuestions.length > 0) {
+        console.log('Using cached questions, transforming...');
+        const transformedQuestions = transformQuestions(cachedQuestions);
+        console.log('Transformed cached questions:', transformedQuestions);
+        
+        // Show first question immediately
+        setQuestions(transformedQuestions);
+        setLoading(false);
+        setSessionStartTime(Date.now());
+        
+        // Load first question's image first (prioritize it)
+        if (transformedQuestions.length > 0) {
+          // Wait for first image to load before preloading others
+          await preloadSingleImage(transformedQuestions[0]);
+          
+          // After first image is loaded, preload next 2-3 questions in background
+          if (transformedQuestions.length > 1) {
+            const nextQuestions = transformedQuestions.slice(1, Math.min(4, transformedQuestions.length));
+            // Don't await - let this run in background
+            preloadImages(nextQuestions);
+          }
+        }
+        
+        // Fetch from API in background to update cache (don't block UI)
+        fetchAndUpdateCache(categoryId, subcategoryId, isSubcategory, transformedQuestions);
+        return;
+      }
+
+      // No cache, fetch from API
+      setLoading(true);
       let apiQuestions: KGQuestion[];
       
       if (isSubcategory && subcategoryId) {
-        // Fetch questions for subcategory
         const { questions } = await getKGSubcategoryQuestions(parseInt(subcategoryId), parseInt(categoryId));
         apiQuestions = questions;
-        console.log('Raw API subcategory questions:', apiQuestions); // DEBUG LOG
+        console.log('Raw API subcategory questions:', apiQuestions);
       } else {
-        // Fetch questions for main category
         const { questions } = await getKGQuestions(parseInt(categoryId));
         apiQuestions = questions;
-        console.log('Raw API category questions:', apiQuestions); // DEBUG LOG
+        console.log('Raw API category questions:', apiQuestions);
       }
       
-      const transformedQuestions = transformQuestions(apiQuestions);
-      console.log('Fetched and transformed questions:', transformedQuestions); // DEBUG LOG
-      setQuestions(transformedQuestions);
-      setSessionStartTime(Date.now()); // Start tracking session time
+      // Cache the fetched questions
+      await cacheQuestions(categoryId, apiQuestions, isSubcategory ? subcategoryId : undefined);
       
-      // Start preloading images immediately
-      preloadImages(transformedQuestions);
+      const transformedQuestions = transformQuestions(apiQuestions);
+      console.log('Fetched and transformed questions:', transformedQuestions);
+      
+      // Show first question immediately
+      setQuestions(transformedQuestions);
+      setLoading(false);
+      setSessionStartTime(Date.now());
+      
+      // Load first question's image first (prioritize it)
+      if (transformedQuestions.length > 0) {
+        // Wait for first image to load before preloading others
+        await preloadSingleImage(transformedQuestions[0]);
+        
+        // After first image is loaded, preload next 2-3 questions in background
+        if (transformedQuestions.length > 1) {
+          const nextQuestions = transformedQuestions.slice(1, Math.min(4, transformedQuestions.length));
+          // Don't await - let this run in background
+          preloadImages(nextQuestions);
+        }
+      }
     } catch (err) {
       console.error('Error fetching KG questions:', err);
       setError(err instanceof Error ? err.message : 'Failed to fetch questions');
-    } finally {
       setLoading(false);
+    }
+  };
+
+  // Fetch from API and update cache in background (non-blocking)
+  const fetchAndUpdateCache = async (
+    categoryId: string, 
+    subcategoryId: string | undefined, 
+    isSubcategory: boolean,
+    currentQuestions: Question[]
+  ) => {
+    try {
+      let apiQuestions: KGQuestion[];
+      
+      if (isSubcategory && subcategoryId) {
+        const { questions } = await getKGSubcategoryQuestions(parseInt(subcategoryId), parseInt(categoryId));
+        apiQuestions = questions;
+      } else {
+        const { questions } = await getKGQuestions(parseInt(categoryId));
+        apiQuestions = questions;
+      }
+      
+      // Update cache with fresh data
+      await cacheQuestions(categoryId, apiQuestions, isSubcategory ? subcategoryId : undefined);
+      
+      // Only update questions if current questions are different (to avoid flicker)
+      const transformedQuestions = transformQuestions(apiQuestions);
+      const currentIds = new Set(currentQuestions.map(q => q.id));
+      const newIds = new Set(transformedQuestions.map(q => q.id));
+      
+      // Check if questions have changed
+      if (currentIds.size !== newIds.size || 
+          ![...currentIds].every(id => newIds.has(id))) {
+        // Questions changed, update state
+        setQuestions(transformedQuestions);
+        
+        // Preload any new images
+        const newQuestions = transformedQuestions.filter(q => !currentIds.has(q.id));
+        if (newQuestions.length > 0) {
+          preloadImages(newQuestions.slice(0, 3));
+        }
+      }
+    } catch (error) {
+      console.error('Background cache update failed:', error);
+      // Silently fail - we already have cached questions showing
     }
   };
 
@@ -450,6 +606,12 @@ export default function PictureMCQScreen({ onBackToInstructions }: PictureMCQScr
       const nextQuestion = questions[nextIndex];
       console.log('Moving to next question', { from: currentQuestionIndex, to: nextIndex });
       
+      // Preload images for upcoming questions (next 2-3) in background
+      if (nextIndex + 1 < questions.length) {
+        const upcomingQuestions = questions.slice(nextIndex + 1, Math.min(nextIndex + 4, questions.length));
+        preloadImages(upcomingQuestions);
+      }
+      
       // Reset image state for next question to ensure it loads
       if (nextQuestion && nextQuestion.image) {
         setImageStates(prev => ({
@@ -628,9 +790,9 @@ export default function PictureMCQScreen({ onBackToInstructions }: PictureMCQScr
   if (!isAuthorized) {
     return (
       <GestureHandlerRootView style={{ flex: 1 }}>
-        <SafeAreaView style={[styles.safeArea, { backgroundColor: isDarkMode ? '#000000' : '#FFFFFF' }]}>
+        <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]}>
           <Header title={t('mcq.pictureQuiz.title')} />
-          <ThemedView style={[styles.container, { backgroundColor: isDarkMode ? '#000000' : '#FFFFFF' }]}>
+          <ThemedView style={[styles.container, { backgroundColor: colors.background }]}>
             <ThemedText style={[styles.unauthorizedText, { color: isDarkMode ? '#A0A0A5' : '#6B54AE' }]}>
               {t('mcq.pictureQuiz.unauthorizedText')}
             </ThemedText>
@@ -650,10 +812,10 @@ export default function PictureMCQScreen({ onBackToInstructions }: PictureMCQScr
   if (loading) {
     return (
       <GestureHandlerRootView style={{ flex: 1 }}>
-        <SafeAreaView style={[styles.safeArea, { backgroundColor: isDarkMode ? '#000000' : '#FFFFFF' }]}>
+        <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]}>
           <Header title={t('mcq.pictureQuiz.title')} />
-          <ThemedView style={[styles.container, { backgroundColor: isDarkMode ? '#000000' : '#FFFFFF' }]}>
-            <ThemedView style={[styles.formContainer, { backgroundColor: isDarkMode ? '#000000' : '#FFFFFF' }]}>
+          <ThemedView style={[styles.container, { backgroundColor: colors.background }]}>
+            <ThemedView style={[styles.formContainer, { backgroundColor: colors.background }]}>
               <ActivityIndicator size="large" color={colors.tint} />
               <ThemedText style={[styles.formTitle, { color: colors.tint }]}>
                 {t('common.loading', 'Loading questions...')}
@@ -668,10 +830,10 @@ export default function PictureMCQScreen({ onBackToInstructions }: PictureMCQScr
   if (error) {
     return (
       <GestureHandlerRootView style={{ flex: 1 }}>
-        <SafeAreaView style={[styles.safeArea, { backgroundColor: isDarkMode ? '#000000' : '#FFFFFF' }]}>
+        <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]}>
           <Header title={t('mcq.pictureQuiz.title')} />
-          <ThemedView style={[styles.container, { backgroundColor: isDarkMode ? '#000000' : '#FFFFFF' }]}>
-            <ThemedView style={[styles.formContainer, { backgroundColor: isDarkMode ? '#000000' : '#FFFFFF' }]}>
+          <ThemedView style={[styles.container, { backgroundColor: colors.background }]}>
+            <ThemedView style={[styles.formContainer, { backgroundColor: colors.background }]}>
               <ThemedText style={[styles.formTitle, { color: colors.tint }]}>
                 ❌ {error}
               </ThemedText>
@@ -692,10 +854,10 @@ export default function PictureMCQScreen({ onBackToInstructions }: PictureMCQScr
   if (!currentQuestion) {
     return (
       <GestureHandlerRootView style={{ flex: 1 }}>
-        <SafeAreaView style={[styles.safeArea, { backgroundColor: isDarkMode ? '#000000' : '#FFFFFF' }]}>
+        <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]}>
           <Header title={t('mcq.pictureQuiz.title')} />
-          <ThemedView style={[styles.container, { backgroundColor: isDarkMode ? '#000000' : '#FFFFFF' }]}>
-            <ThemedView style={[styles.formContainer, { backgroundColor: isDarkMode ? '#000000' : '#FFFFFF' }]}>
+          <ThemedView style={[styles.container, { backgroundColor: colors.background }]}>
+            <ThemedView style={[styles.formContainer, { backgroundColor: colors.background }]}>
               <ThemedText style={[styles.formTitle, { color: colors.tint }]}>{t('mcq.pictureQuiz.noQuestionsAvailable')}</ThemedText>
               <TouchableOpacity
                 style={[styles.pictureButton, styles.pictureHomeButton]}
@@ -722,16 +884,16 @@ export default function PictureMCQScreen({ onBackToInstructions }: PictureMCQScr
             >
               <IconSymbol name="house.fill" size={24} color={colors.text} />
             </TouchableOpacity>
-            <ThemedText style={styles.headerTitle}>
+            <ThemedText style={[styles.headerTitle, { color: isDarkMode ? '#FFFFFF' : undefined }]}>
               {t('mcq.results.title')}
             </ThemedText>
             <View style={styles.headerRight}>
-              <LanguageToggle colors={colors} />
+              <LanguageToggle colors={{ ...colors, text: isDarkMode ? '#FFFFFF' : colors.tint }} />
               <TouchableOpacity 
                 onPress={() => router.push('/profile')}
                 style={[styles.profileIconContainer, { backgroundColor: colors.tint + '20' }]}
               >
-                <IconSymbol name="person.fill" size={24} color={colors.tint} />
+                <IconSymbol name="gearshape.fill" size={24} color={isDarkMode ? '#FFFFFF' : colors.tint} />
               </TouchableOpacity>
             </View>
           </View>
@@ -825,13 +987,13 @@ export default function PictureMCQScreen({ onBackToInstructions }: PictureMCQScr
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
-      <SafeAreaView style={[styles.safeArea, { backgroundColor: isDarkMode ? '#000000' : '#F8F9FA' }]}>
-        <View style={[styles.header, { backgroundColor: isDarkMode ? '#000000' : '#F8F9FA' }]}>
+      <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]}>
+        <View style={[styles.header, { backgroundColor: colors.background }]}>
           <TouchableOpacity 
             style={[styles.backButton, { backgroundColor: colors.tint + '20' }]}
             onPress={handleGoToInstructions}
           >
-            <IconSymbol name="house.fill" size={24} color={colors.tint} />
+            <IconSymbol name="house.fill" size={24} color={isDarkMode ? '#FFFFFF' : colors.tint} />
           </TouchableOpacity>
           <View style={styles.headerTextContainer}>
             <View style={[styles.gradeBadge, { 
@@ -839,17 +1001,22 @@ export default function PictureMCQScreen({ onBackToInstructions }: PictureMCQScr
               borderColor: colors.tint + '40'
             }]}>
               <Text style={styles.gradeIcon}>🎓</Text>
-              <Text style={[styles.gradeText, { color: colors.tint }]}>
+              <Text style={[styles.gradeText, { color: isDarkMode ? '#FFFFFF' : colors.tint }]}>
                 {user?.grade ? (user.grade.toLowerCase() === 'kg' ? t('common.kindergarten') : `Grade ${user.grade.replace('grade ', '')}`) : t('common.kindergarten')}
               </Text>
             </View>
           </View>
           <View style={styles.headerRight}>
-            <LanguageToggle colors={colors} />
-            <ProfileAvatar colors={colors} />
+            <LanguageToggle colors={{ ...colors, text: isDarkMode ? '#FFFFFF' : colors.tint }} />
+            <TouchableOpacity 
+              onPress={() => router.push('/profile')}
+              style={[styles.profileIconContainer, { backgroundColor: colors.tint + '20' }]}
+            >
+              <IconSymbol name="gearshape.fill" size={24} color={isDarkMode ? '#FFFFFF' : colors.tint} />
+            </TouchableOpacity>
           </View>
         </View>
-        <ThemedView style={[styles.container, { backgroundColor: isDarkMode ? '#000000' : '#F8F9FA' }]}>
+        <ThemedView style={[styles.container, { backgroundColor: colors.background }]}>
           <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
             {/* Compact Progress and Navigation Container */}
             <View style={styles.progressContainer}>
@@ -956,6 +1123,10 @@ export default function PictureMCQScreen({ onBackToInstructions }: PictureMCQScr
                       key={option.id}
                       style={[
                         styles.optionContainer,
+                        { 
+                          backgroundColor: isDarkMode ? '#1C1C1E' : '#FFFFFF',
+                          borderColor: isDarkMode ? '#3A3A3C' : '#E0E0E0'
+                        },
                         hoveredOption === option.id && styles.optionHovered,
                         droppedOption === option.id && option.isCorrect && styles.optionDroppedCorrect,
                         droppedOption === option.id && !option.isCorrect && styles.optionDroppedIncorrect,
@@ -1202,8 +1373,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.15,
     shadowRadius: 6,
     borderWidth: 2,
-    borderColor: '#E0E0E0',
-    backgroundColor: '#FFFFFF',
+    // backgroundColor and borderColor are set dynamically based on theme
   },
   optionHovered: {
     borderColor: '#6B54AE',
