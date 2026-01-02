@@ -165,7 +165,7 @@ export default function KGDashboard() {
           }]}>
             <Text style={styles.gradeIcon}>🎓</Text>
             <Text style={[styles.gradeText, { color: colors.tint }]}>
-              {user?.grade ? (user.grade.toLowerCase() === 'kg' ? 'Kindergarten' : `Grade ${user.grade.replace('grade ', '')}`) : 'Grade'}
+              {user?.grade ? (user.grade.toLowerCase() === 'kg' ? t('common.kindergarten') : `Grade ${user.grade.replace('grade ', '')}`) : t('common.kindergarten')}
             </Text>
           </View>
         </View>
@@ -252,7 +252,7 @@ export default function KGDashboard() {
             ) : (
               categories.map((category, index) => {
                 const categoryName = getCategoryNameByLanguage(category, i18n.language);
-                const categoryConfig = getCategoryConfig(categoryName, isDarkMode);
+                const categoryConfig = getCategoryConfig(category.name_en, isDarkMode);
                 const imageSource = getCategoryImageSource(category.image_url, categoryConfig.defaultImageUrl);
                 
                 return (

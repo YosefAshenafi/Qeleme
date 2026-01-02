@@ -424,6 +424,7 @@ export default {
     retry: 'እንደገና ይሞክሩ',
     imageLoadError: 'ምስሉ ለመጫን አልተቻለም',
     grade: 'ክፍል',
+    kindergarten: 'ኪንደርጋርተን',
   },
   mcq: {
     question: 'ጥያቄ',

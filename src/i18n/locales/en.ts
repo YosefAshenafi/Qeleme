@@ -445,6 +445,7 @@ export default {
     retry: 'Retry',
     imageLoadError: 'Image failed to load',
     grade: 'Grade',
+    kindergarten: 'Kindergarten',
   },
   mcq: {
     question: 'Question',

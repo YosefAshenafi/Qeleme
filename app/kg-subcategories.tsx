@@ -260,7 +260,7 @@ export default function KGSubcategoriesScreen() {
             ) : (
               subcategories.map((subcategory, index) => {
                 const subcategoryName = getSubcategoryNameByLanguage(subcategory, i18n.language);
-                const subcategoryConfig = getSubcategoryConfig(subcategoryName, isDarkMode);
+                const subcategoryConfig = getSubcategoryConfig(subcategory.name_en, isDarkMode);
                 const imageSource = getSubcategoryImageSource(subcategory.image_url, subcategoryConfig.defaultImageUrl);
                 
                 return (

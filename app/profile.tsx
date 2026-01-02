@@ -6,7 +6,6 @@ import { IconSymbol, IconSymbolName } from '../components/ui/IconSymbol';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import { AccountSettings } from '../components/profile/AccountSettings';
 import { ThemeChooser } from '../components/profile/ThemeChooser';
 import { DeleteAccount } from '../components/profile/DeleteAccount';
 import { getColors } from '../constants/Colors';
@@ -200,11 +199,6 @@ export default function ProfileScreen() {
 
 
   const menuItems: MenuItem[] = React.useMemo(() => [
-    { 
-      title: t('profile.accountSettings'),
-      icon: 'person.fill' as const,
-      content: <AccountSettings colors={colors} profileData={profileData} />
-    },
     { 
       title: t('profile.theme'),
       icon: isDarkMode ? 'moon.fill' : 'sun.max.fill' as const,

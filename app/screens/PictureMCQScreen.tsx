@@ -834,11 +834,14 @@ export default function PictureMCQScreen({ onBackToInstructions }: PictureMCQScr
             <IconSymbol name="house.fill" size={24} color={colors.tint} />
           </TouchableOpacity>
           <View style={styles.headerTextContainer}>
-            <View style={[styles.categoryBadge, { backgroundColor: colors.tint + '15', borderColor: colors.tint + '40' }]}>
-              <IconSymbol name="folder.fill" size={16} color={colors.tint} />
-              <ThemedText style={[styles.categoryText, { color: colors.tint }]}>
-                {getLocalizedCategoryName()}
-              </ThemedText>
+            <View style={[styles.gradeBadge, { 
+              backgroundColor: colors.tint + '20',
+              borderColor: colors.tint + '40'
+            }]}>
+              <Text style={styles.gradeIcon}>🎓</Text>
+              <Text style={[styles.gradeText, { color: colors.tint }]}>
+                {user?.grade ? (user.grade.toLowerCase() === 'kg' ? t('common.kindergarten') : `Grade ${user.grade.replace('grade ', '')}`) : t('common.kindergarten')}
+              </Text>
             </View>
           </View>
           <View style={styles.headerRight}>
@@ -1682,6 +1685,23 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '600',
     marginLeft: 6,
+    letterSpacing: 0.3,
+  },
+  gradeBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 16,
+    borderWidth: 1,
+  },
+  gradeIcon: {
+    fontSize: 14,
+    marginRight: 6,
+  },
+  gradeText: {
+    fontSize: 12,
+    fontWeight: '600',
     letterSpacing: 0.3,
   },
   headerRight: {
