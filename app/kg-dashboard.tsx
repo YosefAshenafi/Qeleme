@@ -208,11 +208,6 @@ export default function KGDashboard() {
             <Text style={styles.welcomeSubtitle}>
               {t('kg.subtitle')} {t('kg.letsHaveFun', 'Let\'s have fun learning!')}
             </Text>
-            <View style={styles.sparklesContainer}>
-              <Text style={styles.sparkle}>✨</Text>
-              <Text style={styles.sparkle}>⭐</Text>
-              <Text style={styles.sparkle}>🎯</Text>
-            </View>
           </LinearGradient>
         </Animated.View>
 
@@ -557,16 +552,6 @@ const styles = StyleSheet.create({
   },
   playEmoji: {
     fontSize: 16,
-  },
-  sparklesContainer: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginTop: 12,
-  },
-  sparkle: {
-    fontSize: 24,
-    marginHorizontal: 4,
   },
   categoryBadge: {
     position: 'absolute',

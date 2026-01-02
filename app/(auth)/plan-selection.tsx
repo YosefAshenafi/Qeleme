@@ -235,35 +235,15 @@ export default function PlanSelectionScreen() {
           return;
         }
 
-        // For parent registration, validate that children have grades and regions
+        // For parent registration, validate that children have grades (region is optional)
         if (userData.role === 'parent') {
           const childrenWithoutGrades = userData.childrenData?.filter((child: any) => !child.grade) || [];
-          const childrenWithoutRegions = userData.childrenData?.filter((child: any) => !child.region) || [];
           
           if (childrenWithoutGrades.length > 0) {
             console.error('Children missing grades:', childrenWithoutGrades);
             Alert.alert(
               'Grade Required',
               'Please select grades for all children before proceeding. You will be redirected to the signup screen.',
-              [
-                {
-                  text: 'OK',
-                  onPress: () => router.replace('/(auth)/signup'),
-                  style: 'default'
-                }
-              ],
-              {
-                cancelable: false
-              }
-            );
-            return;
-          }
-          
-          if (childrenWithoutRegions.length > 0) {
-            console.error('Children missing regions:', childrenWithoutRegions);
-            Alert.alert(
-              'Region Required',
-              'Please select regions for all children before proceeding. You will be redirected to the signup screen.',
               [
                 {
                   text: 'OK',

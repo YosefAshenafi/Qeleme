@@ -72,7 +72,17 @@ const QuestionImage = React.memo(({
   colors: any;
   t: any;
 }) => {
-  const imageState = imageStates[question.id] || { loading: false, error: false, loaded: false };
+  const imageState = imageStates[question.id] || { loading: true, error: false, loaded: false };
+  
+  // Initialize loading state if not set for this question
+  React.useEffect(() => {
+    if (question.image && !imageStates[question.id]) {
+      setImageStates(prev => ({
+        ...prev,
+        [question.id]: { loading: true, error: false, loaded: false }
+      }));
+    }
+  }, [question.id, question.image]);
   
   return (
     <>
@@ -88,6 +98,7 @@ const QuestionImage = React.memo(({
       {/* Main Image */}
       {question.image && !imageState.error && (
         <Image
+          key={`question-image-${question.id}`}
           source={{ uri: question.image }}
           style={styles.questionImage}
           resizeMode="contain"
@@ -435,8 +446,19 @@ export default function PictureMCQScreen({ onBackToInstructions }: PictureMCQScr
       return;
     }
     if (currentQuestionIndex < questions.length - 1) {
-      console.log('Moving to next question', { from: currentQuestionIndex, to: currentQuestionIndex + 1 });
-      setCurrentQuestionIndex(prev => prev + 1);
+      const nextIndex = currentQuestionIndex + 1;
+      const nextQuestion = questions[nextIndex];
+      console.log('Moving to next question', { from: currentQuestionIndex, to: nextIndex });
+      
+      // Reset image state for next question to ensure it loads
+      if (nextQuestion && nextQuestion.image) {
+        setImageStates(prev => ({
+          ...prev,
+          [nextQuestion.id]: { loading: true, error: false, loaded: false }
+        }));
+      }
+      
+      setCurrentQuestionIndex(nextIndex);
       setSelectedAnswer(null);
       setShowExplanation(false);
       setShowCorrectVideo(false);
@@ -451,7 +473,18 @@ export default function PictureMCQScreen({ onBackToInstructions }: PictureMCQScr
   const handlePreviousQuestion = () => {
     if (!currentQuestion) return;
     if (currentQuestionIndex > 0) {
-      setCurrentQuestionIndex(prev => prev - 1);
+      const prevIndex = currentQuestionIndex - 1;
+      const prevQuestion = questions[prevIndex];
+      
+      // Reset image state for previous question to ensure it loads
+      if (prevQuestion && prevQuestion.image) {
+        setImageStates(prev => ({
+          ...prev,
+          [prevQuestion.id]: { loading: true, error: false, loaded: false }
+        }));
+      }
+      
+      setCurrentQuestionIndex(prevIndex);
       setSelectedAnswer(null);
       setShowExplanation(false);
       setShowCorrectVideo(false);
@@ -801,9 +834,6 @@ export default function PictureMCQScreen({ onBackToInstructions }: PictureMCQScr
             <IconSymbol name="house.fill" size={24} color={colors.tint} />
           </TouchableOpacity>
           <View style={styles.headerTextContainer}>
-            <ThemedText style={[styles.headerTitle, { color: colors.text }]}>
-              🎨 {t('mcq.pictureQuiz.title', 'Picture Quiz')} 🎨
-            </ThemedText>
             <View style={[styles.categoryBadge, { backgroundColor: colors.tint + '15', borderColor: colors.tint + '40' }]}>
               <IconSymbol name="folder.fill" size={16} color={colors.tint} />
               <ThemedText style={[styles.categoryText, { color: colors.tint }]}>
@@ -910,14 +940,15 @@ export default function PictureMCQScreen({ onBackToInstructions }: PictureMCQScr
                       { backgroundColor: isDarkMode ? '#1C1C1E' : '#FFFFFF' }
                     ]}
                   >
-                                         <QuestionImage 
-                       question={memoizedCurrentQuestion}
-                       imageStates={imageStates}
-                       setImageStates={setImageStates}
-                       isDarkMode={isDarkMode}
-                       colors={colors}
-                       t={t}
-                     />
+                    <QuestionImage 
+                      key={`question-${memoizedCurrentQuestion.id}`}
+                      question={memoizedCurrentQuestion}
+                      imageStates={imageStates}
+                      setImageStates={setImageStates}
+                      isDarkMode={isDarkMode}
+                      colors={colors}
+                      t={t}
+                    />
                      
                      {/* Correct Video Animation on top of image */}
                      {showCorrectVideo && (
@@ -1003,6 +1034,13 @@ export default function PictureMCQScreen({ onBackToInstructions }: PictureMCQScr
                       </View>
                     </View>
                   ))}
+                </View>
+
+                {/* Instruction text below choices */}
+                <View style={styles.instructionTextContainer}>
+                  <ThemedText style={[styles.instructionText, { color: isDarkMode ? colors.text + 'CC' : '#666666' }]}>
+                    {t('mcq.pictureQuiz.dragInstruction')}
+                  </ThemedText>
                 </View>
 
                 {showExplanation && memoizedCurrentQuestion?.explanation && memoizedCurrentQuestion.explanation.trim() !== '' && memoizedCurrentQuestion.explanation !== 'No explanation available' && (
@@ -1265,6 +1303,18 @@ const styles = StyleSheet.create({
   incorrectText: {
     color: '#D32F2F',
     fontWeight: 'bold',
+  },
+  instructionTextContainer: {
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  instructionText: {
+    fontSize: 14,
+    textAlign: 'center',
+    fontStyle: 'italic',
+    opacity: 0.8,
   },
   explanationContainer: {
     backgroundColor: '#F5F5F5',

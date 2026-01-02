@@ -458,6 +458,7 @@ export default {
       goToInstructions: 'ወደ መመሪያዎች ይሂዱ',
       unauthorizedText: 'ይህን ባህሪ ለመጠቀም ፈቃድ ያስፈልግዎታል።',
       noQuestionsAvailable: 'ለዚህ ክፍል ጥያቄዎች አልተዘጋጁም።',
+      dragInstruction: 'ምስሉን ጎትተው ከታች ካሉት መልሶች ላይ ይጣሉ',
       instructions: {
         look: {
           title: 'ምስሉን ተመልከት',

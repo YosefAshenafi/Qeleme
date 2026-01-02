@@ -61,6 +61,7 @@ export default function SignupScreen() {
   const [validationErrors, setValidationErrors] = useState<{[key: string]: string}>({});
   const [regions, setRegions] = useState<Region[]>([]);
   const [regionsLoading, setRegionsLoading] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Handle pre-filled data from OTP screen
   useEffect(() => {
@@ -216,10 +217,7 @@ export default function SignupScreen() {
       errors[`child${index}_grade`] = gradeError;
     }
 
-    const regionError = validateRegion(child.region || '');
-    if (regionError) {
-      errors[`child${index}_region`] = regionError;
-    }
+    // Region is optional - no validation needed
 
     const passwordError = validatePassword(child.password);
     if (passwordError) {
@@ -261,11 +259,7 @@ export default function SignupScreen() {
       if (gradeError) errors.grade = gradeError;
     }
 
-    // Only validate region for single students (not for multiple students - parent credentials generated in backend)
-    if (role === 'student') {
-      const regionError = validateRegion(region);
-      if (regionError) errors.region = regionError;
-    }
+    // Region is optional - no validation needed
 
     // Validate children data if role is parent (multiple students)
     if (role === 'parent') {
@@ -464,6 +458,9 @@ export default function SignupScreen() {
       return;
     }
 
+    // Disable button while processing
+    setIsSubmitting(true);
+
     // Add country code to phone number for OTP service
     const fullPhoneNumber = `+251${phoneNumber}`;
     
@@ -475,6 +472,7 @@ export default function SignupScreen() {
       }
     } catch (err) {
       // Don't set error here, just log it and continue
+      console.error('OTP send error:', err);
     }
     
     // Always navigate to OTP screen regardless of OTP service response
@@ -497,6 +495,7 @@ export default function SignupScreen() {
       });
     } catch (navigationError) {
       setError(t('signup.errors.navigationFailed'));
+      setIsSubmitting(false); // Re-enable button on navigation error
     }
   };
 
@@ -969,16 +968,18 @@ export default function SignupScreen() {
                 </Modal>
 
                 <TouchableOpacity 
-                  style={[styles.signupButton, !acceptTerms && styles.signupButtonDisabled]} 
+                  style={[styles.signupButton, (!acceptTerms || isSubmitting) && styles.signupButtonDisabled]} 
                   onPress={handleSignup}
                   activeOpacity={0.8}
-                  disabled={!acceptTerms}
+                  disabled={!acceptTerms || isSubmitting}
                 >
                   <LinearGradient
                     colors={['#4F46E5', '#7C3AED']}
                     style={styles.buttonGradient}
                   >
-                    <ThemedText style={styles.buttonText}>{t('signup.createAccount')}</ThemedText>
+                    <ThemedText style={styles.buttonText}>
+                      {isSubmitting ? t('common.processing') : t('signup.createAccount')}
+                    </ThemedText>
                   </LinearGradient>
                 </TouchableOpacity>
               </View>

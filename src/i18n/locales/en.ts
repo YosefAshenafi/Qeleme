@@ -479,6 +479,7 @@ export default {
       goToInstructions: 'Go to Instructions',
       unauthorizedText: 'You need to be authorized to access this feature.',
       noQuestionsAvailable: 'No questions available for this grade yet.',
+      dragInstruction: 'Drag the picture and drop to the answer',
       instructions: {
         look: {
           title: 'Look at the Image',
