@@ -101,6 +101,8 @@ export default function ReportsScreen() {
   });
   const [isInfoExpanded, setIsInfoExpanded] = useState(false);
   const [expandedSubjects, setExpandedSubjects] = useState<Set<string>>(new Set());
+  const [weeklyStreak, setWeeklyStreak] = useState<Array<{ date: Date; dayName: string; hasActivity: boolean }>>([]);
+  const [hasAnyActivity, setHasAnyActivity] = useState(false);
   const animatedHeight = useRef(new Animated.Value(0)).current;
   const animatedRotate = useRef(new Animated.Value(0)).current;
 
@@ -222,6 +224,43 @@ export default function ReportsScreen() {
       });
       const totalDaysActive = uniqueActiveDays.size;
 
+      // Generate weekly streak calendar (last 7 days)
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const weeklyData: Array<{ date: Date; dayName: string; hasActivity: boolean }> = [];
+      
+      // Get day names based on language
+      const dayNames = i18n.language === 'am' 
+        ? ['ሰኞ', 'ማክሰኞ', 'ረቡዕ', 'ሐሙስ', 'ዓርብ', 'ቅዳሜ', 'እሑድ']
+        : ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+      
+      // Get recent activities to check if today has activity
+      const recentActivitiesCheck = trackingService.getRecentActivities(50)
+        .filter(activity => activity.status === 'completed');
+      
+      // Check if today has any activity
+      const todayHasActivity = allActivitiesForDays.some(activity => {
+        const activityDate = new Date(activity.timestamp);
+        activityDate.setHours(0, 0, 0, 0);
+        return activityDate.getTime() === today.getTime();
+      }) || recentActivitiesCheck.length > 0; // If there are any activities, count today as active
+      
+      // Generate last 7 days
+      for (let i = 6; i >= 0; i--) {
+        const date = new Date(today);
+        date.setDate(date.getDate() - i);
+        const dateKey = `${date.getFullYear()}-${date.getMonth()}-${date.getDate()}`;
+        const hasActivity = uniqueActiveDays.has(dateKey) || (i === 0 && todayHasActivity);
+        
+        weeklyData.push({
+          date,
+          dayName: dayNames[date.getDay() === 0 ? 6 : date.getDay() - 1], // Adjust for Monday start
+          hasActivity
+        });
+      }
+      
+      setWeeklyStreak(weeklyData);
+
       // Get recent activities for display (last 50)
       const allActivities = trackingService.getRecentActivities(50)
         .filter(activity => {
@@ -232,6 +271,9 @@ export default function ReportsScreen() {
                  activity.subject.toLowerCase() !== 'unknown' &&
                  activity.subject.toLowerCase() !== 'undefined';
         });
+      
+      // Set flag if there's any activity
+      setHasAnyActivity(allActivities.length > 0 || recentActivitiesCheck.length > 0);
       
       const filteredActivities = allActivities.map(activity => {
           const rawChapter = activity.chapter && activity.chapter.trim() !== '' && activity.chapter.toLowerCase() !== 'unknown' && activity.chapter.toLowerCase() !== 'undefined'
@@ -465,53 +507,62 @@ export default function ReportsScreen() {
           {/* Only show content if we have user stats */}
           {userStats ? (
             <>
-              {/* Learning Streak - Only show if there's actual streak data */}
-              {userStats.currentStreak > 0 && (
-                <ThemedView style={[styles.card, styles.streakCard, { backgroundColor: colors.background }]}>
-                  <LinearGradient
-                    colors={gradients.purple}
-                    style={styles.cardGradient}
-                    start={{ x: 0, y: 0 }}
-                    end={{ x: 1, y: 1 }}
-                  >
-                    <View style={styles.streakHeader}>
-                      <ThemedText style={styles.streakTitle}>{t('reports.learningStreak.title')}</ThemedText>
+              {/* Learning Streak - Always show */}
+              <ThemedView style={[styles.card, styles.streakCard, { backgroundColor: colors.background }]}>
+                <LinearGradient
+                  colors={gradients.purple}
+                  style={styles.cardGradient}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 1 }}
+                >
+                  <View style={styles.streakContent}>
+                    {/* Weekly Calendar with Fire Icons */}
+                    <View style={styles.weeklyCalendar}>
+                      {weeklyStreak.map((day, index) => {
+                        const isToday = index === weeklyStreak.length - 1;
+                        return (
+                          <View key={index} style={styles.calendarDay}>
+                            <View style={[
+                              styles.calendarDayIcon,
+                              day.hasActivity && styles.calendarDayIconActive,
+                              isToday && styles.calendarDayIconToday
+                            ]}>
+                              {day.hasActivity ? (
+                                <IconSymbol name="flame.fill" size={24} color="#FFF" />
+                              ) : (
+                                <View style={styles.calendarDayIconEmpty} />
+                              )}
+                            </View>
+                            <ThemedText style={[styles.calendarDayName, { color: isToday ? '#FFF' : 'rgba(255, 255, 255, 0.7)' }]}>
+                              {day.dayName}
+                            </ThemedText>
+                          </View>
+                        );
+                      })}
                     </View>
-                    <View style={styles.streakContent}>
-                      <View style={styles.streakNumberContainer}>
-                        <View style={styles.streakIconWrapper}>
-                          <IconSymbol name="flame.fill" size={48} color="#FFF" />
-                        </View>
-                        <ThemedText style={styles.streakNumber}>
-                          {userStats.currentStreak ?? 0}
+                    
+                    <View style={styles.streakStatsRow}>
+                      <View style={styles.streakStatItem}>
+                        <ThemedText style={styles.streakStatValue}>
+                          {String(userStats.bestStreak || 0)}
+                        </ThemedText>
+                        <ThemedText style={styles.streakStatLabel}>
+                          {t('reports.learningStreak.bestStreak')}
                         </ThemedText>
                       </View>
-                      <ThemedText style={styles.streakSubtitle}>
-                        {t('reports.learningStreak.currentStreak')}
-                      </ThemedText>
-                      <View style={styles.streakStatsRow}>
-                        <View style={styles.streakStatItem}>
-                          <ThemedText style={styles.streakStatValue}>
-                            {String(userStats.bestStreak || 0)}
-                          </ThemedText>
-                          <ThemedText style={styles.streakStatLabel}>
-                            {t('reports.learningStreak.bestStreak')}
-                          </ThemedText>
-                        </View>
-                        <View style={styles.streakStatDivider} />
-                        <View style={styles.streakStatItem}>
-                          <ThemedText style={styles.streakStatValue}>
-                            {String(reportData.learningStreak.totalDaysActive || 0)}
-                          </ThemedText>
-                          <ThemedText style={styles.streakStatLabel}>
-                            {t('reports.learningStreak.totalDaysActive')}
-                          </ThemedText>
-                        </View>
+                      <View style={styles.streakStatDivider} />
+                      <View style={styles.streakStatItem}>
+                        <ThemedText style={styles.streakStatValue}>
+                          {String(reportData.learningStreak.totalDaysActive || 0)}
+                        </ThemedText>
+                        <ThemedText style={styles.streakStatLabel}>
+                          {t('reports.learningStreak.totalDaysActive')}
+                        </ThemedText>
                       </View>
                     </View>
-                  </LinearGradient>
-                </ThemedView>
-              )}
+                  </View>
+                </LinearGradient>
+              </ThemedView>
 
               {/* Progress Stats Section - Only show if there's actual data */}
               {(userStats.totalActivities > 0 || userStats.totalStudyTime > 0) && (
@@ -931,6 +982,51 @@ const styles = StyleSheet.create({
     color: '#fff',
     opacity: 0.85,
     textAlign: 'center',
+  },
+  weeklyCalendar: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    alignItems: 'center',
+    width: '100%',
+    marginTop: 16,
+    marginBottom: 8,
+    paddingHorizontal: 8,
+  },
+  calendarDay: {
+    alignItems: 'center',
+    gap: 6,
+    flex: 1,
+  },
+  calendarDayIcon: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: 'rgba(255, 255, 255, 0.15)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 2,
+    borderColor: 'rgba(255, 255, 255, 0.2)',
+  },
+  calendarDayIconActive: {
+    backgroundColor: 'rgba(255, 255, 255, 0.3)',
+    borderColor: 'rgba(255, 255, 255, 0.5)',
+  },
+  calendarDayIconToday: {
+    backgroundColor: 'rgba(255, 255, 255, 0.4)',
+    borderColor: '#FFF',
+    borderWidth: 2.5,
+  },
+  calendarDayIconEmpty: {
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+  },
+  calendarDayName: {
+    fontSize: 11,
+    fontWeight: '500',
+    color: 'rgba(255, 255, 255, 0.7)',
+    textTransform: 'uppercase',
   },
   section: {
     gap: 16,
