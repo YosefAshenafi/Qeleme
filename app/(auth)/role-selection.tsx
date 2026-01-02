@@ -60,7 +60,7 @@ export default function RoleSelectionScreen() {
 
   return (
     <LinearGradient
-      colors={isDarkMode ? ['#000000', '#1C1C1E'] : ['#F8F9FA', '#FFFFFF']}
+      colors={isDarkMode ? ['#1E1E1E', '#2A2A2A'] : ['#F8F9FA', '#FFFFFF']}
       style={styles.gradient}
     >
       <SafeAreaView style={styles.safeArea}>
@@ -104,17 +104,19 @@ export default function RoleSelectionScreen() {
                 activeOpacity={0.7}
               >
                 <View style={[styles.roleIconContainer, { 
-                  backgroundColor: selectedRole === 'student' ? '#EEF2FF' : (isDarkMode ? '#1C1C1E' : '#F3F4F6')
+                  backgroundColor: selectedRole === 'student' 
+                    ? (isDarkMode ? '#2C2C2E' : '#EEF2FF') 
+                    : (isDarkMode ? '#1C1C1E' : '#F3F4F6')
                 }]}>
                   <View style={[styles.roleIcon, { 
                     backgroundColor: selectedRole === 'student' ? '#4F46E5' + '20' : '#4F46E5' + '10'
                   }]}>
-                    <Ionicons name="school" size={32} color="#4F46E5" />
+                    <Ionicons name="school" size={32} color={isDarkMode ? '#FFFFFF' : '#4F46E5'} />
                   </View>
                 </View>
                 <View style={styles.roleContent}>
                   <ThemedText style={[styles.roleTitle, { 
-                    color: '#4F46E5' 
+                    color: isDarkMode ? '#FFFFFF' : '#4F46E5' 
                   }]}>
                     {t('signup.roleSelection.student.title')}
                   </ThemedText>
@@ -123,19 +125,19 @@ export default function RoleSelectionScreen() {
                   </ThemedText>
                   <View style={styles.roleFeatures}>
                     <View style={styles.featureItem}>
-                      <Ionicons name="book-outline" size={16} color="#4F46E5" />
+                      <Ionicons name="book-outline" size={16} color={isDarkMode ? '#FFFFFF' : '#4F46E5'} />
                       <ThemedText style={[styles.featureText, { color: colors.text + '80' }]}>
                         {t('signup.roleSelection.student.features.materials')}
                       </ThemedText>
                     </View>
                     <View style={styles.featureItem}>
-                      <Ionicons name="pencil-outline" size={16} color="#4F46E5" />
+                      <Ionicons name="pencil-outline" size={16} color={isDarkMode ? '#FFFFFF' : '#4F46E5'} />
                       <ThemedText style={[styles.featureText, { color: colors.text + '80' }]}>
                         {t('signup.roleSelection.student.features.practice')}
                       </ThemedText>
                     </View>
                     <View style={styles.featureItem}>
-                      <Ionicons name="trophy-outline" size={16} color="#4F46E5" />
+                      <Ionicons name="trophy-outline" size={16} color={isDarkMode ? '#FFFFFF' : '#4F46E5'} />
                       <ThemedText style={[styles.featureText, { color: colors.text + '80' }]}>
                         {t('signup.roleSelection.student.features.progress')}
                       </ThemedText>
@@ -166,17 +168,19 @@ export default function RoleSelectionScreen() {
                 activeOpacity={0.7}
               >
                 <View style={[styles.roleIconContainer, { 
-                  backgroundColor: selectedRole === 'parent' ? '#EEF2FF' : (isDarkMode ? '#1C1C1E' : '#F3F4F6')
+                  backgroundColor: selectedRole === 'parent' 
+                    ? (isDarkMode ? '#2C2C2E' : '#EEF2FF') 
+                    : (isDarkMode ? '#1C1C1E' : '#F3F4F6')
                 }]}>
                   <View style={[styles.roleIcon, { 
                     backgroundColor: selectedRole === 'parent' ? '#4F46E5' + '20' : '#4F46E5' + '10'
                   }]}>
-                    <Ionicons name="people" size={32} color="#4F46E5" />
+                    <Ionicons name="people" size={32} color={isDarkMode ? '#FFFFFF' : '#4F46E5'} />
                   </View>
                 </View>
                 <View style={styles.roleContent}>
                   <ThemedText style={[styles.roleTitle, { 
-                    color: '#4F46E5'
+                    color: isDarkMode ? '#FFFFFF' : '#4F46E5'
                   }]}>
                     {t('signup.roleSelection.parent.title')}
                   </ThemedText>
@@ -185,19 +189,19 @@ export default function RoleSelectionScreen() {
                   </ThemedText>
                   <View style={styles.roleFeatures}>
                     <View style={styles.featureItem}>
-                      <Ionicons name="analytics-outline" size={16} color="#4F46E5" />
+                      <Ionicons name="analytics-outline" size={16} color={isDarkMode ? '#FFFFFF' : '#4F46E5'} />
                       <ThemedText style={[styles.featureText, { color: colors.text + '80' }]}>
                         {t('signup.roleSelection.parent.features.monitor')}
                       </ThemedText>
                     </View>
                     <View style={styles.featureItem}>
-                      <Ionicons name="school-outline" size={16} color="#4F46E5" />
+                      <Ionicons name="school-outline" size={16} color={isDarkMode ? '#FFFFFF' : '#4F46E5'} />
                       <ThemedText style={[styles.featureText, { color: colors.text + '80' }]}>
                         {t('signup.roleSelection.parent.features.manage')}
                       </ThemedText>
                     </View>
                     <View style={styles.featureItem}>
-                      <Ionicons name="notifications-outline" size={16} color="#4F46E5" />
+                      <Ionicons name="notifications-outline" size={16} color={isDarkMode ? '#FFFFFF' : '#4F46E5'} />
                       <ThemedText style={[styles.featureText, { color: colors.text + '80' }]}>
                         {t('signup.roleSelection.parent.features.updates')}
                       </ThemedText>

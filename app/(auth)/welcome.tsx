@@ -45,7 +45,7 @@ export default function WelcomeScreen() {
 
   return (
     <LinearGradient
-      colors={isDarkMode ? ['#000000', '#1C1C1E'] : ['#F8F9FA', '#FFFFFF']}
+      colors={isDarkMode ? ['#1E1E1E', '#2A2A2A'] : ['#F8F9FA', '#FFFFFF']}
       style={styles.gradient}
     >
       <SafeAreaView style={styles.safeArea}>
@@ -66,8 +66,8 @@ export default function WelcomeScreen() {
             <View style={styles.logoContainer}>
               <Image 
                 source={isDarkMode 
-                  ? require('@/assets/images/logo/logo-white.png')
-                  : require('@/assets/images/logo/logo-dark.png')
+                  ? require('@/assets/images/logo/logo-icon-white.png')
+                  : require('@/assets/images/logo/logo-icon-dark.png')
                 }
                 style={styles.logoImage}
                 resizeMode="contain"
@@ -158,7 +158,6 @@ const styles = StyleSheet.create({
   logoImage: {
     width: '200%',
     height: '200%',
-    marginLeft: '80%',
   },
   textContainer: {
     alignItems: 'center',

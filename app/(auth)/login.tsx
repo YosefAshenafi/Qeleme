@@ -153,7 +153,7 @@ export default function LoginScreen() {
 
   return (
     <LinearGradient
-      colors={isDarkMode ? ['#000000', '#1C1C1E'] : ['#F8F9FA', '#FFFFFF']}
+      colors={isDarkMode ? ['#1E1E1E', '#2A2A2A'] : ['#F8F9FA', '#FFFFFF']}
       style={styles.gradient}
     >
       <SafeAreaView style={styles.safeArea}>

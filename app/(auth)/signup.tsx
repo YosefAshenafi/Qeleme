@@ -192,12 +192,6 @@ export default function SignupScreen() {
     return '';
   };
 
-  const validateRegion = (region: string): string => {
-    if (!region) {
-      return t('signup.errors.regionRequired');
-    }
-    return '';
-  };
 
   const validateChildData = (child: ChildData, index: number): {[key: string]: string} => {
     const errors: {[key: string]: string} = {};
@@ -464,6 +458,19 @@ export default function SignupScreen() {
     // Add country code to phone number for OTP service
     const fullPhoneNumber = `+251${phoneNumber}`;
     
+    // Default region to "Addis Ababa" if not selected
+    const finalRegion = role === 'student' 
+      ? (region || 'Addis Ababa')
+      : '';
+    
+    // For multiple children, default region to "Addis Ababa" if not selected
+    const finalChildrenData = role === 'parent'
+      ? childrenData.map(child => ({
+          ...child,
+          region: child.region || 'Addis Ababa'
+        }))
+      : childrenData;
+    
     // Try to send OTP (but don't block navigation if it fails)
     try {
       const otpResponse = await sendOTP(fullPhoneNumber);
@@ -486,11 +493,11 @@ export default function SignupScreen() {
           username: role === 'parent' ? '' : username,
           password: role === 'parent' ? '' : password,
           grade,
-          // For multiple students, send empty region - backend will generate
-          region: role === 'parent' ? '' : region,
+          // Region defaults to "Addis Ababa" if not selected
+          region: finalRegion,
           role,
           numberOfChildren: numberOfChildren.toString(),
-          childrenData: JSON.stringify(childrenData)
+          childrenData: JSON.stringify(finalChildrenData)
         }
       });
     } catch (navigationError) {
@@ -501,7 +508,7 @@ export default function SignupScreen() {
 
   return (
     <LinearGradient
-      colors={isDarkMode ? ['#000000', '#1C1C1E'] : ['#F8F9FA', '#FFFFFF']}
+      colors={isDarkMode ? ['#1E1E1E', '#2A2A2A'] : ['#F8F9FA', '#FFFFFF']}
       style={styles.gradient}
     >
       <SafeAreaView style={styles.safeArea}>
