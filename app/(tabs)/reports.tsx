@@ -195,6 +195,28 @@ export default function ReportsScreen() {
         .sort((a, b) => b.progress - a.progress);
 
       const trackingService = ActivityTrackingService.getInstance();
+      
+      // Get all activities for calculating total days active (not just recent 50)
+      const allActivitiesForDays = trackingService.getRecentActivities(10000)
+        .filter(activity => {
+          // Only include completed activities with valid subject
+          return activity.status === 'completed' && 
+                 activity.subject && 
+                 activity.subject.trim() !== '' &&
+                 activity.subject.toLowerCase() !== 'unknown' &&
+                 activity.subject.toLowerCase() !== 'undefined';
+        });
+
+      // Calculate total days active by counting unique days with activities
+      const uniqueActiveDays = new Set<string>();
+      allActivitiesForDays.forEach(activity => {
+        const activityDate = new Date(activity.timestamp);
+        const dateKey = `${activityDate.getFullYear()}-${activityDate.getMonth()}-${activityDate.getDate()}`;
+        uniqueActiveDays.add(dateKey);
+      });
+      const totalDaysActive = uniqueActiveDays.size;
+
+      // Get recent activities for display (last 50)
       const allActivities = trackingService.getRecentActivities(50)
         .filter(activity => {
           // Only include completed activities with valid subject
@@ -203,8 +225,9 @@ export default function ReportsScreen() {
                  activity.subject.trim() !== '' &&
                  activity.subject.toLowerCase() !== 'unknown' &&
                  activity.subject.toLowerCase() !== 'undefined';
-        })
-        .map(activity => {
+        });
+      
+      const filteredActivities = allActivities.map(activity => {
           const rawChapter = activity.chapter && activity.chapter.trim() !== '' && activity.chapter.toLowerCase() !== 'unknown' && activity.chapter.toLowerCase() !== 'undefined'
             ? activity.chapter.trim()
             : t('reports.recentActivity.noChapter', 'No Chapter');
@@ -225,7 +248,7 @@ export default function ReportsScreen() {
         });
 
       // Group activities by subject, then by chapter
-      const groupedBySubject = allActivities.reduce((acc, activity) => {
+      const groupedBySubject = filteredActivities.reduce((acc, activity) => {
         if (!acc[activity.subject]) {
           acc[activity.subject] = {};
         }
@@ -335,7 +358,7 @@ export default function ReportsScreen() {
         learningStreak: {
           currentStreak: userStats.currentStreak,
           bestStreak: userStats.bestStreak,
-          totalDaysActive: Math.ceil((Date.now() - userStats.lastActivityDate) / (1000 * 60 * 60 * 24)),
+          totalDaysActive: totalDaysActive,
         },
         subjectBreakdown,
         recentActivity: recentActivities
@@ -466,7 +489,7 @@ export default function ReportsScreen() {
                         <View style={styles.streakStatDivider} />
                         <View style={styles.streakStatItem}>
                           <ThemedText style={styles.streakStatValue}>
-                            {String(Math.ceil((Date.now() - (userStats.lastActivityDate || Date.now())) / (1000 * 60 * 60 * 24)) || 0)}
+                            {String(reportData.learningStreak.totalDaysActive || 0)}
                           </ThemedText>
                           <ThemedText style={styles.streakStatLabel}>
                             {t('reports.learningStreak.totalDaysActive')}
