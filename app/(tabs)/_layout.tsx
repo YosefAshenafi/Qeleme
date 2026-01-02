@@ -70,7 +70,7 @@ export default function TabLayout() {
             >
               <View style={[styles.profileIconContainer, { backgroundColor: colors.background + '20' }]}>
                 <IconSymbol 
-                  name="person.fill" 
+                  name="gearshape.fill" 
                   size={20} 
                   color={isDarkMode ? '#FFFFFF' : colors.background} 
                 />

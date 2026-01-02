@@ -556,7 +556,7 @@ export default function SignupScreen() {
                         backgroundColor: isDarkMode ? '#2C2C2E' : '#F9FAFB',
                         borderColor: validationErrors.fullName ? '#F44336' : (isDarkMode ? '#3C3C3E' : '#E5E7EB'),
                       }]}>
-                        <Ionicons name="person-outline" size={20} color={isDarkMode ? '#A0A0A5' : '#6B7280'} style={styles.inputIcon} />
+                        <Ionicons name="settings-outline" size={20} color={isDarkMode ? '#A0A0A5' : '#6B7280'} style={styles.inputIcon} />
                         <TextInput
                           style={[styles.input, { color: colors.text }]}
                           placeholder={t('signup.fullName')}
@@ -671,7 +671,7 @@ export default function SignupScreen() {
                           backgroundColor: isDarkMode ? '#2C2C2E' : '#F9FAFB',
                           borderColor: validationErrors[`child${index}_fullName`] ? '#F44336' : (isDarkMode ? '#3C3C3E' : '#E5E7EB'),
                         }]}>
-                          <Ionicons name="person-outline" size={20} color={isDarkMode ? '#A0A0A5' : '#6B7280'} style={styles.inputIcon} />
+                          <Ionicons name="settings-outline" size={20} color={isDarkMode ? '#A0A0A5' : '#6B7280'} style={styles.inputIcon} />
                           <TextInput
                             style={[styles.input, { color: colors.text }]}
                             placeholder={t('signup.fullName')}

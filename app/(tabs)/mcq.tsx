@@ -1321,7 +1321,7 @@ export default function MCQScreen() {
                         {t('mcq.year')}
                       </ThemedText>
                       <TouchableOpacity
-                        style={[styles.formInput, { backgroundColor: colors.cardAlt, borderColor: colors.border }]}
+                        style={[styles.formInput, { backgroundColor: colors.cardAlt, borderColor: isDarkMode ? '#FFFFFF' : colors.border }]}
                         onPress={() => setShowYearDropdown(!showYearDropdown)}
                       >
                         <ThemedText style={[styles.formInputText, { color: colors.text }]}>
@@ -1378,8 +1378,8 @@ export default function MCQScreen() {
                       style={[
                         styles.formInput, 
                         { 
-                          backgroundColor: colors.cardAlt, 
-                          borderColor: isPreSelected ? colors.tint : colors.border,
+                          backgroundColor: isPreSelected && isDarkMode ? colors.tint + '20' : colors.cardAlt, 
+                          borderColor: isPreSelected ? (isDarkMode ? '#FFFFFF' : colors.tint) : (isDarkMode ? '#FFFFFF' : colors.border),
                           borderWidth: isPreSelected ? 2 : 1,
                         }
                       ]}
@@ -1462,7 +1462,7 @@ export default function MCQScreen() {
                       <TouchableOpacity
                         style={[
                           styles.formInput,
-                          { backgroundColor: colors.cardAlt, borderColor: colors.border },
+                          { backgroundColor: colors.cardAlt, borderColor: isDarkMode ? '#FFFFFF' : colors.border },
                           !selectedSubject && { 
                             backgroundColor: isDarkMode ? 'rgba(0, 0, 0, 0.3)' : 'rgba(0, 0, 0, 0.05)',
                             borderColor: isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'
