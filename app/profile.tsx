@@ -8,6 +8,7 @@ import { router } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { ThemeChooser } from '../components/profile/ThemeChooser';
 import { DeleteAccount } from '../components/profile/DeleteAccount';
+import { AccountSettings } from '../components/profile/AccountSettings';
 import { getColors } from '../constants/Colors';
 import { useTheme } from '../contexts/ThemeContext';
 import { useAuth } from '../contexts/AuthContext';
@@ -163,8 +164,12 @@ export default function ProfileScreen() {
     const lang = i18n.language === 'am' ? 'am' : 'en';
     const monthText = lang === 'am' ? 'ወራት' : 'months';
     
-    // Extract the number of months from the plan (e.g., "Premium 3" -> 3)
+    // Free plan: show plan name only, no (months)
+    const isFreePlan = !plan || plan.toLowerCase().includes('free') || plan.toLowerCase().includes('ነጻ');
     const monthCount = parseInt(plan.match(/\d+/)?.[0] || '0');
+    if (isFreePlan || monthCount === 0) {
+      return plan;
+    }
     
     if (monthCount > 0 && user?.lastPaymentDate) {
       const lastPayment = new Date(user.lastPaymentDate);
@@ -175,7 +180,41 @@ export default function ProfileScreen() {
       return `${plan} (${monthCount} ${monthText}) - ${t('profile.nextPayment', { defaultValue: 'Next payment' })}: ${nextPaymentDate}`;
     }
     
-    return `${plan} (${monthText})`;
+    return `${plan} (${monthCount} ${monthText})`;
+  };
+
+  // Extract play type from payment plan (e.g., "Bronze", "Silver", "Gold") or use user.type
+  const getPlayType = () => {
+    if (user?.type) {
+      return user.type;
+    }
+    // Try to extract from paymentPlan (e.g., "Bronze Premium 3" -> "Bronze")
+    if (user?.paymentPlan) {
+      const plan = user.paymentPlan;
+      const playTypes = ['Bronze', 'Silver', 'Gold', 'Platinum', 'Premium'];
+      for (const type of playTypes) {
+        if (plan.includes(type)) {
+          return type;
+        }
+      }
+    }
+    return null;
+  };
+
+  // Calculate due date from lastPaymentDate and plan duration
+  const getDueDate = () => {
+    if (!user?.lastPaymentDate || !user?.paymentPlan) {
+      return null;
+    }
+    
+    const monthCount = parseInt(user.paymentPlan.match(/\d+/)?.[0] || '0');
+    if (monthCount > 0) {
+      const lastPayment = new Date(user.lastPaymentDate);
+      const dueDate = new Date(lastPayment);
+      dueDate.setMonth(dueDate.getMonth() + monthCount);
+      return getBilingualDate(dueDate);
+    }
+    return null;
   };
 
   const profileData = React.useMemo(() => ({
@@ -185,6 +224,9 @@ export default function ProfileScreen() {
     role: t('profile.role'),
     joinDate: user?.joinDate ? getBilingualDate(new Date(user.joinDate)) : getBilingualDate(new Date()),
     paymentPlan: user?.paymentPlan ? getPaymentPlanWithMonth(user.paymentPlan) : getPaymentPlanWithMonth(t('profile.paymentPlan', { defaultValue: 'Free Plan' })),
+    playType: getPlayType() || undefined,
+    updatedDate: user?.lastPaymentDate ? getBilingualDate(new Date(user.lastPaymentDate)) : undefined,
+    dueDate: getDueDate() || undefined,
   }), [t, i18n.language, user]);
 
   const capitalizeName = (name: string) => {
@@ -202,7 +244,12 @@ export default function ProfileScreen() {
 
   const menuItems: MenuItem[] = React.useMemo(() => [
     { 
-      title: t('profile.theme'),
+      title: t('profile.accountSettings', { defaultValue: 'Account Settings' }),
+      icon: 'person.circle.fill' as const,
+      content: <AccountSettings colors={colors} profileData={profileData} />
+    },
+    { 
+      title: isDarkMode ? t('profile.darkTheme', { defaultValue: 'Dark theme' }) : t('profile.lightTheme', { defaultValue: 'Light theme' }),
       icon: isDarkMode ? 'moon.fill' : 'sun.max.fill' as const,
       action: () => {
         toggleTheme();
@@ -217,67 +264,9 @@ export default function ProfileScreen() {
       }
     },
     { 
-      title: t('profile.contactUs'),
-      icon: 'phone.fill' as const,
-      content: (
-        <View style={styles.contactContainer}>
-          <View style={styles.contactSection}>
-            <View style={styles.contactRow}>
-              <View style={[styles.contactIconContainer, { backgroundColor: colors.tint + '15' }]}>
-                <IconSymbol name="phone.fill" size={18} color={isDarkMode ? '#FFFFFF' : colors.tint} />
-              </View>
-              <Text style={[styles.contactSectionTitle, { color: colors.text }]}>Phone</Text>
-            </View>
-            
-            <View style={styles.contactLinksContainer}>
-              <TouchableOpacity 
-                style={[styles.contactLink, { backgroundColor: colors.tint + '10' }]}
-                onPress={() => Linking.openURL('tel:+251911243867')}
-                activeOpacity={0.7}
-              >
-                <Text style={[styles.contactItem, { color: isDarkMode ? '#FFFFFF' : colors.tint }]}>+251 911 243 867</Text>
-              </TouchableOpacity>
-              <TouchableOpacity 
-                style={[styles.contactLink, { backgroundColor: colors.tint + '10' }]}
-                onPress={() => Linking.openURL('tel:+251911557216')}
-                activeOpacity={0.7}
-              >
-                <Text style={[styles.contactItem, { color: isDarkMode ? '#FFFFFF' : colors.tint }]}>+251 911 557 216</Text>
-              </TouchableOpacity>
-              <TouchableOpacity 
-                style={[styles.contactLink, { backgroundColor: colors.tint + '10' }]}
-                onPress={() => Linking.openURL('tel:+251913727300')}
-                activeOpacity={0.7}
-              >
-                <Text style={[styles.contactItem, { color: isDarkMode ? '#FFFFFF' : colors.tint }]}>+251 913 727 300</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-          
-          <View style={[styles.contactSection, { marginTop: 20 }]}>
-            <View style={styles.contactRow}>
-              <View style={[styles.contactIconContainer, { backgroundColor: colors.tint + '15' }]}>
-                <IconSymbol name="envelope.fill" size={18} color={isDarkMode ? '#FFFFFF' : colors.tint} />
-              </View>
-              <Text style={[styles.contactSectionTitle, { color: colors.text }]}>Email</Text>
-            </View>
-            
-            <TouchableOpacity 
-              style={[styles.contactLink, { backgroundColor: colors.tint + '10', marginTop: 8 }]}
-              onPress={() => Linking.openURL('mailto:contact@qelem.net')}
-              activeOpacity={0.7}
-            >
-              <Text style={[styles.contactItem, { color: isDarkMode ? '#FFFFFF' : colors.tint }]}>contact@qelem.net</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-      )
-    },
-    { 
       title: t('profile.version'),
       icon: 'app.badge' as const,
       subtitle: Constants.expoConfig?.version || '1.0.0',
-      showChevron: false,
       action: () => {
         setShowVersionModal(true);
       }
@@ -392,7 +381,7 @@ export default function ProfileScreen() {
                         )}
                       </View>
                     </View>
-                    {item.showChevron !== false && (
+                    {item.showChevron === true && (
                       <IconSymbol name="chevron.right" size={16} color={colors.text + '60'} />
                     )}
                   </TouchableOpacity>

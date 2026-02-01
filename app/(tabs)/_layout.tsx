@@ -48,7 +48,7 @@ export default function TabLayout() {
           </View>
         ),
         headerTitle: () => (
-          <View style={[styles.gradeContainer, { backgroundColor: colors.background + '20', borderColor: isDarkMode ? '#FFFFFF' : colors.background }]}>
+          <View style={styles.gradeContainer}>
             <Text style={styles.gradeIcon}>🎓</Text>
             <Text style={[styles.gradeText, { color: isDarkMode ? '#FFFFFF' : colors.background }]}>
               {t('common.grade')}: {user?.grade?.replace(/\D/g, '')}
@@ -213,7 +213,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 16,
-    borderWidth: 1,
     gap: 6,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },

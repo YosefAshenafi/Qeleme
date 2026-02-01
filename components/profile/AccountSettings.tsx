@@ -16,6 +16,9 @@ interface AccountSettingsProps {
     grade: string;
     joinDate: string;
     paymentPlan: string;
+    playType?: string;
+    updatedDate?: string;
+    dueDate?: string;
   };
 }
 
@@ -128,6 +131,33 @@ export function AccountSettings({ colors, profileData }: AccountSettingsProps) {
           <Text style={[styles.settingValue, { color: colors.text }]}>{profileData.joinDate}</Text>
         </View>
         <View style={[styles.separator, { backgroundColor: isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)' }]} />
+        {profileData.playType && (
+          <>
+            <View style={styles.settingItem}>
+              <Text style={[styles.settingLabel, { color: colors.text }]}>{t('profile.accountSettingsLabels.playType')}</Text>
+              <Text style={[styles.settingValue, { color: colors.text }]}>{profileData.playType}</Text>
+            </View>
+            <View style={[styles.separator, { backgroundColor: isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)' }]} />
+          </>
+        )}
+        {profileData.updatedDate && (
+          <>
+            <View style={styles.settingItem}>
+              <Text style={[styles.settingLabel, { color: colors.text }]}>{t('profile.accountSettingsLabels.updatedDate')}</Text>
+              <Text style={[styles.settingValue, { color: colors.text }]}>{profileData.updatedDate}</Text>
+            </View>
+            <View style={[styles.separator, { backgroundColor: isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)' }]} />
+          </>
+        )}
+        {profileData.dueDate && (
+          <>
+            <View style={styles.settingItem}>
+              <Text style={[styles.settingLabel, { color: colors.text }]}>{t('profile.accountSettingsLabels.dueDate')}</Text>
+              <Text style={[styles.settingValue, { color: colors.text }]}>{profileData.dueDate}</Text>
+            </View>
+            <View style={[styles.separator, { backgroundColor: isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)' }]} />
+          </>
+        )}
         <View style={styles.settingItem}>
           <Text style={[styles.settingLabel, { color: colors.text }]}>{t('profile.accountSettingsLabels.paymentPlan')}</Text>
           <Text style={[styles.settingValue, { color: colors.text }]}>{profileData.paymentPlan}</Text>

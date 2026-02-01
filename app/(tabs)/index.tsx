@@ -705,9 +705,10 @@ export default function HomeScreen() {
               </ScrollView>
             </View>
           ) : (
-            // Non-KG Students - Show MCQ and Flashcard Carousels
+            // Non-KG Students - Show MCQ and Flashcard Carousels (only if not empty)
             <>
-              {/* MCQ Books Carousel */}
+              {/* MCQ Books Carousel - Only show if there are books */}
+              {mcqBooks.length > 0 && (
               <ThemedView style={[styles.bookCarouselSection, { backgroundColor: colors.background }]}>
                 <View style={styles.bookCarouselHeader}>
                   <ThemedText style={[styles.bookCarouselTitle, { color: colors.text }]}>
@@ -754,9 +755,10 @@ export default function HomeScreen() {
                   </ScrollView>
                 )}
               </ThemedView>
+              )}
 
-              {/* National Exams Carousel - Only show for grades 6, 8, 12 */}
-              {hasNationalExams() && (
+              {/* National Exams Carousel - Only show for grades 6, 8, 12 and when there are years */}
+              {hasNationalExams() && nationalExamYears.length > 0 && (
                 <ThemedView style={[styles.bookCarouselSection, { backgroundColor: colors.background }]}>
                   <View style={styles.bookCarouselHeader}>
                     <ThemedText style={[styles.bookCarouselTitle, { color: colors.text }]}>
@@ -805,7 +807,8 @@ export default function HomeScreen() {
                 </ThemedView>
               )}
 
-              {/* Flashcard Books Carousel */}
+              {/* Flashcard Books Carousel - Only show if there are books */}
+              {flashcardBooks.length > 0 && (
               <ThemedView style={[styles.bookCarouselSection, { backgroundColor: colors.background }]}>
                 <View style={styles.bookCarouselHeader}>
                   <ThemedText style={[styles.bookCarouselTitle, { color: colors.text }]}>
@@ -852,6 +855,7 @@ export default function HomeScreen() {
                   </ScrollView>
                 )}
               </ThemedView>
+              )}
             </>
           )}
 

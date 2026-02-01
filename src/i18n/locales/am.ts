@@ -411,7 +411,7 @@ export default {
     duration: '{{hours}}ሰ',
     scoreFormat: '{{score}}%',
     progressFormat: '{{progress}}% ተጠናቅቋል',
-    noData: 'የእድገትዎን ለማየት መማር ይጀምሩ!',
+    noData: 'የትምህርት ሪፖርቶችዎን ለማየት ምርጫ ጥያቄዎች ወይም ፍላሽ ካርዶች ይሥሩ።',
     comingSoon: 'ተጨማሪ ሪፖርቶች በመሰራት ላይ!',
     comingSoonDescription: 'ለእርስዎ የትምህርት ጉዞ ተጨማሪ ትንታኔዎችን እና ሪፖርቶችን በቅርቡ ይጠብቁ።'
   },
@@ -579,6 +579,8 @@ export default {
     notifications: 'ማሳወቂያዎች',
     language: 'ቋንቋ',
     theme: 'ገጽታ',
+    darkTheme: 'ጨለማ ገጽታ',
+    lightTheme: 'ብርሃን ገጽታ',
     resetApp: 'መተግበሪያውን ዳግም ያስጀምሩ',
     resetAppSuccess: 'የመተግበሪያው መረጃ በተሳካ ሁኔታ ተመልሷል። የእድገትዎ እና የሪፖርቶችዎ ሁሉ ተሰርዘዋል።',
     resetAppSuccessNote: 'አሁንም ገብተው ይገኛሉ እና መተግበሪያውን መጠቀም መቀጠል ይችላሉ።',
@@ -599,7 +601,10 @@ export default {
       role: 'ሚና',
       grade: 'ክፍል',
       joined: 'የተቀላቀሉት',
-      paymentPlan: 'የክፍያ እቅድ'
+      paymentPlan: 'የደንበኝነት እቅድ',
+      playType: 'የጨዋታ አይነት',
+      updatedDate: 'የተዘመነ ቀን',
+      dueDate: 'የመጨረሻ ቀን'
     },
     save: 'አስቀምጥ',
     edit: 'አርትዑ',

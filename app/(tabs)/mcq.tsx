@@ -337,12 +337,19 @@ export default function MCQScreen() {
     }
   };
 
-  // Add useEffect for fetching national exam data
+  // Fetch national exam data when exam type is national
   useEffect(() => {
     if (selectedExamType === 'national') {
       fetchNationalExamAvailable();
     }
   }, [selectedExamType]);
+
+  // Pre-fetch national exam years when grade needs exam type selection, so we can hide National Exam if empty
+  useEffect(() => {
+    if (selectedGrade && needsExamTypeSelection(selectedGrade)) {
+      fetchNationalExamAvailable();
+    }
+  }, [selectedGrade?.id]);
 
   useFocusEffect(
     React.useCallback(() => {
@@ -1267,19 +1274,19 @@ export default function MCQScreen() {
         )}
         <ThemedView style={[styles.container, { backgroundColor: colors.background }]}>
           <ThemedView style={[styles.formContainer, { backgroundColor: colors.background }]}>
-            <ThemedText style={[styles.formTitle, { color: (selectedGrade && needsExamTypeSelection(selectedGrade) && !selectedExamType) ? (isDarkMode ? '#FFFFFF' : colors.tint) : colors.tint, marginTop: (selectedGrade && needsExamTypeSelection(selectedGrade) && !selectedExamType) ? 40 : 0 }]}>
-              {selectedGrade && needsExamTypeSelection(selectedGrade) && !selectedExamType 
-                ? t('mcq.selectExamType')
-                : selectedExamType === 'national'
-                ? t('mcq.nationalExam')
-                : t('mcq.mcqExam')}
-            </ThemedText>
+            {/* Only show form title on "Select exam type" step; avoid repeating exam type name in subject/chapter card */}
+            {selectedGrade && needsExamTypeSelection(selectedGrade) && !selectedExamType && (
+              <ThemedText style={[styles.formTitle, { color: isDarkMode ? '#FFFFFF' : colors.tint, marginTop: 40 }]}>
+                {t('mcq.selectExamType')}
+              </ThemedText>
+            )}
             
             <ThemedView style={[styles.formContent, { backgroundColor: colors.background }]}>
               {/* Exam Type Selection for grades 6, 8, and 12 */}
               {selectedGrade && needsExamTypeSelection(selectedGrade) && !selectedExamType && (
                 <ThemedView style={[styles.formGroup, { backgroundColor: colors.background }]}>
                   <View style={styles.examTypeContainer}>
+                    {availableYears.length > 0 && (
                     <TouchableOpacity
                       style={[styles.examTypeButton, { backgroundColor: colors.cardAlt, borderColor: isDarkMode ? '#FFFFFF' : colors.border }]}
                       onPress={() => setSelectedExamType('national')}
@@ -1296,6 +1303,7 @@ export default function MCQScreen() {
                         </View>
                       </View>
                     </TouchableOpacity>
+                    )}
                     <TouchableOpacity
                       style={[styles.examTypeButton, { backgroundColor: colors.cardAlt, borderColor: isDarkMode ? '#FFFFFF' : colors.border }]}
                       onPress={() => setSelectedExamType('mcq')}

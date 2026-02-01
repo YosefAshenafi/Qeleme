@@ -18,6 +18,12 @@ import { ThemedView } from '@/components/ThemedView';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
+// Empty state message when no report data yet (hardcoded so it always shows correctly)
+const REPORTS_EMPTY_MESSAGE = {
+  en: 'Complete MCQs or study flashcards to see your learning reports here.',
+  am: 'የትምህርት ሪፖርቶችዎን ለማየት ምርጫ ጥያቄዎች ወይም ፍላሽ ካርዶች ይሥሩ።',
+};
+
 // Helper function to format chapter names
 const formatChapterName = (chapter: string, language: string): string => {
   if (!chapter || chapter === '' || chapter.toLowerCase() === 'unknown' || chapter.toLowerCase() === 'undefined') {
@@ -749,6 +755,15 @@ export default function ReportsScreen() {
                 </ThemedView>
               )}
 
+              {/* Show empty message above coming soon when no report data yet */}
+              {userStats.totalActivities === 0 && userStats.totalStudyTime === 0 && (
+                <ThemedView style={[styles.emptyState, { backgroundColor: colors.background }]}>
+                  <ThemedText style={[styles.emptyStateText, { color: colors.text }]}>
+                    {REPORTS_EMPTY_MESSAGE[i18n.language === 'am' ? 'am' : 'en']}
+                  </ThemedText>
+                </ThemedView>
+              )}
+
               {/* Coming Soon Message - Always visible */}
               <ThemedView style={[styles.card, { backgroundColor: colors.background }]}>
                 <LinearGradient
@@ -770,20 +785,11 @@ export default function ReportsScreen() {
                   </View>
                 </LinearGradient>
               </ThemedView>
-
-              {/* Show message if no data available */}
-              {userStats.totalActivities === 0 && userStats.totalStudyTime === 0 && (
-                <ThemedView style={[styles.emptyState, { backgroundColor: colors.background }]}>
-                  <ThemedText style={[styles.emptyStateText, { color: colors.text }]}>
-                    {t('reports.noData', { defaultValue: 'Start learning to see your progress here!' })}
-                  </ThemedText>
-                </ThemedView>
-              )}
             </>
           ) : (
             <ThemedView style={[styles.emptyState, { backgroundColor: colors.background }]}>
               <ThemedText style={[styles.emptyStateText, { color: colors.text }]}>
-                {t('reports.noData', { defaultValue: 'Start learning to see your progress here!' })}
+                {REPORTS_EMPTY_MESSAGE[i18n.language === 'am' ? 'am' : 'en']}
               </ThemedText>
             </ThemedView>
           )}

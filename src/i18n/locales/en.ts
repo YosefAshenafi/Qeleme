@@ -203,7 +203,7 @@ export default {
     duration: '{{hours}}h',
     scoreFormat: '{{score}}%',
     progressFormat: '{{progress}}% Completed',
-    noData: 'Start learning to see your progress here!',
+    noData: 'Complete MCQs or study flashcards to see your learning reports here.',
     comingSoon: 'More reports coming soon!',
     comingSoonDescription: 'We are working on additional analytics and insights for your learning journey.'
   },
@@ -270,6 +270,8 @@ export default {
     notifications: 'Notifications',
     language: 'Language',
     theme: 'Theme',
+    darkTheme: 'Dark theme',
+    lightTheme: 'Light theme',
     resetApp: 'Reset App',
     resetConfirmation: 'Are you sure you want to reset the app? This will take you back to the onboarding screen.',
     resetAppSuccess: 'App data has been reset successfully. Your progress and reports have been cleared.',
@@ -298,7 +300,10 @@ export default {
       role: 'Role',
       grade: 'Grade',
       joined: 'Joined',
-      paymentPlan: 'Payment Plan'
+      paymentPlan: 'Subscription Plan',
+      playType: 'Play Type',
+      updatedDate: 'Updated Date',
+      dueDate: 'Due Date'
     },
     save: 'Save',
     edit: 'Edit',
