@@ -1351,6 +1351,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginTop: 20,
     marginBottom: 20,
+    paddingTop: 20,
   },
   resultCard: {
     width: '100%',

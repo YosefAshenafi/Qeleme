@@ -232,7 +232,7 @@ export default {
       title: 'ክፍል ይምረጡ'
     },
     region: {
-      label: 'ክልልዎን ይምረጡ',
+      label: 'ክልልዎን ይምረጡ (ግዴታ አይደለም)',
       title: 'ክልል ይምረጡ'
     },
     terms: {

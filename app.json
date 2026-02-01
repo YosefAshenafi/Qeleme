@@ -27,7 +27,7 @@
     "ios": {
       "supportsTablet": true,
       "requireFullScreen": false,
-      "bundleIdentifier": "com.qelemapp.qelem",
+      "bundleIdentifier": "com.qelem.edu",
       "buildNumber": "6",
       "icon": "./assets/images/logo/app-icon.png",
       "infoPlist": {
@@ -54,14 +54,14 @@
         "resizeMode": "contain",
         "backgroundColor": "#6B54AE"
       },
-      "package": "com.qelemapp.qelem",
+      "package": "com.qelem.edu",
       "versionCode": 15,
       "permissions": [
         "android.permission.INTERNET",
         "android.permission.ACCESS_NETWORK_STATE",
         "android.permission.CAMERA"
       ],
-      "playStoreUrl": "https://play.google.com/store/apps/details?id=com.qelemapp.qelem"
+      "playStoreUrl": "https://play.google.com/store/apps/details?id=com.qelem.edu"
     },
     "web": {
       "bundler": "metro",

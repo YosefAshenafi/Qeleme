@@ -32,7 +32,7 @@
   "submit": {
     "production": {
       "ios": {
-        "bundleIdentifier": "com.qelemapp.qelem"
+        "bundleIdentifier": "com.qelem.edu"
       }
     }
   }

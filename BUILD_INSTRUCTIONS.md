@@ -1,5 +1,34 @@
 # 🚀 Qelem Release Build - Quick Guide
 
+## 📱 Generate AAB for Google Play
+
+**Option 1 – EAS Build (recommended, cloud build)**  
+Run in your terminal (interactive; first time will prompt for Android credentials):
+
+```bash
+npx eas build --platform android --profile production
+```
+
+- Sign in to Expo when prompted.
+- If asked, choose “Generate new Android keystore” (EAS will store it).
+- When the build finishes, download the AAB from the link in the terminal or from [expo.dev](https://expo.dev).
+- Upload that `.aab` file in Google Play Console → Your app → Production (or testing track) → Create new release.
+
+**Option 2 – Local AAB build**  
+Requires the release keystore at `android/keystore/qelem-release-key.keystore`:
+
+```bash
+make aab
+# or: make release-aab   # clean + aab
+```
+
+- **Output:** `android/app/build/outputs/bundle/release/app-release.aab`
+- Upload `app-release.aab` in Google Play Console as above.
+
+*(Gradle has been updated to 8.13 for local builds.)*
+
+---
+
 ## ✅ Status: WORKING & VERIFIED
 
 Your release APK build is now fully configured and tested. The `make release` command works perfectly!

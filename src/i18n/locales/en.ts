@@ -636,7 +636,7 @@ export default {
       title: 'Select Grade'
     },
     region: {
-      label: 'Select your region',
+      label: 'Select your region (optional)',
       title: 'Select Region'
     },
     terms: {
