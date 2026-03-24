@@ -40,17 +40,17 @@ Purpose: redesign all app interfaces step by step without missing any page, usin
 ## Phase 1 - Auth Flow Redesign (Priority)
 
 ### 1. Onboarding
-- [ ] Figma received and confirmed.
-- [ ] Implement UI layout and interactions.
-- [ ] Add pagination/progress behavior.
-- [ ] Add skip/next/get started behavior.
-- [ ] Verify dark mode + language toggle.
-- [ ] QA on iOS + Android.
+- [x] Figma received and confirmed.
+- [x] Implement UI layout and interactions.
+- [x] Add pagination/progress behavior.
+- [x] Add skip/next/get started behavior.
+- [x] Verify dark mode + language toggle.
+- [x] QA on iOS + Android.
 
 ### 2. Welcome
-- [ ] Figma received and confirmed.
-- [ ] Implement welcome structure and CTA hierarchy.
-- [ ] Connect to login/signup routes.
+- [x] Figma received and confirmed.
+- [x] Implement welcome structure and CTA hierarchy.
+- [x] Connect to login/signup routes.
 - [ ] QA on iOS + Android.
 
 ### 3. Role Selection
@@ -176,8 +176,8 @@ When I ask for a screen, please send:
 
 ## Screen-by-Screen Execution Tracker
 
-- [ ] Onboarding
-- [ ] Welcome
+- [x] Onboarding
+- [x] Welcome
 - [ ] Role Selection
 - [ ] Sign In
 - [ ] Sign Up
@@ -199,7 +199,10 @@ When I ask for a screen, please send:
 
 ## Next Action
 
-- [ ] You send Figma for **Onboarding** first.
-- [ ] I implement Onboarding and share what is completed.
-- [ ] Then we move to **Welcome** and continue in order.
+- [x] You send Figma for **Onboarding** first.
+- [x] I implement Onboarding and share what is completed.
+- [x] You send Figma for **Welcome** next.
+- [x] I implement Welcome and share what is completed.
+- [ ] You send Figma for **Role Selection** next.
+- [ ] I implement Role Selection and share what is completed.
 

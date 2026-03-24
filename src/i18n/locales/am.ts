@@ -745,8 +745,15 @@ export default {
   welcome: {
     title: 'እንኳን ወደ ቀለም በደህና መጡ!',
     subtitle: 'አዲስ ከሆኑ እባክዎ ይመዝገቡ። አስቀድመው መለያ ካለዎት እባክዎ በመለያዎ ይግቡ።',
+    startYour: 'የእርስዎን',
+    academic: 'የአካዳሚክ',
+    journey: 'ጉዞ ይጀምሩ።',
+    subtitleV2: 'ከዘመናዊ እና ጥልቅ የትምህርት ልምድ ጋር ወደ ወደፊታዊ የመማር ዓለም ይግቡ።',
+    createAccount: 'መለያ ፍጠር',
     signIn: 'ይግቡ',
     signUp: 'ይመዝገቡ',
+    orExplore: 'ወይም ይመልከቱ',
+    browseAsGuest: 'እንደ እንግዳ ይመልከቱ',
     contactInfo: {
       title: 'ያግኙን',
       phone: 'ስልክ',

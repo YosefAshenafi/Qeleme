@@ -1,39 +1,18 @@
-import { StyleSheet, TouchableOpacity, View, Image, Animated, Dimensions } from 'react-native';
+import { StyleSheet, TouchableOpacity, View } from 'react-native';
 import { router } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useState, useEffect, useRef } from 'react';
-import { LinearGradient } from 'expo-linear-gradient';
+import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '@/contexts/ThemeContext';
 import { getColors } from '@/constants/Colors';
 import { useTranslation } from 'react-i18next';
 
 import { ThemedText } from '@/components/ThemedText';
 import { LanguageToggle } from '@/components/ui/LanguageToggle';
-import { ContactFooter } from '@/components/ContactFooter';
-
-const { width, height } = Dimensions.get('window');
 
 export default function WelcomeScreen() {
   const { isDarkMode } = useTheme();
   const colors = getColors(isDarkMode);
   const { t } = useTranslation();
-  const fadeAnim = useRef(new Animated.Value(0)).current;
-  const slideAnim = useRef(new Animated.Value(50)).current;
-
-  useEffect(() => {
-    Animated.parallel([
-      Animated.timing(fadeAnim, {
-        toValue: 1,
-        duration: 1000,
-        useNativeDriver: true,
-      }),
-      Animated.timing(slideAnim, {
-        toValue: 0,
-        duration: 800,
-        useNativeDriver: true,
-      })
-    ]).start();
-  }, []);
 
   const handleSignIn = () => {
     router.push('/(auth)/login');
@@ -43,187 +22,210 @@ export default function WelcomeScreen() {
     router.push('/(auth)/role-selection');
   };
 
+  const handleBrowseAsGuest = () => {
+    router.push('/(tabs)');
+  };
+
   return (
-    <LinearGradient
-      colors={isDarkMode ? ['#1E1E1E', '#2A2A2A'] : ['#F8F9FA', '#FFFFFF']}
-      style={styles.gradient}
-    >
-      <SafeAreaView style={styles.safeArea}>
-        <View style={styles.container}>
-          <View style={styles.languageToggleContainer}>
-            <LanguageToggle colors={colors} />
+    <SafeAreaView style={[styles.safeArea, { backgroundColor: isDarkMode ? '#101216' : '#F1F2F4' }]}>
+      <View style={styles.container}>
+        <View style={styles.languageToggleContainer}>
+          <LanguageToggle colors={colors} />
+        </View>
+
+        <View style={styles.content}>
+          <View style={styles.brandRow}>
+            <View style={styles.brandIcon}>
+              <ThemedText style={styles.brandIconText}>M+</ThemedText>
+            </View>
+            <ThemedText style={styles.brandText}>Mega+</ThemedText>
           </View>
 
-          <Animated.View 
-            style={[
-              styles.content, 
-              { 
-                opacity: fadeAnim,
-                transform: [{ translateY: slideAnim }]
-              }
-            ]}
-          >
-            <View style={styles.logoContainer}>
-              <Image 
-                source={isDarkMode 
-                  ? require('@/assets/images/logo/logo-icon-white.png')
-                  : require('@/assets/images/logo/logo-icon-dark.png')
-                }
-                style={styles.logoImage}
-                resizeMode="contain"
-              />
-            </View>
+          <View style={styles.textContainer}>
+            <ThemedText style={[styles.headline, { color: isDarkMode ? '#F3F4F6' : '#111827' }]}>
+              {t('welcome.startYour')}
+            </ThemedText>
+            <ThemedText style={styles.headlineAccent}>{t('welcome.academic')}</ThemedText>
+            <ThemedText style={[styles.headline, { color: isDarkMode ? '#F3F4F6' : '#111827' }]}>
+              {t('welcome.journey')}
+            </ThemedText>
+            <ThemedText style={[styles.subtitleText, { color: isDarkMode ? '#A8ADB4' : '#4B5563' }]}>
+              {t('welcome.subtitleV2')}
+            </ThemedText>
+          </View>
 
-            <View style={styles.textContainer}>
-              <ThemedText style={[styles.welcomeText, { color: colors.text }]}>
-                {t('welcome.title')}
+          <View style={[styles.actionCard, { backgroundColor: isDarkMode ? '#191D24' : '#FAFAFA' }]}>
+            <TouchableOpacity style={styles.primaryButton} onPress={handleSignUp} activeOpacity={0.9}>
+              <ThemedText style={styles.primaryButtonText}>{t('welcome.createAccount')}</ThemedText>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={[styles.secondaryButton, { backgroundColor: isDarkMode ? '#2A313D' : '#E5E7EB' }]}
+              onPress={handleSignIn}
+              activeOpacity={0.9}
+            >
+              <ThemedText style={styles.secondaryButtonText}>{t('welcome.signIn')}</ThemedText>
+            </TouchableOpacity>
+
+            <View style={styles.dividerRow}>
+              <View style={[styles.dividerLine, { backgroundColor: isDarkMode ? '#2C3340' : '#E5E7EB' }]} />
+              <ThemedText style={[styles.dividerText, { color: isDarkMode ? '#8B93A3' : '#9CA3AF' }]}>
+                {t('welcome.orExplore')}
               </ThemedText>
-              <ThemedText style={[styles.subtitleText, { color: colors.text + '80' }]}>
-                {t('welcome.subtitle')}
+              <View style={[styles.dividerLine, { backgroundColor: isDarkMode ? '#2C3340' : '#E5E7EB' }]} />
+            </View>
+
+            <TouchableOpacity style={styles.guestAction} onPress={handleBrowseAsGuest} activeOpacity={0.8}>
+              <ThemedText style={[styles.guestActionText, { color: isDarkMode ? '#E5E7EB' : '#111827' }]}>
+                {t('welcome.browseAsGuest')}
               </ThemedText>
-            </View>
-
-            <View style={styles.buttonContainer}>
-              <TouchableOpacity 
-                style={[styles.primaryButton, {
-                  backgroundColor: isDarkMode ? '#2C2C2E' : '#FFFFFF',
-                  shadowColor: isDarkMode ? '#000' : '#4F46E5',
-                }]} 
-                onPress={handleSignUp}
-                activeOpacity={0.8}
-              >
-                <LinearGradient
-                  colors={['#4F46E5', '#7C3AED']}
-                  style={styles.buttonGradient}
-                >
-                  <ThemedText style={styles.primaryButtonText}>
-                    {t('welcome.signUp')}
-                  </ThemedText>
-                </LinearGradient>
-              </TouchableOpacity>
-
-              <TouchableOpacity 
-                style={[styles.secondaryButton, {
-                  backgroundColor: isDarkMode ? '#2C2C2E' : '#FFFFFF',
-                  borderColor: isDarkMode ? '#3C3C3E' : '#E5E7EB',
-                }]} 
-                onPress={handleSignIn}
-                activeOpacity={0.8}
-              >
-                <ThemedText style={[styles.secondaryButtonText, { color: colors.text }]}>
-                  {t('welcome.signIn')}
-                </ThemedText>
-              </TouchableOpacity>
-            </View>
-
-            {/* Contact Footer */}
-            <ContactFooter />
-          </Animated.View>
+              <Ionicons name="arrow-forward" size={18} color={isDarkMode ? '#E5E7EB' : '#111827'} />
+            </TouchableOpacity>
+          </View>
         </View>
-      </SafeAreaView>
-    </LinearGradient>
+      </View>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  gradient: {
-    flex: 1,
-  },
   safeArea: {
     flex: 1,
   },
   container: {
     flex: 1,
-    padding: 8,
+    paddingHorizontal: 20,
+    paddingVertical: 12,
   },
   languageToggleContainer: {
     position: 'absolute',
-    top: 20,
+    top: 12,
     right: 20,
-    zIndex: 1,
+    zIndex: 2,
   },
   content: {
     flex: 1,
+    justifyContent: 'space-between',
+    paddingTop: 42,
+  },
+  brandRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  brandIcon: {
+    width: 72,
+    height: 72,
+    borderRadius: 20,
+    backgroundColor: '#0F4BD7',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingHorizontal: 8,
+    shadowColor: '#0F4BD7',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.3,
+    shadowRadius: 16,
+    elevation: 6,
   },
-  logoContainer: {
-    width: width,
-    height: width,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: -100,
+  brandIconText: {
+    color: '#FFFFFF',
+    fontSize: 30,
+    fontWeight: '800',
   },
-  logoImage: {
-    width: '200%',
-    height: '200%',
+  brandText: {
+    color: '#0F4BD7',
+    fontSize: 44,
+    fontWeight: '800',
+    lineHeight: 48,
   },
   textContainer: {
-    alignItems: 'center',
-    marginBottom: 40,
-    paddingHorizontal: 8,
+    marginTop: 12,
+    gap: 2,
   },
-  welcomeText: {
-    fontSize: 36,
-    fontWeight: '700',
-    textAlign: 'center',
-    marginBottom: 16,
-    lineHeight: 44,
+  headline: {
+    fontSize: 52,
+    lineHeight: 56,
+    fontWeight: '800',
+  },
+  headlineAccent: {
+    fontSize: 52,
+    lineHeight: 56,
+    fontWeight: '800',
+    fontStyle: 'italic',
+    color: '#0F4BD7',
   },
   subtitleText: {
+    marginTop: 18,
     fontSize: 18,
-    textAlign: 'center',
-    lineHeight: 24,
-    maxWidth: 300,
+    lineHeight: 30,
+    maxWidth: '92%',
   },
-  buttonContainer: {
+  actionCard: {
     width: '100%',
-    gap: 16,
-    paddingHorizontal: 8,
-    maxWidth: 400,
-    alignSelf: 'center',
+    marginTop: 10,
+    borderRadius: 28,
+    paddingHorizontal: 16,
+    paddingVertical: 28,
+    gap: 18,
   },
   primaryButton: {
     width: '100%',
-    height: 60,
-    borderRadius: 16,
-    overflow: 'hidden',
-    shadowOffset: {
-      width: 0,
-      height: 4,
-    },
-    shadowOpacity: 0.2,
-    shadowRadius: 8,
-    elevation: 8,
-  },
-  buttonGradient: {
-    flex: 1,
+    height: 56,
+    borderRadius: 28,
+    backgroundColor: '#0F4BD7',
     alignItems: 'center',
     justifyContent: 'center',
+    shadowColor: '#0F4BD7',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.28,
+    shadowRadius: 14,
+    elevation: 6,
   },
   primaryButtonText: {
-    color: '#FFFFFF',
+    color: '#F8FAFF',
     fontSize: 18,
     fontWeight: '600',
+    lineHeight: 22,
   },
   secondaryButton: {
     width: '100%',
-    height: 60,
-    borderRadius: 16,
-    borderWidth: 1,
+    height: 56,
+    borderRadius: 28,
     alignItems: 'center',
     justifyContent: 'center',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 4,
   },
   secondaryButtonText: {
     fontSize: 18,
+    lineHeight: 22,
     fontWeight: '600',
+    color: '#0F4BD7',
+  },
+  dividerRow: {
+    marginTop: 6,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+  },
+  dividerLine: {
+    flex: 1,
+    height: 1,
+    borderRadius: 1,
+  },
+  dividerText: {
+    fontSize: 12,
+    fontWeight: '700',
+    letterSpacing: 1.1,
+    textTransform: 'uppercase',
+  },
+  guestAction: {
+    marginTop: 4,
+    height: 42,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+  },
+  guestActionText: {
+    fontSize: 16,
+    fontWeight: '500',
   },
 });

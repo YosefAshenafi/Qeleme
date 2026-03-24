@@ -680,8 +680,15 @@ export default {
   welcome: {
     title: 'Welcome to Qelem',
     subtitle: 'If you are new, please sign up. If you already have an account, please sign in.',
+    startYour: 'Start Your',
+    academic: 'Academic',
+    journey: 'Journey.',
+    subtitleV2: 'Step into a futuristic learning ecosystem designed for intellectual depth and modern mastery.',
+    createAccount: 'Create Account',
     signIn: 'Sign In',
     signUp: 'Sign Up',
+    orExplore: 'Or Explore',
+    browseAsGuest: 'Browse catalog as guest',
     contactInfo: {
       title: 'Contact Information',
       phone: 'Phone',
