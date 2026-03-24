@@ -131,6 +131,32 @@ export default {
       }
     ]
   },
+  recoverAccess: {
+    title: 'መዳረሻዎን ያግኙ',
+    subtitle:
+      'የተቋሙን ኢሜይል ያስገቡ፣ ቁልፍዎን ለማድስ የማረጋገጫ ዝርዝሮች እንልካለን።',
+    subtitlePhone:
+      'ስልክ ቁጥርዎን ያስገቡ፣ መዳረሻዎን ለማድስ የማረጋገጫ ዝርዝሮች እንልካለን።',
+    phoneLabel: 'ስልክ ቁጥር',
+    sendResetLink: 'የዳግም ማስጀመሪያ አገናኝ ላክ',
+    sendCode: 'የዳግም ማስጀመሪያ አገናኝ ላክ',
+    footerPrefix: 'ወደ መግቢያ?',
+    returnToLogin: 'ወደ መግቢያ ተመለስ',
+    successTitle: 'ኢሜይልዎን ይመልከቱ',
+    successMessage:
+      'ለዚያ አድራሻ መለያ ካለ፣ በቅርቡ የዳግም ማስጀመሪያ መመሪያዎች ይደርሳሉ።',
+    successTitlePhone: 'ስልክዎን ይመልከቱ',
+    successMessagePhone:
+      'ለዚህ ቁጥር መለያ ካለ፣ በቅርቡ የዳግም ማስጀመሪያ መመሪያዎች ይደርሳሉ።',
+    errors: {
+      emailRequired: 'እባክዎ ኢሜይል ያስገቡ',
+      emailInvalid: 'ትክክለኛ ኢሜይል ያስገቡ',
+      phoneRequired: 'እባክዎ ስልክ ቁጥር ያስገቡ',
+      phoneInvalid: 'ትክክለኛ የኢትዮጵያ ሞባይል ቁጥር ያስገቡ (ከ 9 የሚጀምር 9 አሃዞች)',
+      requestFailed: 'ችግር ተፈጥሯል። እንደገና ይሞክሩ።',
+      network: 'የአውታር መስቀል ስህተት። ግንኙነትዎን ያረጋግጡ።',
+    },
+  },
   resetPassword: {
     title: 'የይለፍ ቃል ዳግም ያዘጋጁ',
     phoneNumber: 'ስልክ ቁጥር',
@@ -421,6 +447,7 @@ export default {
   },
   common: {
     error: 'ችግር',
+    ok: 'እሺ',
     tryAgain: 'እንደገና ይሞክሩ',
     back: 'ተመለስ',
     loading: 'በማዘዋወር ላይ...',

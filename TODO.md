@@ -66,23 +66,24 @@ Purpose: redesign all app interfaces step by step without missing any page, usin
 - [ ] QA on iOS + Android.
 
 ### 5. Sign Up
-- [ ] Figma received and confirmed.
-- [ ] Implement single-student signup UI.
-- [ ] Implement parent + multiple-children signup UI.
-- [ ] Keep current validation behavior and OTP routing.
+- [x] Figma received and confirmed (aligned with auth theme).
+- [x] Implement single-student signup UI.
+- [x] Parent + multiple-children signup deferred (role flow skipped for now).
+- [x] Keep current validation behavior and OTP routing.
 - [ ] Improve field-level errors and submit states.
 - [ ] QA on iOS + Android.
 
 ### 6. OTP Verification
-- [ ] Figma received and confirmed.
-- [ ] Implement OTP entry and resend timer states.
+- [x] UI aligned with auth theme (card, gradient CTA, background).
+- [ ] Wire remaining copy to i18n if desired.
+- [ ] Implement OTP entry and resend timer states (logic exists; confirm UX).
 - [ ] Confirm back/edit-phone behavior.
 - [ ] QA on iOS + Android.
 
 ### 7. Forgot Password
-- [ ] Figma received and confirmed.
-- [ ] Implement phone/identifier request UI.
-- [ ] Confirm navigation to reset flow.
+- [x] Figma received and confirmed (Recover Your Access / institutional email).
+- [x] Implement email request UI + primary CTA + footer link.
+- [x] POST `${BASE_URL}/api/auth/forgot-password` (backend can enable when ready).
 - [ ] QA on iOS + Android.
 
 ### 8. Reset Password
@@ -98,9 +99,10 @@ Purpose: redesign all app interfaces step by step without missing any page, usin
 - [ ] QA on iOS + Android.
 
 ### 10. Plan Selection
-- [ ] Figma received and confirmed.
-- [ ] Implement plan cards, selection states, CTA.
-- [ ] Confirm route to payment.
+- [x] UI aligned with blue theme (cards, recommended label, scroll-to-pay).
+- [ ] Figma cross-check if you have a dedicated frame.
+- [x] Plan cards, selection states, CTA.
+- [x] Route to payment unchanged.
 - [ ] QA on iOS + Android.
 
 ### 11. Payment
@@ -179,12 +181,12 @@ When I ask for a screen, please send:
 - [x] Welcome
 - [x] Role Selection (skipped for now)
 - [x] Sign In
-- [ ] Sign Up
-- [ ] OTP
-- [ ] Forgot Password
+- [x] Sign Up
+- [ ] OTP (polish / i18n / QA)
+- [x] Forgot Password (polish / QA)
 - [ ] Reset Password
 - [ ] Children Selection
-- [ ] Plan Selection
+- [ ] Plan Selection (polish / Figma cross-check / QA)
 - [ ] Payment
 - [ ] Payment Success
 - [ ] Home/Dashboard
@@ -205,6 +207,8 @@ When I ask for a screen, please send:
 - [x] Role Selection skipped for now (student-only).
 - [x] You send Figma for **Sign In** next.
 - [x] I implement Sign In and share what is completed.
-- [ ] You send Figma for **Sign Up** next.
-- [ ] I implement Sign Up and share what is completed.
+- [x] **Sign Up** implemented (single student; theme-aligned).
+- [ ] **OTP**: quick review on device; optional Figma tweaks; i18n for hardcoded strings if you want parity with other auth screens.
+- [ ] **Forgot Password** + **Reset Password**: send Figma when ready so we match design (next major auth gaps).
+- [ ] **Payment** + **Payment Success**: send Figma when ready.
 

@@ -235,6 +235,32 @@ export default {
       reports: 'Reports'
     }
   },
+  recoverAccess: {
+    title: 'Recover Your Access',
+    subtitle:
+      "Provide your institutional email and we'll send verification details to reset your key.",
+    subtitlePhone:
+      "Enter your phone number and we'll send verification details to reset your access.",
+    phoneLabel: 'Phone number',
+    sendResetLink: 'Send Reset Link',
+    sendCode: 'Send Reset Link',
+    footerPrefix: 'Back to the gates?',
+    returnToLogin: 'Return to Login',
+    successTitle: 'Check your email',
+    successMessage:
+      'If an account exists for that address, you will receive reset instructions shortly.',
+    successTitlePhone: 'Check your phone',
+    successMessagePhone:
+      'If an account exists for this number, you will receive reset instructions shortly.',
+    errors: {
+      emailRequired: 'Please enter your email address',
+      emailInvalid: 'Please enter a valid email address',
+      phoneRequired: 'Please enter your phone number',
+      phoneInvalid: 'Enter a valid Ethiopian mobile number (9 digits starting with 9)',
+      requestFailed: 'Something went wrong. Please try again.',
+      network: 'Network error. Please check your connection and try again.',
+    },
+  },
   resetPassword: {
     title: 'Reset Password',
     phoneNumber: 'Phone number',
@@ -443,6 +469,7 @@ export default {
   },
   common: {
     error: 'Error',
+    ok: 'OK',
     tryAgain: 'Try Again',
     back: 'Back',
     loading: 'Loading...',
