@@ -1,76 +1,56 @@
-import { StyleSheet, Dimensions, TouchableOpacity, View, Image } from 'react-native';
-import { Link, router } from 'expo-router';
+import { StyleSheet, Dimensions, TouchableOpacity, View, Image, FlatList } from 'react-native';
+import { router } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useState, useRef } from 'react';
-import Animated, {
-  useAnimatedStyle,
-  withSpring,
-  useSharedValue,
-  withTiming,
-  interpolate,
-  useAnimatedRef,
-  useScrollViewOffset,
-  FadeIn,
-  FadeOut,
-  SlideInRight,
-  SlideOutLeft,
-  SlideInLeft,
-  SlideOutRight,
-} from 'react-native-reanimated';
-import { PanGestureHandler, GestureHandlerRootView, State } from 'react-native-gesture-handler';
+import { useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '@/contexts/ThemeContext';
 import { getColors } from '@/constants/Colors';
 
 import { ThemedText } from '@/components/ThemedText';
-import { ThemedView } from '@/components/ThemedView';
 import { IconSymbol } from '@/components/ui/IconSymbol';
 import { LanguageToggle } from '@/components/ui/LanguageToggle';
-import { useLanguage } from '@/contexts/LanguageContext';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
-const SWIPE_THRESHOLD = SCREEN_WIDTH * 0.2; // 20% of screen width
 
 export default function OnboardingScreen() {
   const [currentStep, setCurrentStep] = useState(0);
-  const scrollViewRef = useAnimatedRef<Animated.ScrollView>();
-  const progress = useSharedValue(0);
-  const [direction, setDirection] = useState<'left' | 'right'>('right');
-  const translateX = useSharedValue(0);
+  const listRef = useRef<FlatList<any>>(null);
   const { t } = useTranslation();
-  const { currentLanguage } = useLanguage();
   const { isDarkMode } = useTheme();
   const colors = getColors(isDarkMode);
 
-  const onboardingSteps = [
-    {
-      title: t('onboarding.welcome.title'),
-      subtitle: t('onboarding.welcome.subtitle'),
-      icon: 'house.fill',
-      image: require('@/assets/images/logo/logo-icon-white.png'),
-      description: t('onboarding.welcome.description'),
-    },
-    {
-      title: t('onboarding.mcq.title'),
-      subtitle: t('onboarding.mcq.subtitle'),
-      icon: 'questionmark.circle.fill',
-      image: require('@/assets/images/onboarding/mcq.png'),
-      description: t('onboarding.mcq.description'),
-    },
-    {
-      title: t('onboarding.flashcards.title'),
-      subtitle: t('onboarding.flashcards.subtitle'),
-      icon: 'rectangle.stack.fill',
-      image: require('@/assets/images/onboarding/flashcard.png'),
-      description: t('onboarding.flashcards.description'),
-    },
-  ];
+  const onboardingSteps = useMemo(
+    () => [
+      {
+        title: t('onboarding.welcome.title'),
+        subtitle: t('onboarding.welcome.subtitle'),
+        image: require('@/assets/images/onboarding/homework-blue.png'),
+        description: t('onboarding.welcome.description'),
+        cardColor: isDarkMode ? '#171A21' : '#FFFFFF',
+      },
+      {
+        title: t('onboarding.mcq.title'),
+        subtitle: t('onboarding.mcq.subtitle'),
+        image: require('@/assets/images/onboarding/mcq-blue.png'),
+        description: t('onboarding.mcq.description'),
+        cardColor: isDarkMode ? '#171A21' : '#FFFFFF',
+      },
+      {
+        title: t('onboarding.flashcards.title'),
+        subtitle: t('onboarding.flashcards.subtitle'),
+        image: require('@/assets/images/onboarding/flashcard-blue.png'),
+        description: t('onboarding.flashcards.description'),
+        cardColor: isDarkMode ? '#171A21' : '#FFFFFF',
+      },
+    ],
+    [isDarkMode, t]
+  );
 
   const handleNext = () => {
     if (currentStep < onboardingSteps.length - 1) {
-      setDirection('right');
-      setCurrentStep(prev => prev + 1);
-      progress.value = withSpring((currentStep + 2) / onboardingSteps.length);
+      const nextIndex = currentStep + 1;
+      listRef.current?.scrollToIndex({ index: nextIndex, animated: true });
+      setCurrentStep(nextIndex);
     } else {
       router.push('/(auth)/welcome');
     }
@@ -81,211 +61,176 @@ export default function OnboardingScreen() {
   };
 
   const handleDotPress = (index: number) => {
-    if (index === currentStep) return;
-    setDirection(index > currentStep ? 'right' : 'left');
+    if (index === currentStep || index < 0 || index > onboardingSteps.length - 1) return;
+    listRef.current?.scrollToIndex({ index, animated: true });
     setCurrentStep(index);
-    progress.value = withSpring((index + 1) / onboardingSteps.length);
   };
 
-  const handleGestureEvent = (event: any) => {
-    if (event.nativeEvent && typeof event.nativeEvent.translationX === 'number') {
-      translateX.value = event.nativeEvent.translationX;
-    }
+  const onMomentumScrollEnd = (event: any) => {
+    const index = Math.round(event.nativeEvent.contentOffset.x / SCREEN_WIDTH);
+    setCurrentStep(index);
   };
-
-  const handleGestureEnd = () => {
-    const translationX = translateX.value;
-    if (Math.abs(translationX) > SWIPE_THRESHOLD) {
-      if (translationX > 0 && currentStep > 0) {
-        // Swipe right - go to previous
-        setDirection('right');
-        setCurrentStep(prev => prev - 1);
-        progress.value = withSpring(currentStep / onboardingSteps.length);
-      } else if (translationX < 0 && currentStep < onboardingSteps.length - 1) {
-        // Swipe left - go to next
-        setDirection('left');
-        setCurrentStep(prev => prev + 1);
-        progress.value = withSpring((currentStep + 2) / onboardingSteps.length);
-      }
-    }
-    translateX.value = withSpring(0);
-  };
-
-  const currentStepData = onboardingSteps[currentStep];
-
-  const animatedStyle = useAnimatedStyle(() => {
-    return {
-      transform: [{ translateX: translateX.value }],
-    };
-  });
 
   return (
-    <GestureHandlerRootView style={{ flex: 1 }}>
-      <SafeAreaView style={styles.safeArea}>
-        <View style={styles.container}>
-          <View style={styles.languageToggleContainer}>
-            <LanguageToggle colors={colors} />
-          </View>
-          {/* Content */}
-          <PanGestureHandler
-            onGestureEvent={handleGestureEvent}
-            onEnded={handleGestureEnd}
-            activeOffsetX={[-20, 20]}
-            enabled={true}
-          >
-            <Animated.View 
-              style={[styles.content, animatedStyle]}
-              entering={direction === 'right' ? SlideInRight : SlideInLeft}
-              exiting={direction === 'right' ? SlideOutLeft : SlideOutRight}
-            >
-              <View style={currentStep === 0 ? styles.logoContainer : styles.imageContainer}>
-                <Image 
-                  source={currentStepData.image}
-                  style={currentStep === 0 ? styles.logoImage : styles.image}
+    <SafeAreaView style={[styles.safeArea, { backgroundColor: isDarkMode ? '#0F1115' : '#F7F8FB' }]}>
+      <View style={styles.container}>
+        <View style={styles.languageToggleContainer}>
+          <LanguageToggle colors={colors} />
+        </View>
+
+        <FlatList
+          ref={listRef}
+          data={onboardingSteps}
+          keyExtractor={(_, index) => `onboarding-${index}`}
+          horizontal
+          pagingEnabled
+          bounces={false}
+          showsHorizontalScrollIndicator={false}
+          onMomentumScrollEnd={onMomentumScrollEnd}
+          contentContainerStyle={styles.listContent}
+          renderItem={({ item, index }) => (
+            <View style={styles.slide}>
+              <View
+                style={[
+                  styles.imageCard,
+                  { backgroundColor: item.cardColor },
+                ]}
+              >
+                <Image
+                  source={item.image}
+                  style={styles.image}
                   resizeMode="contain"
                 />
               </View>
-              
-              <ThemedText style={styles.title}>{currentStepData.title}</ThemedText>
-              <ThemedText style={styles.subtitle}>{currentStepData.subtitle}</ThemedText>
-              {currentStepData.description && (
-                <ThemedText style={styles.description}>{currentStepData.description}</ThemedText>
-              )}
-            </Animated.View>
-          </PanGestureHandler>
 
-          {/* Navigation and Progress */}
-          <View style={styles.bottomContainer}>
-            <View style={styles.progressDots}>
-              {onboardingSteps.map((_, index) => (
-                <TouchableOpacity
-                  key={index}
-                  onPress={() => handleDotPress(index)}
-                  style={[
-                    styles.progressDot,
-                    index === currentStep && styles.progressDotActive,
-                  ]}
-                />
-              ))}
-            </View>
-
-            <View style={styles.navigation}>
-              <TouchableOpacity 
-                style={styles.skipButton} 
-                onPress={handleSkip}
-              >
-                <ThemedText style={styles.skipButtonText}>{t('onboarding.skip')}</ThemedText>
-              </TouchableOpacity>
-
-              <TouchableOpacity 
-                style={styles.nextButton} 
-                onPress={handleNext}
-              >
-                <ThemedText style={styles.nextButtonText}>
-                  {currentStep === onboardingSteps.length - 1 ? t('onboarding.getStarted') : t('onboarding.next')}
+              <View style={styles.textBlock}>
+                <ThemedText style={styles.title}>{item.title}</ThemedText>
+                <ThemedText style={styles.subtitle}>{item.subtitle}</ThemedText>
+                <ThemedText style={[styles.description, { color: colors.text + 'B3' }]}>
+                  {item.description}
                 </ThemedText>
-                <IconSymbol 
-                  name="chevron.right" 
-                  size={24} 
-                  color="#fff" 
-                />
-              </TouchableOpacity>
+              </View>
             </View>
+          )}
+        />
+
+        <View style={styles.bottomContainer}>
+          <View style={styles.progressDots}>
+            {onboardingSteps.map((_, index) => (
+              <TouchableOpacity
+                key={index}
+                onPress={() => handleDotPress(index)}
+                style={[
+                  styles.progressDot,
+                  { backgroundColor: isDarkMode ? '#2A2F3A' : '#E5E7EB' },
+                  index === currentStep && styles.progressDotActive,
+                ]}
+              />
+            ))}
+          </View>
+
+          <View style={styles.navigation}>
+            <TouchableOpacity style={styles.skipButton} onPress={handleSkip}>
+              <ThemedText style={styles.skipButtonText}>{t('onboarding.skip')}</ThemedText>
+            </TouchableOpacity>
+
+            <TouchableOpacity style={styles.nextButton} onPress={handleNext}>
+              <ThemedText style={styles.nextButtonText}>
+                {currentStep === onboardingSteps.length - 1
+                  ? t('onboarding.getStarted')
+                  : t('onboarding.next')}
+              </ThemedText>
+              <IconSymbol name="chevron.right" size={20} color="#fff" />
+            </TouchableOpacity>
           </View>
         </View>
-      </SafeAreaView>
-    </GestureHandlerRootView>
+      </View>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: '#fff',
   },
   container: {
     flex: 1,
-    padding: 20,
+    paddingHorizontal: 20,
+    paddingVertical: 16,
   },
   languageToggleContainer: {
     position: 'absolute',
-    top: 20,
+    top: 12,
     right: 20,
-    zIndex: 1,
+    zIndex: 4,
   },
-  content: {
+  listContent: {
+    flexGrow: 1,
+  },
+  slide: {
+    width: SCREEN_WIDTH - 40,
     flex: 1,
+    justifyContent: 'space-evenly',
+    paddingTop: 54,
+    paddingBottom: 18,
+  },
+  imageCard: {
+    width: '100%',
+    height: '52%',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingHorizontal: 20,
-  },
-  logoContainer: {
-    width: SCREEN_WIDTH * 0.9,
-    height: SCREEN_WIDTH * 0.9,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: -50,
-    borderRadius: 20,
-    padding: 20,
-  },
-  imageContainer: {
-    width: SCREEN_WIDTH * 0.8,
-    height: SCREEN_WIDTH * 0.8,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 40,
-    borderRadius: 20,
-    padding: 20,
-  },
-  logoImage: {
-    width: '180%',
-    height: '180%',
+    borderRadius: 28,
+    padding: 18,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.09,
+    shadowRadius: 20,
+    elevation: 6,
   },
   image: {
     width: '100%',
     height: '100%',
   },
+  textBlock: {
+    marginTop: 8,
+    gap: 8,
+  },
   title: {
-    fontSize: 32,
-    fontWeight: 'bold',
-    color: '#6B54AE',
-    textAlign: 'center',
-    marginBottom: 12,
-    marginTop: -20,
+    fontSize: 34,
+    fontWeight: '800',
+    color: '#111827',
     lineHeight: 40,
   },
   subtitle: {
-    fontSize: 20,
-    color: '#6B54AE',
-    textAlign: 'center',
-    marginBottom: 20,
-    opacity: 0.8,
+    fontSize: 22,
+    color: '#0F4BD7',
+    fontWeight: '700',
   },
   description: {
-    fontSize: 16,
-    color: '#6B54AE',
-    textAlign: 'center',
-    marginBottom: 30,
-    opacity: 0.7,
-    lineHeight: 24,
+    fontSize: 15,
+    lineHeight: 22,
+    marginTop: 4,
   },
   bottomContainer: {
-    paddingVertical: 20,
+    paddingTop: 14,
+    paddingBottom: 10,
   },
   progressDots: {
     flexDirection: 'row',
-    justifyContent: 'center',
-    marginBottom: 20,
+    alignItems: 'center',
+    justifyContent: 'flex-start',
+    marginBottom: 16,
+    paddingLeft: 4,
   },
   progressDot: {
-    width: 8,
+    width: 9,
     height: 8,
     borderRadius: 4,
-    backgroundColor: '#E5E5EA',
     marginHorizontal: 4,
   },
   progressDotActive: {
-    backgroundColor: '#6B54AE',
+    width: 24,
+    backgroundColor: '#0F4BD7',
   },
   navigation: {
     flexDirection: 'row',
@@ -293,24 +238,32 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   skipButton: {
-    padding: 10,
+    height: 52,
+    borderRadius: 16,
+    backgroundColor: '#E5E7EB',
+    paddingHorizontal: 24,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   skipButtonText: {
-    fontSize: 16,
-    color: '#6B54AE',
-    opacity: 0.8,
+    fontSize: 15,
+    color: '#6B7280',
+    fontWeight: '600',
   },
   nextButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#6B54AE',
-    paddingHorizontal: 20,
-    paddingVertical: 12,
-    borderRadius: 25,
+    justifyContent: 'center',
+    backgroundColor: '#0F4BD7',
+    height: 52,
+    borderRadius: 16,
+    paddingHorizontal: 22,
+    minWidth: 170,
   },
   nextButtonText: {
-    fontSize: 16,
+    fontSize: 15,
     color: '#fff',
-    marginRight: 8,
+    marginRight: 6,
+    fontWeight: '700',
   },
 }); 
