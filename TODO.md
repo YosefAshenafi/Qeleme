@@ -182,13 +182,13 @@ When I ask for a screen, please send:
 - [x] Role Selection (skipped for now)
 - [x] Sign In
 - [x] Sign Up
-- [ ] OTP (polish / i18n / QA)
+- [x] OTP (polish / i18n / QA)
 - [x] Forgot Password (polish / QA)
-- [ ] Reset Password
-- [ ] Children Selection
-- [ ] Plan Selection (polish / Figma cross-check / QA)
-- [ ] Payment
-- [ ] Payment Success
+- [x] Reset Password
+- [x] Children Selection
+- [x] Plan Selection (polish / Figma cross-check / QA)
+- [x] Payment
+- [x] Payment Success
 - [ ] Home/Dashboard
 - [ ] MCQ
 - [ ] Flashcards
