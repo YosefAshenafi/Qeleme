@@ -561,7 +561,11 @@ export default {
   },
   login: {
     welcome: 'Welcome to Qelem',
+    welcomeBack: 'Welcome Back',
     subtitle: 'Empowering minds, one lesson at a time',
+    subtitleV2: 'Continue your journey in the academic vanguard.',
+    usernameOrEmail: 'Username or Email',
+    usernameOrEmailPlaceholder: 'name@institution.edu',
     username: {
       label: 'Username',
       placeholder: 'Enter your username',

@@ -59,8 +59,8 @@ Purpose: redesign all app interfaces step by step without missing any page, usin
 - [ ] Re-enable parent/multi-student flow later if needed.
 
 ### 4. Sign In
-- [ ] Figma received and confirmed.
-- [ ] Implement final sign in UI.
+- [x] Figma received and confirmed.
+- [x] Implement final sign in UI.
 - [ ] Keep existing validation and auth behavior.
 - [ ] Improve error/empty/loading states.
 - [ ] QA on iOS + Android.
@@ -178,7 +178,7 @@ When I ask for a screen, please send:
 - [x] Onboarding
 - [x] Welcome
 - [x] Role Selection (skipped for now)
-- [ ] Sign In
+- [x] Sign In
 - [ ] Sign Up
 - [ ] OTP
 - [ ] Forgot Password
@@ -203,6 +203,8 @@ When I ask for a screen, please send:
 - [x] You send Figma for **Welcome** next.
 - [x] I implement Welcome and share what is completed.
 - [x] Role Selection skipped for now (student-only).
-- [ ] You send Figma for **Sign In** next.
-- [ ] I implement Sign In and share what is completed.
+- [x] You send Figma for **Sign In** next.
+- [x] I implement Sign In and share what is completed.
+- [ ] You send Figma for **Sign Up** next.
+- [ ] I implement Sign Up and share what is completed.
 

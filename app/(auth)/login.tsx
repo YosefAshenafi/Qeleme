@@ -1,7 +1,7 @@
-import { StyleSheet, TextInput, TouchableOpacity, View, Animated, Dimensions, Image, KeyboardAvoidingView, Platform, ActivityIndicator, ScrollView } from 'react-native';
-import { Link, router } from 'expo-router';
+import { StyleSheet, TextInput, TouchableOpacity, View, KeyboardAvoidingView, Platform, ActivityIndicator, ScrollView, Text } from 'react-native';
+import { router } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useState, useEffect, useRef } from 'react';
+import { useState } from 'react';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '@/contexts/AuthContext';
@@ -11,18 +11,15 @@ import { useTranslation } from 'react-i18next';
 import { storeAuthData } from '@/utils/authStorage';
 
 import { ThemedText } from '@/components/ThemedText';
-import { ThemedView } from '@/components/ThemedView';
 import { LanguageToggle } from '@/components/ui/LanguageToggle';
 import { PasswordInput } from '@/components/ui/PasswordInput';
-import { ContactFooter } from '@/components/ContactFooter';
 import { BASE_URL } from '@/config/constants';
 
-
-const { width, height } = Dimensions.get('window');
 
 // Username validation regex
 // Allows letters, numbers, and underscores, 3-20 characters
 const USERNAME_REGEX = /^[a-zA-Z0-9_]{3,20}$/;
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export default function LoginScreen() {
   const { login } = useAuth();
@@ -37,29 +34,14 @@ export default function LoginScreen() {
     username: '',
     password: ''
   });
-  const fadeAnim = useRef(new Animated.Value(0)).current;
-  const slideAnim = useRef(new Animated.Value(50)).current;
-
-  useEffect(() => {
-    Animated.parallel([
-      Animated.timing(fadeAnim, {
-        toValue: 1,
-        duration: 1000,
-        useNativeDriver: true,
-      }),
-      Animated.timing(slideAnim, {
-        toValue: 0,
-        duration: 800,
-        useNativeDriver: true,
-      })
-    ]).start();
-  }, []);
 
   const validateUsername = (username: string) => {
     if (!username.trim()) {
       return t('login.username.error.required');
     }
-    if (!USERNAME_REGEX.test(username)) {
+    const isUsername = USERNAME_REGEX.test(username);
+    const isEmail = EMAIL_REGEX.test(username);
+    if (!isUsername && !isEmail) {
       return t('login.username.error.invalid');
     }
     return '';
@@ -152,149 +134,159 @@ export default function LoginScreen() {
   };
 
   return (
-    <LinearGradient
-      colors={isDarkMode ? ['#1E1E1E', '#2A2A2A'] : ['#F8F9FA', '#FFFFFF']}
-      style={styles.gradient}
-    >
-      <SafeAreaView style={styles.safeArea}>
-        <KeyboardAvoidingView 
-          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-          style={styles.keyboardView}
+    <SafeAreaView style={[styles.safeArea, { backgroundColor: isDarkMode ? '#101216' : '#F1F2F4' }]}>
+      <View pointerEvents="none" style={styles.bgLettersLayer}>
+        <Text
+          style={[
+            styles.bgLetter,
+            styles.bgLetterLeft,
+            { color: isDarkMode ? 'rgba(255,255,255,0.02)' : 'rgba(255,255,255,0.26)' },
+          ]}
         >
-          <ScrollView
-            style={styles.scrollView}
-            contentContainerStyle={styles.scrollContent}
-            showsVerticalScrollIndicator={false}
-            keyboardShouldPersistTaps="handled"
-          >
-            <Animated.View 
-              style={[
-                styles.container, 
-                { 
-                  opacity: fadeAnim,
-                  transform: [{ translateY: slideAnim }]
-                }
-              ]}
-            >
-              <View style={styles.header}>
-                <TouchableOpacity 
-                  style={styles.backButton}
-                  onPress={() => router.push('/(auth)/welcome')}
-                >
-                  <Ionicons name="arrow-back" size={24} color={isDarkMode ? '#A0A0A5' : '#1F2937'} />
-                </TouchableOpacity>
-                <View style={styles.languageToggleContainer}>
-                  <LanguageToggle colors={colors} />
-                </View>
-                <Image 
-                  source={require('@/assets/images/logo.png')}
-                  style={styles.logoImage}
-                  resizeMode="contain"
-                />
-                <ThemedText style={[styles.welcomeText, { color: colors.text }]}>{t('login.welcome')}</ThemedText>
-                <ThemedText style={[styles.subtitleText, { color: colors.text + '80' }]}>{t('login.subtitle')}</ThemedText>
+          M+
+        </Text>
+        <Text
+          style={[
+            styles.bgLetter,
+            styles.bgLetterRight,
+            { color: isDarkMode ? 'rgba(255,255,255,0.018)' : 'rgba(255,255,255,0.22)' },
+          ]}
+        >
+          M
+        </Text>
+      </View>
+
+      <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        style={styles.keyboardView}
+      >
+        <ScrollView
+          style={styles.scrollView}
+          contentContainerStyle={styles.scrollContent}
+          showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
+        >
+          <View style={styles.container}>
+            <View style={styles.header}>
+              <TouchableOpacity
+                style={styles.backButton}
+                onPress={() => router.push('/(auth)/welcome')}
+              >
+                <Ionicons name="arrow-back" size={22} color={isDarkMode ? '#B7BDC8' : '#1F2937'} />
+              </TouchableOpacity>
+
+              <View style={styles.languageToggleContainer}>
+                <LanguageToggle colors={colors} />
               </View>
 
-            <View style={[styles.formContainer, {
-              backgroundColor: isDarkMode ? '#1C1C1E' : '#FFFFFF',
-            }]}>
+              <View style={styles.brand}>
+                <View style={styles.brandIcon}>
+                  <ThemedText style={styles.brandIconText}>M+</ThemedText>
+                </View>
+                <ThemedText style={styles.brandText}>Mega+</ThemedText>
+              </View>
+            </View>
+
+            <View style={[styles.formContainer, { backgroundColor: isDarkMode ? '#191D24' : '#FAFAFA' }]}>
+              <ThemedText style={[styles.title, { color: isDarkMode ? '#F3F4F6' : '#111827' }]}>
+                {t('login.welcomeBack')}
+              </ThemedText>
+              <ThemedText style={[styles.subtitle, { color: isDarkMode ? '#A8ADB4' : '#6B7280' }]}>
+                {t('login.subtitleV2')}
+              </ThemedText>
+
               {error ? (
                 <ThemedText style={styles.errorMessage}>{error}</ThemedText>
               ) : null}
 
-              <View style={styles.inputWrapper}>
-                <View style={[
-                  styles.inputContainer, 
-                  errors.username ? styles.inputError : null,
-                  { backgroundColor: isDarkMode ? '#2C2C2E' : '#F9FAFB' }
-                ]}>
-                  <Ionicons name="at-outline" size={20} color={isDarkMode ? '#A0A0A5' : '#6B7280'} style={styles.inputIcon} />
-                  <TextInput
-                    style={[styles.input, { color: colors.text }]}
-                    placeholder={t('login.username.placeholder')}
-                    placeholderTextColor={isDarkMode ? '#A0A0A5' : '#9CA3AF'}
-                    value={username}
-                    onChangeText={(text) => {
-                      setUsername(text.toLowerCase());
-                      if (errors.username) {
-                        setErrors(prev => ({ ...prev, username: '' }));
-                      }
-                    }}
-                    autoCapitalize="none"
-                    autoCorrect={false}
-                  />
-                </View>
-                {errors.username ? (
-                  <ThemedText style={styles.errorText}>{errors.username}</ThemedText>
-                ) : null}
-
-                <PasswordInput
-                  value={password}
+              <ThemedText style={[styles.fieldLabel, { color: isDarkMode ? '#C5CBD6' : '#4B5563' }]}>
+                {t('login.usernameOrEmail')}
+              </ThemedText>
+              <View style={[styles.inputContainer, errors.username ? styles.inputError : null]}>
+                <TextInput
+                  style={[styles.input, { color: isDarkMode ? '#F3F4F6' : '#1F2937' }]}
+                    placeholder={t('login.usernameOrEmailPlaceholder')}
+                  placeholderTextColor={isDarkMode ? '#9AA2AF' : '#A0A5AD'}
+                  value={username}
                   onChangeText={(text) => {
-                    setPassword(text);
-                    if (errors.password) {
-                      setErrors(prev => ({ ...prev, password: '' }));
+                    setUsername(text.toLowerCase());
+                    if (errors.username) {
+                      setErrors(prev => ({ ...prev, username: '' }));
                     }
                   }}
-                  placeholder={t('login.password.placeholder')}
-                  error={!!errors.password}
+                  autoCapitalize="none"
+                  autoCorrect={false}
                 />
-                {errors.password ? (
-                  <ThemedText style={styles.errorText}>{errors.password}</ThemedText>
-                ) : null}
+              </View>
+              {errors.username ? <ThemedText style={styles.errorText}>{errors.username}</ThemedText> : null}
+
+              <View style={styles.passwordLabelRow}>
+                <ThemedText style={[styles.fieldLabel, { color: isDarkMode ? '#C5CBD6' : '#4B5563' }]}>
+                  {t('login.password.label')}
+                </ThemedText>
+                <TouchableOpacity onPress={() => router.push('/(auth)/forgot-password')}>
+                  <ThemedText style={styles.forgotLink}>{t('login.forgotPassword')}</ThemedText>
+                </TouchableOpacity>
               </View>
 
-              <TouchableOpacity 
-                style={[styles.loginButton, isLoading && styles.loginButtonDisabled]} 
+              <PasswordInput
+                value={password}
+                onChangeText={(text) => {
+                  setPassword(text);
+                  if (errors.password) {
+                    setErrors(prev => ({ ...prev, password: '' }));
+                  }
+                }}
+                placeholder={t('login.password.placeholder')}
+                error={!!errors.password}
+                style={styles.passwordInputContainerOverride}
+              />
+              {errors.password ? <ThemedText style={styles.errorText}>{errors.password}</ThemedText> : null}
+
+              <TouchableOpacity
+                style={[styles.signInButton, isLoading && styles.loginButtonDisabled]}
                 onPress={handleLogin}
                 activeOpacity={0.8}
                 disabled={isLoading}
               >
                 <LinearGradient
-                  colors={['#4F46E5', '#7C3AED']}
+                  colors={['#0F4BD7', '#4E7CFF']}
                   style={styles.buttonGradient}
+                  start={{ x: 0, y: 0.5 }}
+                  end={{ x: 1, y: 0.5 }}
                 >
                   {isLoading ? (
                     <ActivityIndicator color="#FFFFFF" />
                   ) : (
-                    <ThemedText style={styles.buttonText}>{t('login.signIn')}</ThemedText>
+                    <View style={styles.signInInner}>
+                      <ThemedText style={styles.buttonText}>{t('login.signIn')}</ThemedText>
+                      <Ionicons name="arrow-forward" size={20} color="#0B1B46" />
+                    </View>
                   )}
                 </LinearGradient>
-              </TouchableOpacity>
-
-              <TouchableOpacity 
-                style={styles.forgotButton} 
-                onPress={() => router.push('/(auth)/forgot-password')}
-              >
-                <ThemedText style={[styles.forgotPassword, { color: isDarkMode ? '#A0A0A5' : '#6B7280' }]}>{t('login.forgotPassword')}</ThemedText>
               </TouchableOpacity>
             </View>
 
             <View style={styles.footer}>
-              <ThemedText style={[styles.footerText, { color: isDarkMode ? '#A0A0A5' : '#6B7280' }]}>{t('login.noAccount')}</ThemedText>
-              <TouchableOpacity 
-                style={styles.signupButton} 
+              <ThemedText style={[styles.footerText, { color: isDarkMode ? '#9AA2AF' : '#6B7280' }]}>
+                {t('login.noAccount')}
+              </ThemedText>
+              <TouchableOpacity
+                style={styles.signupButton}
                 onPress={() => router.push('/(auth)/signup')}
                 activeOpacity={0.8}
               >
-                <ThemedText style={[styles.signupText, { color: '#4F46E5' }]}>{t('login.signUp')}</ThemedText>
+                <ThemedText style={styles.signupText}>{t('login.signUp')}</ThemedText>
               </TouchableOpacity>
             </View>
-
-              {/* Contact Footer */}
-              <ContactFooter />
-            </Animated.View>
-          </ScrollView>
-        </KeyboardAvoidingView>
-      </SafeAreaView>
-    </LinearGradient>
+          </View>
+        </ScrollView>
+      </KeyboardAvoidingView>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  gradient: {
-    flex: 1,
-  },
   safeArea: {
     flex: 1,
   },
@@ -306,94 +298,160 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     flexGrow: 1,
+    paddingBottom: 20,
   },
   container: {
     flex: 1,
-    padding: 24,
-    justifyContent: 'space-between',
+    paddingHorizontal: 10,
+    paddingTop: 10,
+    justifyContent: 'flex-start',
+  },
+  bgLettersLayer: {
+    ...StyleSheet.absoluteFillObject,
+    zIndex: 0,
+    overflow: 'hidden',
+  },
+  bgLetter: {
+    position: 'absolute',
+    fontSize: 360,
+    fontWeight: '800',
+    lineHeight: 360,
+  },
+  bgLetterLeft: {
+    left: -52,
+    top: 44,
+    transform: [{ rotate: '-7deg' }],
+  },
+  bgLetterRight: {
+    right: -78,
+    bottom: -74,
+    transform: [{ rotate: '7deg' }],
   },
   header: {
+    position: 'relative',
     alignItems: 'center',
-    marginTop: height * 0.05,
+    marginTop: 8,
+    marginBottom: 22,
+    paddingTop: 34,
+    zIndex: 1,
   },
-  logoImage: {
-    width: 300,
-    height: 300,
-    marginBottom: -80,
-    marginTop: -120,
+  backButton: {
+    position: 'absolute',
+    top: 6,
+    left: 4,
+    padding: 8,
+    zIndex: 2,
   },
-  welcomeText: {
-    paddingTop: 10,
-    fontSize: 32,
-    fontWeight: '700',
-    color: '#1F2937',
-    marginBottom: 8,
+  languageToggleContainer: {
+    position: 'absolute',
+    top: 6,
+    right: 4,
+    zIndex: 2,
   },
-  subtitleText: {
-    fontSize: 16,
-    color: '#6B7280',
-    textAlign: 'center',
-    marginVertical: 16,
+  brand: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+  },
+  brandIcon: {
+    width: 62,
+    height: 62,
+    borderRadius: 18,
+    backgroundColor: '#0F4BD7',
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#0F4BD7',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.28,
+    shadowRadius: 14,
+    elevation: 6,
+  },
+  brandIconText: {
+    fontSize: 28,
+    color: '#FFFFFF',
+    fontWeight: '800',
+  },
+  brandText: {
+    color: '#0F4BD7',
+    fontSize: 24,
+    fontWeight: '800',
+    lineHeight: 30,
   },
   formContainer: {
     width: '100%',
-    gap: 24,
-    backgroundColor: '#FFFFFF',
-    padding: 24,
-    borderRadius: 24,
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 4,
-    },
-    shadowOpacity: 0.1,
-    shadowRadius: 12,
-    elevation: 8,
+    borderRadius: 28,
+    paddingHorizontal: 26,
+    paddingTop: 28,
+    paddingBottom: 30,
+    marginBottom: 10,
+    zIndex: 1,
   },
-  inputWrapper: {
-    gap: 16,
+  title: {
+    fontSize: 32,
+    lineHeight: 38,
+    textAlign: 'center',
+    fontWeight: '700',
+    fontFamily: 'System',
+    marginBottom: 8,
+  },
+  subtitle: {
+    fontSize: 16,
+    lineHeight: 30,
+    textAlign: 'center',
+    fontFamily: 'System',
+    marginBottom: 24,
+  },
+  fieldLabel: {
+    fontSize: 12,
+    lineHeight: 16,
+    textTransform: 'uppercase',
+    fontWeight: '700',
+    letterSpacing: 1.1,
+    marginBottom: 8,
+    marginLeft: 2,
   },
   inputContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#F9FAFB',
-    borderRadius: 16,
-    paddingHorizontal: 16,
+    borderRadius: 14,
+    backgroundColor: '#E9EAED',
     height: 60,
-    borderWidth: 1,
-    borderColor: '#E5E7EB',
-  },
-  inputError: {
-    borderColor: '#EF4444',
-  },
-  errorText: {
-    color: '#EF4444',
-    fontSize: 12,
-    marginTop: -8,
-    marginLeft: 16,
-  },
-  inputIcon: {
-    marginRight: 12,
+    paddingHorizontal: 18,
+    justifyContent: 'center',
+    marginBottom: 8,
   },
   input: {
-    flex: 1,
-    height: '100%',
-    fontSize: 16,
-    color: '#1F2937',
+    fontSize: 18,
+    lineHeight: 24,
+    fontWeight: '500',
   },
-  loginButton: {
+  passwordLabelRow: {
+    marginTop: 4,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  forgotLink: {
+    color: '#0F4BD7',
+    fontSize: 14,
+    fontWeight: '700',
+  },
+  passwordInputContainerOverride: {
+    marginTop: 4,
+    marginBottom: 8,
+    borderRadius: 14,
+    backgroundColor: '#E9EAED',
+    borderWidth: 0,
+    height: 60,
+  },
+  signInButton: {
     width: '100%',
     height: 60,
-    borderRadius: 16,
+    borderRadius: 30,
     overflow: 'hidden',
-    marginTop: 8,
+    marginTop: 10,
     shadowColor: '#4F46E5',
-    shadowOffset: {
-      width: 0,
-      height: 4,
-    },
-    shadowOpacity: 0.2,
-    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.25,
+    shadowRadius: 14,
     elevation: 8,
   },
   buttonGradient: {
@@ -401,62 +459,60 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  buttonText: {
-    color: '#FFFFFF',
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  forgotButton: {
-    alignItems: 'center',
-    marginTop: 16,
-  },
-  forgotPassword: {
-    color: '#6B7280',
-    fontSize: 14,
-  },
-  footer: {
-    marginTop: 20,
+  signInInner: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     gap: 8,
-    marginBottom: 16,
+    width: '100%',
+  },
+  buttonText: {
+    color: '#111827',
+    fontSize: 18,
+    lineHeight: 22,
+    fontWeight: '600',
+  },
+  inputError: {
+    borderWidth: 1,
+    borderColor: '#EF4444',
+  },
+  errorText: {
+    color: '#EF4444',
+    fontSize: 12,
+    marginTop: -2,
+    marginBottom: 6,
+    marginLeft: 4,
+  },
+  footer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    marginTop: 6,
+    marginBottom: 8,
+    zIndex: 1,
   },
   footerText: {
-    color: '#6B7280',
-    fontSize: 14,
+    fontSize: 16,
   },
   signupButton: {
     paddingVertical: 4,
   },
   signupText: {
-    color: '#4F46E5',
-    fontSize: 14,
-    fontWeight: '600',
+    color: '#0F4BD7',
+    fontSize: 16,
+    fontWeight: '700',
   },
   errorMessage: {
     color: '#EF4444',
     fontSize: 14,
     textAlign: 'center',
-    marginBottom: 16,
+    marginBottom: 12,
     backgroundColor: '#FEE2E2',
     padding: 12,
     borderRadius: 8,
   },
   loginButtonDisabled: {
     opacity: 0.7,
-  },
-  backButton: {
-    position: 'absolute',
-    top: -20,
-    left: -20,
-    padding: 8,
-    zIndex: 1,
-  },
-  languageToggleContainer: {
-    position: 'absolute',
-    top: -20,
-    right: -20,
-    zIndex: 1,
   },
 }); 

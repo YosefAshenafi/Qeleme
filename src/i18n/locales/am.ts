@@ -158,7 +158,11 @@ export default {
   },
   login: {
     welcome: 'እንኳን በደህና መጡ',
+    welcomeBack: 'እንኳን ደህና መጡ',
     subtitle: 'አእምሮዎን በእያንዳንዱ ትምህርት ያበልጽጉ!',
+    subtitleV2: 'በአካዳሚክ ጉዞዎ ላይ ቀጥሉ።',
+    usernameOrEmail: 'መለያ ስም ወይም ኢሜይል',
+    usernameOrEmailPlaceholder: 'name@institution.edu',
     username: {
       label: 'መለያ ስም',
       placeholder: 'መለያ ስምዎን ያስገቡ',
