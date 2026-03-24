@@ -10,6 +10,28 @@ export default {
     }
   },
   home: {
+    welcomeCard: {
+      title: 'ወደ {{grade}} ክፍል እንኳን ደህና መጡ',
+      titleKg: 'እንኳን ደህና መጡ {{grade}}',
+      subtitle: 'የመማሪያ ጉዞዎ ይቀጥላል። ትኩረት ይስቡ!',
+    },
+    header: {
+      searchAccessibility: 'ፈልግ እና ልምምድ',
+      notificationsAccessibility: 'ማስታወቂያዎች',
+      notificationsPlaceholder: 'ማስታወቂያዎች በቅርቡ እዚህ ይታያሉ።',
+    },
+    quickAccess: {
+      sectionTitle: 'ፈጣን መዳረሻ',
+      practiceLabel: 'ልምምድ',
+      flashcardsLabel: 'ፍላሽ ካርዶች',
+      reportsLabel: 'ሪፖርቶች',
+    },
+    gradeBooks: {
+      title: 'የ{{grade}} ክፍል መጽሐፍት',
+      chaptersCount: '{{count}} ምዕራፎች',
+      chaptersCountOne: '1 ምዕራፍ',
+    },
+    viewAll: 'ሁሉንም ይመልከቱ',
     welcome: 'እንኳን ደህና መጡ {{name}}!',
     subtitle: 'መጻሕፍቶቹን ካነበባችሁ በኋላ በጥያቄዎቹ እውቀትዎን ይመዝኑ!',
     noActivity: 'ምንም የቅርብ እንቅስቃሴ የለም። መማር ይጀምሩ!',
@@ -446,6 +468,7 @@ export default {
     comingSoonDescription: 'ለእርስዎ የትምህርት ጉዞ ተጨማሪ ትንታኔዎችን እና ሪፖርቶችን በቅርቡ ይጠብቁ።'
   },
   common: {
+    info: 'ማስታወቂያ',
     error: 'ችግር',
     ok: 'እሺ',
     tryAgain: 'እንደገና ይሞክሩ',
@@ -585,6 +608,8 @@ export default {
   navigation: {
     tabs: {
       home: 'ዋና ገጽ',
+      books: 'መጽሐፍት',
+      stats: 'ስታትስቲክስ',
       mcq: 'ምርጫ',
       flashcards: 'ፍላሽ ካርዶች',
       homework: 'የቤት ስራ',

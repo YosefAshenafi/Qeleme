@@ -18,7 +18,6 @@ import { getColors } from '@/constants/Colors';
 import { useAuth } from '@/contexts/AuthContext';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-import { Header } from '@/components/Header';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 import { IconSymbol } from '@/components/ui/IconSymbol';
@@ -481,7 +480,6 @@ export default function FlashcardsScreen() {
   if (isLoading) {
     return (
       <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]}>
-        <Header title={t('flashcards.title')} />
         <ThemedView style={[styles.container, { backgroundColor: colors.background }]}>
           <ThemedText style={[styles.loadingText, { color: colors.text }]}>
             {t('flashcards.loading')}
@@ -494,7 +492,6 @@ export default function FlashcardsScreen() {
   if (error) {
     return (
       <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]}>
-        <Header title={t('flashcards.title')} />
         <ThemedView style={[styles.container, { backgroundColor: colors.background }]}>
           <ThemedView style={[styles.emptyStateContainer, { backgroundColor: colors.background }]}>
             <IconSymbol name="globe" size={90} color={colors.warning} style={styles.emptyStateIcon} />
@@ -636,7 +633,6 @@ export default function FlashcardsScreen() {
   if (!showFlashcards) {
     return (
       <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]}>
-        <Header title={t('flashcards.title')} />
         <ThemedView style={[styles.container, { backgroundColor: colors.background }]}>
           <ThemedView style={[styles.formContainer, { backgroundColor: colors.background }]}>
             <ThemedView style={[styles.formContent, { backgroundColor: colors.background }]}>
@@ -813,7 +809,6 @@ export default function FlashcardsScreen() {
   if (!currentFlashcards || currentFlashcards.length === 0) {
     return (
       <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]}>
-        <Header title={t('flashcards.title')} />
         <ThemedView style={[styles.container, { backgroundColor: colors.background }]}>
           <ThemedView style={[styles.emptyStateContainer, { backgroundColor: colors.background }]}>
             <IconSymbol name="rectangle.stack" size={90} color={colors.warning} style={styles.emptyStateIcon} />
@@ -844,7 +839,6 @@ export default function FlashcardsScreen() {
 
   return (
     <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]}>
-      <Header title={t('flashcards.title')} />
 
       {/* Breadcrumb */}
       <View style={[styles.headerContainer, { backgroundColor: colors.background, borderBottomColor: colors.border }]}>

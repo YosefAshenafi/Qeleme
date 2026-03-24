@@ -12,7 +12,6 @@ import { useTranslation } from 'react-i18next';
 import { useNavigation } from '@react-navigation/native';
 import { Redirect } from 'expo-router';
 
-import { Header } from '../../components/Header';
 import { ThemedText } from '../../components/ThemedText';
 import { ThemedView } from '../../components/ThemedView';
 import { IconSymbol } from '../../components/ui/IconSymbol';
@@ -863,7 +862,6 @@ export default function MCQScreen() {
   if (loading) {
     return (
       <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]}>
-        <Header title={t('mcq.title')} />
         <ThemedView style={[styles.container, { backgroundColor: colors.background, justifyContent: 'center', alignItems: 'center' }]}>
           <ActivityIndicator size="large" color={colors.tint} />
           <ThemedText style={{ marginTop: 20, color: colors.text }}>
@@ -878,7 +876,6 @@ export default function MCQScreen() {
   if (error) {
     return (
       <ThemedView style={[styles.container, { backgroundColor: colors.background }]}>
-        <Header title={t('mcq.title')} />
         <ThemedView style={[styles.mainContainer, { backgroundColor: colors.background, justifyContent: 'center', alignItems: 'center', padding: 20 }]}>
           <ThemedView style={[styles.emptyStateContainer, { backgroundColor: colors.background }]}>
             <IconSymbol name="globe" size={90} color={colors.warning} style={styles.emptyStateIcon} />
@@ -906,7 +903,6 @@ export default function MCQScreen() {
   if (mcqData && mcqData.grades.length > 0 && (!selectedGradeData?.subjects || (selectedGradeData?.subjects?.length || 0) === 0)) {
     return (
       <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]}>
-        <Header title={t('mcq.title')} />
         <ScrollView style={{ flex: 1, padding: 20 }}>
           <View style={{ alignItems: 'center', marginBottom: 20 }}>
             <Ionicons name="warning-outline" size={60} color={colors.warning} />

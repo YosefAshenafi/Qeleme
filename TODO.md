@@ -120,7 +120,7 @@ Purpose: redesign all app interfaces step by step without missing any page, usin
 
 ## Phase 2 - Main App Pages (Post Auth)
 
-- [ ] Home / Dashboard (`app/(tabs)/index.tsx`).
+- [x] Home / Dashboard (`app/(tabs)/index.tsx`) — canvas + quote hero aligned with auth brand; national exam i18n fixed; reports quick tile uses welcome-style card. **Pending:** dedicated Figma frame cross-check + iOS/Android QA.
 - [ ] MCQ pages.
 - [ ] Flashcards pages.
 - [ ] Reports pages.
@@ -189,7 +189,7 @@ When I ask for a screen, please send:
 - [x] Plan Selection (polish / Figma cross-check / QA)
 - [x] Payment
 - [x] Payment Success
-- [ ] Home/Dashboard
+- [x] Home/Dashboard (Figma cross-check + QA pending)
 - [ ] MCQ
 - [ ] Flashcards
 - [ ] Reports
@@ -208,7 +208,6 @@ When I ask for a screen, please send:
 - [x] You send Figma for **Sign In** next.
 - [x] I implement Sign In and share what is completed.
 - [x] **Sign Up** implemented (single student; theme-aligned).
-- [ ] **OTP**: quick review on device; optional Figma tweaks; i18n for hardcoded strings if you want parity with other auth screens.
-- [ ] **Forgot Password** + **Reset Password**: send Figma when ready so we match design (next major auth gaps).
-- [ ] **Payment** + **Payment Success**: send Figma when ready.
+- [x] Auth flow items through **Payment Success** (per execution tracker).
+- [x] **Home/Dashboard** — first theme-aligned pass in code; send Figma for this tab when you want pixel parity, then **MCQ** (`app/(tabs)/mcq`) is next in Phase 2.
 

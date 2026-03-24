@@ -1,8 +1,8 @@
-import { StyleSheet, ScrollView, TouchableOpacity, Animated, View, Dimensions, RefreshControl } from 'react-native';
+import { StyleSheet, ScrollView, TouchableOpacity, View, Dimensions, RefreshControl } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
-import { IconSymbol } from '@/components/ui/IconSymbol';
+import { IconSymbol, IconSymbolName } from '@/components/ui/IconSymbol';
 import { useState, useRef, useEffect } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import React from 'react';
@@ -11,7 +11,6 @@ import { useTranslation } from 'react-i18next';
 import { useAuth } from '@/contexts/AuthContext';
 import { BASE_URL } from '../../config/constants';
 
-import { Header } from '@/components/Header';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 import { useTheme } from '@/contexts/ThemeContext';
@@ -19,27 +18,63 @@ import { getColors } from '@/constants/Colors';
 import { BookCover } from '@/components/ui/BookCover';
 import { getBookCover } from '@/services/bookCoverService';
 import { getMCQData, getNationalExamAvailable } from '@/services/mcqService';
-import { getFlashcardStructure } from '@/services/flashcardService';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
-const CARD_WIDTH = SCREEN_WIDTH - 40; // Full width minus padding
+const CARD_WIDTH = SCREEN_WIDTH - 40;
 const CARD_SPACING = 16;
-const BOOK_CARD_WIDTH = (SCREEN_WIDTH - 60) / 2.2; // Slightly larger cards for better book proportions
 
-const motivationalQuotes = [
-  {
-    quote: "The only way to do great work is to love what you do.",
-    author: "Steve Jobs"
-  },
-  {
-    quote: "Education is not preparation for life; education is life itself.",
-    author: "John Dewey"
-  },
-  {
-    quote: "The beautiful thing about learning is that no one can take it away from you.",
-    author: "B.B. King"
-  }
-];
+/** Canvas + welcome card (Mega+ home design). */
+const HOME_CANVAS = { light: '#F1F2F4', dark: '#101216' } as const;
+const WELCOME_CARD_BG = { light: '#E8F0FE', dark: '#1E2A3D' } as const;
+const GRID_GAP = 12;
+const BOOK_GRID_CARD_WIDTH = (SCREEN_WIDTH - 40 - GRID_GAP) / 2;
+/** Inset book cover (not full tile width); ~1.36:1 like `BookCover`. */
+const SUBJECT_COVER_INNER_WIDTH = Math.min(120, Math.round(BOOK_GRID_CARD_WIDTH * 0.62));
+const SUBJECT_COVER_INNER_HEIGHT = Math.round(SUBJECT_COVER_INNER_WIDTH * 1.36);
+const SUBJECT_GRID_TOP_BAND_HEIGHT = SUBJECT_COVER_INNER_HEIGHT + 32;
+const BOOK_CARD_WIDTH = (SCREEN_WIDTH - 60) / 2.2;
+
+const BRAND_BLUE_RGB = '15,75,215';
+
+/**
+ * Quiet light-blue panel (like the earlier soft brand tint), with a subtle sheen on top —
+ * not a strong “themed” gradient.
+ */
+function SubjectCoverAtmosphere({ dark }: { dark: boolean }) {
+  return (
+    <View style={styles.subjectGridAtmosphereRoot} pointerEvents="none">
+      <LinearGradient
+        colors={dark ? ['#1A2838', '#1F3044', '#243A4D'] : ['#D8EAF9', '#E8F3FC', '#F4F9FE']}
+        locations={[0, 0.52, 1]}
+        start={{ x: 0.5, y: 1 }}
+        end={{ x: 0.5, y: 0 }}
+        style={StyleSheet.absoluteFill}
+      />
+      <LinearGradient
+        colors={
+          dark
+            ? [`rgba(${BRAND_BLUE_RGB},0.2)`, `rgba(${BRAND_BLUE_RGB},0.07)`, 'transparent']
+            : [`rgba(${BRAND_BLUE_RGB},0.12)`, `rgba(${BRAND_BLUE_RGB},0.045)`, 'transparent']
+        }
+        locations={[0, 0.42, 1]}
+        start={{ x: 0.5, y: 1 }}
+        end={{ x: 0.5, y: 0 }}
+        style={StyleSheet.absoluteFill}
+      />
+      <LinearGradient
+        colors={
+          dark
+            ? ['rgba(186,230,253,0.14)', 'transparent', 'transparent']
+            : ['rgba(255,255,255,0.5)', 'rgba(255,255,255,0.06)', 'transparent']
+        }
+        locations={[0, 0.38, 1]}
+        start={{ x: 0.12, y: 0 }}
+        end={{ x: 0.88, y: 0.78 }}
+        style={StyleSheet.absoluteFill}
+      />
+    </View>
+  );
+}
 
 const GRADIENTS = {
   purple: ['#8E6FFF', '#9577FF', '#9C7FFF'] as const,
@@ -57,17 +92,6 @@ type ReportCard = {
   stats: Array<{ label: string; value: string }>;
 };
 
-type RecentActivity = {
-  type: 'mcq' | 'flashcard' | 'study';
-  grade: string;
-  subject: string;
-  chapter: string;
-  timestamp: number;
-  details: string; // e.g. "Completed 5 questions" or "Reviewed 10 flashcards"
-  status?: string; // e.g. "Completed", "In Progress"
-  duration?: string; // e.g. "2h" for study hours
-};
-
 type BookItem = {
   id: string;
   title: string;
@@ -76,6 +100,7 @@ type BookItem = {
   subject: string;
   grade: string;
   progress?: number;
+  chapterCount: number;
 };
 
 
@@ -86,17 +111,11 @@ export default function HomeScreen() {
   const { user, login } = useAuth();
   const colors = getColors(isDarkMode);
   const [activeIndex, setActiveIndex] = useState(0);
-  const [quoteIndex, setQuoteIndex] = useState(0);
-  const [isLoading, setIsLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const scrollViewRef = useRef<ScrollView>(null);
-  const fadeAnim = useRef(new Animated.Value(0)).current;
-  const shimmerAnim = useRef(new Animated.Value(0)).current;
   const [reportCards, setReportCards] = useState<ReportCard[]>([]);
   const [mcqBooks, setMcqBooks] = useState<BookItem[]>([]);
-  const [flashcardBooks, setFlashcardBooks] = useState<BookItem[]>([]);
   const [isMCQLoading, setIsMCQLoading] = useState(false);
-  const [isFlashcardLoading, setIsFlashcardLoading] = useState(false);
   const [nationalExamYears, setNationalExamYears] = useState<number[]>([]);
   const [isNationalExamLoading, setIsNationalExamLoading] = useState(false);
 
@@ -129,133 +148,70 @@ export default function HomeScreen() {
     }
   };
 
-  // Fetch real book data from API for non-KG students
-  const fetchBooksFromAPI = async (type: 'mcq' | 'flashcard') => {
-    // Set loading state
-    if (type === 'mcq') {
-      setIsMCQLoading(true);
-    } else {
-      setIsFlashcardLoading(true);
-    }
-    
+  const fetchMcqBooks = async () => {
+    setIsMCQLoading(true);
     try {
       const gradeNumber = user?.grade?.replace(/[^0-9]/g, '') || '6';
-      
-      if (type === 'mcq') {
-        // Fetch MCQ data
-        const mcqData = await getMCQData(`grade-${gradeNumber}`);
-        if (mcqData.grades && mcqData.grades.length > 0) {
-          const grade = mcqData.grades[0];
-          const books: BookItem[] = grade.subjects.map((subject: any, index: number) => ({
-            id: `mcq-${subject.id}`,
-            title: subject.name,
-            subtitle: `Grade ${gradeNumber}`,
-            image_url: subject.image_url || '', // Use API image_url if available
-            subject: subject.name,
-            grade: gradeNumber,
-            progress: Math.floor(Math.random() * 100)
-          }));
-          setMcqBooks(books);
-        }
-      } else {
-        // Fetch flashcard data
-        const flashcardData = await getFlashcardStructure(gradeNumber);
-        if (flashcardData && flashcardData.length > 0) {
-          const grade = flashcardData[0];
-          
-          // Get MCQ books to use as fallback for images
-          let mcqBooksForFallback: BookItem[] = [];
-          try {
-            const mcqData = await getMCQData(`grade-${gradeNumber}`);
-            if (mcqData.grades && mcqData.grades.length > 0) {
-              const mcqGrade = mcqData.grades[0];
-              mcqBooksForFallback = mcqGrade.subjects.map((subject: any) => ({
-                id: `mcq-${subject.id}`,
-                title: subject.name,
-                subtitle: `Grade ${gradeNumber}`,
-                image_url: subject.image_url || '',
-                subject: subject.name,
-                grade: gradeNumber,
-                progress: Math.floor(Math.random() * 100)
-              }));
-            }
-          } catch (mcqError) {
-            console.log('Failed to fetch MCQ data for flashcard fallback:', mcqError);
-          }
-          
-          const books: BookItem[] = grade.subjects.map((subject: any, index: number) => {
-            // Try to find matching MCQ subject for image fallback
-            const matchingMCQ = mcqBooksForFallback.find(mcqBook => 
-              mcqBook.subject.toLowerCase() === subject.name.toLowerCase()
-            );
-            
-            return {
-              id: `flashcard-${subject.id}`,
-              title: subject.name,
-              subtitle: `Grade ${gradeNumber}`,
-              image_url: subject.image_url || matchingMCQ?.image_url || '', // Use flashcard image first, then MCQ image as fallback
-              subject: subject.name,
-              grade: gradeNumber,
-              progress: Math.floor(Math.random() * 100)
-            };
-          });
-          setFlashcardBooks(books);
-        }
+      const mcqData = await getMCQData(`grade-${gradeNumber}`);
+      if (mcqData.grades && mcqData.grades.length > 0) {
+        const grade = mcqData.grades[0];
+        const books: BookItem[] = grade.subjects.map((subject: any) => ({
+          id: `mcq-${subject.id}`,
+          title: subject.name,
+          subtitle: `Grade ${gradeNumber}`,
+          image_url: subject.image_url || '',
+          subject: subject.name,
+          grade: gradeNumber,
+          progress: Math.floor(Math.random() * 100),
+          chapterCount: Array.isArray(subject.chapters) ? subject.chapters.length : 0,
+        }));
+        setMcqBooks(books);
       }
     } catch (error) {
-      console.log(`Failed to fetch ${type} books from API:`, error);
-      // Fallback to sample data if API fails
-      const fallbackSubjects = type === 'mcq' 
-        ? ['Mathematics', 'Physics', 'Chemistry', 'Biology', 'English', 'Amharic', 'History', 'Geography']
-        : ['Vocabulary', 'Grammar', 'Literature', 'Mathematics', 'Science', 'History', 'Geography', 'Arts'];
-      
+      console.log('Failed to fetch mcq books from API:', error);
       const gradeNumber = user?.grade?.replace(/[^0-9]/g, '') || '6';
-      const fallbackBooks: BookItem[] = fallbackSubjects.map((subject, index) => ({
-        id: `${type}-${index}`,
-        title: subject,
-        subtitle: `Grade ${gradeNumber}`,
-        image_url: '',
-        subject,
-        grade: gradeNumber,
-        progress: Math.floor(Math.random() * 100)
-      }));
-      
-      if (type === 'mcq') {
-        setMcqBooks(fallbackBooks);
-      } else {
-        setFlashcardBooks(fallbackBooks);
-      }
+      const fallbackSubjects = [
+        'Mathematics',
+        'Physics',
+        'Chemistry',
+        'Biology',
+        'English',
+        'Amharic',
+        'History',
+        'Geography',
+      ];
+      setMcqBooks(
+        fallbackSubjects.map((subject, index) => ({
+          id: `mcq-${index}`,
+          title: subject,
+          subtitle: `Grade ${gradeNumber}`,
+          image_url: '',
+          subject,
+          grade: gradeNumber,
+          progress: Math.floor(Math.random() * 100),
+          chapterCount: 12,
+        }))
+      );
     } finally {
-      // Reset loading state
-      if (type === 'mcq') {
-        setIsMCQLoading(false);
-      } else {
-        setIsFlashcardLoading(false);
-      }
+      setIsMCQLoading(false);
     }
   };
 
   useEffect(() => {
-    // Fetch real books from API for non-KG students
     if (!isKGStudent) {
-      fetchBooksFromAPI('mcq');
-      fetchBooksFromAPI('flashcard');
-      // Fetch national exam years if grade has national exams
+      fetchMcqBooks();
       if (hasNationalExams()) {
         fetchNationalExamYears();
       }
     }
   }, [isKGStudent, user?.grade]);
 
-  // Add useFocusEffect to reload data when screen comes into focus
   useFocusEffect(
     React.useCallback(() => {
       const loadData = async () => {
         if (!isKGStudent) {
           await loadReportData();
-          await fetchBooksFromAPI('mcq');
-          await fetchBooksFromAPI('flashcard');
-          // Fetch national exam years if grade has national exams
+          await fetchMcqBooks();
           if (hasNationalExams()) {
             await fetchNationalExamYears();
           }
@@ -295,8 +251,7 @@ export default function HomeScreen() {
 
       await Promise.all([
         !isKGStudent ? loadReportData() : Promise.resolve(),
-        !isKGStudent ? fetchBooksFromAPI('mcq') : Promise.resolve(),
-        !isKGStudent ? fetchBooksFromAPI('flashcard') : Promise.resolve(),
+        !isKGStudent ? fetchMcqBooks() : Promise.resolve(),
         !isKGStudent && hasNationalExams() ? fetchNationalExamYears() : Promise.resolve()
       ]);
     } catch (error) {
@@ -304,48 +259,6 @@ export default function HomeScreen() {
     }
     setRefreshing(false);
   }, [isKGStudent]);
-
-  useEffect(() => {
-    // Simulate loading time
-    const timer = setTimeout(() => {
-      setIsLoading(false);
-      // Set initial opacity to 1 when loading is complete
-      fadeAnim.setValue(1);
-    }, 1500);
-
-    return () => clearTimeout(timer);
-  }, []);
-
-  useEffect(() => {
-    // Shimmer animation
-    Animated.loop(
-      Animated.sequence([
-        Animated.timing(shimmerAnim, {
-          toValue: 1,
-          duration: 1500,
-          useNativeDriver: true,
-        }),
-      ])
-    ).start();
-
-    const interval = setInterval(() => {
-      Animated.sequence([
-        Animated.timing(fadeAnim, {
-          toValue: 0,
-          duration: 300,
-          useNativeDriver: true,
-        }),
-        Animated.timing(fadeAnim, {
-          toValue: 1,
-          duration: 300,
-          useNativeDriver: true,
-        }),
-      ]).start();
-      setQuoteIndex((prev) => (prev + 1) % motivationalQuotes.length);
-    }, 5000);
-
-    return () => clearInterval(interval);
-  }, []);
 
   const loadReportData = async () => {
     try {
@@ -545,18 +458,6 @@ export default function HomeScreen() {
     ];
   };
 
-  const getShimmerStyle = () => {
-    const translateX = shimmerAnim.interpolate({
-      inputRange: [0, 1],
-      outputRange: [-SCREEN_WIDTH, SCREEN_WIDTH],
-    });
-
-    return {
-      transform: [{ translateX }],
-      backgroundColor: 'rgba(255, 255, 255, 0.5)',
-    };
-  };
-
   const handleScroll = (event: any) => {
     const contentOffset = event.nativeEvent.contentOffset.x;
     const index = Math.round(contentOffset / (CARD_WIDTH + CARD_SPACING));
@@ -598,63 +499,226 @@ export default function HomeScreen() {
     });
   };
 
+  const canvasBg = isDarkMode ? HOME_CANVAS.dark : HOME_CANVAS.light;
+  const welcomeCardBg = isDarkMode ? WELCOME_CARD_BG.dark : WELCOME_CARD_BG.light;
+  const welcomeTitleColor = isDarkMode ? '#F9FAFB' : '#111827';
+  const welcomeSubtitleColor = isDarkMode ? '#93C5FD' : '#1E40AF';
+  const gradeDigit = user?.grade?.replace(/\D/g, '') || '12';
+  const quickCardBg = isDarkMode ? '#252A32' : '#FFFFFF';
+  const quickCardBorder = isDarkMode ? '#2C3340' : '#E5E7EB';
+  const sectionHeading = isDarkMode ? '#F3F4F6' : '#111827';
+  const metaMuted = isDarkMode ? '#9AA2AF' : '#6B7280';
+
+  const formatChapters = (n: number) =>
+    n === 1 ? t('home.gradeBooks.chaptersCountOne') : t('home.gradeBooks.chaptersCount', { count: n });
+
+  const renderSubjectTile = (book: BookItem) => {
+    const coverData = getBookCover(book.subject);
+    return (
+      <View
+        key={book.id}
+        style={[styles.subjectGridCard, { backgroundColor: quickCardBg, borderColor: quickCardBorder }]}
+      >
+        <View
+          style={[
+            styles.subjectGridCoverWrap,
+            { minHeight: SUBJECT_GRID_TOP_BAND_HEIGHT, backgroundColor: quickCardBg },
+          ]}
+        >
+          <SubjectCoverAtmosphere dark={isDarkMode} />
+          <View style={styles.subjectGridCoverLift}>
+            <BookCover
+              title={book.title}
+              subtitle={book.subtitle}
+              coverColor={coverData.coverColor}
+              coverGradient={coverData.coverGradient}
+              icon={coverData.icon as IconSymbolName}
+              imageUrl={book.image_url}
+              onPress={() => handleBookPress('mcq', book)}
+              coverWidth={SUBJECT_COVER_INNER_WIDTH}
+              coverHeight={SUBJECT_COVER_INNER_HEIGHT}
+              suppressCoverText
+              compact
+            />
+          </View>
+        </View>
+        <View style={styles.subjectGridCardBody}>
+          <ThemedText numberOfLines={2} style={[styles.subjectGridTitle, { color: sectionHeading }]}>
+            {book.title}
+          </ThemedText>
+          <ThemedText style={[styles.subjectGridChapters, { color: metaMuted }]}>{formatChapters(book.chapterCount)}</ThemedText>
+        </View>
+      </View>
+    );
+  };
+
   return (
-    <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]}>
-      <Header 
-        title={t('home.welcome', { name: user?.fullName || '' })}
-        subtitle={t('home.subtitle')}
-      />
-      <ScrollView 
-        style={[styles.scrollView, { backgroundColor: colors.background }]}
-        contentContainerStyle={{ backgroundColor: colors.background }}
+    <SafeAreaView style={[styles.safeArea, { backgroundColor: canvasBg }]} edges={['bottom']}>
+      <ScrollView
+        style={[styles.scrollView, { backgroundColor: canvasBg }]}
+        contentContainerStyle={[styles.scrollContent, { backgroundColor: canvasBg }]}
         refreshControl={
           <RefreshControl
             refreshing={refreshing}
             onRefresh={onRefresh}
-            tintColor={colors.tint}
-            colors={[colors.tint]}
+            tintColor="#0F4BD7"
+            colors={['#0F4BD7']}
             progressBackgroundColor={colors.cardAlt}
           />
         }
       >
-        <ThemedView style={[styles.container, { backgroundColor: colors.background }]}>
-          {/* Motivational Quote Section */}
-          <ThemedView style={[styles.quoteSection, { 
-            backgroundColor: colors.tint
-          }]}>
-            {isLoading ? (
-              <View style={styles.quoteSkeleton}>
-                <View style={[styles.quoteSkeletonLine, { backgroundColor: 'rgba(255, 255, 255, 0.3)' }]} />
-                <View style={[styles.quoteSkeletonLine, { backgroundColor: 'rgba(255, 255, 255, 0.3)' }]} />
-                <View style={[styles.quoteSkeletonLineShort, { backgroundColor: 'rgba(255, 255, 255, 0.3)' }]} />
-                <View style={[styles.quoteSkeletonAuthor, { backgroundColor: 'rgba(255, 255, 255, 0.3)' }]} />
-                <Animated.View 
-                  style={[
-                    styles.shimmer,
-                    getShimmerStyle(),
-                    { backgroundColor: 'rgba(255, 255, 255, 0.2)' }
-                  ]} 
-                />
-              </View>
-            ) : (
-              <Animated.View style={{ opacity: fadeAnim }}>
-                <ThemedText style={[styles.quoteText, { color: '#FFFFFF' }]}>
-                  "{t(`home.motivationalQuotes.${quoteIndex}.quote`)}"
-                </ThemedText>
-                <ThemedText style={[styles.quoteAuthor, { color: 'rgba(255, 255, 255, 0.8)' }]}>
-                  - {t(`home.motivationalQuotes.${quoteIndex}.author`)}
-                </ThemedText>
-              </Animated.View>
-            )}
-          </ThemedView>
+        <ThemedView style={[styles.container, { backgroundColor: canvasBg }]}>
+          <View style={[styles.welcomeCard, { backgroundColor: welcomeCardBg }]}>
+            <ThemedText style={[styles.welcomeTitle, { color: welcomeTitleColor }]}>
+              {isKGStudent
+                ? t('home.welcomeCard.titleKg', { grade: t('common.kindergarten') })
+                : t('home.welcomeCard.title', { grade: gradeDigit })}
+            </ThemedText>
+            <ThemedText style={[styles.welcomeSubtitle, { color: welcomeSubtitleColor }]}>
+              {t('home.welcomeCard.subtitle')}
+            </ThemedText>
+          </View>
 
-          {/* Conditional Content based on Grade */}
-          {isKGStudent ? (
-            // KG Students - Show Report Cards Carousel
+          {!isKGStudent ? (
+            <>
+              <ThemedText style={[styles.quickAccessHeading, { color: sectionHeading }]}>
+                {t('home.quickAccess.sectionTitle')}
+              </ThemedText>
+              <View style={styles.quickAccessRow}>
+                <TouchableOpacity
+                  style={[styles.quickAccessCard, { backgroundColor: quickCardBg, borderColor: quickCardBorder }]}
+                  onPress={() => router.push('/(tabs)/mcq')}
+                  activeOpacity={0.88}
+                >
+                  <View style={[styles.quickAccessIconCircle, { backgroundColor: isDarkMode ? '#1E3A5F' : '#E3F2FD' }]}>
+                    <IconSymbol name="questionmark.circle.fill" size={26} color="#0F4BD7" />
+                  </View>
+                  <ThemedText style={[styles.quickAccessLabel, { color: sectionHeading }]}>
+                    {t('home.quickAccess.practiceLabel')}
+                  </ThemedText>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={[styles.quickAccessCard, { backgroundColor: quickCardBg, borderColor: quickCardBorder }]}
+                  onPress={() => router.push('/(tabs)/flashcards')}
+                  activeOpacity={0.88}
+                >
+                  <View style={[styles.quickAccessIconCircle, { backgroundColor: isDarkMode ? '#1B3328' : '#E8F5E9' }]}>
+                    <IconSymbol name="rectangle.stack.fill" size={26} color="#2E7D32" />
+                  </View>
+                  <ThemedText style={[styles.quickAccessLabel, { color: sectionHeading }]}>
+                    {t('home.quickAccess.flashcardsLabel')}
+                  </ThemedText>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={[styles.quickAccessCard, { backgroundColor: quickCardBg, borderColor: quickCardBorder }]}
+                  onPress={() => router.push('/(tabs)/reports')}
+                  activeOpacity={0.88}
+                >
+                  <View style={[styles.quickAccessIconCircle, { backgroundColor: isDarkMode ? '#3D2E1F' : '#FFF3E0' }]}>
+                    <IconSymbol name="chart.bar.fill" size={26} color="#ED6C02" />
+                  </View>
+                  <ThemedText style={[styles.quickAccessLabel, { color: sectionHeading }]}>
+                    {t('home.quickAccess.reportsLabel')}
+                  </ThemedText>
+                </TouchableOpacity>
+              </View>
+
+              <View style={styles.booksSectionHeader}>
+                <ThemedText style={[styles.booksSectionTitle, { color: sectionHeading }]}>
+                  {t('home.gradeBooks.title', { grade: gradeDigit })}
+                </ThemedText>
+                <TouchableOpacity onPress={() => router.push('/(tabs)/mcq')} hitSlop={12}>
+                  <ThemedText style={styles.viewAllLink}>{t('home.viewAll')}</ThemedText>
+                </TouchableOpacity>
+              </View>
+
+              {isMCQLoading ? (
+                <View style={styles.subjectGrid}>
+                  {[0, 1, 2, 3].map((i) => (
+                    <View
+                      key={i}
+                      style={[styles.subjectGridCard, { backgroundColor: quickCardBg, borderColor: quickCardBorder }]}
+                    >
+                      <View
+                        style={[
+                          styles.subjectGridCoverWrap,
+                          { minHeight: SUBJECT_GRID_TOP_BAND_HEIGHT, backgroundColor: quickCardBg },
+                        ]}
+                      >
+                        <SubjectCoverAtmosphere dark={isDarkMode} />
+                        <View
+                          style={[
+                            styles.subjectGridCoverLift,
+                            styles.subjectGridSkeletonCover,
+                            { backgroundColor: metaMuted + '45' },
+                          ]}
+                        />
+                      </View>
+                      <View style={styles.subjectGridCardBody}>
+                        <View style={[styles.skeletonLine, { backgroundColor: metaMuted + '40' }]} />
+                        <View style={[styles.skeletonLineShort, { backgroundColor: metaMuted + '30' }]} />
+                      </View>
+                    </View>
+                  ))}
+                </View>
+              ) : (
+                <View style={styles.subjectGrid}>{mcqBooks.map(renderSubjectTile)}</View>
+              )}
+
+              {hasNationalExams() && nationalExamYears.length > 0 && (
+                <ThemedView style={[styles.bookCarouselSection, { backgroundColor: canvasBg }]}>
+                  <View style={styles.bookCarouselHeader}>
+                    <ThemedText style={[styles.bookCarouselTitle, { color: sectionHeading }]}>
+                      {t('home.quickActions.nationalExams.title')}
+                    </ThemedText>
+                    <TouchableOpacity onPress={() => router.push('/(tabs)/mcq')}>
+                      <ThemedText style={styles.viewAllLink}>{t('home.viewAll')}</ThemedText>
+                    </TouchableOpacity>
+                  </View>
+                  {isNationalExamLoading ? (
+                    <View style={styles.bookCarouselSkeleton}>
+                      {[1, 2, 3, 4].map((index) => (
+                        <View key={index} style={styles.bookSkeletonItem}>
+                          <View style={[styles.bookSkeletonCover, { backgroundColor: colors.text + '20' }]} />
+                          <View style={[styles.bookSkeletonTitle, { backgroundColor: colors.text + '20' }]} />
+                          <View style={[styles.bookSkeletonSubtitle, { backgroundColor: colors.text + '20' }]} />
+                        </View>
+                      ))}
+                    </View>
+                  ) : (
+                    <ScrollView
+                      horizontal
+                      showsHorizontalScrollIndicator={false}
+                      contentContainerStyle={styles.bookCarouselContainer}
+                    >
+                      {nationalExamYears.map((year) => {
+                        const coverData = getBookCover('National Exam');
+                        return (
+                          <BookCover
+                            key={year}
+                            title={t('home.quickActions.nationalExams.yearExam', { year })}
+                            subtitle={t('home.quickActions.nationalExams.grade', {
+                              grade: user?.grade?.replace(/[^\d]/g, '') ?? '',
+                            })}
+                            coverColor={coverData.coverColor}
+                            coverGradient={coverData.coverGradient}
+                            icon={coverData.icon as any}
+                            imageUrl=""
+                            onPress={() => handleNationalExamYearPress(year)}
+                            questionCount={Math.floor(Math.random() * 100) + 50}
+                          />
+                        );
+                      })}
+                    </ScrollView>
+                  )}
+                </ThemedView>
+              )}
+            </>
+          ) : (
             <View style={styles.carouselSection}>
-              <ScrollView 
+              <ScrollView
                 ref={scrollViewRef}
-                horizontal 
+                horizontal
                 showsHorizontalScrollIndicator={false}
                 snapToInterval={CARD_WIDTH + CARD_SPACING}
                 decelerationRate="fast"
@@ -681,7 +745,7 @@ export default function HomeScreen() {
                               key={dotIndex}
                               style={[
                                 styles.paginationDot,
-                                dotIndex === activeIndex && styles.paginationDotActive
+                                dotIndex === activeIndex && styles.paginationDotActive,
                               ]}
                             />
                           ))}
@@ -704,193 +768,7 @@ export default function HomeScreen() {
                 ))}
               </ScrollView>
             </View>
-          ) : (
-            // Non-KG Students - Show MCQ and Flashcard Carousels (only if not empty)
-            <>
-              {/* MCQ Books Carousel - Only show if there are books */}
-              {mcqBooks.length > 0 && (
-              <ThemedView style={[styles.bookCarouselSection, { backgroundColor: colors.background }]}>
-                <View style={styles.bookCarouselHeader}>
-                  <ThemedText style={[styles.bookCarouselTitle, { color: colors.text }]}>
-                    {t('home.quickActions.mcq.title')}
-                  </ThemedText>
-                  <TouchableOpacity onPress={() => router.push('/(tabs)/mcq')}>
-                    <ThemedText style={[styles.seeAllButton, { color: colors.tint }]}>
-                      {t('home.seeAll')}
-                    </ThemedText>
-                  </TouchableOpacity>
-                </View>
-                {isMCQLoading ? (
-                  <View style={styles.bookCarouselSkeleton}>
-                    {[1, 2, 3, 4].map((index) => (
-                      <View key={index} style={styles.bookSkeletonItem}>
-                        <View style={[styles.bookSkeletonCover, { backgroundColor: colors.text + '20' }]} />
-                        <View style={[styles.bookSkeletonTitle, { backgroundColor: colors.text + '20' }]} />
-                        <View style={[styles.bookSkeletonSubtitle, { backgroundColor: colors.text + '20' }]} />
-                      </View>
-                    ))}
-                  </View>
-                ) : (
-                  <ScrollView 
-                    horizontal 
-                    showsHorizontalScrollIndicator={false}
-                    contentContainerStyle={styles.bookCarouselContainer}
-                  >
-                    {mcqBooks.map((book, index) => {
-                      const coverData = getBookCover(book.subject);
-                      return (
-                        <BookCover
-                          key={book.id}
-                          title={book.title}
-                          subtitle={book.subtitle}
-                          coverColor={coverData.coverColor}
-                          coverGradient={coverData.coverGradient}
-                          icon={coverData.icon as any}
-                          imageUrl={book.image_url}
-                          onPress={() => handleBookPress('mcq', book)}
-                          questionCount={Math.floor(Math.random() * 50) + 10}
-                        />
-                      );
-                    })}
-                  </ScrollView>
-                )}
-              </ThemedView>
-              )}
-
-              {/* National Exams Carousel - Only show for grades 6, 8, 12 and when there are years */}
-              {hasNationalExams() && nationalExamYears.length > 0 && (
-                <ThemedView style={[styles.bookCarouselSection, { backgroundColor: colors.background }]}>
-                  <View style={styles.bookCarouselHeader}>
-                    <ThemedText style={[styles.bookCarouselTitle, { color: colors.text }]}>
-                      {t('home.quickActions.nationalExams.title', t('home.quickActions.nationalExams.title'))}
-                    </ThemedText>
-                    <TouchableOpacity onPress={() => router.push('/(tabs)/mcq')}>
-                      <ThemedText style={[styles.seeAllButton, { color: colors.tint }]}>
-                        {t('home.seeAll')}
-                      </ThemedText>
-                    </TouchableOpacity>
-                  </View>
-                  {isNationalExamLoading ? (
-                    <View style={styles.bookCarouselSkeleton}>
-                      {[1, 2, 3, 4].map((index) => (
-                        <View key={index} style={styles.bookSkeletonItem}>
-                          <View style={[styles.bookSkeletonCover, { backgroundColor: colors.text + '20' }]} />
-                          <View style={[styles.bookSkeletonTitle, { backgroundColor: colors.text + '20' }]} />
-                          <View style={[styles.bookSkeletonSubtitle, { backgroundColor: colors.text + '20' }]} />
-                        </View>
-                      ))}
-                    </View>
-                  ) : (
-                    <ScrollView 
-                      horizontal 
-                      showsHorizontalScrollIndicator={false}
-                      contentContainerStyle={styles.bookCarouselContainer}
-                    >
-                      {nationalExamYears.map((year, index) => {
-                        const coverData = getBookCover('National Exam');
-                        return (
-                          <BookCover
-                            key={year}
-                            title={t('home.quickActions.nationalExams.yearExam', '{{year}} t({home.quickActions.nationalExams.title})', { year })}
-                            subtitle={t('home.quickActions.nationalExams.grade', 'Grade {{grade}}', { grade: user?.grade?.replace(/[^\d]/g, '') })}
-                            coverColor={coverData.coverColor}
-                            coverGradient={coverData.coverGradient}
-                            icon={coverData.icon as any}
-                            imageUrl=""
-                            onPress={() => handleNationalExamYearPress(year)}
-                            questionCount={Math.floor(Math.random() * 100) + 50}
-                          />
-                        );
-                      })}
-                    </ScrollView>
-                  )}
-                </ThemedView>
-              )}
-
-              {/* Flashcard Books Carousel - Only show if there are books */}
-              {flashcardBooks.length > 0 && (
-              <ThemedView style={[styles.bookCarouselSection, { backgroundColor: colors.background }]}>
-                <View style={styles.bookCarouselHeader}>
-                  <ThemedText style={[styles.bookCarouselTitle, { color: colors.text }]}>
-                    {t('home.quickActions.flashcards.title')}
-                  </ThemedText>
-                  <TouchableOpacity onPress={() => router.push('/(tabs)/flashcards')}>
-                    <ThemedText style={[styles.seeAllButton, { color: colors.tint }]}>
-                      {t('home.seeAll')}
-                    </ThemedText>
-                  </TouchableOpacity>
-                </View>
-                {isFlashcardLoading ? (
-                  <View style={styles.bookCarouselSkeleton}>
-                    {[1, 2, 3, 4].map((index) => (
-                      <View key={index} style={styles.bookSkeletonItem}>
-                        <View style={[styles.bookSkeletonCover, { backgroundColor: colors.text + '20' }]} />
-                        <View style={[styles.bookSkeletonTitle, { backgroundColor: colors.text + '20' }]} />
-                        <View style={[styles.bookSkeletonSubtitle, { backgroundColor: colors.text + '20' }]} />
-                      </View>
-                    ))}
-                  </View>
-                ) : (
-                  <ScrollView 
-                    horizontal 
-                    showsHorizontalScrollIndicator={false}
-                    contentContainerStyle={styles.bookCarouselContainer}
-                  >
-                    {flashcardBooks.map((book, index) => {
-                      const coverData = getBookCover(book.subject);
-                      return (
-                        <BookCover
-                          key={book.id}
-                          title={book.title}
-                          subtitle={book.subtitle}
-                          coverColor={coverData.coverColor}
-                          coverGradient={coverData.coverGradient}
-                          icon={coverData.icon as any}
-                          imageUrl={book.image_url}
-                          onPress={() => handleBookPress('flashcard', book)}
-                          flashcardCount={Math.floor(Math.random() * 30) + 5}
-                        />
-                      );
-                    })}
-                  </ScrollView>
-                )}
-              </ThemedView>
-              )}
-            </>
           )}
-
-          {/* Quick Actions Section */}
-          <ThemedView style={[styles.quickActionsSection, { backgroundColor: colors.background }]}>
-            <ThemedText style={[styles.sectionTitle, { color: colors.text }]}>
-              {t('home.quickActions.title')}
-            </ThemedText>
-            <View style={[styles.gridContainer, { backgroundColor: colors.background }]}>
-              <TouchableOpacity
-                style={[styles.gridItem, { backgroundColor: colors.background }]}
-                onPress={() => router.push('/(tabs)/reports')}
-              >
-                <LinearGradient
-                  colors={isDarkMode ? ['#2F1F0A', '#8B4D0A'] : ['#FFF3E0', '#FFE0B2']}
-                  style={[styles.gridItemContent, { backgroundColor: colors.card }]}
-                  start={{ x: 0, y: 0 }}
-                  end={{ x: 1, y: 1 }}
-                >
-                  <View style={[styles.gridIconContainer, { backgroundColor: isDarkMode ? '#ED6C0230' : '#ED6C0220' }]}>
-                    <IconSymbol name="chart.bar" size={32} color="#ED6C02" />
-                  </View>
-                  <View style={styles.gridTextContainer}>
-                    <ThemedText numberOfLines={1} style={[styles.gridItemTitle, { color: colors.text }]}>
-                      {t('home.quickActions.reports.title')}
-                    </ThemedText>
-                    <ThemedText numberOfLines={1} style={[styles.gridItemSubtitle, { color: colors.text + '80' }]}>
-                      {t('home.quickActions.reports.subtitle')}
-                    </ThemedText>
-                  </View>
-                </LinearGradient>
-              </TouchableOpacity>
-            </View>
-          </ThemedView>
-
         </ThemedView>
       </ScrollView>
     </SafeAreaView>
@@ -904,52 +782,138 @@ const styles = StyleSheet.create({
   scrollView: {
     flex: 1,
   },
+  scrollContent: {
+    paddingBottom: 28,
+  },
   container: {
     flex: 1,
     padding: 20,
   },
-  quoteSection: {
-    borderRadius: 16,
-    padding: 20,
-    marginBottom: 20,
+  welcomeCard: {
+    borderRadius: 20,
+    padding: 22,
+    marginBottom: 22,
   },
-  quoteText: {
-    fontSize: 16,
-    lineHeight: 24,
-    fontStyle: 'italic',
+  welcomeTitle: {
+    fontSize: 22,
+    fontWeight: '800',
+    marginBottom: 8,
+    letterSpacing: -0.3,
+  },
+  welcomeSubtitle: {
+    fontSize: 15,
+    lineHeight: 22,
+    fontWeight: '500',
+  },
+  quickAccessHeading: {
+    fontSize: 18,
+    fontWeight: '700',
+    marginBottom: 14,
+    letterSpacing: -0.2,
+  },
+  quickAccessRow: {
+    flexDirection: 'row',
+    gap: 10,
+    marginBottom: 28,
+  },
+  quickAccessCard: {
+    flex: 1,
+    borderRadius: 16,
+    borderWidth: 1,
+    paddingVertical: 16,
+    paddingHorizontal: 6,
+    alignItems: 'center',
+  },
+  quickAccessIconCircle: {
+    width: 52,
+    height: 52,
+    borderRadius: 26,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 10,
+  },
+  quickAccessLabel: {
+    fontSize: 12,
+    fontWeight: '700',
+    textAlign: 'center',
+  },
+  booksSectionHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 14,
+  },
+  booksSectionTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    letterSpacing: -0.2,
+    flex: 1,
+    marginRight: 12,
+  },
+  viewAllLink: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#0F4BD7',
+  },
+  subjectGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: GRID_GAP,
     marginBottom: 8,
   },
-  quoteAuthor: {
-    fontSize: 14,
-    textAlign: 'right',
+  subjectGridCard: {
+    width: BOOK_GRID_CARD_WIDTH,
+    borderRadius: 16,
+    borderWidth: 1,
+    overflow: 'hidden',
+    marginBottom: 4,
   },
-  quoteSkeleton: {
+  subjectGridCoverWrap: {
+    width: BOOK_GRID_CARD_WIDTH,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 14,
     position: 'relative',
     overflow: 'hidden',
+    borderTopLeftRadius: 15,
+    borderTopRightRadius: 15,
   },
-  quoteSkeletonLine: {
-    height: 16,
-    borderRadius: 8,
+  subjectGridAtmosphereRoot: {
+    ...StyleSheet.absoluteFillObject,
+  },
+  subjectGridCoverLift: {
+    zIndex: 1,
+  },
+  subjectGridSkeletonCover: {
+    width: SUBJECT_COVER_INNER_WIDTH,
+    height: SUBJECT_COVER_INNER_HEIGHT,
+    borderRadius: 12,
+  },
+  subjectGridCardBody: {
+    paddingHorizontal: 12,
+    paddingVertical: 12,
+    backgroundColor: 'transparent',
+  },
+  subjectGridTitle: {
+    fontSize: 14,
+    fontWeight: '700',
+    lineHeight: 18,
+    marginBottom: 4,
+  },
+  subjectGridChapters: {
+    fontSize: 12,
+    fontWeight: '500',
+  },
+  skeletonLine: {
+    height: 14,
+    borderRadius: 6,
+    width: '90%',
     marginBottom: 8,
   },
-  quoteSkeletonLineShort: {
-    height: 16,
-    width: '60%',
-    borderRadius: 8,
-    marginBottom: 16,
-  },
-  quoteSkeletonAuthor: {
-    height: 14,
-    width: '40%',
-    borderRadius: 7,
-    alignSelf: 'flex-end',
-  },
-  shimmer: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    height: '100%',
+  skeletonLineShort: {
+    height: 12,
+    borderRadius: 5,
+    width: '55%',
   },
   quickActionsSection: {
     marginTop: 8,

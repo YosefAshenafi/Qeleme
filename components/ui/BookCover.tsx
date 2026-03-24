@@ -21,6 +21,13 @@ interface BookCoverProps {
   disabled?: boolean;
   flashcardCount?: number;
   questionCount?: number;
+  /** Override default cover size (e.g. home grid tiles). */
+  coverWidth?: number;
+  coverHeight?: number;
+  /** When true, no title/subtitle on the cover — only image or gradient + icon (meta lives outside). */
+  suppressCoverText?: boolean;
+  /** Remove default bottom margin (e.g. grid layout). */
+  compact?: boolean;
 }
 
 export const BookCover: React.FC<BookCoverProps> = ({
@@ -35,9 +42,18 @@ export const BookCover: React.FC<BookCoverProps> = ({
   disabled = false,
   flashcardCount,
   questionCount,
+  coverWidth,
+  coverHeight,
+  suppressCoverText = false,
+  compact = false,
 }) => {
   const [imageError, setImageError] = React.useState(false);
-  
+  const outerW = coverWidth ?? BOOK_WIDTH;
+  const outerH = coverHeight ?? BOOK_HEIGHT;
+  const inset = compact ? 0 : 10;
+  const innerW = Math.max(outerW - inset, 1);
+  const innerH = Math.max(outerH - inset, 1);
+
   // Reset image error when imageUrl changes
   React.useEffect(() => {
     setImageError(false);
@@ -46,6 +62,8 @@ export const BookCover: React.FC<BookCoverProps> = ({
     <TouchableOpacity
       style={[
         styles.bookContainer,
+        compact && styles.bookContainerCompact,
+        { width: outerW, height: outerH },
         isSelected && styles.selectedBook,
         disabled && styles.disabledBook,
       ]}
@@ -53,7 +71,13 @@ export const BookCover: React.FC<BookCoverProps> = ({
       disabled={disabled}
       activeOpacity={0.8}
     >
-      <ThemedView style={[styles.bookCover, { backgroundColor: coverColor }]}>
+      <ThemedView
+        style={[
+          styles.bookCover,
+          compact && styles.bookCoverCompact,
+          { backgroundColor: coverColor, width: innerW, height: innerH },
+        ]}
+      >
         {imageUrl && !imageError ? (
           <Image 
             source={{ uri: imageUrl }} 
@@ -85,13 +109,17 @@ export const BookCover: React.FC<BookCoverProps> = ({
         {(!imageUrl || imageError) && (
           <View style={styles.bookContent}>
             <IconSymbol name={icon} size={32} color="#FFFFFF" style={styles.bookIcon} />
-            <ThemedText style={styles.bookTitle} numberOfLines={2}>
-              {title}
-            </ThemedText>
-            {subtitle && (
-              <ThemedText style={styles.bookSubtitle} numberOfLines={1}>
-                {subtitle}
-              </ThemedText>
+            {!suppressCoverText && (
+              <>
+                <ThemedText style={styles.bookTitle} numberOfLines={2}>
+                  {title}
+                </ThemedText>
+                {subtitle && (
+                  <ThemedText style={styles.bookSubtitle} numberOfLines={1}>
+                    {subtitle}
+                  </ThemedText>
+                )}
+              </>
             )}
           </View>
         )}
@@ -101,18 +129,18 @@ export const BookCover: React.FC<BookCoverProps> = ({
         <View style={styles.bookPages} />
       </ThemedView>
       
-      {/* Book shadow */}
-      <View style={styles.bookShadow} />
+      {!compact && <View style={styles.bookShadow} />}
     </TouchableOpacity>
   );
 };
 
 const styles = StyleSheet.create({
   bookContainer: {
-    width: BOOK_WIDTH,
-    height: BOOK_HEIGHT,
     marginBottom: 20,
     alignItems: 'center',
+  },
+  bookContainerCompact: {
+    marginBottom: 0,
   },
   selectedBook: {
     transform: [{ scale: 1.05 }],
@@ -121,8 +149,6 @@ const styles = StyleSheet.create({
     opacity: 0.5,
   },
   bookCover: {
-    width: BOOK_WIDTH - 10,
-    height: BOOK_HEIGHT - 10,
     borderRadius: 12,
     overflow: 'hidden',
     position: 'relative',
@@ -131,6 +157,12 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
     shadowRadius: 8,
+  },
+  bookCoverCompact: {
+    elevation: 3,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.18,
+    shadowRadius: 5,
   },
   bookSpine: {
     position: 'absolute',

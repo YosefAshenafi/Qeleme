@@ -10,6 +10,28 @@ export default {
     }
   },
   home: {
+    welcomeCard: {
+      title: 'Welcome to Grade {{grade}}',
+      titleKg: 'Welcome to {{grade}}',
+      subtitle: 'Your learning journey continues. Stay focused!',
+    },
+    header: {
+      searchAccessibility: 'Search and practice',
+      notificationsAccessibility: 'Notifications',
+      notificationsPlaceholder: 'Notifications will appear here soon.',
+    },
+    quickAccess: {
+      sectionTitle: 'Quick Access',
+      practiceLabel: 'Practice',
+      flashcardsLabel: 'Flashcards',
+      reportsLabel: 'Reports',
+    },
+    gradeBooks: {
+      title: 'Grade {{grade}} Books',
+      chaptersCount: '{{count}} Chapters',
+      chaptersCountOne: '1 Chapter',
+    },
+    viewAll: 'View All',
     welcome: 'Welcome {{name}}!',
     subtitle: 'Ready to learn something new today?',
     noActivity: 'No recent activity. Start learning!',
@@ -228,6 +250,8 @@ export default {
   navigation: {
     tabs: {
       home: 'Home',
+      books: 'Books',
+      stats: 'Stats',
       mcq: 'MCQ',
       flashcards: 'Flashcards',
       homework: 'Homework',
@@ -468,6 +492,7 @@ export default {
     }
   },
   common: {
+    info: 'Notice',
     error: 'Error',
     ok: 'OK',
     tryAgain: 'Try Again',

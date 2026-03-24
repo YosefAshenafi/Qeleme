@@ -1,155 +1,149 @@
 import { Tabs, Redirect } from 'expo-router';
 import React from 'react';
-import { Platform, TouchableOpacity, View, StyleSheet, Image, Text } from 'react-native';
+import { Platform, TouchableOpacity, View, StyleSheet, Text, Alert } from 'react-native';
 import { router } from 'expo-router';
-import { BlurView } from 'expo-blur';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '@/contexts/AuthContext';
 
 import { HapticTab } from '../../components/HapticTab';
 import { IconSymbol } from '../../components/ui/IconSymbol';
 import { useTheme } from '../../contexts/ThemeContext';
-import { getColors } from '../../constants/Colors';
-import { LanguageToggle } from '../../components/ui/LanguageToggle';
-import { GradeBadge } from '../../components/ui/GradeBadge';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+
+const BRAND_BLUE = '#0F4BD7';
+const TAB_ACTIVE = '#0F4BD7';
+const TAB_INACTIVE_LIGHT = '#9CA3AF';
+const HEADER_BG_LIGHT = '#FFFFFF';
+const HEADER_BG_DARK = '#101216';
+const ICON_CIRCLE_LIGHT = '#F3F4F6';
+const ICON_CIRCLE_DARK = '#2A313D';
 
 export default function TabLayout() {
   const { isDarkMode } = useTheme();
-  const colors = getColors(isDarkMode);
   const { t } = useTranslation();
   const { user } = useAuth();
+  const insets = useSafeAreaInsets();
 
-  // Redirect KG students to KG dashboard
   if (typeof user?.grade === 'string' && user.grade.toLowerCase().includes('kg')) {
     return <Redirect href="/kg-dashboard" />;
   }
 
+  const headerBg = isDarkMode ? HEADER_BG_DARK : HEADER_BG_LIGHT;
+  const headerBorder = isDarkMode ? '#2C3340' : '#E5E7EB';
+  const primaryText = isDarkMode ? '#F3F4F6' : '#111827';
+  const iconCircle = isDarkMode ? ICON_CIRCLE_DARK : ICON_CIRCLE_LIGHT;
+  const iconColor = isDarkMode ? '#E5E7EB' : '#4B5563';
+
+  const tabBarBg = isDarkMode ? '#191D24' : '#FFFFFF';
+  const tabBarBorder = isDarkMode ? '#2C3340' : '#E5E7EB';
+
+  const megaHeaderLeft = () => (
+    <View style={styles.headerLeft}>
+      <View style={styles.brandMark}>
+        <Text style={styles.brandMarkText}>M+</Text>
+      </View>
+      <Text style={[styles.brandWordmark, { color: primaryText }]}>Mega+</Text>
+    </View>
+  );
+
+  const megaHeaderRight = () => (
+    <View style={styles.headerRight}>
+      <TouchableOpacity
+        style={[styles.headerIconButton, { backgroundColor: iconCircle }]}
+        onPress={() => router.push('/(tabs)/mcq')}
+        accessibilityRole="button"
+        accessibilityLabel={t('home.header.searchAccessibility')}
+      >
+        <IconSymbol name="magnifyingglass" size={22} color={iconColor} />
+      </TouchableOpacity>
+      <TouchableOpacity
+        style={[styles.headerIconButton, { backgroundColor: iconCircle }]}
+        onPress={() => Alert.alert(t('common.info'), t('home.header.notificationsPlaceholder'))}
+        accessibilityRole="button"
+        accessibilityLabel={t('home.header.notificationsAccessibility')}
+      >
+        <IconSymbol name="bell" size={22} color={iconColor} />
+      </TouchableOpacity>
+    </View>
+  );
+
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: isDarkMode ? '#FFFFFF' : colors.background,
-        tabBarInactiveTintColor: isDarkMode ? '#FFFFFFCC' : colors.background + 'CC',
         headerShown: true,
         headerShadowVisible: false,
-        headerTitleAlign: 'center',
+        headerTitle: () => null,
         headerStyle: {
-          backgroundColor: colors.tint,
+          backgroundColor: headerBg,
+          borderBottomWidth: StyleSheet.hairlineWidth,
+          borderBottomColor: headerBorder,
         },
-        headerLeft: () => (
-          <View style={styles.headerLeft}>
-            <Image
-              source={require('../../assets/images/logo/white-logo.png')}
-              style={styles.logo}
-              resizeMode="contain"
-            />
-            <Text style={[styles.logoText, { color: isDarkMode ? '#FFFFFF' : colors.background }]}>
-              Qelem
-            </Text>
-          </View>
-        ),
-        headerTitle: () => (
-          <View style={styles.gradeContainer}>
-            <Text style={styles.gradeIcon}>🎓</Text>
-            <Text style={[styles.gradeText, { color: isDarkMode ? '#FFFFFF' : colors.background }]}>
-              {t('common.grade')}: {user?.grade?.replace(/\D/g, '')}
-            </Text>
-          </View>
-        ),
-        headerRight: () => (
-          <View style={styles.headerRight}>
-            <LanguageToggle 
-              colors={{ 
-                card: 'transparent', 
-                text: isDarkMode ? '#FFFFFF' : colors.background,
-                tint: isDarkMode ? '#FFFFFF' : colors.background 
-              }} 
-            />
-            <TouchableOpacity 
-              onPress={() => router.push('/profile')}
-              style={styles.profileButton}
-            >
-              <View style={[styles.profileIconContainer, { backgroundColor: colors.background + '20' }]}>
-                <IconSymbol 
-                  name="gearshape.fill" 
-                  size={20} 
-                  color={isDarkMode ? '#FFFFFF' : colors.background} 
-                />
-              </View>
-            </TouchableOpacity>
-          </View>
-        ),
+        headerLeft: megaHeaderLeft,
+        headerRight: megaHeaderRight,
+        headerTitleAlign: 'center',
+        headerLeftContainerStyle: { paddingLeft: 16, flex: 1 },
+        headerRightContainerStyle: { paddingRight: 16, flex: 0 },
+        tabBarActiveTintColor: TAB_ACTIVE,
+        tabBarInactiveTintColor: isDarkMode ? '#8B93A3' : TAB_INACTIVE_LIGHT,
+        tabBarShowLabel: true,
+        tabBarLabelStyle: {
+          fontSize: 11,
+          fontWeight: '600',
+          marginBottom: Platform.OS === 'ios' ? 0 : 4,
+        },
         tabBarButton: HapticTab,
-        tabBarBackground: () => (
-          <View style={[StyleSheet.absoluteFill, { backgroundColor: colors.tint }]} />
-        ),
+        tabBarBackground: () => <View style={[StyleSheet.absoluteFill, { backgroundColor: tabBarBg }]} />,
         tabBarStyle: {
-          backgroundColor: colors.tint,
-          borderTopColor: colors.background,
-          borderTopWidth: 2,
-          position: 'absolute',
-          elevation: 0,
-          height: 90,
-          paddingBottom: 20,
-          paddingTop: 12,
+          backgroundColor: tabBarBg,
+          borderTopColor: tabBarBorder,
+          borderTopWidth: StyleSheet.hairlineWidth,
+          height: 56 + Math.max(insets.bottom, 12),
+          paddingBottom: Math.max(insets.bottom, 10),
+          paddingTop: 8,
         },
-      }}>
+      }}
+    >
       <Tabs.Screen
         name="index"
         options={{
           title: t('navigation.tabs.home'),
           tabBarIcon: ({ color, focused }) => (
-            <View style={[styles.tabIconContainer, focused && { backgroundColor: colors.background + '20' }]}>
-              <IconSymbol 
-                size={focused ? 30 : 26} 
-                name={focused ? "house.fill" : "house"} 
-                color={focused ? (isDarkMode ? '#FFFFFF' : colors.background) : (isDarkMode ? '#FFFFFFCC' : colors.background + 'CC')} 
-              />
-            </View>
+            <IconSymbol name={focused ? 'house.fill' : 'house'} size={focused ? 26 : 24} color={color} />
           ),
         }}
       />
       <Tabs.Screen
         name="mcq"
         options={{
-          title: t('navigation.tabs.mcq'),
+          title: t('navigation.tabs.books'),
           tabBarIcon: ({ color, focused }) => (
-            <View style={[styles.tabIconContainer, focused && { backgroundColor: colors.background + '20' }]}>
-              <IconSymbol 
-                size={focused ? 30 : 26} 
-                name={focused ? "questionmark.circle.fill" : "questionmark.circle"} 
-                color={focused ? (isDarkMode ? '#FFFFFF' : colors.background) : (isDarkMode ? '#FFFFFFCC' : colors.background + 'CC')} 
-              />
-            </View>
+            <IconSymbol name={focused ? 'book.fill' : 'book'} size={focused ? 26 : 24} color={color} />
           ),
         }}
       />
       <Tabs.Screen
         name="flashcards"
         options={{
+          href: null,
           title: t('navigation.tabs.flashcards'),
-          tabBarIcon: ({ color, focused }) => (
-            <View style={[styles.tabIconContainer, focused && { backgroundColor: colors.background + '20' }]}>
-              <IconSymbol 
-                size={focused ? 30 : 26} 
-                name={focused ? "rectangle.stack.fill" : "rectangle.stack"} 
-                color={focused ? (isDarkMode ? '#FFFFFF' : colors.background) : (isDarkMode ? '#FFFFFFCC' : colors.background + 'CC')} 
-              />
-            </View>
-          ),
         }}
       />
       <Tabs.Screen
         name="reports"
         options={{
-          title: t('navigation.tabs.reports'),
+          title: t('navigation.tabs.stats'),
           tabBarIcon: ({ color, focused }) => (
-            <View style={[styles.tabIconContainer, focused && { backgroundColor: colors.background + '20' }]}>
-              <IconSymbol 
-                size={focused ? 30 : 26} 
-                name={focused ? "chart.bar.fill" : "chart.bar"} 
-                color={focused ? (isDarkMode ? '#FFFFFF' : colors.background) : (isDarkMode ? '#FFFFFFCC' : colors.background + 'CC')} 
-              />
-            </View>
+            <IconSymbol name={focused ? 'chart.bar.fill' : 'chart.bar'} size={focused ? 26 : 24} color={color} />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="profile"
+        options={{
+          headerShown: false,
+          title: t('navigation.tabs.profile'),
+          tabBarIcon: ({ color, focused }) => (
+            <IconSymbol name={focused ? 'person.fill' : 'person'} size={focused ? 26 : 24} color={color} />
           ),
         }}
       />
@@ -159,73 +153,39 @@ export default function TabLayout() {
 
 const styles = StyleSheet.create({
   headerLeft: {
-    marginLeft: 15,
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
+    gap: 10,
   },
-  logo: {
-    width: 32,
-    height: 32,
-  },
-  logoText: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    letterSpacing: 0.5,
-  },
-  headerCenter: {
+  brandMark: {
+    width: 40,
+    height: 40,
+    borderRadius: 12,
+    backgroundColor: BRAND_BLUE,
     alignItems: 'center',
     justifyContent: 'center',
-    flex: 1,
-    position: 'absolute',
-    left: 0,
-    right: 0,
-    zIndex: 1,
+  },
+  brandMarkText: {
+    color: '#FFFFFF',
+    fontSize: 15,
+    fontWeight: '800',
+    letterSpacing: -0.5,
+  },
+  brandWordmark: {
+    fontSize: 20,
+    fontWeight: '800',
+    letterSpacing: -0.3,
   },
   headerRight: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginRight: 15,
-    gap: 8,
+    gap: 10,
   },
-  profileButton: {
-    padding: 4,
-  },
-  profileIconContainer: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
+  headerIconButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    alignItems: 'center',
     justifyContent: 'center',
-    alignItems: 'center',
-  },
-  tabIconContainer: {
-    width: 50,
-    height: 50,
-    borderRadius: 25,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 2,
-    marginTop: 2,
-  },
-  gradeContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 16,
-    gap: 6,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 2,
-  },
-  gradeIcon: {
-    fontSize: 16,
-  },
-  gradeText: {
-    fontSize: 14,
-    fontWeight: '600',
-    letterSpacing: 0.3,
   },
 });

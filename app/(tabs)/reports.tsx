@@ -12,7 +12,6 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useFocusEffect } from '@react-navigation/native';
 import ActivityTrackingService, { UserStats } from '@/services/activityTrackingService';
 
-import { Header } from '@/components/Header';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 
@@ -485,7 +484,6 @@ export default function ReportsScreen() {
   if (loading) {
     return (
       <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]}>
-        <Header title={t('reports.title')} />
         <View style={[styles.loadingContainer, { backgroundColor: colors.background }]}>
           <ThemedText style={[styles.loadingText, { color: colors.text }]}>
             {t('reports.loading', { defaultValue: 'Loading your progress...' })}
@@ -497,7 +495,6 @@ export default function ReportsScreen() {
 
   return (
     <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]}>
-      <Header title={t('reports.title')} />
       <ScrollView 
         style={styles.scrollView}
         refreshControl={

@@ -47,6 +47,10 @@ const MAPPING = {
   'flame': 'local-fire-department',
   'gearshape.fill': 'settings',
   'gearshape': 'settings',
+  'magnifyingglass': 'search',
+  'bell': 'notifications',
+  'book.fill': 'menu-book',
+  'book': 'menu-book',
 } as const;
 
 export type IconSymbolName = keyof typeof MAPPING;
