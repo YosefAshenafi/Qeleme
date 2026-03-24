@@ -584,7 +584,33 @@ export default {
         serverUnavailable: 'The server is temporarily unavailable',
         contentBeingAdded: 'Content for your grade is still being added'
       }
-    }
+    },
+    books: {
+      heroTitlePrefix: 'Your Grade {{grade}}',
+      heroTitleHighlight: 'Curriculum',
+      heroTitleSuffix: 'Hub',
+      heroDescription:
+        'Access premium academic resources tailored for your year. Master your subjects with specialized practice tools.',
+      openNationalExam: 'Past national exam papers',
+      searchPlaceholder: 'Search books or subjects...',
+      searchButton: 'Search',
+      filter: {
+        all: 'All Books',
+        science: 'Science',
+        languages: 'Languages',
+        mathematics: 'Mathematics',
+        humanities: 'Humanities',
+      },
+      cardTitle: 'Grade {{grade}} {{subject}}',
+      cardDescription: 'Full syllabus coverage with chapter-wise practice and review.',
+      qaPractice: 'QA Practice',
+      flashcards: 'Flashcards',
+      badgeNew: 'New',
+      badgeUpdated: 'Updated',
+      badgeLatest: 'LATEST',
+      detailBackA11y: 'Back to books',
+      empty: 'No books match your search or filter.',
+    },
   },
   flashcards: {
     title: "Flashcards",

@@ -560,7 +560,33 @@ export default {
         serverUnavailable: 'አገልግሎቱ በጊዜያዊ ሁኔታ አይገኝም',
         contentBeingAdded: 'ለክፍልዎ ይዘት አሁንም በመጨመር ላይ ነው'
       }
-    }
+    },
+    books: {
+      heroTitlePrefix: 'የእርስዎ {{grade}} ክፍል',
+      heroTitleHighlight: 'አካዳሚክ',
+      heroTitleSuffix: 'መርሃ ግብር',
+      heroDescription:
+        'ለዓመትዎ የተዘጋጁ የትምህርት መርጃዎችን ያግኙ። በተለይ የተዘጋጁ የመለማመጃ መሳሪያዎች ይጠቀሙ።',
+      openNationalExam: 'የብሔራዊ ፈተና ወረቀቶች',
+      searchPlaceholder: 'መጽሐፍት ወይም የትምህርት ዓይነት ይፈልጉ...',
+      searchButton: 'ፈልግ',
+      filter: {
+        all: 'ሁሉም መጽሐፍት',
+        science: 'ሳይንስ',
+        languages: 'ቋንቋዎች',
+        mathematics: 'ሒሳብ',
+        humanities: 'ሰው እና ማህበራት',
+      },
+      cardTitle: '{{grade}}ኛ ክፍል {{subject}}',
+      cardDescription: 'በምዕራፍ የተደራጁ መለማመጃ እና ግምገማ።',
+      qaPractice: 'የምርጫ ልምምድ',
+      flashcards: 'ፍላሽ ካርዶች',
+      badgeNew: 'አዲስ',
+      badgeUpdated: 'ተዘምኗል',
+      badgeLatest: 'የቅርብ',
+      detailBackA11y: 'ወደ መጽሐፍት ዝርዝር ተመለስ',
+      empty: 'ለፍለጋዎ ወይም ማጣሪያዎ ምንም መጽሐፍ አልተገኘም።',
+    },
   },
   flashcards: {
     title: "ፍላሽ ካርዶች",
