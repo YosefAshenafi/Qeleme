@@ -1,5 +1,5 @@
-import { StyleSheet, TextInput, TouchableOpacity, View, Image, KeyboardAvoidingView, Platform, ScrollView, Modal, Pressable } from 'react-native';
-import { Link, router, useLocalSearchParams } from 'expo-router';
+import { StyleSheet, TextInput, TouchableOpacity, View, KeyboardAvoidingView, Platform, ScrollView, Modal, Pressable, Text } from 'react-native';
+import { router, useLocalSearchParams } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useState, useEffect } from 'react';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -46,7 +46,7 @@ export default function SignupScreen() {
   const [phoneNumber, setPhoneNumber] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [grade, setGrade] = useState<Grade | ''>('');
+  const [grade, setGrade] = useState<Grade | ''>('KG');
   const [region, setRegion] = useState('');
   const [acceptTerms, setAcceptTerms] = useState(false);
   const [showGradeModal, setShowGradeModal] = useState(false);
@@ -474,8 +474,9 @@ export default function SignupScreen() {
     // Try to send OTP (but don't block navigation if it fails)
     try {
       const otpResponse = await sendOTP(fullPhoneNumber);
+      console.log('[OTP] sendOTP response (signup):', otpResponse);
       if (!otpResponse.success) {
-        // OTP service failed, but continuing with navigation
+        console.warn('[OTP] send failed on signup, proceeding to OTP screen:', otpResponse.message);
       }
     } catch (err) {
       // Don't set error here, just log it and continue
@@ -507,11 +508,11 @@ export default function SignupScreen() {
   };
 
   return (
-    <LinearGradient
-      colors={isDarkMode ? ['#1E1E1E', '#2A2A2A'] : ['#F8F9FA', '#FFFFFF']}
-      style={styles.gradient}
-    >
-      <SafeAreaView style={styles.safeArea}>
+    <SafeAreaView style={[styles.safeArea, { backgroundColor: isDarkMode ? '#101216' : '#F1F2F4' }]}>
+      <View pointerEvents="none" style={styles.bgLettersLayer}>
+        <Text style={[styles.bgLetter, styles.bgLetterLeft, { color: isDarkMode ? 'rgba(255,255,255,0.02)' : 'rgba(255,255,255,0.22)' }]}>M+</Text>
+        <Text style={[styles.bgLetter, styles.bgLetterRight, { color: isDarkMode ? 'rgba(255,255,255,0.018)' : 'rgba(255,255,255,0.18)' }]}>M</Text>
+      </View>
         <KeyboardAvoidingView 
           behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
           style={styles.keyboardView}
@@ -536,13 +537,9 @@ export default function SignupScreen() {
               </View>
 
               <View style={styles.header}>
-                <Image 
-                  source={require('@/assets/images/logo.png')}
-                  style={styles.logoImage}
-                  resizeMode="contain"
-                />
-                <ThemedText style={[styles.welcomeText, { color: colors.text }]}>{t('signup.title')}</ThemedText>
-                <ThemedText style={[styles.subtitleText, { color: colors.text + '80' }]}>{t('signup.subtitle')}</ThemedText>
+                <ThemedText style={styles.stepLabel}>STEP 01 / 03</ThemedText>
+                <ThemedText style={[styles.welcomeText, { color: colors.text }]}>Account Details</ThemedText>
+                <ThemedText style={[styles.subtitleText, { color: colors.text + '80' }]}>Enter your basic information to get started.</ThemedText>
               </View>
 
               <View style={[styles.formContainer, {
@@ -775,46 +772,6 @@ export default function SignupScreen() {
                         ) : null}
                       </View>
                     ))
-                  ) : role === 'student' ? (
-                    <>
-                      <View style={[styles.inputContainer, {
-                        backgroundColor: isDarkMode ? '#2C2C2E' : '#F9FAFB',
-                        borderColor: validationErrors.grade ? '#F44336' : (isDarkMode ? '#3C3C3E' : '#E5E7EB'),
-                      }]}>
-                        <Ionicons name="school-outline" size={20} color={isDarkMode ? '#A0A0A5' : '#6B7280'} style={styles.inputIcon} />
-                        <TouchableOpacity 
-                          style={styles.dropdownButton}
-                          onPress={() => openGradeModal()}
-                        >
-                          <ThemedText style={[styles.input, { color: grade ? colors.text : (isDarkMode ? '#A0A0A5' : '#9CA3AF') }]}>
-                            {grade ? grades.find(g => g.value === grade)?.label || t('signup.grade.label') : t('signup.grade.label')}
-                          </ThemedText>
-                          <Ionicons name="chevron-down" size={20} color={isDarkMode ? '#A0A0A5' : '#6B7280'} />
-                        </TouchableOpacity>
-                      </View>
-                      {validationErrors.grade ? (
-                        <ThemedText style={[styles.errorText, { color: '#F44336' }]}>{validationErrors.grade}</ThemedText>
-                      ) : null}
-
-                      <View style={[styles.inputContainer, {
-                        backgroundColor: isDarkMode ? '#2C2C2E' : '#F9FAFB',
-                        borderColor: validationErrors.region ? '#F44336' : (isDarkMode ? '#3C3C3E' : '#E5E7EB'),
-                      }]}>
-                        <Ionicons name="location-outline" size={20} color={isDarkMode ? '#A0A0A5' : '#6B7280'} style={styles.inputIcon} />
-                        <TouchableOpacity 
-                          style={styles.dropdownButton}
-                          onPress={() => openRegionModal()}
-                        >
-                          <ThemedText style={[styles.input, { color: region ? colors.text : (isDarkMode ? '#A0A0A5' : '#9CA3AF') }]}>
-                            {region ? regions.find(r => r.name === region)?.name || t('signup.region.label') : t('signup.region.label')}
-                          </ThemedText>
-                          <Ionicons name="chevron-down" size={20} color={isDarkMode ? '#A0A0A5' : '#6B7280'} />
-                        </TouchableOpacity>
-                      </View>
-                      {validationErrors.region ? (
-                        <ThemedText style={[styles.errorText, { color: '#F44336' }]}>{validationErrors.region}</ThemedText>
-                      ) : null}
-                    </>
                   ) : null}
                 </View>
 
@@ -993,12 +950,17 @@ export default function SignupScreen() {
                   disabled={!acceptTerms || isSubmitting}
                 >
                   <LinearGradient
-                    colors={['#4F46E5', '#7C3AED']}
+                    colors={['#0F4BD7', '#4E7CFF']}
                     style={styles.buttonGradient}
+                    start={{ x: 0, y: 0.5 }}
+                    end={{ x: 1, y: 0.5 }}
                   >
-                    <ThemedText style={styles.buttonText}>
-                      {isSubmitting ? t('common.processing') : t('signup.createAccount')}
-                    </ThemedText>
+                    <View style={styles.primaryActionInner}>
+                      <ThemedText style={styles.buttonText}>
+                        {isSubmitting ? t('common.processing') : 'Continue to Verification'}
+                      </ThemedText>
+                      <Ionicons name="arrow-forward" size={20} color="#0B1B46" />
+                    </View>
                   </LinearGradient>
                 </TouchableOpacity>
               </View>
@@ -1017,16 +979,33 @@ export default function SignupScreen() {
           </ScrollView>
         </KeyboardAvoidingView>
       </SafeAreaView>
-    </LinearGradient>
   );
 }
 
 const styles = StyleSheet.create({
-  gradient: {
-    flex: 1,
-  },
   safeArea: {
     flex: 1,
+  },
+  bgLettersLayer: {
+    ...StyleSheet.absoluteFillObject,
+    zIndex: 0,
+    overflow: 'hidden',
+  },
+  bgLetter: {
+    position: 'absolute',
+    fontSize: 360,
+    fontWeight: '800',
+    lineHeight: 360,
+  },
+  bgLetterLeft: {
+    left: -52,
+    top: 44,
+    transform: [{ rotate: '-7deg' }],
+  },
+  bgLetterRight: {
+    right: -78,
+    bottom: -74,
+    transform: [{ rotate: '7deg' }],
   },
   keyboardView: {
     flex: 1,
@@ -1040,47 +1019,47 @@ const styles = StyleSheet.create({
   },
   container: {
     flex: 1,
-    padding: 24,
+    paddingHorizontal: 10,
+    paddingTop: 10,
     justifyContent: 'space-between',
     minHeight: '100%',
+    zIndex: 1,
   },
   header: {
     alignItems: 'center',
-    marginTop: 20,
+    marginTop: 8,
+    marginBottom: 22,
+    paddingTop: 12,
+    zIndex: 1,
   },
-  logoImage: {
-    width: 350,
-    height: 350,
-    marginBottom: -100,
-    marginTop: -130,
+  stepLabel: {
+    color: '#0F4BD7',
+    fontSize: 12,
+    fontWeight: '700',
+    letterSpacing: 1.1,
+    marginTop: 4,
+    marginBottom: 8,
   },
   welcomeText: {
-    paddingTop: 10,
-    fontSize: 32,
+    fontSize: 36,
+    lineHeight: 44,
     fontWeight: '700',
-    color: '#1F2937',
     marginBottom: 8,
+    textAlign: 'center',
   },
   subtitleText: {
     fontSize: 16,
-    color: '#6B7280',
     textAlign: 'center',
-    marginBottom: 20,
+    marginBottom: 22,
+    lineHeight: 28,
   },
   formContainer: {
     width: '100%',
-    gap: 24,
-    backgroundColor: '#FFFFFF',
-    padding: 24,
-    borderRadius: 24,
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 4,
-    },
-    shadowOpacity: 0.1,
-    shadowRadius: 12,
-    elevation: 8,
+    gap: 18,
+    borderRadius: 28,
+    paddingHorizontal: 26,
+    paddingTop: 24,
+    paddingBottom: 30,
   },
   inputWrapper: {
     gap: 16,
@@ -1137,17 +1116,21 @@ const styles = StyleSheet.create({
   signupButton: {
     width: '100%',
     height: 60,
-    borderRadius: 16,
+    borderRadius: 30,
     overflow: 'hidden',
     marginTop: 8,
     shadowColor: '#4F46E5',
-    shadowOffset: {
-      width: 0,
-      height: 4,
-    },
-    shadowOpacity: 0.2,
-    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.25,
+    shadowRadius: 14,
     elevation: 8,
+  },
+  primaryActionInner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    width: '100%',
   },
   signupButtonDisabled: {
     opacity: 0.5,
@@ -1160,7 +1143,8 @@ const styles = StyleSheet.create({
   },
   buttonText: {
     color: '#FFFFFF',
-    fontSize: 16,
+    fontSize: 18,
+    lineHeight: 22,
     fontWeight: '600',
   },
   footer: {

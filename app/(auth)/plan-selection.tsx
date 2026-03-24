@@ -1,9 +1,9 @@
-import { StyleSheet, TouchableOpacity, View, ScrollView, Alert, KeyboardAvoidingView, Platform, ActivityIndicator } from 'react-native';
+import { StyleSheet, TouchableOpacity, View, ScrollView, Alert, KeyboardAvoidingView, Platform, ActivityIndicator, Text } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useTheme } from '@/contexts/ThemeContext';
 import { getColors } from '@/constants/Colors';
 import { useTranslation } from 'react-i18next';
@@ -60,6 +60,7 @@ export default function PlanSelectionScreen() {
   const [loading, setLoading] = useState(true);
   const [isProcessingPayment, setIsProcessingPayment] = useState(false);
   const [selectedPlans, setSelectedPlans] = useState<SelectedPlan[]>([]);
+  const plansScrollRef = useRef<ScrollView>(null);
   const params = useLocalSearchParams();
   const userData = params.userData ? JSON.parse(decodeURIComponent(params.userData as string)) : null;
 
@@ -175,6 +176,9 @@ export default function PlanSelectionScreen() {
     });
     // For both parents and students, just select the plan (replace any existing selection)
     setSelectedPlans([{ plan: planId }]);
+    requestAnimationFrame(() => {
+      plansScrollRef.current?.scrollToEnd({ animated: true });
+    });
   };
 
   const getButtonText = () => {
@@ -249,134 +253,47 @@ export default function PlanSelectionScreen() {
 
   const getPlanColors = (plan: PaymentPlan) => {
     const isSelected = selectedPlans.some(p => p.plan === getPlanId(plan));
-    
+    const duration = plan.durationInMonths;
+
     if (isDarkMode) {
-      switch (plan.durationInMonths) {
-        case 12:
-          return {
-            background: isSelected ? '#1E40AF' : '#1E3A8A',
-            border: isSelected ? '#60A5FA' : '#3B82F6',
-            text: '#FFFFFF',
-            subtitle: '#E5E7EB',
-            gradient: ['#1E40AF', '#1E3A8A'],
-            accent: '#F59E0B',
-            activeBorder: '#60A5FA'
-          };
-        case 6:
-          return {
-            background: isSelected ? '#059669' : '#047857',
-            border: isSelected ? '#34D399' : '#10B981',
-            text: '#FFFFFF',
-            subtitle: '#E5E7EB',
-            gradient: ['#059669', '#047857'],
-            accent: '#10B981',
-            activeBorder: '#34D399'
-          };
-        case 3:
-          return {
-            background: isSelected ? '#EA580C' : '#C2410C',
-            border: isSelected ? '#FB923C' : '#F97316',
-            text: '#FFFFFF',
-            subtitle: '#E5E7EB',
-            gradient: ['#EA580C', '#C2410C'],
-            accent: '#F97316',
-            activeBorder: '#FB923C'
-          };
-        case 1:
-          return {
-            background: isSelected ? '#7C3AED' : '#6D28D9',
-            border: isSelected ? '#A78BFA' : '#8B5CF6',
-            text: '#FFFFFF',
-            subtitle: '#E5E7EB',
-            gradient: ['#7C3AED', '#6D28D9'],
-            accent: '#8B5CF6',
-            activeBorder: '#A78BFA'
-          };
-        case 0:
-          return {
-            background: isSelected ? '#374151' : '#1F2937',
-            border: isSelected ? '#9CA3AF' : '#6B7280',
-            text: '#FFFFFF',
-            subtitle: '#E5E7EB',
-            gradient: ['#374151', '#1F2937'],
-            accent: '#6B7280',
-            activeBorder: '#9CA3AF'
-          };
-        default:
-          return {
-            background: isSelected ? '#374151' : '#1F2937',
-            border: isSelected ? '#9CA3AF' : '#6B7280',
-            text: '#FFFFFF',
-            subtitle: '#E5E7EB',
-            gradient: ['#374151', '#1F2937'],
-            accent: '#6B7280',
-            activeBorder: '#9CA3AF'
-          };
-      }
-    } else {
-      switch (plan.durationInMonths) {
-        case 12:
-          return {
-            background: isSelected ? '#EFF6FF' : '#F8FAFC',
-            border: isSelected ? '#3B82F6' : '#2563EB',
-            text: '#1E40AF',
-            subtitle: '#64748B',
-            gradient: ['#EFF6FF', '#F8FAFC'],
-            accent: '#F59E0B',
-            activeBorder: '#3B82F6'
-          };
-        case 6:
-          return {
-            background: isSelected ? '#ECFDF5' : '#F0FDF4',
-            border: isSelected ? '#10B981' : '#059669',
-            text: '#047857',
-            subtitle: '#64748B',
-            gradient: ['#ECFDF5', '#F0FDF4'],
-            accent: '#10B981',
-            activeBorder: '#10B981'
-          };
-        case 3:
-          return {
-            background: isSelected ? '#FFEDD5' : '#FFF7ED',
-            border: isSelected ? '#F97316' : '#EA580C',
-            text: '#C2410C',
-            subtitle: '#64748B',
-            gradient: ['#FFEDD5', '#FFF7ED'],
-            accent: '#F97316',
-            activeBorder: '#F97316'
-          };
-        case 1:
-          return {
-            background: isSelected ? '#F5F3FF' : '#FAF5FF',
-            border: isSelected ? '#8B5CF6' : '#7C3AED',
-            text: '#6D28D9',
-            subtitle: '#64748B',
-            gradient: ['#F5F3FF', '#FAF5FF'],
-            accent: '#8B5CF6',
-            activeBorder: '#8B5CF6'
-          };
-        case 0:
-          return {
-            background: isSelected ? '#F8FAFC' : '#F9FAFB',
-            border: isSelected ? '#64748B' : '#475569',
-            text: '#374151',
-            subtitle: '#64748B',
-            gradient: ['#F8FAFC', '#F9FAFB'],
-            accent: '#64748B',
-            activeBorder: '#64748B'
-          };
-        default:
-          return {
-            background: isSelected ? '#F8FAFC' : '#F9FAFB',
-            border: isSelected ? '#64748B' : '#475569',
-            text: '#374151',
-            subtitle: '#64748B',
-            gradient: ['#F8FAFC', '#F9FAFB'],
-            accent: '#64748B',
-            activeBorder: '#64748B'
-          };
-      }
+      const darkByDuration =
+        duration >= 12
+          ? { base: ['#0B2E80', '#123A9A'], surface: '#0F2C70', border: '#6EA8FF', accent: '#9CC4FF' }
+          : duration >= 6
+            ? { base: ['#0E4A92', '#1766B8'], surface: '#0F467F', border: '#73B8FF', accent: '#9CD0FF' }
+            : duration >= 3
+              ? { base: ['#4B3E9E', '#6D5FC4'], surface: '#43388A', border: '#A99BFF', accent: '#C7BFFF' }
+              : { base: ['#1F6E57', '#2A8A6F'], surface: '#1C644F', border: '#72CFAF', accent: '#A6E6CF' };
+
+      return {
+        background: darkByDuration.surface,
+        border: isSelected ? darkByDuration.border : '#2B4A8A',
+        text: '#EAF2FF',
+        subtitle: '#B6C7E6',
+        gradient: isSelected ? darkByDuration.base : ['#1B2434', '#141B28'],
+        accent: darkByDuration.accent,
+        activeBorder: darkByDuration.border,
+      };
     }
+
+    const lightByDuration =
+      duration >= 12
+        ? { grad: ['#DCE9FF', '#CFE0FF'], surface: '#ECF3FF', border: '#0F4BD7', text: '#0D3A9E', sub: '#4D6FAF' }
+        : duration >= 6
+          ? { grad: ['#E5F3FF', '#D4E9FF'], surface: '#EEF6FF', border: '#2D7EDC', text: '#135D9F', sub: '#4E7FAF' }
+          : duration >= 3
+            ? { grad: ['#F1ECFF', '#E5DAFF'], surface: '#F7F3FF', border: '#7A6AE6', text: '#4E43B5', sub: '#756CB4' }
+            : { grad: ['#EFFFF9', '#DFF9ED'], surface: '#F3FFF9', border: '#4DBB8A', text: '#1F8A62', sub: '#4F9279' };
+
+    return {
+      background: lightByDuration.surface,
+      border: isSelected ? lightByDuration.border : '#CFE0FF',
+      text: lightByDuration.text,
+      subtitle: lightByDuration.sub,
+      gradient: isSelected ? lightByDuration.grad : ['#F8FBFF', '#EEF4FF'],
+      accent: lightByDuration.border,
+      activeBorder: lightByDuration.border,
+    };
   };
 
   if (loading) {
@@ -388,11 +305,11 @@ export default function PlanSelectionScreen() {
   }
 
   return (
-    <LinearGradient
-      colors={[colors.background, colors.background]}
-      style={styles.gradient}
-    >
-      <SafeAreaView style={styles.safeArea}>
+      <SafeAreaView style={[styles.safeArea, { backgroundColor: isDarkMode ? '#101216' : '#F1F2F4' }]}>
+        <View pointerEvents="none" style={styles.bgLettersLayer}>
+          <Text style={[styles.bgLetter, styles.bgLetterLeft, { color: isDarkMode ? 'rgba(255,255,255,0.02)' : 'rgba(255,255,255,0.2)' }]}>M+</Text>
+          <Text style={[styles.bgLetter, styles.bgLetterRight, { color: isDarkMode ? 'rgba(255,255,255,0.018)' : 'rgba(255,255,255,0.16)' }]}>M</Text>
+        </View>
         <KeyboardAvoidingView 
           behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
           style={styles.keyboardView}
@@ -408,11 +325,18 @@ export default function PlanSelectionScreen() {
               <View style={styles.languageToggleContainer}>
                 <LanguageToggle colors={colors} />
               </View>
-              <ThemedText style={[styles.title, { color: colors.text }]}>{t('auth.planSelection.title')}</ThemedText>
+              <ThemedText style={[styles.title, { color: colors.text }]}>Choose Subscription</ThemedText>
+              <ThemedText style={[styles.subtitle, { color: colors.text + '80' }]}>Pick a plan that fits your learning journey.</ThemedText>
             </View>
 
-            <View style={styles.plansContainer}>
-              {plans.map((plan, index) => {
+            <ScrollView
+              ref={plansScrollRef}
+              style={styles.scrollContent}
+              contentContainerStyle={styles.scrollContentContainer}
+              showsVerticalScrollIndicator={false}
+            >
+              <View style={styles.plansContainer}>
+                {plans.map((plan, index) => {
                 const planColors = getPlanColors(plan);
                 const isRecommended = plan.durationInMonths === 6;
                 const isSelected = selectedPlans.some(p => p.plan === getPlanId(plan));
@@ -424,51 +348,39 @@ export default function PlanSelectionScreen() {
                       styles.planCard,
                       {
                         borderColor: isSelected ? planColors.activeBorder : planColors.border,
-                        borderWidth: isSelected ? 3 : 2,
-                        shadowColor: isDarkMode ? '#000000' : '#000000',
-                        shadowOffset: {
-                          width: 0,
-                          height: isSelected ? 8 : 4,
-                        },
-                        shadowOpacity: isDarkMode ? 0.4 : 0.15,
-                        shadowRadius: isSelected ? 16 : 12,
-                        elevation: isSelected ? 16 : 12,
-                      }
+                        borderWidth: isSelected ? 2 : 1.2,
+                        shadowColor: '#0F4BD7',
+                        shadowOffset: { width: 0, height: isSelected ? 8 : 4 },
+                        shadowOpacity: isSelected ? 0.22 : 0.12,
+                        shadowRadius: isSelected ? 12 : 8,
+                        elevation: isSelected ? 12 : 6,
+                      },
                     ]}
                     onPress={() => handlePlanSelect(plan)}
                   >
+                    <View style={[styles.planAccentBar, { backgroundColor: planColors.accent }]} />
                     <LinearGradient
                       colors={planColors.gradient as [string, string]}
                       style={styles.planCardGradient}
                     >
-                      {/* Recommended Badge - Ribbon Style */}
-                      {isRecommended && (
-                        <View style={styles.ribbonBadge}>
-                          <LinearGradient
-                            colors={['#8B5CF6', '#7C3AED']}
-                            style={styles.ribbonGradient}
-                          >
-                            <Ionicons name="star" size={12} color="#FFFFFF" />
-                            <ThemedText style={styles.ribbonText}>
-                              {t('auth.planSelection.recommended')}
-                            </ThemedText>
-                          </LinearGradient>
-                        </View>
-                      )}
-
                       {/* Header */}
                       <View style={styles.planHeader}>
                         <View style={styles.planTitleContainer}>
                           <ThemedText style={[styles.planName, { color: planColors.text }]}>
                             {plan.name}
                           </ThemedText>
+                          {isRecommended && (
+                            <ThemedText style={[styles.recommendedInlineText, { color: planColors.text }]}>
+                              (Recommended Plan)
+                            </ThemedText>
+                          )}
                         </View>
                         
                         <View style={styles.priceContainer}>
                           <ThemedText style={[styles.planPrice, { color: planColors.text }]}>
                             ETB {typeof plan.amount === 'string' ? parseFloat(plan.amount).toFixed(2) : plan.amount.toFixed(2)}
                           </ThemedText>
-                          <ThemedText style={[styles.planDuration, { color: planColors.subtitle }]}>
+                          <ThemedText style={[styles.planDuration, { color: planColors.accent }]}>
                             {plan.durationInMonths} {t('auth.planSelection.months')}
                           </ThemedText>
                         </View>
@@ -498,70 +410,92 @@ export default function PlanSelectionScreen() {
                     </LinearGradient>
                   </TouchableOpacity>
                 );
-              })}
-            </View>
-
-            <View style={styles.footer}>
-              <View style={styles.totalContainer}>
-                <ThemedText style={[styles.totalLabel, { color: colors.text }]}>
-                  {t('auth.planSelection.total')}
-                </ThemedText>
-                <ThemedText style={[styles.totalAmount, { color: colors.text }]}>
-                  ETB {getTotalCost()}
-                </ThemedText>
+                })}
               </View>
 
-              <TouchableOpacity 
-                style={[
-                  styles.continueButton,
-                  selectedPlans.length > 0 && !isProcessingPayment && styles.continueButtonActive,
-                  isProcessingPayment && styles.continueButtonProcessing
-                ]}
-                onPress={handleContinue}
-                disabled={selectedPlans.length === 0 || isProcessingPayment}
-              >
-                <LinearGradient
-                  colors={isProcessingPayment ? ['#9CA3AF', '#6B7280'] : ['#4F46E5', '#7C3AED']}
-                  style={styles.buttonGradient}
+              <View style={styles.footer}>
+                <View style={styles.totalContainer}>
+                  <ThemedText style={[styles.totalLabel, { color: colors.text }]}>
+                    {t('auth.planSelection.total')}
+                  </ThemedText>
+                  <ThemedText style={[styles.totalAmount, { color: colors.text }]}>
+                    ETB {getTotalCost()}
+                  </ThemedText>
+                </View>
+
+                <TouchableOpacity 
+                  style={[
+                    styles.continueButton,
+                    selectedPlans.length > 0 && !isProcessingPayment && styles.continueButtonActive,
+                    isProcessingPayment && styles.continueButtonProcessing
+                  ]}
+                  onPress={handleContinue}
+                  disabled={selectedPlans.length === 0 || isProcessingPayment}
                 >
-                  {isProcessingPayment ? (
-                    <View style={styles.loadingContainer}>
-                      <ActivityIndicator size="small" color="#FFFFFF" style={styles.loadingIndicator} />
+                  <LinearGradient
+                    colors={isProcessingPayment ? ['#9CA3AF', '#6B7280'] : ['#0F4BD7', '#4E7CFF']}
+                    style={styles.buttonGradient}
+                    start={{ x: 0, y: 0.5 }}
+                    end={{ x: 1, y: 0.5 }}
+                  >
+                    {isProcessingPayment ? (
+                      <View style={styles.loadingContainer}>
+                        <ActivityIndicator size="small" color="#FFFFFF" style={styles.loadingIndicator} />
+                        <ThemedText style={styles.buttonText}>
+                          {t('common.processing')}
+                        </ThemedText>
+                      </View>
+                    ) : (
                       <ThemedText style={styles.buttonText}>
-                        {t('common.processing')}
+                        {getButtonText()}
                       </ThemedText>
-                    </View>
-                  ) : (
-                    <ThemedText style={styles.buttonText}>
-                      {getButtonText()}
-                    </ThemedText>
-                  )}
-                </LinearGradient>
-              </TouchableOpacity>
-            </View>
+                    )}
+                  </LinearGradient>
+                </TouchableOpacity>
+              </View>
+            </ScrollView>
           </View>
         </KeyboardAvoidingView>
       </SafeAreaView>
-    </LinearGradient>
   );
 }
 
 const styles = StyleSheet.create({
-  gradient: {
-    flex: 1,
-  },
   safeArea: {
     flex: 1,
+  },
+  bgLettersLayer: {
+    ...StyleSheet.absoluteFillObject,
+    zIndex: 0,
+    overflow: 'hidden',
+  },
+  bgLetter: {
+    position: 'absolute',
+    fontSize: 360,
+    fontWeight: '800',
+    lineHeight: 360,
+  },
+  bgLetterLeft: {
+    left: -52,
+    top: 44,
+    transform: [{ rotate: '-7deg' }],
+  },
+  bgLetterRight: {
+    right: -78,
+    bottom: -74,
+    transform: [{ rotate: '7deg' }],
   },
   keyboardView: {
     flex: 1,
   },
   container: {
     flex: 1,
-    padding: 16,
+    paddingHorizontal: 12,
+    paddingTop: 8,
+    zIndex: 1,
   },
   header: {
-    marginBottom: 16,
+    marginBottom: 8,
   },
   backButton: {
     marginBottom: 8,
@@ -575,26 +509,35 @@ const styles = StyleSheet.create({
     zIndex: 1,
   },
   title: {
-    fontSize: 26,
-    fontWeight: '800',
+    fontSize: 30,
+    lineHeight: 36,
+    fontWeight: '700',
     marginBottom: 4,
-    paddingTop: 6,
-    letterSpacing: -0.5,
+    marginTop: 6,
+    textAlign: 'center',
   },
   subtitle: {
-    fontSize: 12,
+    fontSize: 15,
+    lineHeight: 22,
+    textAlign: 'center',
+    marginBottom: 2,
+  },
+  scrollContent: {
+    flex: 1,
+  },
+  scrollContentContainer: {
+    paddingBottom: 18,
   },
   plansContainer: {
-    flex: 1,
-    gap: 10,
-    paddingBottom: 6,
+    gap: 8,
+    paddingBottom: 8,
   },
   planCard: {
-    borderRadius: 16,
+    borderRadius: 18,
     position: 'relative',
     overflow: 'hidden',
-    marginBottom: 10,
-    minHeight: 110,
+    marginBottom: 8,
+    minHeight: 102,
     backgroundColor: 'transparent',
     shadowColor: '#000000',
     shadowOffset: {
@@ -605,10 +548,21 @@ const styles = StyleSheet.create({
     shadowRadius: 8,
     elevation: 4,
   },
+  planAccentBar: {
+    position: 'absolute',
+    left: 0,
+    top: 0,
+    bottom: 0,
+    width: 6,
+    zIndex: 5,
+    borderTopLeftRadius: 18,
+    borderBottomLeftRadius: 18,
+  },
   planCardGradient: {
     flex: 1,
-    padding: 18,
-    borderRadius: 14,
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+    borderRadius: 16,
   },
   recommendedBadge: {
     marginLeft: 8,
@@ -630,15 +584,17 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'flex-start',
-    marginBottom: 10,
+    marginBottom: 8,
   },
   planTitleContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     flex: 1,
+    gap: 8,
+    paddingRight: 8,
   },
   planName: {
-    fontSize: 18,
+    fontSize: 17,
     fontWeight: '700',
     letterSpacing: 0.3,
   },
@@ -646,22 +602,22 @@ const styles = StyleSheet.create({
     alignItems: 'flex-end',
   },
   planPrice: {
-    fontSize: 24,
+    fontSize: 22,
     fontWeight: '900',
     marginBottom: 4,
     letterSpacing: -0.5,
   },
   planDuration: {
-    fontSize: 12,
+    fontSize: 11,
     fontWeight: '600',
-    opacity: 0.8,
+    opacity: 0.95,
   },
   descriptionContainer: {
     marginBottom: 6,
   },
   planDescription: {
-    fontSize: 13,
-    lineHeight: 18,
+    fontSize: 12.5,
+    lineHeight: 17,
     opacity: 0.9,
     fontWeight: '500',
   },
@@ -671,7 +627,7 @@ const styles = StyleSheet.create({
     gap: 6,
     paddingVertical: 6,
     paddingHorizontal: 10,
-    backgroundColor: 'rgba(255, 255, 255, 0.15)',
+    backgroundColor: 'rgba(15, 75, 215, 0.12)',
     borderRadius: 8,
     marginTop: 4,
   },
@@ -681,36 +637,11 @@ const styles = StyleSheet.create({
     opacity: 0.95,
     fontWeight: '600',
   },
-  ribbonBadge: {
-    position: 'absolute',
-    bottom: 5,
-    right: -28,
-    zIndex: 10,
-    transform: [{ rotate: '-45deg' }],
-  },
-  ribbonGradient: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 0,
-    gap: 4,
-    shadowColor: '#000000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.3,
-    shadowRadius: 4,
-    elevation: 5,
-    minWidth: 80,
-    justifyContent: 'center',
-  },
-  ribbonText: {
-    color: '#FFFFFF',
-    fontSize: 10,
+  recommendedInlineText: {
+    fontSize: 12,
     fontWeight: '700',
-    textAlign: 'center',
+    opacity: 0.85,
+    fontStyle: 'italic',
   },
   activeBorderIndicator: {
     position: 'absolute',
@@ -723,9 +654,9 @@ const styles = StyleSheet.create({
     backgroundColor: 'transparent',
   },
   footer: {
-    paddingTop: 16,
+    paddingTop: 12,
     borderTopWidth: 1.5,
-    borderTopColor: '#E5E7EB',
+    borderTopColor: 'rgba(15, 75, 215, 0.18)',
     backgroundColor: 'transparent',
   },
   totalContainer: {
@@ -747,8 +678,8 @@ const styles = StyleSheet.create({
   },
   continueButton: {
     width: '100%',
-    height: 52,
-    borderRadius: 14,
+    height: 54,
+    borderRadius: 28,
     overflow: 'hidden',
     opacity: 0.5,
   },

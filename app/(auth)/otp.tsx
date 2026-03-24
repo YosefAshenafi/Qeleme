@@ -1,4 +1,4 @@
-import { StyleSheet, TextInput, TouchableOpacity, View, KeyboardAvoidingView, Platform } from 'react-native';
+import { StyleSheet, TextInput, TouchableOpacity, View, KeyboardAvoidingView, Platform, Text } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -93,6 +93,7 @@ export default function OTPScreen() {
         setError(''); // Clear any previous errors
         
         const response = await sendOTP(userData.phoneNumber);
+        console.log('[OTP] resend response:', response);
         
         if (response.success) {
           // Start timer and disable resend
@@ -128,6 +129,7 @@ export default function OTPScreen() {
       
       // Verify the OTP
       const response = await verifyOTP(userData.phoneNumber, otpString);
+      console.log('[OTP] verify response:', response);
       
       if (response.success) {
         // OTP is valid, proceed to plan selection
@@ -157,11 +159,11 @@ export default function OTPScreen() {
   };
 
   return (
-    <LinearGradient
-      colors={[colors.background, colors.background]}
-      style={styles.gradient}
-    >
-      <SafeAreaView style={styles.safeArea}>
+      <SafeAreaView style={[styles.safeArea, { backgroundColor: isDarkMode ? '#101216' : '#F1F2F4' }]}>
+        <View pointerEvents="none" style={styles.bgLettersLayer}>
+          <Text style={[styles.bgLetter, styles.bgLetterLeft, { color: isDarkMode ? 'rgba(255,255,255,0.02)' : 'rgba(255,255,255,0.2)' }]}>M+</Text>
+          <Text style={[styles.bgLetter, styles.bgLetterRight, { color: isDarkMode ? 'rgba(255,255,255,0.018)' : 'rgba(255,255,255,0.16)' }]}>M</Text>
+        </View>
         <KeyboardAvoidingView 
           behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
           style={styles.keyboardView}
@@ -187,113 +189,123 @@ export default function OTPScreen() {
               <View style={styles.languageToggleContainer}>
                 <LanguageToggle colors={colors} />
               </View>
-              <ThemedText style={[styles.title, { color: colors.text }]}>{t('auth.otp.title')}</ThemedText>
-              <ThemedText style={[styles.subtitle, { color: colors.text + '80' }]}>
-                {t('auth.otp.subtitle')}
-              </ThemedText>
             </View>
 
-            <View style={styles.otpContainer}>
-              {otp.map((digit, index) => (
-                <TextInput
-                  key={index}
-                  ref={(ref) => (inputRefs.current[index] = ref)}
-                  style={[
-                    styles.otpInput,
-                    {
-                      backgroundColor: isDarkMode ? '#2C2C2E' : '#F9FAFB',
-                      borderColor: error ? '#EF4444' : (isDarkMode ? '#3C3C3E' : '#E5E7EB'),
-                      color: colors.text
-                    }
-                  ]}
-                  value={digit}
-                  onChangeText={(text) => handleOtpChange(text, index)}
-                  onKeyPress={(e) => handleKeyPress(e, index)}
-                  keyboardType="number-pad"
-                  maxLength={1}
-                  selectTextOnFocus
-                  autoFocus={index === 0}
-                  placeholderTextColor={isDarkMode ? '#A0A0A5' : '#9CA3AF'}
-                  editable={!isLoading}
-                />
-              ))}
-            </View>
-
-            {/* Timer Display */}
-            <View style={styles.timerContainer}>
-              <ThemedText style={[styles.timerText, { color: isDarkMode ? '#A0A0A5' : '#6B7280' }]}>
-                {t('auth.otp.timer.text')} {formatTime(timeLeft)}
+            <View style={[styles.card, { backgroundColor: isDarkMode ? '#191D24' : '#FAFAFA' }]}>
+              <ThemedText style={[styles.title, { color: isDarkMode ? '#F3F4F6' : '#111827' }]}>Check your device</ThemedText>
+              <ThemedText style={[styles.subtitle, { color: isDarkMode ? '#A8ADB4' : '#6B7280' }]}>
+                We've sent a 6-digit verification code. Enter the code below to continue.
               </ThemedText>
-            </View>
+              <View style={styles.otpContainer}>
+                {otp.map((digit, index) => (
+                  <TextInput
+                    key={index}
+                    ref={(ref) => (inputRefs.current[index] = ref)}
+                    style={[
+                      styles.otpInput,
+                      {
+                        backgroundColor: '#E9EAED',
+                        borderColor: error ? '#EF4444' : '#E5E7EB',
+                        color: colors.text
+                      }
+                    ]}
+                    value={digit}
+                    onChangeText={(text) => handleOtpChange(text, index)}
+                    onKeyPress={(e) => handleKeyPress(e, index)}
+                    keyboardType="number-pad"
+                    maxLength={1}
+                    selectTextOnFocus
+                    autoFocus={index === 0}
+                    placeholderTextColor={isDarkMode ? '#A0A0A5' : '#9CA3AF'}
+                    editable={!isLoading}
+                  />
+                ))}
+              </View>
 
-            {error ? (
-              <ThemedText style={styles.errorText}>{error}</ThemedText>
-            ) : null}
+              {error ? (
+                <ThemedText style={styles.errorText}>{error}</ThemedText>
+              ) : null}
 
-            <TouchableOpacity 
-              style={[
-                styles.verifyButton,
-                !isLoading && otp.join('').length === 6 && styles.verifyButtonActive
-              ]}
-              onPress={handleVerify}
-              disabled={isLoading || otp.join('').length !== 6}
-            >
-              <LinearGradient
-                colors={['#4F46E5', '#7C3AED']}
-                style={styles.buttonGradient}
-              >
-                <ThemedText style={styles.buttonText}>
-                  {isLoading ? 'Proceeding...' : 'Continue'}
-                </ThemedText>
-              </LinearGradient>
-            </TouchableOpacity>
-
-            <View style={styles.resendContainer}>
-              <ThemedText style={[styles.resendText, { color: isDarkMode ? '#A0A0A5' : '#6B7280' }]}>
-                {timeLeft === 300 ? t('auth.otp.send.text') : t('auth.otp.resend.text')}
-              </ThemedText>
               <TouchableOpacity 
-                onPress={handleResend} 
-                disabled={(!canResend && timeLeft !== 300) || isLoading}
                 style={[
-                  styles.resendButtonContainer,
-                  ((!canResend && timeLeft !== 300) || isLoading) && { opacity: 0.5 }
+                  styles.verifyButton,
+                  !isLoading && otp.join('').length === 6 && styles.verifyButtonActive
                 ]}
+                onPress={handleVerify}
+                disabled={isLoading || otp.join('').length !== 6}
               >
-                <ThemedText style={[
-                  styles.resendButton, 
-                  { color: (canResend || timeLeft === 300) ? '#4F46E5' : (isDarkMode ? '#A0A0A5' : '#6B7280') }
-                ]}>
-                  {isLoading ? 'Sending...' : 
-                   timeLeft === 300 ? t('auth.otp.send.button') : 
-                   canResend ? t('auth.otp.resend.button') : 
-                   formatTime(timeLeft)}
-                </ThemedText>
+                <LinearGradient
+                  colors={['#0F4BD7', '#4E7CFF']}
+                  style={styles.buttonGradient}
+                  start={{ x: 0, y: 0.5 }}
+                  end={{ x: 1, y: 0.5 }}
+                >
+                  <ThemedText style={styles.buttonText}>
+                    {isLoading ? 'Verifying...' : 'Verify Identity'}
+                  </ThemedText>
+                </LinearGradient>
               </TouchableOpacity>
+
+              <View style={styles.resendContainer}>
+                <ThemedText style={[styles.resendText, { color: isDarkMode ? '#A0A0A5' : '#6B7280' }]}>
+                  Didn’t receive the code?
+                </ThemedText>
+                <TouchableOpacity 
+                  onPress={handleResend} 
+                  disabled={(!canResend && timeLeft !== 300) || isLoading}
+                  style={[
+                    styles.resendButtonContainer,
+                    ((!canResend && timeLeft !== 300) || isLoading) && { opacity: 0.5 }
+                  ]}
+                >
+                  <ThemedText style={styles.resendButton}>
+                    {isLoading ? 'Sending...' : canResend ? 'Resend code' : `Resend in ${formatTime(timeLeft)}`}
+                  </ThemedText>
+                </TouchableOpacity>
+              </View>
             </View>
           </View>
         </KeyboardAvoidingView>
       </SafeAreaView>
-    </LinearGradient>
   );
 }
 
 const styles = StyleSheet.create({
-  gradient: {
-    flex: 1,
-  },
   safeArea: {
     flex: 1,
+  },
+  bgLettersLayer: {
+    ...StyleSheet.absoluteFillObject,
+    zIndex: 0,
+    overflow: 'hidden',
+  },
+  bgLetter: {
+    position: 'absolute',
+    fontSize: 360,
+    fontWeight: '800',
+    lineHeight: 360,
+  },
+  bgLetterLeft: {
+    left: -52,
+    top: 44,
+    transform: [{ rotate: '-7deg' }],
+  },
+  bgLetterRight: {
+    right: -78,
+    bottom: -74,
+    transform: [{ rotate: '7deg' }],
   },
   keyboardView: {
     flex: 1,
   },
   container: {
     flex: 1,
-    padding: 24,
+    paddingHorizontal: 12,
+    paddingTop: 8,
+    zIndex: 1,
   },
   header: {
-    marginBottom: 32,
+    marginBottom: 16,
   },
   backButton: {
     marginBottom: 16,
@@ -306,22 +318,34 @@ const styles = StyleSheet.create({
     marginRight: 16,
     zIndex: 1,
   },
+  card: {
+    borderRadius: 28,
+    paddingHorizontal: 24,
+    paddingTop: 24,
+    paddingBottom: 26,
+  },
   title: {
-    fontSize: 32,
-    fontWeight: '700',
+    fontSize: 44,
+    lineHeight: 48,
+    fontWeight: '600',
     marginBottom: 8,
-    paddingTop: 10,
+    textAlign: 'center',
+    fontFamily: 'System',
   },
   subtitle: {
-    fontSize: 16,
+    fontSize: 18,
+    textAlign: 'center',
+    lineHeight: 30,
+    marginBottom: 18,
   },
   otpContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginBottom: 32,
+    marginBottom: 22,
+    gap: 8,
   },
   otpInput: {
-    width: 50,
+    width: 46,
     height: 60,
     borderRadius: 12,
     borderWidth: 1,
@@ -337,7 +361,7 @@ const styles = StyleSheet.create({
   verifyButton: {
     width: '100%',
     height: 60,
-    borderRadius: 16,
+    borderRadius: 30,
     overflow: 'hidden',
     opacity: 0.5,
   },
@@ -350,36 +374,31 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   buttonText: {
-    color: '#FFFFFF',
-    fontSize: 16,
+    color: '#F8FAFF',
+    fontSize: 18,
+    lineHeight: 22,
     fontWeight: '600',
+    fontFamily: 'System',
   },
   resendContainer: {
-    flexDirection: 'row',
+    flexDirection: 'column',
     justifyContent: 'center',
     alignItems: 'center',
-    marginTop: 24,
+    marginTop: 18,
     gap: 8,
   },
   resendText: {
     fontSize: 14,
   },
   resendButton: {
-    color: '#4F46E5',
-    fontSize: 14,
-    fontWeight: '600',
+    color: '#0F4BD7',
+    fontSize: 28,
+    lineHeight: 32,
+    fontWeight: '700',
   },
   resendButtonContainer: {
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 8,
-  },
-  timerContainer: {
-    alignItems: 'center',
-    marginBottom: 16,
-  },
-  timerText: {
-    fontSize: 14,
-    textAlign: 'center',
   },
 }); 

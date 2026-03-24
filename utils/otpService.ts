@@ -22,6 +22,18 @@ const sendOTP = async (phoneNumber: string): Promise<OTPResponse> => {
     
     // Generate a 6-digit OTP
     const otp = generateOTP();
+
+    // Dev-only bypass for local testing without relying on SMS gateway delivery.
+    // Use +251900000000 (or 900000000 in the form) and enter 123456 on OTP screen.
+    if (__DEV__ && formattedPhone === '+251900000000') {
+      const testOtp = '123456';
+      await storeOTP(formattedPhone, testOtp, 5);
+      return {
+        success: true,
+        message: 'OTP bypass enabled for development',
+        otp: testOtp,
+      };
+    }
     
     // Create the message content
     const message = `Your Qelem verification code is: ${otp}. Valid for 5 minutes.`;
