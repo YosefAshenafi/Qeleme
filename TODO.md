@@ -51,13 +51,12 @@ Purpose: redesign all app interfaces step by step without missing any page, usin
 - [x] Figma received and confirmed.
 - [x] Implement welcome structure and CTA hierarchy.
 - [x] Connect to login/signup routes.
-- [ ] QA on iOS + Android.
+- [x] QA on iOS + Android.
 
 ### 3. Role Selection
-- [ ] Figma received and confirmed.
-- [ ] Implement student/parent selection UX.
-- [ ] Validate routing to next relevant screen.
-- [ ] QA on iOS + Android.
+- [x] Skipped for now (student-only signup enabled).
+- [x] Role-selection routing bypassed to direct signup.
+- [ ] Re-enable parent/multi-student flow later if needed.
 
 ### 4. Sign In
 - [ ] Figma received and confirmed.
@@ -178,7 +177,7 @@ When I ask for a screen, please send:
 
 - [x] Onboarding
 - [x] Welcome
-- [ ] Role Selection
+- [x] Role Selection (skipped for now)
 - [ ] Sign In
 - [ ] Sign Up
 - [ ] OTP
@@ -203,6 +202,7 @@ When I ask for a screen, please send:
 - [x] I implement Onboarding and share what is completed.
 - [x] You send Figma for **Welcome** next.
 - [x] I implement Welcome and share what is completed.
-- [ ] You send Figma for **Role Selection** next.
-- [ ] I implement Role Selection and share what is completed.
+- [x] Role Selection skipped for now (student-only).
+- [ ] You send Figma for **Sign In** next.
+- [ ] I implement Sign In and share what is completed.
 

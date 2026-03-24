@@ -19,7 +19,7 @@ export default function WelcomeScreen() {
   };
 
   const handleSignUp = () => {
-    router.push('/(auth)/role-selection');
+    router.push('/(auth)/signup');
   };
 
   const handleBrowseAsGuest = () => {

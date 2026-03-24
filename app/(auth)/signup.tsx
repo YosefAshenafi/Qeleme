@@ -35,8 +35,8 @@ export default function SignupScreen() {
   const { isDarkMode } = useTheme();
   const colors = getColors(isDarkMode);
   const params = useLocalSearchParams();
-  const numberOfChildren = params.numberOfChildren ? parseInt(params.numberOfChildren as string) : 1;
-  const role = params.role as string || 'student';
+  const numberOfChildren = 1;
+  const role: 'student' | 'parent' = 'student';
   const initialChildrenData = params.childrenData ? JSON.parse(params.childrenData as string) : 
     Array(numberOfChildren).fill({ fullName: '', username: '', grade: '' as Grade, password: '', confirmPassword: '', region: '' });
   
