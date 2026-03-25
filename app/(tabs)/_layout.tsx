@@ -1,7 +1,6 @@
 import { Tabs, Redirect } from 'expo-router';
 import React from 'react';
 import { Platform, TouchableOpacity, View, StyleSheet, Text, Alert } from 'react-native';
-import { router } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '@/contexts/AuthContext';
 
@@ -48,14 +47,6 @@ export default function TabLayout() {
 
   const megaHeaderRight = () => (
     <View style={styles.headerRight}>
-      <TouchableOpacity
-        style={[styles.headerIconButton, { backgroundColor: iconCircle }]}
-        onPress={() => router.push('/(tabs)/mcq')}
-        accessibilityRole="button"
-        accessibilityLabel={t('home.header.searchAccessibility')}
-      >
-        <IconSymbol name="magnifyingglass" size={22} color={iconColor} />
-      </TouchableOpacity>
       <TouchableOpacity
         style={[styles.headerIconButton, { backgroundColor: iconCircle }]}
         onPress={() => Alert.alert(t('common.info'), t('home.header.notificationsPlaceholder'))}
@@ -115,7 +106,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="mcq"
         options={{
-          title: t('navigation.tabs.books'),
+          title: t('navigation.tabs.subjects'),
           tabBarIcon: ({ color, focused }) => (
             <IconSymbol name={focused ? 'book.fill' : 'book'} size={focused ? 26 : 24} color={color} />
           ),

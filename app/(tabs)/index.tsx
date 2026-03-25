@@ -114,7 +114,7 @@ export default function HomeScreen() {
   const [refreshing, setRefreshing] = useState(false);
   const scrollViewRef = useRef<ScrollView>(null);
   const [reportCards, setReportCards] = useState<ReportCard[]>([]);
-  const [mcqBooks, setMcqBooks] = useState<BookItem[]>([]);
+  const [homeMcqSubjects, setHomeMcqSubjects] = useState<BookItem[]>([]);
   const [isMCQLoading, setIsMCQLoading] = useState(false);
   const [nationalExamYears, setNationalExamYears] = useState<number[]>([]);
   const [isNationalExamLoading, setIsNationalExamLoading] = useState(false);
@@ -148,14 +148,14 @@ export default function HomeScreen() {
     }
   };
 
-  const fetchMcqBooks = async () => {
+  const fetchHomeMcqSubjects = async () => {
     setIsMCQLoading(true);
     try {
       const gradeNumber = user?.grade?.replace(/[^0-9]/g, '') || '6';
       const mcqData = await getMCQData(`grade-${gradeNumber}`);
       if (mcqData.grades && mcqData.grades.length > 0) {
         const grade = mcqData.grades[0];
-        const books: BookItem[] = grade.subjects.map((subject: any) => ({
+        const tiles: BookItem[] = grade.subjects.map((subject: any) => ({
           id: `mcq-${subject.id}`,
           title: subject.name,
           subtitle: `Grade ${gradeNumber}`,
@@ -165,10 +165,10 @@ export default function HomeScreen() {
           progress: Math.floor(Math.random() * 100),
           chapterCount: Array.isArray(subject.chapters) ? subject.chapters.length : 0,
         }));
-        setMcqBooks(books);
+        setHomeMcqSubjects(tiles);
       }
     } catch (error) {
-      console.log('Failed to fetch mcq books from API:', error);
+      console.log('Failed to fetch MCQ subjects from API:', error);
       const gradeNumber = user?.grade?.replace(/[^0-9]/g, '') || '6';
       const fallbackSubjects = [
         'Mathematics',
@@ -180,7 +180,7 @@ export default function HomeScreen() {
         'History',
         'Geography',
       ];
-      setMcqBooks(
+      setHomeMcqSubjects(
         fallbackSubjects.map((subject, index) => ({
           id: `mcq-${index}`,
           title: subject,
@@ -199,7 +199,7 @@ export default function HomeScreen() {
 
   useEffect(() => {
     if (!isKGStudent) {
-      fetchMcqBooks();
+      fetchHomeMcqSubjects();
       if (hasNationalExams()) {
         fetchNationalExamYears();
       }
@@ -211,7 +211,7 @@ export default function HomeScreen() {
       const loadData = async () => {
         if (!isKGStudent) {
           await loadReportData();
-          await fetchMcqBooks();
+          await fetchHomeMcqSubjects();
           if (hasNationalExams()) {
             await fetchNationalExamYears();
           }
@@ -251,7 +251,7 @@ export default function HomeScreen() {
 
       await Promise.all([
         !isKGStudent ? loadReportData() : Promise.resolve(),
-        !isKGStudent ? fetchMcqBooks() : Promise.resolve(),
+        !isKGStudent ? fetchHomeMcqSubjects() : Promise.resolve(),
         !isKGStudent && hasNationalExams() ? fetchNationalExamYears() : Promise.resolve()
       ]);
     } catch (error) {
@@ -510,7 +510,7 @@ export default function HomeScreen() {
   const metaMuted = isDarkMode ? '#9AA2AF' : '#6B7280';
 
   const formatChapters = (n: number) =>
-    n === 1 ? t('home.gradeBooks.chaptersCountOne') : t('home.gradeBooks.chaptersCount', { count: n });
+    n === 1 ? t('home.gradeSubjects.chaptersCountOne') : t('home.gradeSubjects.chaptersCount', { count: n });
 
   const renderSubjectTile = (book: BookItem) => {
     const coverData = getBookCover(book.subject);
@@ -623,9 +623,9 @@ export default function HomeScreen() {
                 </TouchableOpacity>
               </View>
 
-              <View style={styles.booksSectionHeader}>
-                <ThemedText style={[styles.booksSectionTitle, { color: sectionHeading }]}>
-                  {t('home.gradeBooks.title', { grade: gradeDigit })}
+              <View style={styles.subjectsSectionHeader}>
+                <ThemedText style={[styles.subjectsSectionTitle, { color: sectionHeading }]}>
+                  {t('home.gradeSubjects.title', { grade: gradeDigit })}
                 </ThemedText>
                 <TouchableOpacity onPress={() => router.push('/(tabs)/mcq')} hitSlop={12}>
                   <ThemedText style={styles.viewAllLink}>{t('home.viewAll')}</ThemedText>
@@ -662,7 +662,7 @@ export default function HomeScreen() {
                   ))}
                 </View>
               ) : (
-                <View style={styles.subjectGrid}>{mcqBooks.map(renderSubjectTile)}</View>
+                <View style={styles.subjectGrid}>{homeMcqSubjects.map(renderSubjectTile)}</View>
               )}
 
               {hasNationalExams() && nationalExamYears.length > 0 && (
@@ -837,13 +837,13 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     textAlign: 'center',
   },
-  booksSectionHeader: {
+  subjectsSectionHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     marginBottom: 14,
   },
-  booksSectionTitle: {
+  subjectsSectionTitle: {
     fontSize: 18,
     fontWeight: '700',
     letterSpacing: -0.2,

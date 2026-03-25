@@ -68,6 +68,8 @@ export default function FlashcardsScreen() {
   const [previousLanguage, setPreviousLanguage] = useState(i18n.language);
   const [isPreSelected, setIsPreSelected] = useState(false);
   const preSelectionAttempted = useRef(false);
+  /** Ensures Subjects tab → Flashcards deep-link only auto-starts once per navigation. */
+  const flashcardsAutoStartConsumedRef = useRef(false);
 
   const revealAnimation = useSharedValue(0);
   const progressAnimation = useSharedValue(0);
@@ -114,8 +116,9 @@ export default function FlashcardsScreen() {
       console.log('Pre-selection parameter detected:', params.preSelectedSubject);
       preSelectionAttempted.current = false;
       setHasAppliedPreSelection(false);
+      flashcardsAutoStartConsumedRef.current = false;
     }
-  }, [params.preSelectedSubject]);
+  }, [params.preSelectedSubject, params.preSelectedChapterId]);
 
   // Update the selected grade when flashcards data is loaded
   useEffect(() => {
@@ -167,7 +170,16 @@ export default function FlashcardsScreen() {
             console.log('✓ Found subject:', { id: subject.id, name: subject.name });
             console.log('Setting selected subject to:', subject.id);
             setSelectedSubject(subject.id);
-            setSelectedChapter(''); // Reset chapter when subject changes
+            const chId =
+              typeof params.preSelectedChapterId === 'string'
+                ? params.preSelectedChapterId.trim()
+                : '';
+            if (chId) {
+              const ch = subject.chapters?.find((c) => c.id === chId);
+              setSelectedChapter(ch ? ch.id : '');
+            } else {
+              setSelectedChapter('');
+            }
             setIsPreSelected(true); // Mark as pre-selected
             setHasAppliedPreSelection(true);
           } else {
@@ -189,7 +201,7 @@ export default function FlashcardsScreen() {
         }
       }
     }
-  }, [flashcardsData, params.preSelectedSubject]);
+  }, [flashcardsData, params.preSelectedSubject, params.preSelectedChapterId]);
 
   // Reset chapter when subject changes (but don't clear during pre-selection)
   useEffect(() => {
@@ -476,6 +488,20 @@ export default function FlashcardsScreen() {
       setIsLoading(false);
     }
   };
+
+  // Subjects tab → chapter picker → open Flashcards with startFlashcards=1
+  useEffect(() => {
+    const startFs = params.startFlashcards;
+    const startFsStr = Array.isArray(startFs) ? startFs[0] : startFs;
+    if (startFsStr !== '1') return;
+    if (!selectedSubject || !selectedChapter) return;
+    if (isLoading) return;
+    if (showFlashcards) return;
+    if (flashcardsAutoStartConsumedRef.current) return;
+    flashcardsAutoStartConsumedRef.current = true;
+    void handleStartFlashcards();
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- run when selection is ready; handleStartFlashcards closes over latest state
+  }, [selectedSubject, selectedChapter, isLoading, params.startFlashcards, showFlashcards]);
 
   if (isLoading) {
     return (

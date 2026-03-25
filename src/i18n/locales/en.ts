@@ -26,8 +26,8 @@ export default {
       flashcardsLabel: 'Flashcards',
       reportsLabel: 'Reports',
     },
-    gradeBooks: {
-      title: 'Grade {{grade}} Books',
+    gradeSubjects: {
+      title: 'Grade {{grade}} Subjects',
       chaptersCount: '{{count}} Chapters',
       chaptersCountOne: '1 Chapter',
     },
@@ -250,7 +250,7 @@ export default {
   navigation: {
     tabs: {
       home: 'Home',
-      books: 'Books',
+      subjects: 'Subjects',
       stats: 'Stats',
       mcq: 'MCQ',
       flashcards: 'Flashcards',
@@ -585,17 +585,17 @@ export default {
         contentBeingAdded: 'Content for your grade is still being added'
       }
     },
-    books: {
+    subjects: {
       heroTitlePrefix: 'Your Grade {{grade}}',
       heroTitleHighlight: 'Curriculum',
       heroTitleSuffix: 'Hub',
       heroDescription:
         'Access premium academic resources tailored for your year. Master your subjects with specialized practice tools.',
       openNationalExam: 'Past national exam papers',
-      searchPlaceholder: 'Search books or subjects...',
+      searchPlaceholder: 'Search subjects...',
       searchButton: 'Search',
       filter: {
-        all: 'All Books',
+        all: 'All Subjects',
         science: 'Science',
         languages: 'Languages',
         mathematics: 'Mathematics',
@@ -608,8 +608,8 @@ export default {
       badgeNew: 'New',
       badgeUpdated: 'Updated',
       badgeLatest: 'LATEST',
-      detailBackA11y: 'Back to books',
-      empty: 'No books match your search or filter.',
+      detailBackA11y: 'Back to subjects',
+      empty: 'No subjects match your search or filter.',
     },
   },
   flashcards: {
@@ -809,7 +809,7 @@ export default {
   kg: {
     welcome: 'Welcome {{name}}!',
     howToPlay: 'How to Play',
-    subtitle: "Read the books and evaluate yourself with the questions!",
+    subtitle: "Study your subjects and test yourself with the questions!",
     letsHaveFun: "",
     categories: {
       // Fallback categories
@@ -841,7 +841,7 @@ export default {
       subtitle: 'Choose a topic and Start Learning!'
     },
     instructions: {
-      subtitle: "Read the books and evaluate yourself with the questions!",
+      subtitle: "Study your subjects and test yourself with the questions!",
       look: {
         title: 'Look Carefully',
         description: 'Take your time to look at the pictures and understand what they show.'

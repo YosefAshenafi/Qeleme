@@ -18,6 +18,8 @@ import { IconSymbol } from '../../components/ui/IconSymbol';
 import { getBookCover } from '../../services/bookCoverService';
 import RichText from '../../components/ui/RichText';
 import { getMCQData, MCQData, Grade, Subject, Chapter, Question, Option, ExamType, getNationalExamQuestions, getNationalExamAvailable, NationalExamAPIResponse, getRegularMCQQuestions } from '../../services/mcqService';
+import { getFlashcardStructure, getFlashcardsForChapter, Flashcard } from '../../services/flashcardService';
+import { FlashcardsInlineModal } from '../../components/FlashcardsInlineModal';
 import ActivityTrackingService from '../../services/activityTrackingService';
 import PictureMCQScreen from '../screens/PictureMCQScreen';
 import PictureMCQInstructionScreen from '../screens/PictureMCQInstructionScreen';
@@ -32,12 +34,11 @@ const BOOK_CARD_IMAGE_HEIGHT = Math.min(
   Math.round(SCREEN_HEIGHT * 0.58),
   Math.round(SCREEN_WIDTH * 1.72)
 );
-const BOOK_DETAIL_IMAGE_HEIGHT = Math.min(
-  Math.round(SCREEN_HEIGHT * 0.64),
-  Math.round(SCREEN_WIDTH * 1.78)
-);
 
 type BooksCategoryFilter = 'all' | 'science' | 'languages' | 'mathematics' | 'humanities';
+
+/** Subjects hub → chapter step: which experience to open after a chapter is chosen. */
+type BooksChapterIntent = 'mcq' | 'flashcards' | 'either' | null;
 
 function getSubjectBooksCategory(name: string): BooksCategoryFilter | 'other' {
   const n = name.toLowerCase();
@@ -68,7 +69,7 @@ export default function MCQScreen() {
   const [error, setError] = useState<string | null>(null);
   const [mcqData, setMcqData] = useState<MCQData | null>(null);
   const [selectedGrade, setSelectedGrade] = useState<Grade | null>(null);
-  /** Default `mcq` so the Books tab opens the hub immediately (no exam-type gate). */
+  /** Default `mcq` so the Subjects tab opens the hub immediately (no exam-type gate). */
   const [selectedExamType, setSelectedExamType] = useState<string | null>('mcq');
   const [selectedSubject, setSelectedSubject] = useState('');
   const [selectedChapter, setSelectedChapter] = useState('');
@@ -97,8 +98,21 @@ export default function MCQScreen() {
   const [isPreSelected, setIsPreSelected] = useState(false);
   const [booksSearchQuery, setBooksSearchQuery] = useState('');
   const [booksCategory, setBooksCategory] = useState<BooksCategoryFilter>('all');
-  /** Full-screen book detail (opened when a book row is tapped). */
-  const [booksDetailSubject, setBooksDetailSubject] = useState<Subject | null>(null);
+  const [booksChapterIntent, setBooksChapterIntent] = useState<BooksChapterIntent>(null);
+  /** Subjects chapter popup: grid vs pick QA/Flash after chapter (subject card tap). */
+  const [booksChapterModalStep, setBooksChapterModalStep] = useState<'grid' | 'eitherPick'>('grid');
+  const [booksEitherPendingChapter, setBooksEitherPendingChapter] = useState<Chapter | null>(null);
+  const booksChapterModeLabel =
+    booksChapterIntent === 'mcq'
+      ? 'Multiple Questions'
+      : booksChapterIntent === 'flashcards'
+        ? 'Flashcards'
+        : '';
+  /** Subjects hub: loading MCQ or flashcards after chapter pick (avoids blank screen / race with fetch). */
+  const [booksHubActionLoading, setBooksHubActionLoading] = useState(false);
+  const [flashcardsModalVisible, setFlashcardsModalVisible] = useState(false);
+  const [flashcardsModalCards, setFlashcardsModalCards] = useState<Flashcard[]>([]);
+  const [flashcardsModalLabels, setFlashcardsModalLabels] = useState({ subject: '', chapter: '' });
 
   // Timer states
   const [time, setTime] = useState(0);
@@ -141,6 +155,17 @@ export default function MCQScreen() {
     }
     return list;
   }, [mcqSubjectsSorted, booksSearchQuery, booksCategory]);
+
+  const booksModalChaptersSorted = useMemo(() => {
+    if (!selectedSubjectData?.chapters?.length) return [];
+    return [...selectedSubjectData.chapters].sort((a, b) => {
+      const getChapterNumber = (name: string) => {
+        const match = name.match(/(\d+)/);
+        return match ? parseInt(match[1], 10) : 0;
+      };
+      return getChapterNumber(a.name) - getChapterNumber(b.name);
+    });
+  }, [selectedSubjectData]);
 
   const currentQuestion = nationalExamQuestions[currentQuestionIndex];
   const isLastQuestion = currentQuestionIndex === (nationalExamQuestions.length - 1);
@@ -228,12 +253,7 @@ export default function MCQScreen() {
 
     getMCQData(gradeToFetch).then(data => {
       console.log('DATA:', data);
-      
-      // Reset selections first
-      setSelectedSubject('');
-      setSelectedChapter('');
-      setSelectedChapterName('');
-      
+
       // Set the grade if not already set
       if (data.grades.length > 0 && !selectedGrade) {
         setSelectedGrade(data.grades[0]);
@@ -415,7 +435,11 @@ export default function MCQScreen() {
         if (timerRef.current) {
           clearInterval(timerRef.current);
         }
-        setBooksDetailSubject(null);
+        setBooksChapterIntent(null);
+        setBooksChapterModalStep('grid');
+        setBooksEitherPendingChapter(null);
+        setFlashcardsModalVisible(false);
+        setFlashcardsModalCards([]);
       };
     }, [selectedGrade])
   );
@@ -656,6 +680,8 @@ export default function MCQScreen() {
         }
         
         // Show the chapter chooser modal with the new selection
+        setBooksChapterIntent('mcq');
+        setBooksChapterModalStep('grid');
         setShowChapterChooser(true);
       }
     } else {
@@ -856,6 +882,137 @@ export default function MCQScreen() {
       }
     }
     console.log('=== END START QUIZ DEBUG ===');
+  };
+
+  const dismissBooksChapterModal = () => {
+    setShowChapterChooser(false);
+    setBooksChapterIntent(null);
+    setBooksChapterModalStep('grid');
+    setBooksEitherPendingChapter(null);
+    setSelectedSubject('');
+    setSelectedChapter('');
+    setSelectedChapterName('');
+    setSelectedExamType('mcq');
+    setShowSubjectDropdown(false);
+    setShowChapterDropdown(false);
+    setShowYearDropdown(false);
+  };
+
+  const applyBooksChapterAndStartMcq = async (chapter: Chapter, subjectId: string) => {
+    if (!subjectId.trim()) return;
+    if (!mcqData?.grades?.length) {
+      setError('Curriculum is still loading. Please try again.');
+      return;
+    }
+
+    const userGradeId = `grade-${normalizeGrade(user?.grade)}`;
+    const grade =
+      selectedGrade ||
+      mcqData.grades.find((g) => g.id === userGradeId) ||
+      mcqData.grades[0];
+
+    if (!grade) {
+      setError('No grade data available.');
+      return;
+    }
+
+    setBooksHubActionLoading(true);
+    setError(null);
+
+    setSelectedGrade(grade);
+    setSelectedSubject(subjectId);
+    setSelectedChapter(chapter.id);
+    setSelectedChapterName(chapter.name);
+    setSelectedExamType('mcq');
+    setShowChapterChooser(false);
+    setBooksChapterIntent(null);
+    setBooksChapterModalStep('grid');
+    setBooksEitherPendingChapter(null);
+
+    try {
+      const gradeNumber = getGradeNumber(user?.grade);
+      const questions = await getRegularMCQQuestions(gradeNumber, subjectId, chapter.id);
+
+      if (!questions || questions.length === 0) {
+        setError('No questions found for this chapter. Please try another chapter or contact support.');
+        return;
+      }
+
+      setNationalExamQuestions(questions);
+      setShowTest(true);
+      setCurrentQuestionIndex(0);
+      setSelectedAnswer(null);
+      setShowExplanation(false);
+      setShowAnswerMessage(false);
+      setScore(0);
+      setShowResult(false);
+      setAnsweredQuestions({});
+      setTime(0);
+      startTimer();
+    } catch (e) {
+      console.error('Subjects hub MCQ start:', e);
+      setError('Failed to load MCQ questions. Please try again.');
+    } finally {
+      setBooksHubActionLoading(false);
+    }
+  };
+
+  const applyBooksChapterAndOpenFlashcards = async (chapter: Chapter, subjectName: string) => {
+    setShowChapterChooser(false);
+    setBooksChapterIntent(null);
+    setBooksChapterModalStep('grid');
+    setBooksEitherPendingChapter(null);
+    setBooksHubActionLoading(true);
+    setError(null);
+
+    const normalizedGradeId = user?.grade?.replace(/[^\d]/g, '') || '12';
+
+    try {
+      const structure = await getFlashcardStructure(normalizedGradeId);
+      const grade = structure[0];
+      if (!grade?.subjects?.length) {
+        setError(t('flashcards.noFlashcards'));
+        return;
+      }
+
+      const searchTerm = subjectName.toLowerCase().trim();
+      let subject = grade.subjects.find(
+        (s) => s.name.toLowerCase().trim() === searchTerm
+      );
+      if (!subject) {
+        subject = grade.subjects.find((s) => {
+          const n = s.name.toLowerCase();
+          return n.includes(searchTerm) || searchTerm.includes(n);
+        });
+      }
+
+      if (!subject?.slug) {
+        setError(t('flashcards.noFlashcards'));
+        return;
+      }
+
+      const flashcards = await getFlashcardsForChapter(
+        normalizedGradeId,
+        subject.slug,
+        chapter.name
+      );
+
+      if (!flashcards?.length) {
+        setError(t('flashcards.noFlashcards'));
+        return;
+      }
+
+      setSelectedChapter(chapter.id);
+      setSelectedChapterName(chapter.name);
+      setFlashcardsModalCards(flashcards);
+      setFlashcardsModalLabels({ subject: subjectName, chapter: chapter.name });
+      setFlashcardsModalVisible(true);
+    } catch (e) {
+      console.error('Subjects hub flashcards:', e);
+      setError(t('errors.network.message'));
+    } finally {
+      setBooksHubActionLoading(false);
+    }
   };
 
   const getOptionStyle = (optionId: string) => {
@@ -1150,155 +1307,6 @@ export default function MCQScreen() {
     );
   }
 
-  // Chapter Chooser Interface - Show when subject is pre-selected from home page
-  if (showChapterChooser && selectedSubject && selectedSubjectData) {
-    return (
-      <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]}>
-        <View style={[styles.headerContainer, { backgroundColor: colors.background, borderBottomColor: colors.border }]}>
-          <TouchableOpacity
-            style={styles.backButton}
-            onPress={() => {
-              setShowChapterChooser(false);
-              setSelectedSubject('');
-              setSelectedChapter('');
-              setSelectedChapterName('');
-              // Reset to show the MCQ subject and chapter chooser
-              setSelectedExamType('mcq');
-              // Reset dropdown states
-              setShowSubjectDropdown(false);
-              setShowChapterDropdown(false);
-              setShowYearDropdown(false);
-            }}
-          >
-            <IconSymbol name="chevron.left" size={24} color={isDarkMode ? '#FFFFFF' : colors.tint} />
-          </TouchableOpacity>
-          <ThemedText style={[styles.headerTitle, { color: colors.text }]}>
-            Choose Chapter
-          </ThemedText>
-        </View>
-        
-        <ThemedView style={[styles.container, { backgroundColor: colors.background }]}>
-          <ThemedView style={[styles.formContainer, { backgroundColor: colors.background }]}>
-            {/* Subject Info */}
-            <ThemedView style={[styles.formGroup, { backgroundColor: colors.background }]}>
-              <ThemedText style={[styles.formLabel, { color: colors.tint }]}>
-                Selected Subject
-              </ThemedText>
-              <View style={[styles.selectedSubjectContainer, { backgroundColor: colors.cardAlt, borderColor: colors.border }]}>
-                <ThemedText style={[styles.selectedSubjectText, { color: colors.text }]}>
-                  {selectedSubjectData.name}
-                </ThemedText>
-                <IconSymbol name="checkmark.circle.fill" size={20} color={isDarkMode ? '#FFFFFF' : colors.tint} />
-              </View>
-            </ThemedView>
-
-            {/* Chapter Selection */}
-            <ThemedView style={[styles.formGroup, { backgroundColor: colors.background }]}>
-              <ThemedText style={[styles.formLabel, { color: colors.tint }]}>
-                {t('mcq.selectChapter')}
-              </ThemedText>
-              <TouchableOpacity
-                style={[styles.formInput, { backgroundColor: colors.cardAlt, borderColor: colors.border }]}
-                onPress={() => setShowChapterDropdown(true)}
-              >
-                <ThemedText 
-                  style={[
-                    styles.formInputText, 
-                    { color: colors.text }
-                  ]}
-                >
-                  {selectedChapter ? selectedSubjectData?.chapters?.find((c: Chapter) => c.id === selectedChapter)?.name : t('mcq.selectChapter')}
-                </ThemedText>
-                        <IconSymbol 
-                          name="chevron.right" 
-                          size={20} 
-                          color={isDarkMode ? '#FFFFFF' : colors.tint} 
-                        />
-              </TouchableOpacity>
-            </ThemedView>
-
-            {/* Start Test Button */}
-            <TouchableOpacity
-              style={[
-                styles.startButton,
-                { backgroundColor: colors.tint, marginTop: 20 }
-              ]}
-              onPress={() => {
-                setShowChapterChooser(false);
-                // Start the test after a short delay to ensure state is updated
-                setTimeout(() => {
-                  handleStartTest();
-                }, 100);
-              }}
-            >
-              <ThemedText style={[styles.startButtonText, { color: '#fff' }]}>
-                {t('mcq.startQuiz')}
-              </ThemedText>
-            </TouchableOpacity>
-          </ThemedView>
-
-          {/* Chapter Dropdown Modal */}
-          {showChapterDropdown && (
-            <Modal
-              visible={showChapterDropdown}
-              transparent={true}
-              animationType="fade"
-              onRequestClose={() => setShowChapterDropdown(false)}
-            >
-              <TouchableOpacity
-                style={[styles.modalOverlay, { backgroundColor: 'rgba(0, 0, 0, 0.5)' }]}
-                activeOpacity={1}
-                onPress={() => setShowChapterDropdown(false)}
-              >
-                <ThemedView style={[styles.modalContent, { backgroundColor: colors.background }]}>
-                  <ScrollView showsVerticalScrollIndicator={false}>
-                    {selectedSubjectData?.chapters?.sort((a, b) => {
-                      // Extract numbers from chapter names for proper sorting
-                      const getChapterNumber = (name: string) => {
-                        const match = name.match(/(\d+)/);
-                        return match ? parseInt(match[1], 10) : 0;
-                      };
-                      return getChapterNumber(a.name) - getChapterNumber(b.name);
-                    }).map((chapter: Chapter) => (
-                      <TouchableOpacity
-                        key={chapter.id}
-                        style={[
-                          styles.modalItem, 
-                          { 
-                            backgroundColor: chapter.id === selectedChapter ? colors.cardAlt : colors.background, 
-                            borderBottomColor: colors.border 
-                          }
-                        ]}
-                        onPress={() => {
-                          setSelectedChapter(chapter.id);
-                          setSelectedChapterName(chapter.name);
-                          setShowChapterDropdown(false);
-                        }}
-                      >
-                        <ThemedText style={[styles.modalItemText, { color: chapter.id === selectedChapter ? colors.tint : colors.text }]}>
-                          {chapter.name}
-                        </ThemedText>
-                        {chapter.id === selectedChapter && (
-                          <IconSymbol name="checkmark.circle.fill" size={20} color={isDarkMode ? '#FFFFFF' : colors.tint} />
-                        )}
-                      </TouchableOpacity>
-                    )) || (
-                      <View style={[styles.modalItem, { backgroundColor: colors.background, borderBottomColor: colors.border }]}>
-                        <ThemedText style={[styles.modalItemText, { color: colors.text, opacity: 0.7 }]}>
-                          No chapters available
-                        </ThemedText>
-                      </View>
-                    )}
-                  </ScrollView>
-                </ThemedView>
-              </TouchableOpacity>
-            </Modal>
-          )}
-        </ThemedView>
-      </SafeAreaView>
-    );
-  }
-
   if (!showTest) {
     const booksCanvasBg = isDarkMode ? BOOKS_CANVAS.dark : BOOKS_CANVAS.light;
     const gradeDigit = user?.grade?.replace(/\D/g, '') || '12';
@@ -1320,7 +1328,7 @@ export default function MCQScreen() {
         ]}
         edges={selectedExamType === 'mcq' ? ['bottom', 'left', 'right'] : undefined}
       >
-        {/* National exam browse: local header; Books hub uses tab Mega+ only */}
+        {/* National exam browse: local header; Subjects hub uses tab Mega+ only */}
         {selectedExamType === 'national' && (
             <View style={[styles.headerContainer, { backgroundColor: colors.background, borderBottomColor: colors.border }]}>
               <TouchableOpacity
@@ -1505,140 +1513,13 @@ export default function MCQScreen() {
                     </>
                   )}
 
-                  {/* Books hub (chapter MCQ): fixed search row + scrollable filters and cards */}
+                  {/* Subjects hub (chapter MCQ): fixed search row + scrollable filters and cards */}
                   {selectedExamType === 'mcq' && (
                     <>
                       {loading ? (
                         <View style={styles.booksHubScroll}>
                           <ActivityIndicator size="large" color={BRAND_BLUE} style={{ marginTop: 48 }} />
                         </View>
-                      ) : booksDetailSubject ? (
-                        <ScrollView
-                          style={styles.booksHubScroll}
-                          contentContainerStyle={styles.bookDetailScrollContent}
-                          keyboardShouldPersistTaps="handled"
-                          showsVerticalScrollIndicator={false}
-                        >
-                          <TouchableOpacity
-                            style={styles.bookDetailBackRow}
-                            onPress={() => setBooksDetailSubject(null)}
-                            activeOpacity={0.75}
-                            accessibilityRole="button"
-                            accessibilityLabel={t('mcq.books.detailBackA11y')}
-                          >
-                            <IconSymbol name="chevron.left" size={22} color={BRAND_BLUE} />
-                            <ThemedText style={[styles.bookDetailBackLabel, { color: BRAND_BLUE }]}>
-                              {t('navigation.tabs.books')}
-                            </ThemedText>
-                          </TouchableOpacity>
-
-                          <View
-                            style={[
-                              styles.bookDetailCard,
-                              {
-                                backgroundColor: booksCardBg,
-                                borderColor: booksCardBorder,
-                                shadowColor: isDarkMode ? '#000' : '#64748B',
-                              },
-                            ]}
-                          >
-                            {(() => {
-                              const subject = booksDetailSubject;
-                              const ext = subject as Subject & { image_url?: string };
-                              const imageUrl = ext.image_url?.trim() ? ext.image_url : undefined;
-                              const cover = getBookCover(subject.name);
-                              return (
-                                <>
-                                  <View
-                                    style={[
-                                      styles.bookDetailImageWrap,
-                                      { height: BOOK_DETAIL_IMAGE_HEIGHT },
-                                    ]}
-                                  >
-                                    {imageUrl ? (
-                                      <Image
-                                        source={{ uri: imageUrl }}
-                                        style={StyleSheet.absoluteFill}
-                                        resizeMode="cover"
-                                      />
-                                    ) : (
-                                      <LinearGradient
-                                        colors={[...cover.coverGradient]}
-                                        start={{ x: 0, y: 0 }}
-                                        end={{ x: 1, y: 1 }}
-                                        style={StyleSheet.absoluteFill}
-                                      />
-                                    )}
-                                    <View style={styles.bookRowBadge}>
-                                      <Text style={styles.bookRowBadgeText}>
-                                        {t('mcq.books.badgeLatest')}
-                                      </Text>
-                                    </View>
-                                  </View>
-                                  <View style={styles.bookDetailBody}>
-                                    <ThemedText
-                                      style={[styles.bookDetailTitle, { color: booksPrimaryText }]}
-                                    >
-                                      {t('mcq.books.cardTitle', {
-                                        grade: gradeDigit,
-                                        subject: subject.name,
-                                      })}
-                                    </ThemedText>
-                                    <ThemedText
-                                      style={[styles.bookDetailDesc, { color: booksMutedText }]}
-                                      numberOfLines={3}
-                                    >
-                                      {t('mcq.books.cardDescription')}
-                                    </ThemedText>
-                                    <View style={[styles.bookRowActions, styles.bookDetailActions]}>
-                                      <TouchableOpacity
-                                        style={styles.bookRowPillFilled}
-                                        onPress={() => {
-                                          setSelectedSubject(subject.id);
-                                          setSelectedChapter('');
-                                          setSelectedChapterName('');
-                                          setIsPreSelected(false);
-                                          setBooksDetailSubject(null);
-                                          setShowChapterChooser(true);
-                                        }}
-                                        activeOpacity={0.9}
-                                      >
-                                        <IconSymbol
-                                          name="doc.text.fill"
-                                          size={20}
-                                          color={BOOK_CTA_ON}
-                                        />
-                                        <Text style={styles.bookRowPillTextOnBlue}>
-                                          {t('mcq.books.qaPractice')}
-                                        </Text>
-                                      </TouchableOpacity>
-                                      <TouchableOpacity
-                                        style={styles.bookRowPillFilled}
-                                        onPress={() => {
-                                          setBooksDetailSubject(null);
-                                          router.push({
-                                            pathname: '/(tabs)/flashcards',
-                                            params: { preSelectedSubject: subject.name },
-                                          });
-                                        }}
-                                        activeOpacity={0.9}
-                                      >
-                                        <IconSymbol
-                                          name="rectangle.stack"
-                                          size={20}
-                                          color={BOOK_CTA_ON}
-                                        />
-                                        <Text style={styles.bookRowPillTextOnBlue}>
-                                          {t('mcq.books.flashcards')}
-                                        </Text>
-                                      </TouchableOpacity>
-                                    </View>
-                                  </View>
-                                </>
-                              );
-                            })()}
-                          </View>
-                        </ScrollView>
                       ) : (
                         <View style={styles.booksHubSplit}>
                           <View
@@ -1662,7 +1543,7 @@ export default function MCQScreen() {
                               <TextInput
                                 value={booksSearchQuery}
                                 onChangeText={setBooksSearchQuery}
-                                placeholder={t('mcq.books.searchPlaceholder')}
+                                placeholder={t('mcq.subjects.searchPlaceholder')}
                                 placeholderTextColor={booksMutedText}
                                 style={[styles.booksSearchInput, { color: booksPrimaryText }]}
                                 returnKeyType="search"
@@ -1702,7 +1583,7 @@ export default function MCQScreen() {
                                   <ThemedText
                                     style={[styles.booksNationalLinkText, { color: BRAND_BLUE }]}
                                   >
-                                    {t('mcq.books.openNationalExam')}
+                                    {t('mcq.subjects.openNationalExam')}
                                   </ThemedText>
                                   <IconSymbol name="chevron.right" size={16} color={BRAND_BLUE} />
                                 </TouchableOpacity>
@@ -1736,7 +1617,7 @@ export default function MCQScreen() {
                                       { color: active ? '#FFFFFF' : booksPrimaryText },
                                     ]}
                                   >
-                                    {t(`mcq.books.filter.${key}`)}
+                                    {t(`mcq.subjects.filter.${key}`)}
                                   </Text>
                                 </TouchableOpacity>
                               );
@@ -1760,10 +1641,18 @@ export default function MCQScreen() {
                                 ]}
                               >
                                 <TouchableOpacity
-                                  onPress={() => setBooksDetailSubject(subject)}
+                                  onPress={() => {
+                                    setSelectedSubject(subject.id);
+                                    setSelectedChapter('');
+                                    setSelectedChapterName('');
+                                    setIsPreSelected(false);
+                                    setBooksChapterIntent('either');
+                                    setBooksChapterModalStep('grid');
+                                    setShowChapterChooser(true);
+                                  }}
                                   activeOpacity={0.92}
                                   accessibilityRole="button"
-                                  accessibilityLabel={t('mcq.books.cardTitle', {
+                                  accessibilityLabel={t('mcq.subjects.cardTitle', {
                                     grade: gradeDigit,
                                     subject: subject.name,
                                   })}
@@ -1791,53 +1680,73 @@ export default function MCQScreen() {
                                     <View style={styles.bookRowBadge}>
                                       <Text style={styles.bookRowBadgeText}>
                                         {index % 2 === 0
-                                          ? t('mcq.books.badgeNew')
-                                          : t('mcq.books.badgeUpdated')}
+                                          ? t('mcq.subjects.badgeNew')
+                                          : t('mcq.subjects.badgeUpdated')}
                                       </Text>
                                     </View>
                                   </View>
                                   <View style={styles.bookRowBody}>
                                     <ThemedText style={[styles.bookRowTitle, { color: booksPrimaryText }]}>
-                                      {t('mcq.books.cardTitle', { grade: gradeDigit, subject: subject.name })}
+                                      {t('mcq.subjects.cardTitle', { grade: gradeDigit, subject: subject.name })}
                                     </ThemedText>
                                     <ThemedText
                                       style={[styles.bookRowDesc, { color: booksMutedText }]}
                                       numberOfLines={2}
                                     >
-                                      {t('mcq.books.cardDescription')}
+                                      {t('mcq.subjects.cardDescription')}
                                     </ThemedText>
                                   </View>
                                 </TouchableOpacity>
-                                <View style={styles.bookRowActions}>
+                                <View
+                                  style={[
+                                    styles.bookRowActions,
+                                    {
+                                      borderTopWidth: 1,
+                                      borderColor: booksCardBorder,
+                                      backgroundColor: booksChipIdleOnPanel,
+                                    },
+                                  ]}
+                                >
                                   <TouchableOpacity
-                                    style={styles.bookRowPillFilled}
+                                    style={[
+                                      styles.bookRowPillFilled,
+                                      { backgroundColor: BRAND_BLUE, shadowColor: BRAND_BLUE },
+                                    ]}
                                     onPress={() => {
                                       setSelectedSubject(subject.id);
                                       setSelectedChapter('');
                                       setSelectedChapterName('');
                                       setIsPreSelected(false);
+                                      setBooksChapterIntent('mcq');
+                                      setBooksChapterModalStep('grid');
                                       setShowChapterChooser(true);
                                     }}
                                     activeOpacity={0.9}
                                   >
                                     <IconSymbol name="doc.text.fill" size={20} color={BOOK_CTA_ON} />
                                     <Text style={styles.bookRowPillTextOnBlue}>
-                                      {t('mcq.books.qaPractice')}
+                                      {t('mcq.subjects.qaPractice')}
                                     </Text>
                                   </TouchableOpacity>
                                   <TouchableOpacity
-                                    style={styles.bookRowPillFilled}
+                                    style={[
+                                      styles.bookRowPillFilled,
+                                      { backgroundColor: BRAND_BLUE, shadowColor: BRAND_BLUE },
+                                    ]}
                                     onPress={() => {
-                                      router.push({
-                                        pathname: '/(tabs)/flashcards',
-                                        params: { preSelectedSubject: subject.name },
-                                      });
+                                      setSelectedSubject(subject.id);
+                                      setSelectedChapter('');
+                                      setSelectedChapterName('');
+                                      setIsPreSelected(false);
+                                      setBooksChapterIntent('flashcards');
+                                      setBooksChapterModalStep('grid');
+                                      setShowChapterChooser(true);
                                     }}
                                     activeOpacity={0.9}
                                   >
                                     <IconSymbol name="rectangle.stack" size={20} color={BOOK_CTA_ON} />
                                     <Text style={styles.bookRowPillTextOnBlue}>
-                                      {t('mcq.books.flashcards')}
+                                      {t('mcq.subjects.flashcards')}
                                     </Text>
                                   </TouchableOpacity>
                                 </View>
@@ -1849,7 +1758,7 @@ export default function MCQScreen() {
                             <ThemedText
                               style={[styles.booksEmpty, { color: booksMutedText }]}
                             >
-                              {t('mcq.books.empty')}
+                              {t('mcq.subjects.empty')}
                             </ThemedText>
                           )}
                           </ScrollView>
@@ -1863,6 +1772,183 @@ export default function MCQScreen() {
             </ThemedView>
           </ThemedView>
         </ThemedView>
+
+        <Modal
+          visible={
+            showChapterChooser &&
+            !!selectedSubjectData &&
+            selectedExamType === 'mcq'
+          }
+          transparent
+          animationType="fade"
+          onRequestClose={dismissBooksChapterModal}
+        >
+          <View style={styles.booksChapterModalOverlay}>
+            <TouchableOpacity
+              style={StyleSheet.absoluteFill}
+              activeOpacity={1}
+              onPress={dismissBooksChapterModal}
+            />
+            <ThemedView
+              style={[
+                styles.booksChapterModalCard,
+                {
+                  backgroundColor: booksCardBg,
+                  borderColor: booksCardBorder,
+                },
+              ]}
+            >
+              <View style={styles.booksChapterModalHeader}>
+                <View style={{ flex: 1 }}>
+                  {booksChapterModalStep !== 'eitherPick' ? (
+                    <ThemedText
+                      style={[
+                        styles.booksChapterModalHeaderTitle,
+                        { color: booksMutedText, fontWeight: '600' },
+                      ]}
+                    >
+                      Select Chapter Number
+                    </ThemedText>
+                  ) : null}
+                  <View style={{ marginTop: booksChapterModalStep === 'eitherPick' ? 0 : 6, gap: 2 }}>
+                    <ThemedText
+                      style={styles.booksChapterModalSubject}
+                      numberOfLines={2}
+                    >
+                      {selectedSubjectData?.name}
+                    </ThemedText>
+                    {booksChapterModeLabel ? (
+                      <ThemedText
+                        style={[styles.booksChapterModalSubtitle, { color: colors.tint }]}
+                        numberOfLines={2}
+                      >
+                        {booksChapterModeLabel}
+                      </ThemedText>
+                    ) : null}
+                  </View>
+                </View>
+                <TouchableOpacity
+                  onPress={() => {
+                    if (booksChapterModalStep === 'eitherPick') {
+                      setBooksChapterModalStep('grid');
+                      setBooksEitherPendingChapter(null);
+                    } else {
+                      dismissBooksChapterModal();
+                    }
+                  }}
+                  hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+                  accessibilityRole="button"
+                >
+                  <IconSymbol
+                    name={booksChapterModalStep === 'eitherPick' ? 'chevron.left' : 'xmark.circle.fill'}
+                    size={24}
+                    color={booksMutedText}
+                  />
+                </TouchableOpacity>
+              </View>
+
+              {booksChapterModalStep === 'eitherPick' && booksEitherPendingChapter ? (
+                <View style={styles.booksChapterEitherActions}>
+                  <TouchableOpacity
+                    style={[styles.booksChapterEitherPill, { backgroundColor: BRAND_BLUE }]}
+                    onPress={() => {
+                      if (!selectedSubject) return;
+                      void applyBooksChapterAndStartMcq(booksEitherPendingChapter, selectedSubject);
+                    }}
+                    activeOpacity={0.9}
+                  >
+                    <IconSymbol name="doc.text.fill" size={20} color="#fff" />
+                    <ThemedText style={[styles.startButtonText, { color: '#fff' }]}>
+                      {t('mcq.subjects.qaPractice')}
+                    </ThemedText>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={[styles.booksChapterEitherPill, { backgroundColor: BRAND_BLUE }]}
+                    onPress={() => {
+                      if (!selectedSubjectData) return;
+                      void applyBooksChapterAndOpenFlashcards(
+                        booksEitherPendingChapter,
+                        selectedSubjectData.name
+                      );
+                    }}
+                    activeOpacity={0.9}
+                  >
+                    <IconSymbol name="rectangle.stack" size={20} color="#fff" />
+                    <ThemedText style={[styles.startButtonText, { color: '#fff' }]}>
+                      {t('mcq.subjects.flashcards')}
+                    </ThemedText>
+                  </TouchableOpacity>
+                </View>
+              ) : (
+                <ScrollView
+                  style={styles.booksChapterGridScroll}
+                  contentContainerStyle={styles.booksChapterGridScrollContent}
+                  showsVerticalScrollIndicator={false}
+                  keyboardShouldPersistTaps="handled"
+                >
+                  <View style={styles.booksChapterGrid}>
+                    {booksModalChaptersSorted.length === 0 ? (
+                      <ThemedText style={[styles.booksChapterGridEmpty, { color: booksMutedText }]}>
+                        No chapters available.
+                      </ThemedText>
+                    ) : (
+                      booksModalChaptersSorted.map((chapter, idx) => (
+                        <TouchableOpacity
+                          // Ensure unique key even if API returns duplicate ids.
+                          key={`${chapter.id}-${idx}`}
+                          style={styles.booksChapterGridCell}
+                          onPress={() => {
+                            if (!selectedSubjectData) return;
+                            if (booksChapterIntent === 'either') {
+                              setBooksEitherPendingChapter(chapter);
+                              setBooksChapterModalStep('eitherPick');
+                            } else if (booksChapterIntent === 'flashcards') {
+                              void applyBooksChapterAndOpenFlashcards(chapter, selectedSubjectData.name);
+                            } else {
+                              void applyBooksChapterAndStartMcq(chapter, selectedSubject);
+                            }
+                          }}
+                          activeOpacity={0.85}
+                        >
+                          <View
+                            style={[
+                              styles.booksChapterGridCellIndex,
+                              { backgroundColor: isDarkMode ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)' },
+                            ]}
+                          >
+                            <ThemedText style={[styles.booksChapterGridCellIndexText, { color: colors.tint }]}>
+                              {idx + 1}
+                            </ThemedText>
+                          </View>
+                        </TouchableOpacity>
+                      ))
+                    )}
+                  </View>
+                </ScrollView>
+              )}
+            </ThemedView>
+          </View>
+        </Modal>
+
+        {booksHubActionLoading && (
+          <View
+            style={[StyleSheet.absoluteFillObject, { justifyContent: 'center', alignItems: 'center', backgroundColor: 'rgba(0,0,0,0.2)' }]}
+            pointerEvents="auto"
+          >
+            <ActivityIndicator size="large" color={BRAND_BLUE} />
+          </View>
+        )}
+
+        <FlashcardsInlineModal
+          visible={flashcardsModalVisible}
+          flashcards={flashcardsModalCards}
+          subjectLabel={flashcardsModalLabels.subject}
+          chapterLabel={flashcardsModalLabels.chapter}
+          onClose={() => {
+            setFlashcardsModalVisible(false);
+            setFlashcardsModalCards([]);
+          }}
+        />
       </SafeAreaView>
     );
   }
@@ -2280,7 +2366,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.25,
     shadowRadius: 3.84,
   },
-  /** Books tab: full-bleed on canvas — no inset card panel. */
+  /** Subjects tab: full-bleed on canvas — no inset card panel. */
   formContainerBooks: {
     flex: 1,
     padding: 0,
@@ -2856,6 +2942,129 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '600',
   },
+  booksChapterModalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.45)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+  },
+  booksChapterModalCard: {
+    width: '100%',
+    maxWidth: 420,
+    maxHeight: Math.round(SCREEN_HEIGHT * 0.72),
+    borderRadius: 20,
+    borderWidth: StyleSheet.hairlineWidth,
+    paddingHorizontal: 12,
+    paddingTop: 10,
+    paddingBottom: 10,
+    overflow: 'hidden',
+  },
+  booksChapterModalHeader: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    justifyContent: 'space-between',
+    gap: 10,
+    marginBottom: 6,
+  },
+  booksChapterModalHeaderTitle: {
+    fontSize: 18,
+    fontWeight: '800',
+    letterSpacing: -0.2,
+    color: BRAND_BLUE,
+    marginBottom: 0,
+  },
+  booksChapterModalTitle: {
+    flex: 1,
+    fontSize: 18,
+    fontWeight: '700',
+    letterSpacing: -0.2,
+  },
+  booksChapterModalSubtitle: {
+    marginTop: 2,
+    fontSize: 13,
+    fontWeight: '600',
+    letterSpacing: -0.1,
+  },
+  booksChapterModalSubject: {
+    fontSize: 16,
+    lineHeight: 18,
+    fontWeight: '800',
+    letterSpacing: -0.2,
+    color: BRAND_BLUE,
+  },
+  booksChapterEitherActions: {
+    gap: 12,
+    paddingTop: 4,
+  },
+  booksChapterEitherPill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 10,
+    paddingVertical: 14,
+    paddingHorizontal: 16,
+    borderRadius: 14,
+    minHeight: 52,
+  },
+  booksChapterGridScroll: {
+    maxHeight: Math.round(SCREEN_HEIGHT * 0.62),
+    alignSelf: 'stretch',
+  },
+  booksChapterGridScrollContent: {
+    width: '100%',
+    flexGrow: 1,
+    paddingBottom: 4,
+  },
+  booksChapterGrid: {
+    width: '100%',
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
+    alignContent: 'flex-start',
+    paddingBottom: 8,
+  },
+  booksChapterGridEmpty: {
+    width: '100%',
+    textAlign: 'center',
+    paddingVertical: 24,
+    fontSize: 15,
+  },
+  booksChapterGridCell: {
+    width: '25%',
+    maxWidth: '25%',
+    flexDirection: 'column',
+    borderRadius: 0,
+    borderWidth: 0,
+    paddingHorizontal: 0,
+    paddingVertical: 0,
+    paddingTop: 0,
+    minHeight: 82,
+    marginBottom: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  booksChapterGridCellIndex: {
+    alignSelf: 'center',
+    marginBottom: 0,
+    minWidth: 48,
+    height: 48,
+    borderRadius: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  booksChapterGridCellIndexText: {
+    fontSize: 19,
+    lineHeight: 19,
+    fontWeight: '900',
+  },
+  booksChapterGridCellText: {
+    // (Unused now: chapter picker shows numbers only.)
+    fontSize: 11,
+    fontWeight: '700',
+    lineHeight: 15,
+    textAlign: 'center',
+  },
   booksSearchField: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -2892,9 +3101,9 @@ const styles = StyleSheet.create({
   },
   bookRowCard: {
     borderRadius: 16,
-    borderWidth: StyleSheet.hairlineWidth,
+    borderWidth: 1,
     overflow: 'hidden',
-    marginBottom: 14,
+    marginBottom: 18,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.06,
     shadowRadius: 8,
@@ -2940,8 +3149,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     gap: 10,
     paddingHorizontal: 14,
-    paddingTop: 4,
-    paddingBottom: 14,
+    paddingTop: 10,
+    paddingBottom: 16,
   },
   bookRowPillFilled: {
     flex: 1,

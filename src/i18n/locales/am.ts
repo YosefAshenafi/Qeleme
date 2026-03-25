@@ -26,14 +26,14 @@ export default {
       flashcardsLabel: 'ፍላሽ ካርዶች',
       reportsLabel: 'ሪፖርቶች',
     },
-    gradeBooks: {
-      title: 'የ{{grade}} ክፍል መጽሐፍት',
+    gradeSubjects: {
+      title: 'የ{{grade}} ክፍል ትምህርቶች',
       chaptersCount: '{{count}} ምዕራፎች',
       chaptersCountOne: '1 ምዕራፍ',
     },
     viewAll: 'ሁሉንም ይመልከቱ',
     welcome: 'እንኳን ደህና መጡ {{name}}!',
-    subtitle: 'መጻሕፍቶቹን ካነበባችሁ በኋላ በጥያቄዎቹ እውቀትዎን ይመዝኑ!',
+    subtitle: 'ትምህርቶችዎን በመማር በጥያቄዎቹ እውቀትዎን ይመዝኑ!',
     noActivity: 'ምንም የቅርብ እንቅስቃሴ የለም። መማር ይጀምሩ!',
     goto: 'ወደ መግቢያ ይመለሱ',
     quickActions: {
@@ -327,7 +327,7 @@ export default {
   },
   kg: {
     welcome: 'እንኳን ደህና መጡ {{name}}!',
-    subtitle: 'መጻሕፍቶቹን ካነበባችሁ በኋላ በጥያቄዎቹ እውቀትዎን ይመዝኑ!',
+    subtitle: 'ትምህርቶችዎን በመማር በጥያቄዎቹ እውቀትዎን ይመዝኑ!',
     howToPlay: 'አጠቃቀም',
     letsHaveFun: '',
     categories: {
@@ -360,7 +360,7 @@ export default {
       subtitle: 'ርዕስ መርጠው መማር ይጀምሩ!'
     },
     instructions: {
-      subtitle: 'መጻሕፍቶቹን ካነበባችሁ በኋላ በጥያቄዎቹ እውቀትዎን ይመዝኑ!',
+      subtitle: 'ትምህርቶችዎን በመማር በጥያቄዎቹ እውቀትዎን ይመዝኑ!',
       look: {
         title: 'በጥንቃቄ ተመልከት',
         description: 'ለምስሎቹ ጊዜ ይውሰዱ እና ምን እንደሚያሳዩ ይረዱ።'
@@ -561,17 +561,17 @@ export default {
         contentBeingAdded: 'ለክፍልዎ ይዘት አሁንም በመጨመር ላይ ነው'
       }
     },
-    books: {
+    subjects: {
       heroTitlePrefix: 'የእርስዎ {{grade}} ክፍል',
       heroTitleHighlight: 'አካዳሚክ',
       heroTitleSuffix: 'መርሃ ግብር',
       heroDescription:
         'ለዓመትዎ የተዘጋጁ የትምህርት መርጃዎችን ያግኙ። በተለይ የተዘጋጁ የመለማመጃ መሳሪያዎች ይጠቀሙ።',
       openNationalExam: 'የብሔራዊ ፈተና ወረቀቶች',
-      searchPlaceholder: 'መጽሐፍት ወይም የትምህርት ዓይነት ይፈልጉ...',
+      searchPlaceholder: 'ትምህርቶችን ይፈልጉ...',
       searchButton: 'ፈልግ',
       filter: {
-        all: 'ሁሉም መጽሐፍት',
+        all: 'ሁሉም ትምህርቶች',
         science: 'ሳይንስ',
         languages: 'ቋንቋዎች',
         mathematics: 'ሒሳብ',
@@ -584,8 +584,8 @@ export default {
       badgeNew: 'አዲስ',
       badgeUpdated: 'ተዘምኗል',
       badgeLatest: 'የቅርብ',
-      detailBackA11y: 'ወደ መጽሐፍት ዝርዝር ተመለስ',
-      empty: 'ለፍለጋዎ ወይም ማጣሪያዎ ምንም መጽሐፍ አልተገኘም።',
+      detailBackA11y: 'ወደ ትምህርቶች ዝርዝር ተመለስ',
+      empty: 'ለፍለጋዎ ወይም ማጣሪያዎ ምንም ትምህርት አልተገኘም።',
     },
   },
   flashcards: {
@@ -634,7 +634,7 @@ export default {
   navigation: {
     tabs: {
       home: 'ዋና ገጽ',
-      books: 'መጽሐፍት',
+      subjects: 'ትምህርቶች',
       stats: 'ስታትስቲክስ',
       mcq: 'ምርጫ',
       flashcards: 'ፍላሽ ካርዶች',
