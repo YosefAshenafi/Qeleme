@@ -772,6 +772,18 @@ export default function FlashcardsScreen() {
     return (
       <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]}>
         <ThemedView style={[styles.container, { backgroundColor: colors.background }]}>
+          <StatusBar translucent={false} backgroundColor="#FFFFFF" barStyle="dark-content" />
+          <View style={styles.flashHeaderWrap}>
+            <View style={styles.flashTopBar}>
+              <View style={styles.flashBrandPill}>
+                <ThemedText style={styles.flashBrandText}>M+</ThemedText>
+              </View>
+              <ThemedText style={[styles.flashTopTitle, { color: '#0F4BD7' }]} numberOfLines={1}>
+                Mega+
+              </ThemedText>
+              <View style={styles.flashCloseBtn} />
+            </View>
+          </View>
           <ThemedView style={[styles.formContainer, { backgroundColor: colors.background }]}>
             <ThemedView style={[styles.formContent, { backgroundColor: colors.background }]}>
               {/* Subject Selection */}

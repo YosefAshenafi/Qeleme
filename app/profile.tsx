@@ -257,13 +257,11 @@ export default function ProfileScreen() {
       <StatusBar style={isDarkMode ? 'light' : 'dark'} />
 
       <View style={[styles.header, { backgroundColor: colors.background, borderBottomColor: colors.border }]}>
-        <TouchableOpacity onPress={() => router.back()} style={[styles.headerIconBtn, { backgroundColor: colors.card }]}>
-          <IconSymbol name="chevron.left" size={20} color={colors.text} />
-        </TouchableOpacity>
-        <View style={styles.headerTitleWrap}>
-          <Text style={[styles.headerTitle, { color: colors.text }]}>
-            {t('profile.settings.header', { defaultValue: 'Profile' })}
-          </Text>
+        <View style={styles.headerLeft}>
+          <View style={styles.brandMark}>
+            <Text style={styles.brandMarkText}>M+</Text>
+          </View>
+          <Text style={[styles.brandWordmark, { color: colors.text }]}>Mega+</Text>
         </View>
         <View style={styles.headerRightWrap} />
       </View>
@@ -523,6 +521,30 @@ export default function ProfileScreen() {
 
 const styles = StyleSheet.create({
   safeArea: { flex: 1 },
+  headerLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+  },
+  brandMark: {
+    width: 40,
+    height: 40,
+    borderRadius: 12,
+    backgroundColor: BRAND_BLUE,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  brandMarkText: {
+    color: '#FFFFFF',
+    fontSize: 15,
+    fontWeight: '800',
+    letterSpacing: -0.5,
+  },
+  brandWordmark: {
+    fontSize: 20,
+    fontWeight: '800',
+    letterSpacing: -0.3,
+  },
   header: {
     flexDirection: 'row',
     alignItems: 'center',

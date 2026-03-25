@@ -515,22 +515,18 @@ export default function MCQScreen() {
     // Use the native top bar (already has logo/mega+). We only inject a back button.
     (navigation as any)?.setOptions?.({
       headerLeft: () => (
-        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-          <TouchableOpacity
-            accessibilityRole="button"
-            onPress={() => {
-              if (showResult) {
-                setShowResult(false);
-                setShowTest(false);
-              } else {
-                router.back();
-              }
-            }}
-            style={{ paddingLeft: 12, paddingRight: 6, paddingVertical: 8 }}
-          >
-            <Ionicons name="chevron-back" size={26} color={BRAND_BLUE} />
-          </TouchableOpacity>
-          <Text style={{ color: BRAND_BLUE, fontWeight: '900', fontSize: 16 }}>Mega+</Text>
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+          <View style={{
+            width: 40,
+            height: 40,
+            borderRadius: 12,
+            backgroundColor: BRAND_BLUE,
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}>
+            <Text style={{ color: '#FFFFFF', fontSize: 15, fontWeight: '800', letterSpacing: -0.5 }}>M+</Text>
+          </View>
+          <Text style={{ color: BRAND_BLUE, fontSize: 20, fontWeight: '800', letterSpacing: -0.3 }}>Mega+</Text>
         </View>
       ),
       headerTitleAlign: 'center',
