@@ -21,7 +21,7 @@ export default {
       notificationsPlaceholder: 'Notifications will appear here soon.',
     },
     quickAccess: {
-      sectionTitle: 'Quick Access',
+      sectionTitle: 'Recent Access',
       practiceLabel: 'Practice',
       flashcardsLabel: 'Flashcards',
       reportsLabel: 'Reports',

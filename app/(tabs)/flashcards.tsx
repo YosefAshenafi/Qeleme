@@ -1000,6 +1000,7 @@ export default function FlashcardsScreen() {
                 setSessionStartTime(null);
                 progressAnimation.value = withTiming(0);
                 revealAnimation.value = withSpring(0, { damping: 12, stiffness: 80, mass: 0.8 });
+                router.replace('/(tabs)/mcq');
               }}
               style={styles.flashCloseBtn}
             >

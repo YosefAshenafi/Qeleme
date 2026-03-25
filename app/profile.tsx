@@ -18,6 +18,7 @@ import { StatusBar } from 'expo-status-bar';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Constants from 'expo-constants';
 import { useTranslation } from 'react-i18next';
+import * as ImagePicker from 'expo-image-picker';
 
 import { IconSymbol } from '@/components/ui/IconSymbol';
 import { LanguageToggle } from '@/components/ui/LanguageToggle';
@@ -117,6 +118,141 @@ export default function ProfileScreen() {
     };
   }, [i18n.language, t, user?.fullName, user?.grade, user?.joinDate, user?.paymentPlan, user?.username]);
 
+  const handleImagePicker = async () => {
+    try {
+      // Request permission
+      const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      
+      if (permissionResult.granted === false) {
+        Alert.alert(
+          t('profile.imagePicker.permissionRequired', { defaultValue: 'Permission Required' }),
+          t('profile.imagePicker.permissionMessage', { defaultValue: 'Please grant permission to access your photo library to change your profile picture.' })
+        );
+        return;
+      }
+
+      // Show options
+      Alert.alert(
+        t('profile.imagePicker.selectPhoto', { defaultValue: 'Select Photo' }),
+        '',
+        [
+          {
+            text: t('profile.imagePicker.cancel', { defaultValue: 'Cancel' }),
+            style: 'cancel',
+          },
+          {
+            text: t('profile.imagePicker.camera', { defaultValue: 'Camera' }),
+            onPress: async () => {
+              try {
+                const cameraResult = await ImagePicker.launchCameraAsync({
+                  mediaTypes: ImagePicker.MediaTypeOptions.Images,
+                  allowsEditing: true,
+                  aspect: [1, 1],
+                  quality: 0.7,
+                });
+
+                console.log('Camera result:', cameraResult);
+
+                if (!cameraResult.canceled && cameraResult.assets && cameraResult.assets[0]) {
+                  await uploadProfileImage(cameraResult.assets[0].uri);
+                }
+              } catch (cameraError) {
+                console.error('Camera error:', cameraError);
+                Alert.alert(
+                  t('profile.imagePicker.cameraError', { defaultValue: 'Camera Error' }),
+                  t('profile.imagePicker.cameraErrorMessage', { defaultValue: 'Failed to access camera. Please check permissions.' })
+                );
+              }
+            },
+          },
+          {
+            text: t('profile.imagePicker.gallery', { defaultValue: 'Gallery' }),
+            onPress: async () => {
+              try {
+                const libraryResult = await ImagePicker.launchImageLibraryAsync({
+                  mediaTypes: ImagePicker.MediaTypeOptions.Images,
+                  allowsEditing: true,
+                  aspect: [1, 1],
+                  quality: 0.7,
+                });
+
+                console.log('Library result:', libraryResult);
+
+                if (!libraryResult.canceled && libraryResult.assets && libraryResult.assets[0]) {
+                  await uploadProfileImage(libraryResult.assets[0].uri);
+                }
+              } catch (libraryError) {
+                console.error('Library error:', libraryError);
+                Alert.alert(
+                  t('profile.imagePicker.galleryError', { defaultValue: 'Gallery Error' }),
+                  t('profile.imagePicker.galleryErrorMessage', { defaultValue: 'Failed to access gallery. Please check permissions.' })
+                );
+              }
+            },
+          },
+        ]
+      );
+    } catch (error) {
+      console.error('Error picking image:', error);
+      Alert.alert(
+        t('profile.imagePicker.error', { defaultValue: 'Error' }),
+        t('profile.imagePicker.errorMessage', { defaultValue: 'Failed to select image. Please try again.' })
+      );
+    }
+  };
+
+  const uploadProfileImage = async (imageUri: string) => {
+    try {
+      console.log('Updating profile image locally:', imageUri);
+      
+      // Save profile image to AsyncStorage for persistence
+      await AsyncStorage.setItem('@profile_image', imageUri);
+      
+      // Update user data with the local image URI
+      const updatedUser = {
+        ...user!,
+        profileImage: imageUri,
+      };
+      
+      console.log('Updating user data with local profile image:', updatedUser.profileImage);
+      await login(updatedUser);
+      
+      Alert.alert(
+        t('profile.imagePicker.success', { defaultValue: 'Success' }),
+        t('profile.imagePicker.successMessage', { defaultValue: 'Profile picture updated successfully!' })
+      );
+    } catch (error) {
+      console.error('Error updating profile image:', error);
+      Alert.alert(
+        t('profile.imagePicker.error', { defaultValue: 'Error' }),
+        t('profile.imagePicker.errorMessage', { defaultValue: 'Failed to update profile picture. Please try again.' })
+      );
+    }
+  };
+
+  // Load profile image from AsyncStorage on component mount
+  useEffect(() => {
+    const loadProfileImage = async () => {
+      try {
+        const savedProfileImage = await AsyncStorage.getItem('@profile_image');
+        if (savedProfileImage && user && !user.profileImage) {
+          // Update user data with saved profile image if it doesn't exist
+          const updatedUser = {
+            ...user,
+            profileImage: savedProfileImage,
+          };
+          await login(updatedUser);
+        }
+      } catch (error) {
+        console.error('Error loading profile image:', error);
+      }
+    };
+
+    if (user) {
+      loadProfileImage();
+    }
+  }, [user]);
+
   return (
     <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]}>
       <StatusBar style={isDarkMode ? 'light' : 'dark'} />
@@ -127,7 +263,7 @@ export default function ProfileScreen() {
         </TouchableOpacity>
         <View style={styles.headerTitleWrap}>
           <Text style={[styles.headerTitle, { color: colors.text }]}>
-            {t('profile.settings.header', { defaultValue: 'Settings' })}
+            {t('profile.settings.header', { defaultValue: 'Profile' })}
           </Text>
         </View>
         <View style={styles.headerRightWrap}>
@@ -153,7 +289,10 @@ export default function ProfileScreen() {
                 )}
               </View>
             </View>
-            <TouchableOpacity style={[styles.avatarCamera, { backgroundColor: BRAND_BLUE }]}>
+            <TouchableOpacity 
+              style={[styles.avatarCamera, { backgroundColor: BRAND_BLUE }]}
+              onPress={handleImagePicker}
+            >
               <IconSymbol name="photo" size={16} color="#fff" />
             </TouchableOpacity>
           </View>

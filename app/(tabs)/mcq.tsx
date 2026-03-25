@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect, useMemo, useLayoutEffect } from 'react';
-import { StyleSheet, TouchableOpacity, ScrollView, View, Dimensions, Animated, Modal, Platform, ActivityIndicator, TextInput, Image, Text, Keyboard } from 'react-native';
+import { StyleSheet, TouchableOpacity, ScrollView, View, Dimensions, Animated, Modal, Platform, ActivityIndicator, TextInput, Image, Text, Keyboard, useWindowDimensions } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
@@ -63,6 +63,7 @@ export default function MCQScreen() {
   const { isDarkMode } = useTheme();
   const { user } = useAuth();
   const colors = getColors(isDarkMode);
+  const { width: windowWidth } = useWindowDimensions();
   const params = useLocalSearchParams();
   const { t } = useTranslation();
   const navigation = useNavigation();
@@ -82,6 +83,8 @@ export default function MCQScreen() {
   const [answeredQuestions, setAnsweredQuestions] = useState<{ [key: number]: string }>({});
   const [showAnswerMessage, setShowAnswerMessage] = useState(false);
   const scrollViewRef = useRef<ScrollView>(null);
+  const booksListScrollRef = useRef<ScrollView>(null);
+  const booksSubjectRowY = useRef<Record<string, number>>({});
   const explanationRef = useRef<View>(null);
   const [score, setScore] = useState(0);
   const [showResult, setShowResult] = useState(false);
@@ -153,6 +156,13 @@ export default function MCQScreen() {
     }
     return list;
   }, [mcqSubjectsSorted, booksSearchQuery, booksCategory]);
+
+  const chapterGridColumns = useMemo(() => {
+    // Modal maxWidth is 420, but we still want it to feel good on smaller screens.
+    if (windowWidth < 350) return 3;
+    if (windowWidth < 420) return 4;
+    return 5;
+  }, [windowWidth]);
 
   const booksModalChaptersSorted = useMemo(() => {
     if (!selectedSubjectData?.chapters?.length) return [];
@@ -356,6 +366,24 @@ export default function MCQScreen() {
       console.log('✅ Active MCQ session reset');
     }
   }, [params.preSelectedSubject, params.preSelectedSubjectId, mcqData]);
+
+  // Auto-scroll Subjects hub list to the pre-selected subject card
+  useEffect(() => {
+    if (selectedExamType !== 'mcq') return;
+    if (!selectedSubject) return;
+    if (!filteredBooksSubjects.some((s) => s.id === selectedSubject)) return;
+
+    const scrollToSelected = () => {
+      const scrollNode = booksListScrollRef.current;
+      const y = booksSubjectRowY.current[selectedSubject];
+      if (!scrollNode) return;
+      if (typeof y !== 'number') return;
+      scrollNode.scrollTo({ y: Math.max(0, y - 16), animated: true });
+    };
+
+    const tmr = setTimeout(scrollToSelected, 250);
+    return () => clearTimeout(tmr);
+  }, [selectedExamType, selectedSubject, filteredBooksSubjects]);
 
   // Handle pre-selected national exam from URL parameters
   useEffect(() => {
@@ -1665,6 +1693,7 @@ export default function MCQScreen() {
                             keyboardShouldPersistTaps="handled"
                             showsVerticalScrollIndicator={false}
                             nestedScrollEnabled
+                            ref={booksListScrollRef}
                           >
                             {selectedGrade &&
                               needsExamTypeSelection(selectedGrade) &&
@@ -1728,12 +1757,19 @@ export default function MCQScreen() {
                             return (
                               <View
                                 key={subject.id}
+                                onLayout={(e) => {
+                                  booksSubjectRowY.current[subject.id] = e.nativeEvent.layout.y;
+                                }}
                                 style={[
                                   styles.bookRowCard,
                                   {
                                     backgroundColor: booksCardBg,
                                     borderColor: booksCardBorder,
                                     shadowColor: isDarkMode ? '#000' : '#64748B',
+                                  },
+                                  selectedSubject === subject.id && {
+                                    borderColor: BRAND_BLUE,
+                                    borderWidth: 2,
                                   },
                                 ]}
                               >
@@ -1895,7 +1931,14 @@ export default function MCQScreen() {
                 },
               ]}
             >
-              <View style={styles.booksChapterModalHeader}>
+              <View
+                style={[
+                  styles.booksChapterModalHeader,
+                  {
+                    backgroundColor: isDarkMode ? 'rgba(255,255,255,0.03)' : 'rgba(15,23,42,0.02)',
+                  },
+                ]}
+              >
                 <View style={{ flex: 1 }}>
                   {booksChapterModalStep !== 'eitherPick' ? (
                     <ThemedText
@@ -1944,8 +1987,16 @@ export default function MCQScreen() {
                 </TouchableOpacity>
               </View>
 
+              <View
+                style={[
+                  styles.booksChapterModalDivider,
+                  { backgroundColor: isDarkMode ? 'rgba(255,255,255,0.10)' : 'rgba(15,23,42,0.08)' },
+                ]}
+              />
+
               {booksChapterModalStep === 'eitherPick' && booksEitherPendingChapter ? (
-                <View style={styles.booksChapterEitherActions}>
+                <View style={styles.booksChapterBody}>
+                  <View style={styles.booksChapterEitherActions}>
                   <TouchableOpacity
                     style={[styles.booksChapterEitherPill, { backgroundColor: BRAND_BLUE }]}
                     onPress={() => {
@@ -1975,6 +2026,7 @@ export default function MCQScreen() {
                       {t('mcq.subjects.flashcards')}
                     </ThemedText>
                   </TouchableOpacity>
+                  </View>
                 </View>
               ) : (
                 <ScrollView
@@ -1983,7 +2035,8 @@ export default function MCQScreen() {
                   showsVerticalScrollIndicator={false}
                   keyboardShouldPersistTaps="handled"
                 >
-                  <View style={styles.booksChapterGrid}>
+                  <View style={styles.booksChapterBody}>
+                    <View style={styles.booksChapterGrid}>
                     {booksModalChaptersSorted.length === 0 ? (
                       <ThemedText style={[styles.booksChapterGridEmpty, { color: booksMutedText }]}>
                         No chapters available.
@@ -1993,7 +2046,10 @@ export default function MCQScreen() {
                         <TouchableOpacity
                           // Ensure unique key even if API returns duplicate ids.
                           key={`${chapter.id}-${idx}`}
-                          style={styles.booksChapterGridCell}
+                          style={[
+                            styles.booksChapterGridCell,
+                            { width: `${100 / chapterGridColumns}%`, maxWidth: `${100 / chapterGridColumns}%` },
+                          ]}
                           onPress={() => {
                             if (!selectedSubjectData) return;
                             if (booksChapterIntent === 'either') {
@@ -2007,19 +2063,53 @@ export default function MCQScreen() {
                           }}
                           activeOpacity={0.85}
                         >
+                          {(() => {
+                            const chapterLabel =
+                              (chapter as any)?.name ||
+                              (chapter as any)?.title ||
+                              (chapter as any)?.chapter ||
+                              '';
+                            const safeLabel = String(chapterLabel || '').trim();
+                            const isDuplicateNumber =
+                              /^\d+$/.test(safeLabel) && Number(safeLabel) === idx + 1;
+                            return (
                           <View
                             style={[
-                              styles.booksChapterGridCellIndex,
-                              { backgroundColor: isDarkMode ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)' },
+                              styles.booksChapterTile,
+                              {
+                                backgroundColor: isDarkMode ? 'rgba(255,255,255,0.04)' : 'rgba(2,6,23,0.03)',
+                                borderColor: isDarkMode ? 'rgba(255,255,255,0.10)' : 'rgba(15,23,42,0.10)',
+                              },
                             ]}
                           >
-                            <ThemedText style={[styles.booksChapterGridCellIndexText, { color: colors.tint }]}>
-                              {idx + 1}
-                            </ThemedText>
+                            <View
+                              style={[
+                                styles.booksChapterGridCellIndex,
+                                { backgroundColor: isDarkMode ? 'rgba(255,255,255,0.08)' : 'rgba(2,6,23,0.06)' },
+                              ]}
+                            >
+                              <ThemedText style={[styles.booksChapterGridCellIndexText, { color: BRAND_BLUE }]}>
+                                {idx + 1}
+                              </ThemedText>
+                            </View>
+                            {!!safeLabel && !isDuplicateNumber && (
+                              <ThemedText
+                                numberOfLines={2}
+                                style={[
+                                  styles.booksChapterTileLabel,
+                                  { color: isDarkMode ? 'rgba(243,244,246,0.90)' : 'rgba(15,23,42,0.85)' },
+                                ]}
+                              >
+                                {safeLabel}
+                              </ThemedText>
+                            )}
                           </View>
+                            );
+                          })()}
                         </TouchableOpacity>
                       ))
                     )}
+                    </View>
                   </View>
                 </ScrollView>
               )}
@@ -3152,9 +3242,9 @@ const styles = StyleSheet.create({
     maxHeight: Math.round(SCREEN_HEIGHT * 0.72),
     borderRadius: 20,
     borderWidth: StyleSheet.hairlineWidth,
-    paddingHorizontal: 12,
-    paddingTop: 10,
-    paddingBottom: 10,
+    paddingHorizontal: 0,
+    paddingTop: 0,
+    paddingBottom: 0,
     overflow: 'hidden',
   },
   booksChapterModalHeader: {
@@ -3162,7 +3252,20 @@ const styles = StyleSheet.create({
     alignItems: 'flex-start',
     justifyContent: 'space-between',
     gap: 10,
-    marginBottom: 6,
+    paddingHorizontal: 14,
+    paddingTop: 14,
+    paddingBottom: 12,
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+  },
+  booksChapterModalDivider: {
+    height: StyleSheet.hairlineWidth,
+    width: '100%',
+  },
+  booksChapterBody: {
+    paddingHorizontal: 14,
+    paddingTop: 14,
+    paddingBottom: 12,
   },
   booksChapterModalHeaderTitle: {
     fontSize: 18,
@@ -3217,7 +3320,7 @@ const styles = StyleSheet.create({
     width: '100%',
     flexDirection: 'row',
     flexWrap: 'wrap',
-    justifyContent: 'space-between',
+    justifyContent: 'flex-start',
     alignContent: 'flex-start',
     paddingBottom: 8,
   },
@@ -3228,18 +3331,25 @@ const styles = StyleSheet.create({
     fontSize: 15,
   },
   booksChapterGridCell: {
-    width: '25%',
-    maxWidth: '25%',
     flexDirection: 'column',
     borderRadius: 0,
     borderWidth: 0,
-    paddingHorizontal: 0,
-    paddingVertical: 0,
-    paddingTop: 0,
+    paddingHorizontal: 6,
+    paddingVertical: 6,
     minHeight: 82,
-    marginBottom: 12,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  booksChapterTile: {
+    width: '100%',
+    borderRadius: 16,
+    borderWidth: StyleSheet.hairlineWidth,
+    paddingTop: 12,
+    paddingBottom: 10,
+    paddingHorizontal: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
   },
   booksChapterGridCellIndex: {
     alignSelf: 'center',
@@ -3254,6 +3364,14 @@ const styles = StyleSheet.create({
     fontSize: 19,
     lineHeight: 19,
     fontWeight: '900',
+  },
+  booksChapterTileLabel: {
+    fontSize: 12,
+    lineHeight: 16,
+    fontWeight: '700',
+    textAlign: 'center',
+    letterSpacing: -0.1,
+    minHeight: 32,
   },
   booksChapterGridCellText: {
     // (Unused now: chapter picker shows numbers only.)
