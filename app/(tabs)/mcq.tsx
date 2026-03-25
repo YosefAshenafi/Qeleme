@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect, useMemo } from 'react';
+import React, { useState, useRef, useEffect, useMemo, useLayoutEffect } from 'react';
 import { StyleSheet, TouchableOpacity, ScrollView, View, Dimensions, Animated, Modal, Platform, ActivityIndicator, TextInput, Image, Text, Keyboard } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -171,6 +171,7 @@ export default function MCQScreen() {
   const isLastQuestion = currentQuestionIndex === (nationalExamQuestions.length - 1);
   const isFirstQuestion = currentQuestionIndex === 0;
   const totalQuestions = nationalExamQuestions.length;
+  const totalQuestionsSafe = Math.max(1, totalQuestions);
   const percentage = Math.round((score / totalQuestions) * 100);
 
   // Timer functions (were accidentally removed)
@@ -195,10 +196,38 @@ export default function MCQScreen() {
     }
   };
 
+  /**
+   * Keep the timer running while the MCQ session is active.
+   * This prevents the HH/MM/SS boxes from freezing if some other
+   * focus/reset cleanup clears the interval.
+   */
+  useEffect(() => {
+    const shouldRun = showTest && !showResult;
+
+    if (shouldRun) {
+      if (!timerRef.current) startTimer();
+      return;
+    }
+
+    stopTimer();
+  }, [showTest, showResult]);
+
   const formatTime = (seconds: number) => {
     const minutes = Math.floor(seconds / 60);
     const remainingSeconds = seconds % 60;
     return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
+  };
+
+  const getTimeParts = (seconds: number) => {
+    const clamped = Math.max(0, Math.floor(seconds));
+    const hours = Math.floor(clamped / 3600);
+    const minutes = Math.floor((clamped % 3600) / 60);
+    const secs = clamped % 60;
+    return {
+      hours,
+      minutes,
+      seconds: secs,
+    };
   };
 
   // Helper function to normalize grade strings and extract the number
@@ -457,6 +486,37 @@ export default function MCQScreen() {
     };
     checkPhoneNumber();
   }, [user?.grade]);
+
+  useLayoutEffect(() => {
+    // Use the native top bar (already has logo/mega+). We only inject a back button.
+    (navigation as any)?.setOptions?.({
+      headerLeft: () => (
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+          <TouchableOpacity
+            accessibilityRole="button"
+            accessibilityLabel="Back"
+            onPress={() => {
+              try {
+                router.back();
+              } catch {
+                router.replace('/(tabs)');
+              }
+            }}
+            style={{ paddingLeft: 12, paddingRight: 6, paddingVertical: 8 }}
+          >
+            <Ionicons name="chevron-back" size={26} color={BRAND_BLUE} />
+          </TouchableOpacity>
+          <Text style={{ color: BRAND_BLUE, fontWeight: '900', fontSize: 16 }}>Mega+</Text>
+        </View>
+      ),
+      headerTitleAlign: 'center',
+      headerTitle: () => (
+        <Text style={{ color: colors.text, fontWeight: '800', fontSize: 16 }}>
+          MCQ Practise
+        </Text>
+      ),
+    });
+  }, [navigation, colors.text]);
 
   useEffect(() => {
     // Handle reset parameters
@@ -1017,32 +1077,31 @@ export default function MCQScreen() {
 
   const getOptionStyle = (optionId: string) => {
     if (!showExplanation) return [styles.optionContainer];
-    
+
     const isCorrect = currentQuestion?.options?.find((opt: Option) => opt.id === optionId)?.isCorrect;
     const isSelected = selectedAnswer === optionId;
     
     if (isCorrect) {
       return [
-        styles.optionContainer,
         {
-          borderColor: '#4CAF50',
+          borderColor: BRAND_BLUE,
           borderWidth: 2,
-        }
+        },
       ];
     }
     if (isSelected && !isCorrect) {
       return [
-        styles.optionContainer,
         {
           borderColor: '#F44336',
           borderWidth: 2,
-        }
+        },
       ];
     }
     return [styles.optionContainer];
   };
 
-  const progress = ((currentQuestionIndex + 1) / totalQuestions) * 100;
+  const progress = ((currentQuestionIndex + 1) / totalQuestionsSafe) * 100;
+  const { hours: timeHours, minutes: timeMinutes, seconds: timeSeconds } = getTimeParts(time);
 
   // Handle starting the picture MCQ
   const handleStartPictureMCQ = () => {
@@ -1954,246 +2013,196 @@ export default function MCQScreen() {
   }
 
   return (
-    <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]}>
-      {/* Timer in top right */}
-      <View style={{
-        position: 'absolute',
-        top: 40,
-        right: 20,
-        zIndex: 1000,
-      }}>
-        <View style={[styles.timerContainer, { 
-          backgroundColor: colors.tint,
-          paddingHorizontal: 20,
-          paddingVertical: 12,
-          borderRadius: 25,
-          shadowColor: '#000',
-          shadowOffset: { width: 0, height: 2 },
-          shadowOpacity: 0.3,
-          shadowRadius: 4,
-          elevation: 5,
-        }]}>
-          <ThemedText style={[styles.timerText, { 
-            color: '#fff',
-            fontSize: 18,
-            fontWeight: '700',
-          }]}>{formatTime(time)}</ThemedText>
-        </View>
-      </View>
-
-      <ThemedView style={[styles.container, { backgroundColor: colors.background }]}>
-        <ThemedView style={[styles.content, { backgroundColor: colors.background }]}>
-          <ThemedText style={{ fontSize: 30, fontWeight: 'bold', color: colors.text, marginBottom: 16, marginTop: -20, paddingTop: 5 }}>
-            {selectedExamType === 'national' ? 'National Exam' : 'MCQ'}
-          </ThemedText>
+    <SafeAreaView
+      edges={['left', 'right', 'bottom']}
+      style={[styles.safeArea, { backgroundColor: colors.background }]}
+    >
+      <ThemedView
+        style={[
+          styles.container,
+          { backgroundColor: colors.background },
+          !showResult ? styles.mcqQuestionContainer : null,
+        ]}
+      >
+        <ThemedView
+          style={[
+            styles.content,
+            { backgroundColor: colors.background },
+            !showResult ? styles.questionModeInnerContent : null,
+          ]}
+        >
           {!showResult ? (
             <>
-              <View style={[styles.headerContainer, { backgroundColor: colors.background, borderBottomColor: colors.border }]}>
-                <View style={[styles.breadcrumbContainer, { backgroundColor: colors.cardAlt }]}>
-                  <View style={[styles.breadcrumbItem, { backgroundColor: colors.background, borderColor: colors.border }]}>
-                    <ThemedText style={[styles.breadcrumbText, { color: isDarkMode ? '#FFFFFF' : colors.tint }]}>
-                      {user?.grade ? `${t('common.grade')} ${user.grade.replace(/\D/g, '')}` : t('mcq.selectSubject')}
-                    </ThemedText>
-                  </View>
-                  {selectedGrade && (
-                    <>
-                      <IconSymbol name="chevron.right" size={16} color={isDarkMode ? '#FFFFFF' : colors.tint} />
-                      <View style={[styles.breadcrumbItem, { backgroundColor: colors.background, borderColor: colors.border }]}>
-                        <ThemedText style={[styles.breadcrumbText, { color: isDarkMode ? '#FFFFFF' : colors.tint }]}>
-                          {selectedExamType === 'national'
-                            ? (selectedYear || t('mcq.selectYear'))
-                            : (selectedSubject ? selectedGradeData?.subjects.find((s: Subject) => s.id === selectedSubject)?.name : t('mcq.selectSubject'))
-                          }
-                        </ThemedText>
-                      </View>
-                    </>
-                  )}
-                  {selectedExamType === 'national' ? (
-                    selectedYear && selectedSubject && (
-                      <>
-                        <IconSymbol name="chevron.right" size={16} color={isDarkMode ? '#FFFFFF' : colors.tint} />
-                        <View style={[styles.breadcrumbItem, { backgroundColor: colors.background, borderColor: colors.border }]}>
-                          <ThemedText style={[styles.breadcrumbText, { color: isDarkMode ? '#FFFFFF' : colors.tint }]}>
-                            {toTitleCase(selectedSubject)}
-                          </ThemedText>
-                        </View>
-                      </>
-                    )
-                  ) : (
-                    selectedSubject && (
-                      <>
-                        <IconSymbol name="chevron.right" size={16} color={isDarkMode ? '#FFFFFF' : colors.tint} />
-                        <View style={[styles.breadcrumbItem, { backgroundColor: colors.background, borderColor: colors.border }]}>
-                          <ThemedText style={[styles.breadcrumbText, { color: isDarkMode ? '#FFFFFF' : colors.tint }]}>
-                            {selectedChapter ? `${t('mcq.chapter')} ${selectedSubjectData?.chapters?.find((c: Chapter) => c.id === selectedChapter)?.name || selectedChapterName}` : t('mcq.selectChapter')}
-                          </ThemedText>
-                        </View>
-                      </>
-                    )
-                  )}
-                </View>
-              </View>
-
-              {/* Compact Sticky Header */}
-              <View style={{
-                position: 'sticky',
-                top: 0,
-                zIndex: 999,
-                backgroundColor: colors.background,
-                paddingVertical: 8,
-                paddingHorizontal: 16,
-                borderBottomWidth: 1,
-                borderBottomColor: colors.border,
-                flexDirection: 'row',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-              }}>
-                {/* Progress Bar */}
-                <View style={{ flex: 1, marginRight: 16 }}>
-                  <View style={[styles.progressBar, { backgroundColor: colors.cardAlt, height: 6 }]}>
-                    <View style={[
-                      styles.progressFill, 
-                      { 
-                        backgroundColor: colors.tint,
-                        width: `${((currentQuestionIndex + 1) / totalQuestions) * 100}%`
-                      }
-                    ]} />
-                  </View>
-                  <ThemedText 
-                    numberOfLines={1}
-                    style={[styles.progressText, { 
-                      color: isDarkMode ? '#FFFFFF' : colors.tint, 
-                      fontSize: 12, 
-                      textAlign: 'center',
-                      marginTop: 4,
-                      flexShrink: 0,
-                    }]}>
-                    {currentQuestionIndex + 1}/{totalQuestions}
+              <View style={styles.sessionProgressSection}>
+                <View style={styles.sessionProgressTopRow}>
+                  <ThemedText style={[styles.sessionProgressLabel, { color: isDarkMode ? '#FFFFFF' : '#6B7280' }]}>
+                    SESSION PROGRESS
+                  </ThemedText>
+                  <ThemedText style={[styles.sessionProgressCount, { color: BRAND_BLUE }]}>
+                    {currentQuestionIndex + 1} of {totalQuestions}
                   </ThemedText>
                 </View>
 
-                {/* Navigation Buttons */}
-                <View style={{ flexDirection: 'row', gap: 8 }}>
-                  <TouchableOpacity
+                <View style={[styles.sessionProgressBarTrack, { backgroundColor: colors.cardAlt }]}>
+                  <View
                     style={[
-                      styles.navButton, 
-                      styles.prevButton, 
-                      { 
-                        borderColor: colors.border, 
-                        paddingHorizontal: 12,
-                        paddingVertical: 8,
-                        minWidth: 80,
-                      }, 
-                      isFirstQuestion && styles.navButtonDisabled
+                      styles.sessionProgressBarFill,
+                      {
+                        backgroundColor: BRAND_BLUE,
+                        width: `${((currentQuestionIndex + 1) / totalQuestions) * 100}%`,
+                      },
                     ]}
-                    onPress={handlePreviousQuestion}
-                    disabled={isFirstQuestion}
-                  >
-                    <IconSymbol name="chevron.left" size={18} color={isDarkMode ? '#FFFFFF' : colors.tint} />
-                    <ThemedText style={[styles.prevButtonText, { color: isDarkMode ? '#FFFFFF' : colors.tint, fontSize: 14 }]}>
-                      {t('mcq.previous')}
-                    </ThemedText>
-                  </TouchableOpacity>
-
-                  <TouchableOpacity
-                    style={[
-                      styles.navButton, 
-                      styles.nextButton, 
-                      { 
-                        backgroundColor: colors.tint,
-                        paddingHorizontal: 12,
-                        paddingVertical: 8,
-                        minWidth: 80,
-                      }
-                    ]}
-                    onPress={isLastQuestion ? handleResult : handleNextQuestion}
-                  >
-                    <ThemedText style={[styles.nextButtonText, { color: '#fff', fontSize: 14 }]}>
-                      {isLastQuestion ? t('mcq.finish') : t('mcq.next')}
-                    </ThemedText>
-                    <IconSymbol name="chevron.right" size={18} color="#fff" />
-                  </TouchableOpacity>
-                </View>
-              </View>
-
-              {/* Answer Message - Only show when needed */}
-              {showAnswerMessage && (
-                <View style={{
-                  backgroundColor: colors.warning + '20',
-                  borderLeftWidth: 4,
-                  borderLeftColor: colors.warning,
-                  paddingHorizontal: 16,
-                  paddingVertical: 8,
-                  marginHorizontal: 16,
-                  marginTop: 8,
-                  borderRadius: 8,
-                }}>
-                  <View style={{
-                    flexDirection: 'row',
-                    alignItems: 'center',
-                  }}>
-                    <ThemedText style={{
-                      fontSize: 14,
-                      color: colors.warning,
-                      marginRight: 6,
-                    }}>
-                      ⚠️
-                    </ThemedText>
-                    <ThemedText style={{
-                      fontSize: 13,
-                      fontWeight: '500',
-                      color: colors.warning,
-                      flex: 1,
-                    }}>
-                      {t('mcq.selectAnswer')}
-                    </ThemedText>
-                  </View>
-                </View>
-              )}
-
-              <ScrollView ref={scrollViewRef} style={styles.scrollView} showsVerticalScrollIndicator={false}>
-
-                <View style={styles.questionContainer}>
-                  <RichText 
-                    text={currentQuestion?.question || 'Question not available'}
-                    style={styles.questionText}
-                    color={colors.text}
-                    fontSize={18}
-                    textAlign="left"
-                    lineHeight={26}
-                    image_url={currentQuestion?.image_url}
                   />
                 </View>
 
-                <View style={styles.optionsContainer}>
-                  {currentQuestion?.options?.filter((option: Option) => option.text && option.text.trim() !== '')?.map((option: Option, index: number) => (
-                    <TouchableOpacity
-                      key={option.id}
-                      style={[
-                        styles.optionContainer,
-                        { backgroundColor: colors.background, borderColor: isDarkMode ? '#FFFFFF' : colors.border },
-                        getOptionStyle(String(option.id))
-                      ]}
-                      onPress={() => handleAnswerSelect(String(option.id))}
-                      disabled={!!selectedAnswer}
-                    >
-                      <View style={styles.optionContent}>
-                        <View style={[styles.optionId, { backgroundColor: colors.cardAlt, borderColor: isDarkMode ? '#FFFFFF' : colors.border }]}>
-                          <ThemedText style={[styles.optionIdText, { color: isDarkMode ? '#FFFFFF' : colors.tint }]}>
-                            {selectedExamType === 'national' ? String.fromCharCode(65 + index) : String(option.id)}
-                          </ThemedText>
+                  <View style={styles.timeBoxesRow}>
+                  <View style={[styles.timeBox, { backgroundColor: colors.cardAlt, borderColor: colors.border }]}>
+                    <ThemedText style={styles.timeValueText}>
+                      {String(timeHours).padStart(2, '0')}
+                    </ThemedText>
+                    <ThemedText style={[styles.timeLabelText, { color: colors.tabIconDefault }]}>HOURS</ThemedText>
+                  </View>
+                  <View style={[styles.timeBox, { backgroundColor: colors.cardAlt, borderColor: colors.border }]}>
+                    <ThemedText style={styles.timeValueText}>
+                      {String(timeMinutes).padStart(2, '0')}
+                    </ThemedText>
+                    <ThemedText style={[styles.timeLabelText, { color: colors.tabIconDefault }]}>MINUTES</ThemedText>
+                  </View>
+                  <View style={[styles.timeBox, { backgroundColor: colors.cardAlt, borderColor: colors.border }]}>
+                    <ThemedText style={styles.timeValueText}>
+                      {String(timeSeconds).padStart(2, '0')}
+                    </ThemedText>
+                    <ThemedText style={[styles.timeLabelText, { color: colors.tabIconDefault }]}>SECONDS</ThemedText>
+                  </View>
+                </View>
+              </View>
+
+              <View style={styles.questionModeBody}>
+                {/* Answer Message - Only show when needed */}
+                {showAnswerMessage && (
+                  <View
+                    style={{
+                      backgroundColor: colors.warning + '20',
+                      borderLeftWidth: 4,
+                      borderLeftColor: colors.warning,
+                      paddingHorizontal: 16,
+                      paddingVertical: 8,
+                      marginTop: 8,
+                      borderRadius: 8,
+                      marginHorizontal: 16,
+                    }}
+                  >
+                    <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                      <ThemedText
+                        style={{
+                          fontSize: 14,
+                          color: colors.warning,
+                          marginRight: 6,
+                        }}
+                      >
+                        ⚠️
+                      </ThemedText>
+                      <ThemedText
+                        style={{
+                          fontSize: 13,
+                          fontWeight: '500',
+                          color: colors.warning,
+                          flex: 1,
+                        }}
+                      >
+                        {t('mcq.selectAnswer')}
+                      </ThemedText>
+                    </View>
+                  </View>
+                )}
+
+                <ScrollView
+                  ref={scrollViewRef}
+                  style={styles.scrollView}
+                  showsVerticalScrollIndicator={false}
+                  contentContainerStyle={styles.questionScrollContent}
+                >
+                  <View style={styles.questionContainer}>
+                    <RichText
+                      text={currentQuestion?.question || 'Question not available'}
+                      style={styles.questionText}
+                      color={colors.text}
+                      fontSize={20}
+                      textAlign="left"
+                      lineHeight={28}
+                      image_url={currentQuestion?.image_url}
+                    />
+                  </View>
+
+                  <View style={styles.optionsContainer}>
+                  {currentQuestion?.options?.filter((option: Option) => option.text && option.text.trim() !== '')?.map((option: Option, index: number) => {
+                    const optionId = String(option.id);
+                    const isCorrect = !!option.isCorrect;
+                    const isSelected = selectedAnswer === optionId;
+                    return (
+                      <TouchableOpacity
+                        key={optionId}
+                        style={[
+                          styles.optionContainer,
+                          { backgroundColor: colors.background, borderColor: isDarkMode ? '#FFFFFF' : colors.border },
+                          getOptionStyle(optionId),
+                        ]}
+                        onPress={() => handleAnswerSelect(optionId)}
+                        disabled={!!selectedAnswer}
+                      >
+                        <View style={styles.optionContent}>
+                          <View
+                            style={[
+                              styles.optionId,
+                              {
+                                backgroundColor: showExplanation && isCorrect
+                                  ? BRAND_BLUE
+                                  : showExplanation && isSelected && !isCorrect
+                                    ? 'rgba(244, 67, 54, 0.10)'
+                                    : colors.background,
+                                borderColor: showExplanation && isCorrect
+                                  ? BRAND_BLUE
+                                  : showExplanation && isSelected && !isCorrect
+                                    ? '#F44336'
+                                    : isDarkMode
+                                      ? '#FFFFFF'
+                                      : colors.border,
+                              },
+                            ]}
+                          >
+                            <ThemedText
+                              style={[
+                                styles.optionIdText,
+                                {
+                                  color: showExplanation && isCorrect
+                                    ? '#FFFFFF'
+                                    : showExplanation && isSelected && !isCorrect
+                                      ? '#F44336'
+                                      : colors.tabIconDefault,
+                                },
+                              ]}
+                            >
+                              {String.fromCharCode(65 + index)}
+                            </ThemedText>
+                          </View>
+                          <RichText
+                            text={option.text}
+                            style={styles.optionText}
+                            color={colors.text}
+                            fontSize={16}
+                            textAlign="left"
+                            lineHeight={22}
+                          />
                         </View>
-                        <RichText 
-                          text={option.text}
-                          style={styles.optionText}
-                          color={colors.text}
-                          fontSize={16}
-                          textAlign="left"
-                          lineHeight={22}
-                        />
-                      </View>
-                    </TouchableOpacity>
-                  )) || (
+
+                        {showExplanation && isCorrect && (
+                          <View style={styles.optionCheckIcon} pointerEvents="none">
+                            <Ionicons name="checkmark" size={16} color="#FFFFFF" />
+                          </View>
+                        )}
+                      </TouchableOpacity>
+                    );
+                  }) || (
                     <View style={[styles.optionContainer, { backgroundColor: colors.background, borderColor: isDarkMode ? '#FFFFFF' : colors.border, justifyContent: 'center', alignItems: 'center' }]}>
                       <ThemedText style={[styles.optionText, { color: colors.text, opacity: 0.7 }]}>
                         No options available
@@ -2202,37 +2211,36 @@ export default function MCQScreen() {
                   )}
                 </View>
 
-                {showExplanation && currentQuestion?.explanation && currentQuestion.explanation.trim() !== '' && currentQuestion.explanation !== 'No explanation available' && (
-                  <View ref={explanationRef} style={[styles.explanationContainer, { backgroundColor: colors.cardAlt }]}>
-                    <ThemedText style={[styles.explanationTitle, { color: colors.tint }]}>Explanation:</ThemedText>
-                    
-                    <View style={styles.explanationContent}>
-                      {/* Colored answer letter */}
-                      <View style={styles.answerLetterContainer}>
-                        <ThemedText style={[styles.answerLetter, { color: '#4CAF50' }]}>
-                          {(() => {
-                            const correctOption = currentQuestion?.options?.find((opt: Option) => opt.isCorrect);
-                            return correctOption?.id || '';
-                          })()}.
-                        </ThemedText>
-                      </View>
-                      
-                      {/* Explanation text */}
-                      <View style={styles.explanationTextContainer}>
-                        <RichText 
-                          text={currentQuestion.explanation}
-                          style={styles.explanationText}
-                          color={colors.text}
-                          fontSize={16}
-                          textAlign="left"
-                          lineHeight={24}
-                          image_url={currentQuestion?.image_url}
-                        />
-                      </View>
-                    </View>
-                  </View>
-                )}
-              </ScrollView>
+                {/* Design shows answer reveal (checkmark) but not the full explanation block */}
+                </ScrollView>
+
+                {/* Bottom actions pinned to bottom */}
+                <View style={[styles.bottomActionBar, { backgroundColor: colors.background }]}>
+                  <TouchableOpacity
+                    style={[
+                      styles.bottomSecondaryButton,
+                      { opacity: selectedAnswer ? 1 : 0.55, backgroundColor: colors.cardAlt, borderColor: colors.border },
+                    ]}
+                    onPress={() => (isLastQuestion ? handleResult() : handleNextQuestion())}
+                  >
+                    <Ionicons name="bookmark-outline" size={20} color={BRAND_BLUE} />
+                    <ThemedText style={styles.bottomSecondaryButtonText}>Review Later</ThemedText>
+                  </TouchableOpacity>
+
+                  <TouchableOpacity
+                    style={[
+                      styles.bottomPrimaryButton,
+                      { opacity: selectedAnswer ? 1 : 0.55 },
+                    ]}
+                    onPress={() => (isLastQuestion ? handleResult() : handleNextQuestion())}
+                  >
+                    <ThemedText style={styles.bottomPrimaryButtonText}>
+                      {isLastQuestion ? t('mcq.finish') : t('mcq.next')}
+                    </ThemedText>
+                    <Ionicons name="arrow-forward" size={22} color="#FFFFFF" />
+                  </TouchableOpacity>
+                </View>
+              </View>
             </>
           ) : (
             <ScrollView showsVerticalScrollIndicator={false}>
@@ -2492,8 +2500,9 @@ const styles = StyleSheet.create({
     marginTop: 20,
   },
   questionText: {
-    fontSize: 24,
-    lineHeight: 32,
+    fontSize: 20,
+    lineHeight: 28,
+    fontWeight: '700',
   },
   optionsContainer: {
     gap: 12,
@@ -2508,6 +2517,7 @@ const styles = StyleSheet.create({
     shadowRadius: 3,
     borderWidth: 1,
     minHeight: 60, // Ensure minimum height for consistency
+    position: 'relative',
   },
   optionContent: {
     flexDirection: 'row',
@@ -3230,6 +3240,143 @@ const styles = StyleSheet.create({
     marginTop: 8,
     paddingHorizontal: 0,
     paddingBottom: 0,
+  },
+
+  // MCQ question screen (Mega+ MCQ Practice)
+  mcqQuestionContainer: {
+    // SESSION PROGRESS should start at the very top of the page content.
+    paddingTop: 20,
+    paddingHorizontal: 0,
+    paddingBottom: 0,
+  },
+
+  questionModeInnerContent: {
+    // Use outer padding as the main spacing source for this screen.
+    padding: 0,
+  },
+
+  sessionProgressSection: {
+    paddingTop: 0,
+    paddingBottom: 10,
+    paddingHorizontal: 16,
+  },
+  sessionProgressTopRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 8,
+  },
+  sessionProgressLabel: {
+    fontSize: 13,
+    fontWeight: '800',
+    letterSpacing: 0.3,
+  },
+  sessionProgressCount: {
+    fontSize: 13,
+    fontWeight: '800',
+  },
+  sessionProgressBarTrack: {
+    height: 6,
+    borderRadius: 4,
+    overflow: 'hidden',
+    marginBottom: 14,
+  },
+  sessionProgressBarFill: {
+    height: '100%',
+    borderRadius: 4,
+  },
+  timeBoxesRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    gap: 12,
+  },
+  timeBox: {
+    flex: 1,
+    borderRadius: 12,
+    paddingVertical: 14,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#F5F5F5',
+    borderWidth: 1,
+    borderColor: '#E0E0E0',
+  },
+  timeValueText: {
+    fontSize: 22,
+    fontWeight: '900',
+    color: BRAND_BLUE,
+    letterSpacing: 0.2,
+  },
+  timeLabelText: {
+    fontSize: 11,
+    fontWeight: '700',
+    marginTop: 6,
+    color: '#6B7280',
+  },
+
+  questionScrollContent: {
+    paddingHorizontal: 16,
+    paddingBottom: 70,
+  },
+
+  questionModeBody: {
+    flex: 1,
+  },
+
+  bottomActionBar: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    bottom: 0,
+    flexDirection: 'row',
+    gap: 12,
+    paddingTop: 12,
+    paddingBottom: 8,
+    paddingHorizontal: 16,
+  },
+  bottomSecondaryButton: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 10,
+    paddingVertical: 14,
+    borderRadius: 12,
+    backgroundColor: '#F5F5F5',
+    borderWidth: 1,
+    borderColor: '#E0E0E0',
+  },
+  bottomSecondaryButtonText: {
+    fontSize: 15,
+    fontWeight: '800',
+    color: BRAND_BLUE,
+  },
+  bottomPrimaryButton: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 10,
+    paddingVertical: 14,
+    borderRadius: 12,
+    backgroundColor: BRAND_BLUE,
+  },
+  bottomPrimaryButtonText: {
+    fontSize: 15,
+    fontWeight: '800',
+    color: '#FFFFFF',
+  },
+
+  optionCheckIcon: {
+    position: 'absolute',
+    right: 16,
+    top: '50%',
+    width: 22,
+    height: 22,
+    borderRadius: 11,
+    backgroundColor: BRAND_BLUE,
+    alignItems: 'center',
+    justifyContent: 'center',
+    transform: [{ translateY: -11 }],
   },
 });
 
