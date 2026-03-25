@@ -190,7 +190,7 @@ When I ask for a screen, please send:
 - [x] Payment
 - [x] Payment Success
 - [x] Home/Dashboard (Figma cross-check + QA pending)
-- [ ] MCQ
+- [x] MCQ
 - [ ] Flashcards
 - [ ] Reports
 - [ ] Profile/Settings

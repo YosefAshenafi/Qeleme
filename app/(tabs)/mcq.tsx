@@ -19,7 +19,7 @@ import { getBookCover } from '../../services/bookCoverService';
 import RichText from '../../components/ui/RichText';
 import { getMCQData, MCQData, Grade, Subject, Chapter, Question, Option, ExamType, getNationalExamQuestions, getNationalExamAvailable, NationalExamAPIResponse, getRegularMCQQuestions } from '../../services/mcqService';
 import { getFlashcardStructure, getFlashcardsForChapter, Flashcard } from '../../services/flashcardService';
-import { FlashcardsInlineModal } from '../../components/FlashcardsInlineModal';
+// Flashcards now open in the Flashcards tab screen (not a full-screen modal)
 import ActivityTrackingService from '../../services/activityTrackingService';
 import PictureMCQScreen from '../screens/PictureMCQScreen';
 import PictureMCQInstructionScreen from '../screens/PictureMCQInstructionScreen';
@@ -109,11 +109,8 @@ export default function MCQScreen() {
       : booksChapterIntent === 'flashcards'
         ? 'Flashcards'
         : '';
-  /** Subjects hub: loading MCQ or flashcards after chapter pick (avoids blank screen / race with fetch). */
+  /** Subjects hub: loading MCQ after chapter pick (avoids blank screen / race with fetch). */
   const [booksHubActionLoading, setBooksHubActionLoading] = useState(false);
-  const [flashcardsModalVisible, setFlashcardsModalVisible] = useState(false);
-  const [flashcardsModalCards, setFlashcardsModalCards] = useState<Flashcard[]>([]);
-  const [flashcardsModalLabels, setFlashcardsModalLabels] = useState({ subject: '', chapter: '' });
 
   // Timer states
   const [time, setTime] = useState(0);
@@ -468,8 +465,6 @@ export default function MCQScreen() {
         setBooksChapterIntent(null);
         setBooksChapterModalStep('grid');
         setBooksEitherPendingChapter(null);
-        setFlashcardsModalVisible(false);
-        setFlashcardsModalCards([]);
       };
     }, [selectedGrade])
   );
@@ -1063,11 +1058,21 @@ export default function MCQScreen() {
         return;
       }
 
+      // Open the Flashcards tab screen (keeps bottom tabs visible, like the design)
       setSelectedChapter(chapter.id);
       setSelectedChapterName(chapter.name);
-      setFlashcardsModalCards(flashcards);
-      setFlashcardsModalLabels({ subject: subjectName, chapter: chapter.name });
-      setFlashcardsModalVisible(true);
+      router.push({
+        pathname: '/(tabs)/flashcards',
+        params: {
+          preSelectedSubject: subjectName,
+          // Use slug + chapter name for reliable deep-link auto-start.
+          // Chapter IDs differ between MCQ chapters and flashcard chapters.
+          subjectSlug: subject.slug,
+          chapterName: chapter.name,
+          gradeId: normalizedGradeId,
+          startFlashcards: '1',
+        },
+      });
     } catch (e) {
       console.error('Subjects hub flashcards:', e);
       setError(t('errors.network.message'));
@@ -2026,16 +2031,6 @@ export default function MCQScreen() {
           </View>
         )}
 
-        <FlashcardsInlineModal
-          visible={flashcardsModalVisible}
-          flashcards={flashcardsModalCards}
-          subjectLabel={flashcardsModalLabels.subject}
-          chapterLabel={flashcardsModalLabels.chapter}
-          onClose={() => {
-            setFlashcardsModalVisible(false);
-            setFlashcardsModalCards([]);
-          }}
-        />
       </SafeAreaView>
     );
   }

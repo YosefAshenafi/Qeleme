@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import {
   Dimensions,
   Modal,
@@ -8,7 +8,6 @@ import {
   View,
 } from 'react-native';
 import Animated, {
-  Easing,
   interpolate,
   useAnimatedStyle,
   useSharedValue,
@@ -16,6 +15,7 @@ import Animated, {
 } from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
+import { LinearGradient } from 'expo-linear-gradient';
 
 import { ThemedText } from '@/components/ThemedText';
 import { IconSymbol } from '@/components/ui/IconSymbol';
@@ -24,8 +24,9 @@ import type { Flashcard } from '@/services/flashcardService';
 import { getColors } from '@/constants/Colors';
 import { useTheme } from '@/contexts/ThemeContext';
 
-const { width: SCREEN_WIDTH } = Dimensions.get('window');
+const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 const CARD_WIDTH = SCREEN_WIDTH - 40;
+const CARD_HEIGHT = Math.min(Math.round(SCREEN_HEIGHT * 0.56), Math.round(CARD_WIDTH * 1.12));
 
 type Props = {
   visible: boolean;
@@ -49,6 +50,7 @@ export function FlashcardsInlineModal({
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isRevealed, setIsRevealed] = useState(false);
   const revealAnimation = useSharedValue(0);
+  const [checkedIds, setCheckedIds] = useState<Set<string>>(new Set());
 
   const currentCard = flashcards.length > currentIndex ? flashcards[currentIndex] : null;
 
@@ -56,6 +58,7 @@ export function FlashcardsInlineModal({
     if (visible) {
       setCurrentIndex(0);
       setIsRevealed(false);
+      setCheckedIds(new Set());
       revealAnimation.value = withSpring(0, { damping: 12, stiffness: 80, mass: 0.8 });
     }
   }, [visible, flashcards]);
@@ -94,150 +97,174 @@ export function FlashcardsInlineModal({
     });
   };
 
-  const handlePrevious = () => {
-    if (currentIndex > 0) {
-      setCurrentIndex((i) => i - 1);
-    }
-  };
-
-  const handleNext = () => {
-    if (currentIndex < flashcards.length - 1) {
-      setCurrentIndex((i) => i + 1);
-    }
-  };
-
   if (!visible || flashcards.length === 0) return null;
 
-  const atEnd = currentIndex === flashcards.length - 1;
+  const atEnd = currentIndex >= flashcards.length - 1;
+  const progressPct = useMemo(() => {
+    if (!flashcards.length) return 0;
+    return ((currentIndex + 1) / flashcards.length) * 100;
+  }, [currentIndex, flashcards.length]);
+
+  const handleNext = () => {
+    if (atEnd) {
+      onClose();
+      return;
+    }
+    setCurrentIndex((i) => Math.min(flashcards.length - 1, i + 1));
+  };
+
+  const handleGotIt = () => {
+    if (currentCard?.id) {
+      setCheckedIds((prev) => {
+        const next = new Set(prev);
+        next.add(currentCard.id);
+        return next;
+      });
+    }
+    handleNext();
+  };
 
   return (
     <Modal visible={visible} animationType="slide" presentationStyle="fullScreen" onRequestClose={onClose}>
-      <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]} edges={['top', 'bottom']}>
-        <View style={[styles.topBar, { borderBottomColor: colors.border }]}>
-          <TouchableOpacity onPress={onClose} hitSlop={12} accessibilityRole="button">
-            <IconSymbol name="chevron.left" size={24} color={colors.tint} />
-          </TouchableOpacity>
-          <ThemedText style={[styles.topTitle, { color: colors.text }]} numberOfLines={1}>
-            {subjectLabel} · {chapterLabel}
-          </ThemedText>
-          <View style={{ width: 24 }} />
-        </View>
-
-        <View style={{ paddingHorizontal: 20, marginBottom: 8 }}>
-          <View style={{ height: 4, backgroundColor: colors.cardAlt, borderRadius: 2, overflow: 'hidden' }}>
-            <View
-              style={{
-                height: '100%',
-                width: `${((currentIndex + 1) / flashcards.length) * 100}%`,
-                backgroundColor: colors.tint,
-                borderRadius: 2,
-              }}
-            />
+      <SafeAreaView style={[styles.safeArea, { backgroundColor: isDarkMode ? colors.background : '#F4F6FA' }]} edges={['top', 'left', 'right']}>
+        <View style={styles.topBar}>
+          <View style={styles.brandPill}>
+            <ThemedText style={styles.brandText}>M+</ThemedText>
           </View>
-          <ThemedText
-            style={{ color: colors.tint, fontSize: 12, fontWeight: '600', textAlign: 'center', marginTop: 4 }}
-          >
-            {t('flashcards.cardProgress', { current: currentIndex + 1, total: flashcards.length })}
+          <ThemedText style={[styles.topTitle, { color: colors.tint }]} numberOfLines={1}>
+            {subjectLabel}{chapterLabel ? `: ${chapterLabel}` : ''}
           </ThemedText>
-        </View>
-
-        <View style={{ flexDirection: 'row', paddingHorizontal: 20, gap: 8, marginBottom: 8 }}>
-          <TouchableOpacity
-            style={[
-              styles.navBtn,
-              { borderColor: colors.border, opacity: currentIndex === 0 ? 0.4 : 1 },
-            ]}
-            onPress={handlePrevious}
-            disabled={currentIndex === 0}
-          >
-            <IconSymbol name="chevron.left" size={16} color={colors.tint} />
-            <ThemedText style={{ color: colors.tint, fontSize: 12, marginLeft: 4 }}>
-              {t('flashcards.previous')}
-            </ThemedText>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={[
-              styles.navBtn,
-              {
-                backgroundColor: colors.tint,
-                flex: 1,
-                flexDirection: 'row',
-                justifyContent: 'center',
-                alignItems: 'center',
-                borderWidth: 0,
-              },
-            ]}
-            onPress={() => {
-              if (atEnd) {
-                onClose();
-              } else {
-                handleNext();
-              }
-            }}
-          >
-            <ThemedText style={{ color: '#fff', fontSize: 12, fontWeight: '600', marginRight: 4 }}>
-              {atEnd ? t('flashcards.finish') : t('flashcards.next')}
-            </ThemedText>
-            <IconSymbol name="chevron.right" size={16} color="#fff" />
+          <TouchableOpacity onPress={onClose} hitSlop={12} accessibilityRole="button" style={styles.closeBtn}>
+            <IconSymbol name="xmark" size={18} color={colors.text} />
           </TouchableOpacity>
         </View>
 
-        <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-          <View style={styles.cardContainer}>
-            <TouchableOpacity onPress={handleReveal} activeOpacity={0.9} style={styles.cardWrapper}>
-              <Animated.View
-                style={[
-                  styles.card,
-                  frontAnimatedStyle,
-                  { borderColor: colors.border, backgroundColor: colors.cardAlt },
-                ]}
-              >
+        <View style={styles.progressBlock}>
+          <View style={styles.progressRow}>
+            <ThemedText style={[styles.progressLabel, { color: isDarkMode ? '#A7B4D6' : '#8EA2D6' }]}>
+              PROGRESS
+            </ThemedText>
+            <View style={{ flexDirection: 'row', alignItems: 'baseline', gap: 6 }}>
+              <ThemedText style={[styles.progressCount, { color: colors.tint }]}>
+                {currentIndex + 1} / {flashcards.length}
+              </ThemedText>
+              <ThemedText style={[styles.progressCardsSuffix, { color: isDarkMode ? '#9CA3AF' : '#9AA3B2' }]}>
+                cards
+              </ThemedText>
+            </View>
+          </View>
+          <View style={[styles.progressTrack, { backgroundColor: isDarkMode ? colors.cardAlt : '#E5E7EB' }]}>
+            <View style={[styles.progressFill, { backgroundColor: colors.tint, width: `${progressPct}%` }]} />
+          </View>
+        </View>
+
+        <View style={styles.cardStage}>
+          <TouchableOpacity onPress={handleReveal} activeOpacity={0.95} style={styles.cardTouch}>
+            <View style={styles.cardShadowWrap}>
+              <Animated.View style={[styles.cardFace, frontAnimatedStyle, { backgroundColor: isDarkMode ? colors.cardAlt : '#FFFFFF' }]}>
+                {!isDarkMode && (
+                  <LinearGradient
+                    colors={['rgba(15,75,215,0.10)', 'rgba(15,75,215,0.00)']}
+                    start={{ x: 1, y: 0 }}
+                    end={{ x: 0.2, y: 0.8 }}
+                    style={StyleSheet.absoluteFill}
+                  />
+                )}
+                <ThemedText style={[styles.cardMeta, { color: isDarkMode ? '#93A4C7' : '#8EA2D6' }]}>
+                  CONCEPT MASTERY
+                </ThemedText>
                 <ScrollView
                   style={styles.cardScroll}
                   contentContainerStyle={styles.cardScrollContent}
                   nestedScrollEnabled
                   bounces={false}
+                  showsVerticalScrollIndicator={false}
                 >
                   <RichText
                     text={currentCard?.question || ''}
-                    style={styles.cardText}
-                    color={isDarkMode ? '#FFFFFF' : colors.tint}
-                    fontSize={20}
+                    style={styles.cardTitle}
+                    color={isDarkMode ? '#FFFFFF' : '#111827'}
+                    fontSize={34}
                     textAlign="center"
-                    lineHeight={28}
+                    lineHeight={42}
                   />
                 </ScrollView>
+                <View style={styles.tapHintRow}>
+                  <IconSymbol name="arrow.2.squarepath" size={16} color={isDarkMode ? '#9CA3AF' : '#8EA2D6'} />
+                  <ThemedText style={[styles.tapHintText, { color: isDarkMode ? '#9CA3AF' : '#8EA2D6' }]}>
+                    TAP TO FLIP
+                  </ThemedText>
+                </View>
               </Animated.View>
-              <Animated.View
-                style={[
-                  styles.card,
-                  styles.cardBack,
-                  backAnimatedStyle,
-                  { borderColor: colors.border, backgroundColor: colors.cardAlt },
-                ]}
-              >
+
+              <Animated.View style={[styles.cardFace, styles.cardBack, backAnimatedStyle, { backgroundColor: isDarkMode ? colors.cardAlt : '#FFFFFF' }]}>
+                {!isDarkMode && (
+                  <LinearGradient
+                    colors={['rgba(15,75,215,0.10)', 'rgba(15,75,215,0.00)']}
+                    start={{ x: 1, y: 0 }}
+                    end={{ x: 0.2, y: 0.8 }}
+                    style={StyleSheet.absoluteFill}
+                  />
+                )}
+                <ThemedText style={[styles.cardMeta, { color: isDarkMode ? '#93A4C7' : '#8EA2D6' }]}>
+                  CONCEPT MASTERY
+                </ThemedText>
                 <ScrollView
                   style={styles.cardScroll}
                   contentContainerStyle={styles.cardScrollContent}
                   nestedScrollEnabled
                   bounces={false}
+                  showsVerticalScrollIndicator={false}
                 >
                   <RichText
                     text={currentCard?.answer || ''}
-                    style={styles.cardText}
-                    color={isDarkMode ? '#FFFFFF' : colors.tint}
-                    fontSize={20}
+                    style={styles.cardTitle}
+                    color={isDarkMode ? '#FFFFFF' : '#111827'}
+                    fontSize={28}
                     textAlign="center"
-                    lineHeight={28}
+                    lineHeight={36}
                   />
                 </ScrollView>
+                <View style={styles.tapHintRow}>
+                  <IconSymbol name="arrow.2.squarepath" size={16} color={isDarkMode ? '#9CA3AF' : '#8EA2D6'} />
+                  <ThemedText style={[styles.tapHintText, { color: isDarkMode ? '#9CA3AF' : '#8EA2D6' }]}>
+                    TAP TO FLIP
+                  </ThemedText>
+                </View>
               </Animated.View>
-            </TouchableOpacity>
-            <ThemedText style={[styles.hint, { color: colors.text }]}>
-              {isRevealed ? t('flashcards.tapToSeeQuestion') : t('flashcards.tapToSeeAnswer')}
+            </View>
+          </TouchableOpacity>
+        </View>
+
+        <View style={styles.bottomActions}>
+          <TouchableOpacity
+            style={styles.bottomActionLeft}
+            accessibilityRole="button"
+            accessibilityLabel="Still learning"
+            onPress={handleNext}
+          >
+            <View style={[styles.bottomIconGhost, { borderColor: isDarkMode ? '#3A4354' : '#D1D5DB' }]}>
+              <IconSymbol name="arrow.counterclockwise" size={18} color={isDarkMode ? '#D1D5DB' : '#6B7280'} />
+            </View>
+            <ThemedText style={[styles.bottomLabel, { color: isDarkMode ? '#D1D5DB' : '#6B7280' }]}>
+              STILL LEARNING
             </ThemedText>
-          </View>
-        </ScrollView>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={styles.bottomActionRight}
+            accessibilityRole="button"
+            accessibilityLabel="Got it"
+            onPress={handleGotIt}
+          >
+            <View style={[styles.bottomIconPrimary, { backgroundColor: colors.tint, shadowColor: colors.tint }]}>
+              <IconSymbol name="checkmark" size={18} color="#FFFFFF" />
+            </View>
+            <ThemedText style={[styles.bottomLabelPrimary, { color: colors.tint }]}>
+              GOT IT
+            </ThemedText>
+          </TouchableOpacity>
+        </View>
       </SafeAreaView>
     </Modal>
   );
@@ -248,55 +275,171 @@ const styles = StyleSheet.create({
   topBar: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-    borderBottomWidth: StyleSheet.hairlineWidth,
+    paddingHorizontal: 16,
+    paddingTop: 6,
+    paddingBottom: 12,
+    gap: 10,
   },
-  topTitle: { flex: 1, textAlign: 'center', fontSize: 15, fontWeight: '600', marginHorizontal: 8 },
-  navBtn: {
-    flex: 1,
-    flexDirection: 'row',
+  brandPill: {
+    width: 34,
+    height: 34,
+    borderRadius: 10,
+    backgroundColor: '#0F4BD7',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 8,
-    borderRadius: 10,
-    borderWidth: 1,
+    shadowColor: '#0F4BD7',
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.18,
+    shadowRadius: 12,
+    elevation: 3,
   },
-  scrollContent: { padding: 20, paddingBottom: 40, flexGrow: 1 },
-  cardContainer: { alignItems: 'center', marginVertical: 12 },
-  cardWrapper: {
-    width: CARD_WIDTH,
-    height: CARD_WIDTH * 0.7,
-    position: 'relative',
+  brandText: {
+    color: '#FFFFFF',
+    fontWeight: '900',
+    fontSize: 14,
   },
-  card: {
-    width: '100%',
+  topTitle: { flex: 1, textAlign: 'center', fontSize: 18, fontWeight: '800' },
+  closeBtn: {
+    width: 34,
+    height: 34,
+    borderRadius: 17,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  progressBlock: {
+    paddingHorizontal: 16,
+    paddingBottom: 10,
+  },
+  progressRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 8,
+  },
+  progressLabel: {
+    fontSize: 12,
+    fontWeight: '700',
+    letterSpacing: 0.8,
+  },
+  progressCount: {
+    fontSize: 16,
+    fontWeight: '800',
+  },
+  progressCardsSuffix: {
+    fontSize: 16,
+    fontWeight: '700',
+  },
+  progressTrack: {
+    height: 6,
+    borderRadius: 999,
+    overflow: 'hidden',
+  },
+  progressFill: {
     height: '100%',
-    borderRadius: 12,
-    padding: 20,
+    borderRadius: 999,
+  },
+  cardStage: {
+    flex: 1,
+    paddingHorizontal: 16,
+    paddingTop: 14,
+  },
+  cardTouch: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'flex-start',
+  },
+  cardShadowWrap: {
+    width: CARD_WIDTH,
+    height: CARD_HEIGHT,
+    borderRadius: 28,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 18 },
+    shadowOpacity: 0.10,
+    shadowRadius: 28,
+    elevation: 6,
+    marginTop: 20,
+  },
+  cardFace: {
+    flex: 1,
+    borderRadius: 28,
+    paddingHorizontal: 22,
+    paddingTop: 26,
+    paddingBottom: 18,
     backfaceVisibility: 'hidden',
     position: 'absolute',
     top: 0,
     left: 0,
-    borderWidth: 1,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 3,
-    elevation: 2,
+    right: 0,
+    bottom: 0,
   },
   cardBack: {
     transform: [{ rotateY: '180deg' }],
   },
-  cardScroll: { flex: 1, width: '100%' },
+  cardMeta: {
+    textAlign: 'center',
+    fontSize: 12,
+    fontWeight: '600',
+    letterSpacing: 2.4,
+    marginBottom: 18,
+  },
+  cardScroll: { flex: 1 },
   cardScrollContent: {
     flexGrow: 1,
-    justifyContent: 'center',
     alignItems: 'center',
-    paddingVertical: 10,
-    minHeight: '100%',
+    justifyContent: 'center',
+    paddingBottom: 18,
   },
-  cardText: { fontSize: 20, textAlign: 'center', lineHeight: 28 },
-  hint: { opacity: 0.7, textAlign: 'center', marginTop: 16, fontSize: 14 },
+  cardTitle: { fontWeight: '900', letterSpacing: -0.4 },
+  tapHintRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    paddingTop: 10,
+  },
+  tapHintText: {
+    fontSize: 12,
+    fontWeight: '600',
+    letterSpacing: 1.6,
+  },
+  bottomActions: {
+    flexDirection: 'row',
+    alignItems: 'flex-end',
+    justifyContent: 'space-between',
+    paddingHorizontal: 26,
+    paddingTop: 10,
+    paddingBottom: 8,
+  },
+  bottomActionLeft: { alignItems: 'center', gap: 10 },
+  bottomActionRight: { alignItems: 'center', gap: 10 },
+  bottomIconGhost: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    borderWidth: 2,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#F3F4F6',
+  },
+  bottomIconPrimary: {
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowOffset: { width: 0, height: 18 },
+    shadowOpacity: 0.22,
+    shadowRadius: 22,
+    elevation: 6,
+  },
+  bottomLabel: {
+    fontSize: 11,
+    fontWeight: '700',
+    letterSpacing: 1.1,
+  },
+  bottomLabelPrimary: {
+    fontSize: 11,
+    fontWeight: '800',
+    letterSpacing: 1.1,
+  },
 });

@@ -1,7 +1,8 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { StyleSheet, TouchableOpacity, Dimensions, View, Modal, ScrollView } from 'react-native';
+import React, { useState, useRef, useEffect, useLayoutEffect } from 'react';
+import { StyleSheet, TouchableOpacity, Dimensions, View, Modal, ScrollView, StatusBar } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, useLocalSearchParams } from 'expo-router';
+import { useNavigation } from '@react-navigation/native';
 import { useTranslation } from 'react-i18next';
 import i18n from 'i18next';
 import Animated, {
@@ -13,6 +14,7 @@ import Animated, {
   Easing,
 } from 'react-native-reanimated';
 import { LinearGradient } from 'expo-linear-gradient';
+import Svg, { Circle } from 'react-native-svg';
 import { useTheme } from '@/contexts/ThemeContext';
 import { getColors } from '@/constants/Colors';
 import { useAuth } from '@/contexts/AuthContext';
@@ -34,19 +36,28 @@ interface RecentActivity {
   details: string;
 }
 
-const { width: SCREEN_WIDTH } = Dimensions.get('window');
+const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 const CARD_WIDTH = SCREEN_WIDTH - 40;
+const CARD_HEIGHT = Math.min(Math.round(SCREEN_HEIGHT * 0.56), Math.round(CARD_WIDTH * 1.12));
 
 export default function FlashcardsScreen() {
   const { isDarkMode } = useTheme();
   const { user } = useAuth();
   const { t } = useTranslation();
   const colors = getColors(isDarkMode);
+  const navigation = useNavigation();
   const params = useLocalSearchParams();
-  
-  // Debug logging
-  console.log('Flashcards params:', params);
-  console.log('Pre-selected subject:', params.preSelectedSubject);
+
+  const startFlashcardsParam = params.startFlashcards;
+  const startFlashcards =
+    (Array.isArray(startFlashcardsParam) ? startFlashcardsParam[0] : startFlashcardsParam) === '1';
+  const hasPreSelectedSubject = Boolean(params.preSelectedSubject);
+  const isDeepLinkAutoStart = startFlashcards && hasPreSelectedSubject;
+  const deepLinkSubjectSlug =
+    typeof params.subjectSlug === 'string' ? params.subjectSlug.trim() : '';
+  const deepLinkChapterName =
+    typeof params.chapterName === 'string' ? params.chapterName.trim() : '';
+  const deepLinkGradeId = typeof params.gradeId === 'string' ? params.gradeId.trim() : '';
   
   const [selectedGradeId, setSelectedGradeId] = useState<string>('1');
   const [selectedGrade, setSelectedGrade] = useState<string>('');
@@ -64,6 +75,7 @@ export default function FlashcardsScreen() {
   const [currentFlashcards, setCurrentFlashcards] = useState<Flashcard[]>([]);
   const [hasAppliedPreSelection, setHasAppliedPreSelection] = useState(false);
   const [sessionStartTime, setSessionStartTime] = useState<number | null>(null);
+  const [flashPendingFinish, setFlashPendingFinish] = useState(false);
   const scrollViewRef = useRef<ScrollView>(null);
   const [previousLanguage, setPreviousLanguage] = useState(i18n.language);
   const [isPreSelected, setIsPreSelected] = useState(false);
@@ -73,6 +85,11 @@ export default function FlashcardsScreen() {
 
   const revealAnimation = useSharedValue(0);
   const progressAnimation = useSharedValue(0);
+
+  // This screen renders its own top bar (per design), so hide the native header.
+  useLayoutEffect(() => {
+    (navigation as any)?.setOptions?.({ headerShown: false });
+  }, [navigation]);
 
   const fetchFlashcards = async (gradeLevelId: string = '1') => {
     try {
@@ -275,6 +292,14 @@ export default function FlashcardsScreen() {
     }
   }, [showFlashcards, selectedChapterData]);
 
+  // Ensures the last "Got it" mark is applied before showing results.
+  useEffect(() => {
+    if (!flashPendingFinish) return;
+    setFlashPendingFinish(false);
+    setShowFlashcards(false);
+    setShowResult(true);
+  }, [flashPendingFinish, currentFlashcards]);
+
   // Track language changes for debugging
   useEffect(() => {
     if (previousLanguage !== i18n.language) {
@@ -296,7 +321,7 @@ export default function FlashcardsScreen() {
       ],
       shadowOpacity,
       shadowRadius: interpolate(revealAnimation.value, [0, 0.5, 1], [8, 24, 8]),
-    };
+    } as any;
   });
 
   const backAnimatedStyle = useAnimatedStyle(() => {
@@ -312,7 +337,7 @@ export default function FlashcardsScreen() {
       ],
       shadowOpacity,
       shadowRadius: interpolate(revealAnimation.value, [0, 0.5, 1], [8, 24, 8]),
-    };
+    } as any;
   });
 
   const progressBarStyle = useAnimatedStyle(() => {
@@ -439,7 +464,7 @@ export default function FlashcardsScreen() {
       }
       
       // Set the current flashcards directly for immediate use
-      setCurrentFlashcards(flashcards);
+      setCurrentFlashcards(flashcards.map((c) => ({ ...c, isChecked: false })));
       setSessionStartTime(Date.now()); // Start tracking session time
       
       // Update the state with the flashcards
@@ -491,9 +516,46 @@ export default function FlashcardsScreen() {
 
   // Subjects tab → chapter picker → open Flashcards with startFlashcards=1
   useEffect(() => {
-    const startFs = params.startFlashcards;
-    const startFsStr = Array.isArray(startFs) ? startFs[0] : startFs;
-    if (startFsStr !== '1') return;
+    if (!startFlashcards) return;
+    // If we have a direct deep-link payload (slug + chapter name), start immediately.
+    if (deepLinkSubjectSlug && deepLinkChapterName) {
+      if (isLoading) return;
+      if (showFlashcards) return;
+      if (flashcardsAutoStartConsumedRef.current) return;
+      flashcardsAutoStartConsumedRef.current = true;
+
+      const run = async () => {
+        try {
+          setIsLoading(true);
+          const gradeToUse = deepLinkGradeId || selectedGradeId;
+          const flashcards = await getFlashcardsForChapter(
+            gradeToUse,
+            deepLinkSubjectSlug,
+            deepLinkChapterName
+          );
+          if (!flashcards || flashcards.length === 0) {
+            setError(t('flashcards.noFlashcardsAvailable'));
+            return;
+          }
+          setCurrentFlashcards(flashcards.map((c) => ({ ...c, isChecked: false })));
+          setSessionStartTime(Date.now());
+          setShowFlashcards(true);
+          setCurrentIndex(0);
+          setIsRevealed(false);
+          revealAnimation.value = withSpring(0, { damping: 12, stiffness: 80, mass: 0.8 });
+          progressAnimation.value = withTiming(0);
+        } catch (e) {
+          console.error('Deep-link flashcards start failed:', e);
+          setError(t('errors.network.message'));
+        } finally {
+          setIsLoading(false);
+        }
+      };
+
+      void run();
+      return;
+    }
+
     if (!selectedSubject || !selectedChapter) return;
     if (isLoading) return;
     if (showFlashcards) return;
@@ -501,7 +563,16 @@ export default function FlashcardsScreen() {
     flashcardsAutoStartConsumedRef.current = true;
     void handleStartFlashcards();
     // eslint-disable-next-line react-hooks/exhaustive-deps -- run when selection is ready; handleStartFlashcards closes over latest state
-  }, [selectedSubject, selectedChapter, isLoading, params.startFlashcards, showFlashcards]);
+  }, [
+    selectedSubject,
+    selectedChapter,
+    isLoading,
+    startFlashcards,
+    showFlashcards,
+    deepLinkSubjectSlug,
+    deepLinkChapterName,
+    deepLinkGradeId,
+  ]);
 
   if (isLoading) {
     return (
@@ -548,87 +619,114 @@ export default function FlashcardsScreen() {
   // Show result page after finishing flashcards - CHECK THIS FIRST
   if (showResult) {
     const totalCards = currentFlashcards.length;
-    const timeSpent = sessionStartTime ? Date.now() - sessionStartTime : 0;
-    const formatTime = (ms: number) => {
-      const seconds = Math.floor(ms / 1000);
-      const minutes = Math.floor(seconds / 60);
-      const hours = Math.floor(minutes / 60);
-      if (hours > 0) {
-        return `${hours}h ${minutes % 60}m`;
-      } else if (minutes > 0) {
-        return `${minutes}m ${seconds % 60}s`;
-      } else {
-        return `${seconds}s`;
-      }
-    };
+    const masteredCount = currentFlashcards.filter((c) => Boolean(c?.isChecked)).length;
+    const stillLearningCount = Math.max(0, totalCards - masteredCount);
+    const masteredPct = totalCards > 0 ? Math.round((masteredCount / totalCards) * 100) : 0;
+
+    const RING_SIZE = 260;
+    const STROKE = 18;
+    const r = (RING_SIZE - STROKE) / 2;
+    const c = 2 * Math.PI * r;
+    const dashOffset = c - (masteredPct / 100) * c;
 
     return (
-      <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]}>
-        <ThemedView style={[styles.container, { backgroundColor: colors.background }]}>
-          <ScrollView 
-            contentContainerStyle={styles.scrollContent}
-            showsVerticalScrollIndicator={false}
-          >
-            <ThemedText style={[styles.resultTitle, { color: colors.text }]}>
-              {t('flashcards.results.title', 'Flashcard Session Complete!')}
-            </ThemedText>
-            
-            <ThemedView style={[styles.resultCard, { backgroundColor: colors.card }]}>
-              <LinearGradient
-                colors={[colors.cardGradientStart || colors.tint, colors.cardGradientEnd || colors.tint]}
-                style={StyleSheet.absoluteFill}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 1 }}
-              />
-              
-              <View style={styles.trophyContainer}>
-                <IconSymbol name="trophy.fill" size={80} color={colors.tabIconSelected} />
-              </View>
-              
-              <View style={styles.resultContent}>
-                <ThemedText style={[styles.scoreText, { color: colors.text }]}>
-                  {t('flashcards.results.cardsReviewed', 'Cards Reviewed: {{count}}', { count: totalCards })}
-                </ThemedText>
-                
-                <View style={[styles.percentageContainer, { backgroundColor: colors.cardAlt, borderColor: isDarkMode ? '#FFFFFF' : colors.border }]}>
-                  <ThemedText style={[styles.percentageText, { color: colors.text }]}>
-                    {formatTime(timeSpent)}
-                  </ThemedText>
-                </View>
-                
-                <View style={[styles.messageContainer, { backgroundColor: colors.cardAlt, borderColor: isDarkMode ? '#FFFFFF' : colors.border }]}>
-                  <ThemedText style={[styles.messageText, { color: colors.text }]}>
-                    {t('flashcards.results.message', 'Great job! You\'ve completed all flashcards in this chapter.')}
-                  </ThemedText>
-                </View>
-              </View>
-            </ThemedView>
+      <SafeAreaView style={[styles.safeArea, { backgroundColor: '#FFFFFF' }]} edges={['top', 'left', 'right']}>
+        <StatusBar translucent={false} backgroundColor="#FFFFFF" barStyle="dark-content" />
+        <ThemedView style={[styles.container, { backgroundColor: isDarkMode ? colors.background : '#F4F6FA' }]}>
+          <View style={styles.flashResultsHeader}>
+            <ThemedText style={styles.flashResultsBrand}>M+</ThemedText>
+            <ThemedText style={styles.flashResultsTitle}>Session Results</ThemedText>
+            <TouchableOpacity accessibilityRole="button" accessibilityLabel="Profile" style={styles.flashResultsProfileBtn}>
+              <IconSymbol name={'person.crop.circle' as any} size={22} color="#111827" />
+            </TouchableOpacity>
+          </View>
 
-            <ThemedView style={[styles.actionButtons, { backgroundColor: colors.background }]}>
+          <ScrollView contentContainerStyle={styles.flashResultsScroll} showsVerticalScrollIndicator={false}>
+            <View style={styles.flashRingWrap}>
+              <Svg width={RING_SIZE} height={RING_SIZE}>
+                <Circle
+                  cx={RING_SIZE / 2}
+                  cy={RING_SIZE / 2}
+                  r={r}
+                  stroke="#E5E7EB"
+                  strokeWidth={STROKE}
+                  fill="none"
+                  strokeLinecap="round"
+                />
+                <Circle
+                  cx={RING_SIZE / 2}
+                  cy={RING_SIZE / 2}
+                  r={r}
+                  stroke="#0F4BD7"
+                  strokeWidth={STROKE}
+                  fill="none"
+                  strokeLinecap="round"
+                  strokeDasharray={`${c} ${c}`}
+                  strokeDashoffset={dashOffset}
+                  rotation={-90}
+                  originX={RING_SIZE / 2}
+                  originY={RING_SIZE / 2}
+                />
+              </Svg>
+
+              <View style={styles.flashRingCenter}>
+                <ThemedText style={styles.flashRingPct}>{masteredPct}%</ThemedText>
+                <ThemedText style={styles.flashRingSub}>MASTERED</ThemedText>
+              </View>
+
+              <View style={styles.flashRingBadge}>
+                <IconSymbol name={'star.fill' as any} size={14} color="#FFFFFF" />
+              </View>
+            </View>
+
+            <View style={styles.flashResultCards}>
+              <View style={styles.flashResultCard}>
+                <View style={[styles.flashResultIcon, { backgroundColor: 'rgba(16, 185, 129, 0.12)' }]}>
+                  <IconSymbol name={'checkmark' as any} size={16} color="#10B981" />
+                </View>
+                <View style={styles.flashResultCardText}>
+                  <ThemedText style={styles.flashResultCardLabel}>ACCURACY</ThemedText>
+                  <ThemedText style={styles.flashResultCardValue}>
+                    {masteredCount} Mastered
+                  </ThemedText>
+                </View>
+                <IconSymbol name="chevron.right" size={18} color="#9CA3AF" />
+              </View>
+
+              <View style={styles.flashResultCard}>
+                <View style={[styles.flashResultIcon, { backgroundColor: 'rgba(245, 158, 11, 0.14)' }]}>
+                  <IconSymbol name={'exclamationmark' as any} size={14} color="#F59E0B" />
+                </View>
+                <View style={styles.flashResultCardText}>
+                  <ThemedText style={styles.flashResultCardLabel}>PERSISTENCE</ThemedText>
+                  <ThemedText style={styles.flashResultCardValue}>
+                    {stillLearningCount} Still Learning
+                  </ThemedText>
+                </View>
+                <IconSymbol name="chevron.right" size={18} color="#9CA3AF" />
+              </View>
+            </View>
+
+            <View style={styles.flashResultButtons}>
               <TouchableOpacity
-                style={[styles.button, styles.retryButton, { backgroundColor: colors.tint, marginBottom: 12 }]}
+                style={styles.flashRetryBtn}
                 onPress={() => {
                   setShowResult(false);
                   setShowFlashcards(true);
                   setCurrentIndex(0);
                   setIsRevealed(false);
                   setSessionStartTime(Date.now());
-                  revealAnimation.value = withSpring(0, {
-                    damping: 12,
-                    stiffness: 80,
-                    mass: 0.8,
-                  });
+                  setCurrentFlashcards((prev) => prev.map((c) => ({ ...c, isChecked: false })));
+                  revealAnimation.value = withSpring(0, { damping: 12, stiffness: 80, mass: 0.8 });
                   progressAnimation.value = withTiming(0);
                 }}
               >
-                <ThemedText style={[styles.retryButtonText, { color: '#fff' }]}>
-                  {t('flashcards.results.reviewAgain', 'Review Again')}
-                </ThemedText>
-                <IconSymbol name="chevron.right" size={24} color="#fff" />
+                <IconSymbol name={'arrow.counterclockwise' as any} size={18} color="#6B7280" />
+                <ThemedText style={styles.flashRetryText}>Retry Session</ThemedText>
               </TouchableOpacity>
-              
+
               <TouchableOpacity
-                style={[styles.button, styles.homeButton, { backgroundColor: colors.cardAlt, borderColor: isDarkMode ? '#FFFFFF' : colors.border }]}
+                style={styles.flashDoneBtn}
                 onPress={() => {
                   setShowResult(false);
                   setShowFlashcards(false);
@@ -636,19 +734,15 @@ export default function FlashcardsScreen() {
                   setIsRevealed(false);
                   setCurrentFlashcards([]);
                   setSessionStartTime(null);
-                  revealAnimation.value = withSpring(0, {
-                    damping: 12,
-                    stiffness: 80,
-                    mass: 0.8,
-                  });
+                  revealAnimation.value = withSpring(0, { damping: 12, stiffness: 80, mass: 0.8 });
                   progressAnimation.value = withTiming(0);
+                  router.replace('/(tabs)/mcq');
                 }}
               >
-                <ThemedText style={[styles.homeButtonText, { color: colors.text }]}>
-                  {t('flashcards.results.chooseAnotherChapter', 'Choose Another Chapter')}
-                </ThemedText>
+                <ThemedText style={styles.flashDoneText}>Done</ThemedText>
+                <IconSymbol name={'checkmark' as any} size={18} color="#FFFFFF" />
               </TouchableOpacity>
-            </ThemedView>
+            </View>
           </ScrollView>
         </ThemedView>
       </SafeAreaView>
@@ -657,6 +751,19 @@ export default function FlashcardsScreen() {
 
   // Show selection screen when not showing flashcards
   if (!showFlashcards) {
+    // When opening from another tab via deep-link, don't flash the chooser UI.
+    if (isDeepLinkAutoStart) {
+      return (
+        <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]}>
+          <ThemedView style={[styles.container, { backgroundColor: colors.background, justifyContent: 'center' }]}>
+            <ThemedText style={[styles.loadingText, { color: colors.text }]}>
+              {t('flashcards.loading')}
+            </ThemedText>
+          </ThemedView>
+        </SafeAreaView>
+      );
+    }
+
     return (
       <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]}>
         <ThemedView style={[styles.container, { backgroundColor: colors.background }]}>
@@ -864,211 +971,180 @@ export default function FlashcardsScreen() {
   }
 
   return (
-    <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]}>
-
-      {/* Breadcrumb */}
-      <View style={[styles.headerContainer, { backgroundColor: colors.background, borderBottomColor: colors.border }]}>
-        <View style={[styles.breadcrumbContainer, { backgroundColor: colors.cardAlt }]}>
-          <View style={[styles.breadcrumbItem, { backgroundColor: colors.background, borderColor: colors.border }]}>
-            <ThemedText style={[styles.breadcrumbText, { color: isDarkMode ? '#FFFFFF' : colors.tint }]}>
-              {selectedGrade || (user?.grade ? `${t('common.grade')} ${user.grade.replace(/\D/g, '')}` : t('common.grade'))}
+    <SafeAreaView style={[styles.safeArea, { backgroundColor: '#FFFFFF' }]} edges={['top', 'left', 'right']}>
+      <ThemedView style={[styles.container, { backgroundColor: isDarkMode ? colors.background : '#F4F6FA' }]}>
+        <StatusBar translucent={false} backgroundColor="#FFFFFF" barStyle="dark-content" />
+        <View style={styles.flashHeaderWrap}>
+          <View style={styles.flashTopBar}>
+            <View style={styles.flashBrandPill}>
+              <ThemedText style={styles.flashBrandText}>M+</ThemedText>
+            </View>
+            <ThemedText style={[styles.flashTopTitle, { color: '#0F4BD7' }]} numberOfLines={1}>
+              {(selectedSubjectData?.name || (typeof params.preSelectedSubject === 'string' ? params.preSelectedSubject : '') || t('flashcards.subject'))}
+              {(selectedChapterData?.name || deepLinkChapterName) ? `: ${selectedChapterData?.name || deepLinkChapterName}` : ''}
             </ThemedText>
-          </View>
-          {selectedSubject && selectedSubjectData && (
-            <>
-              <IconSymbol name="chevron.right" size={16} color={isDarkMode ? '#FFFFFF' : colors.tint} />
-              <View style={[styles.breadcrumbItem, { backgroundColor: colors.background, borderColor: colors.border }]}>
-                <ThemedText style={[styles.breadcrumbText, { color: isDarkMode ? '#FFFFFF' : colors.tint }]}>
-                  {selectedSubjectData.name}
-                </ThemedText>
-              </View>
-            </>
-          )}
-          {selectedChapter && selectedChapterData && (
-            <>
-              <IconSymbol name="chevron.right" size={16} color={isDarkMode ? '#FFFFFF' : colors.tint} />
-              <View style={[styles.breadcrumbItem, { backgroundColor: colors.background, borderColor: colors.border }]}>
-                <ThemedText style={[styles.breadcrumbText, { color: isDarkMode ? '#FFFFFF' : colors.tint }]}>
-                  {t('flashcards.chapter')} {selectedChapterData.name}
-                </ThemedText>
-              </View>
-            </>
-          )}
-        </View>
-      </View>
-
-      {/* Ultra-Compact Sticky Header */}
-      <View style={{
-        position: 'sticky',
-        top: 0,
-        zIndex: 999,
-        backgroundColor: colors.background,
-        paddingVertical: 4,
-        paddingHorizontal: 0,
-      }}>
-        {/* Full-Width Progress Bar */}
-        <View style={{
-          paddingHorizontal: 20,
-          marginBottom: 4,
-        }}>
-          <View style={{
-            height: 4,
-            backgroundColor: colors.cardAlt,
-            borderRadius: 2,
-            overflow: 'hidden',
-          }}>
-            <Animated.View style={[
-              styles.progressFill, 
-              { 
-                backgroundColor: colors.tint,
-                height: '100%',
-                borderRadius: 2,
-              },
-              progressBarStyle
-            ]} />
-          </View>
-          <ThemedText 
-            numberOfLines={1}
-            style={[styles.progressText, { 
-              color: colors.tint, 
-              fontSize: 12, 
-              fontWeight: '600',
-              textAlign: 'center',
-              marginTop: 2,
-              flexShrink: 0,
-            }]}>
-            Card {currentIndex + 1} of {currentFlashcards.length || 0}
-          </ThemedText>
-        </View>
-
-        {/* Full-Width Navigation Buttons */}
-        <View style={{
-          flexDirection: 'row',
-          paddingHorizontal: 20,
-          gap: 8,
-        }}>
-          <TouchableOpacity
-            style={[
-              styles.navButton,
-              styles.prevButton,
-              { 
-                borderColor: isDarkMode ? '#FFFFFF' : colors.border,
-                paddingHorizontal: 12,
-                paddingVertical: 6,
-                flex: 1,
-                justifyContent: 'center',
-                alignItems: 'center',
-              },
-              currentIndex === 0 && styles.navButtonDisabled
-            ]}
-            onPress={handlePrevious}
-            disabled={currentIndex === 0}
-          >
-            <IconSymbol name="chevron.left" size={16} color={colors.tint} />
-            <ThemedText style={[styles.prevButtonText, { color: colors.tint, fontSize: 12, marginLeft: 4 }]}>
-              {t('flashcards.previous')}
-            </ThemedText>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={[
-              styles.navButton,
-              styles.nextButton,
-              { 
-                backgroundColor: colors.tint,
-                paddingHorizontal: 12,
-                paddingVertical: 6,
-                flex: 1,
-                justifyContent: 'center',
-                alignItems: 'center',
-              }
-            ]}
-            onPress={() => {
-              if (currentFlashcards.length > 0 && currentIndex === currentFlashcards.length - 1) {
-                // Show result page when Finish is clicked
+            <TouchableOpacity
+              accessibilityRole="button"
+              accessibilityLabel="Close"
+              hitSlop={12}
+              onPress={() => {
                 setShowFlashcards(false);
-                setShowResult(true);
+                setCurrentIndex(0);
+                setIsRevealed(false);
+                setCurrentFlashcards([]);
+                setSessionStartTime(null);
+                progressAnimation.value = withTiming(0);
+                revealAnimation.value = withSpring(0, { damping: 12, stiffness: 80, mass: 0.8 });
+              }}
+              style={styles.flashCloseBtn}
+            >
+              <IconSymbol name={'xmark' as any} size={18} color={colors.text} />
+            </TouchableOpacity>
+          </View>
+
+        </View>
+
+        <View style={styles.flashProgressBlock}>
+          <View style={styles.flashProgressRow}>
+            <ThemedText style={[styles.flashProgressLabel, { color: isDarkMode ? '#9CA3AF' : '#9AA3B2' }]}>
+              PROGRESS
+            </ThemedText>
+            <View style={styles.flashProgressCountRow}>
+              <ThemedText style={[styles.flashProgressCount, { color: '#0F4BD7' }]}>
+                {currentIndex + 1} / {currentFlashcards.length}
+              </ThemedText>
+              <ThemedText style={[styles.flashProgressCardsSuffix, { color: isDarkMode ? '#9CA3AF' : '#9AA3B2' }]}>
+                cards
+              </ThemedText>
+            </View>
+          </View>
+          <View style={[styles.flashProgressTrack, { backgroundColor: isDarkMode ? colors.cardAlt : '#E5E7EB' }]}>
+            <Animated.View
+              style={[
+                styles.flashProgressFill,
+                { backgroundColor: '#0F4BD7' },
+                progressBarStyle,
+              ]}
+            />
+          </View>
+        </View>
+
+        <View style={styles.flashCardStage}>
+          <TouchableOpacity onPress={handleReveal} activeOpacity={0.95} style={styles.flashCardTouch}>
+            <View style={styles.flashCardShadowWrap}>
+              <Animated.View style={[styles.flashCardFace, frontAnimatedStyle, { backgroundColor: isDarkMode ? colors.cardAlt : '#FFFFFF' }]}>
+                <ThemedText style={[styles.flashCardMeta, { color: isDarkMode ? '#93A4C7' : '#9AA3B2' }]}>
+                  CONCEPT MASTERY
+                </ThemedText>
+                <ScrollView
+                  style={styles.flashCardScroll}
+                  contentContainerStyle={styles.flashCardScrollContent}
+                  nestedScrollEnabled
+                  bounces={false}
+                  showsVerticalScrollIndicator={false}
+                >
+                  <RichText
+                    text={getQuestionText(currentCard)}
+                    style={styles.flashCardTitle}
+                    color={isDarkMode ? '#FFFFFF' : '#111827'}
+                    fontSize={34}
+                    textAlign="center"
+                    lineHeight={42}
+                  />
+                </ScrollView>
+                <View style={styles.flashTapHintRow}>
+                  <IconSymbol name={'arrow.2.squarepath' as any} size={16} color={isDarkMode ? '#9CA3AF' : '#9AA3B2'} />
+                  <ThemedText style={[styles.flashTapHintText, { color: isDarkMode ? '#9CA3AF' : '#9AA3B2' }]}>
+                    TAP TO FLIP
+                  </ThemedText>
+                </View>
+              </Animated.View>
+
+              <Animated.View style={[styles.flashCardFace, styles.flashCardBackFace, backAnimatedStyle, { backgroundColor: isDarkMode ? colors.cardAlt : '#FFFFFF' }]}>
+                <ThemedText style={[styles.flashCardMeta, { color: isDarkMode ? '#93A4C7' : '#9AA3B2' }]}>
+                  CONCEPT MASTERY
+                </ThemedText>
+                <ScrollView
+                  style={styles.flashCardScroll}
+                  contentContainerStyle={styles.flashCardScrollContent}
+                  nestedScrollEnabled
+                  bounces={false}
+                  showsVerticalScrollIndicator={false}
+                >
+                  <RichText
+                    text={getAnswerText(currentCard)}
+                    style={styles.flashCardTitle}
+                    color={isDarkMode ? '#FFFFFF' : '#111827'}
+                    fontSize={28}
+                    textAlign="center"
+                    lineHeight={36}
+                  />
+                </ScrollView>
+                <View style={styles.flashTapHintRow}>
+                  <IconSymbol name={'arrow.2.squarepath' as any} size={16} color={isDarkMode ? '#9CA3AF' : '#9AA3B2'} />
+                  <ThemedText style={[styles.flashTapHintText, { color: isDarkMode ? '#9CA3AF' : '#9AA3B2' }]}>
+                    TAP TO FLIP
+                  </ThemedText>
+                </View>
+              </Animated.View>
+            </View>
+          </TouchableOpacity>
+        </View>
+
+        <View style={styles.flashBottomActions}>
+          <TouchableOpacity
+            style={styles.flashBottomActionLeft}
+            accessibilityRole="button"
+            accessibilityLabel="Still learning"
+            onPress={() => {
+              const isLastCard = currentFlashcards.length > 0 && currentIndex === currentFlashcards.length - 1;
+              setCurrentFlashcards((prev) => {
+                const next = [...prev];
+                if (next[currentIndex]) next[currentIndex] = { ...next[currentIndex], isChecked: false };
+                return next;
+              });
+              if (currentFlashcards.length > 0 && currentIndex === currentFlashcards.length - 1) {
+                setFlashPendingFinish(true);
               } else {
                 handleNext();
               }
             }}
-            disabled={false}
           >
-            <ThemedText style={[styles.nextButtonText, { color: '#fff', fontSize: 12, marginRight: 4 }]}>
-              {currentFlashcards.length > 0 && currentIndex === currentFlashcards.length - 1 ? t('flashcards.finish') : t('flashcards.next')}
+            <View style={[styles.flashBottomIconGhost, { borderColor: isDarkMode ? '#3A4354' : '#D1D5DB' }]}>
+              <IconSymbol name={'arrow.counterclockwise' as any} size={18} color={isDarkMode ? '#D1D5DB' : '#6B7280'} />
+            </View>
+            <ThemedText style={[styles.flashBottomLabel, { color: isDarkMode ? '#D1D5DB' : '#6B7280' }]}>
+              STILL LEARNING
             </ThemedText>
-            <IconSymbol name="chevron.right" size={16} color="#fff" />
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={styles.flashBottomActionRight}
+            accessibilityRole="button"
+            accessibilityLabel="Got it"
+            onPress={() => {
+              const isLastCard = currentFlashcards.length > 0 && currentIndex === currentFlashcards.length - 1;
+              setCurrentFlashcards((prev) => {
+                const next = [...prev];
+                if (next[currentIndex]) next[currentIndex] = { ...next[currentIndex], isChecked: true };
+                return next;
+              });
+
+              if (isLastCard) {
+                setFlashPendingFinish(true);
+              } else {
+                handleNext();
+              }
+            }}
+          >
+            <View style={[styles.flashBottomIconPrimary, { backgroundColor: '#0F4BD7' }]}>
+              <IconSymbol name={'checkmark' as any} size={18} color="#FFFFFF" />
+            </View>
+            <ThemedText style={[styles.flashBottomLabelPrimary, { color: '#0F4BD7' }]}>
+              GOT IT
+            </ThemedText>
           </TouchableOpacity>
         </View>
-      </View>
-
-      <ThemedView style={[styles.container, { backgroundColor: colors.background }]}>
-        <ScrollView 
-          ref={scrollViewRef}
-          style={styles.scrollView}
-          contentContainerStyle={styles.scrollContent}
-          showsVerticalScrollIndicator={false}
-        >
-
-          <View style={[styles.cardContainer, { marginHorizontal: 20 }]}>
-            <TouchableOpacity
-              onPress={handleReveal}
-              activeOpacity={0.9}
-              style={styles.cardWrapper}
-            >
-              <Animated.View style={[styles.card, frontAnimatedStyle, { borderColor: isDarkMode ? '#FFFFFF' : colors.border, backgroundColor: colors.cardAlt }]}>
-                <ScrollView
-                  style={styles.cardScrollView}
-                  contentContainerStyle={styles.cardScrollContent}
-                  showsVerticalScrollIndicator={true}
-                  nestedScrollEnabled={true}
-                  scrollEnabled={true}
-                  bounces={false}
-                >
-                  <RichText
-                    text={getQuestionText(currentCard)}
-                    style={styles.cardText}
-                    color={isDarkMode ? '#FFFFFF' : colors.tint}
-                    fontSize={20}
-                    textAlign="center"
-                    lineHeight={28}
-                  />
-                </ScrollView>
-              </Animated.View>
-              <Animated.View style={[styles.card, styles.cardBack, backAnimatedStyle, { borderColor: isDarkMode ? '#FFFFFF' : colors.border, backgroundColor: colors.cardAlt }]}>
-                <ScrollView
-                  style={styles.cardScrollView}
-                  contentContainerStyle={styles.cardScrollContent}
-                  showsVerticalScrollIndicator={true}
-                  nestedScrollEnabled={true}
-                  scrollEnabled={true}
-                  bounces={false}
-                >
-                  <RichText
-                    text={getAnswerText(currentCard)}
-                    style={styles.cardText}
-                    color={isDarkMode ? '#FFFFFF' : colors.tint}
-                    fontSize={20}
-                    textAlign="center"
-                    lineHeight={28}
-                  />
-                </ScrollView>
-              </Animated.View>
-            </TouchableOpacity>
-            
-            {/* Instruction Text */}
-            <ThemedText style={[styles.instructionText, { 
-              color: colors.text, 
-              opacity: 0.7,
-              textAlign: 'center',
-              marginTop: 16,
-              fontSize: 14,
-            }]}>
-              {isRevealed ? t('flashcards.tapToSeeQuestion') : t('flashcards.tapToSeeAnswer')}
-            </ThemedText>
-          </View>
-
-        </ScrollView>
       </ThemedView>
     </SafeAreaView>
   );
@@ -1077,11 +1153,366 @@ export default function FlashcardsScreen() {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: '#fff',
   },
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+  },
+  flashHeaderWrap: {
+    backgroundColor: '#FFFFFF',
+    paddingBottom: 4,
+  },
+  flashTopBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    paddingTop: 6,
+    paddingBottom: 12,
+    gap: 10,
+  },
+  flashBrandPill: {
+    width: 38,
+    height: 38,
+    borderRadius: 11,
+    backgroundColor: '#0F4BD7',
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#0F4BD7',
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.18,
+    shadowRadius: 12,
+    elevation: 3,
+  },
+  flashBrandText: {
+    color: '#FFFFFF',
+    fontWeight: '900',
+    fontSize: 15,
+  },
+  flashTopTitle: {
+    flex: 1,
+    fontSize: 18,
+    fontWeight: '800',
+    textAlign: 'center',
+  },
+  flashCloseBtn: {
+    width: 34,
+    height: 34,
+    borderRadius: 17,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  flashProgressBlock: {
+    paddingHorizontal: 16,
+    paddingBottom: 10,
+    paddingTop: 8,
+    borderTopWidth: 0,
+  },
+  flashProgressRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 8,
+  },
+  flashProgressCountRow: {
+    flexDirection: 'row',
+    alignItems: 'baseline',
+    gap: 6,
+  },
+  flashProgressLabel: {
+    fontSize: 12,
+    fontWeight: '700',
+    letterSpacing: 0.8,
+  },
+  flashProgressCount: {
+    fontSize: 16,
+    fontWeight: '800',
+  },
+  flashProgressCardsSuffix: {
+    fontSize: 16,
+    fontWeight: '700',
+  },
+  flashProgressTrack: {
+    height: 6,
+    borderRadius: 999,
+    overflow: 'hidden',
+  },
+  flashProgressFill: {
+    height: '100%',
+    borderRadius: 999,
+  },
+  flashCardStage: {
+    flex: 1,
+    paddingHorizontal: 16,
+    paddingTop: 10,
+  },
+  flashCardTouch: {
+    flex: 1,
+  },
+  flashCardShadowWrap: {
+    width: CARD_WIDTH,
+    height: CARD_HEIGHT,
+    borderRadius: 28,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 18 },
+    shadowOpacity: 0.10,
+    shadowRadius: 28,
+    elevation: 6,
+  },
+  flashCardFace: {
+    flex: 1,
+    borderRadius: 28,
+    paddingHorizontal: 22,
+    paddingTop: 26,
+    paddingBottom: 18,
+    backfaceVisibility: 'hidden',
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+  },
+  flashCardBackFace: {
+    transform: [{ rotateY: '180deg' }],
+  },
+  flashCardMeta: {
+    textAlign: 'center',
+    fontSize: 12,
+    fontWeight: '800',
+    letterSpacing: 2.4,
+    marginBottom: 18,
+  },
+  flashCardScroll: {
+    flex: 1,
+  },
+  flashCardScrollContent: {
+    flexGrow: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingBottom: 18,
+  },
+  flashCardTitle: {
+    fontWeight: '500',
+    letterSpacing: -0.4,
+  },
+  flashTapHintRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    paddingTop: 10,
+  },
+  flashTapHintText: {
+    fontSize: 12,
+    fontWeight: '800',
+    letterSpacing: 1.6,
+  },
+  flashBottomActions: {
+    flexDirection: 'row',
+    alignItems: 'flex-end',
+    justifyContent: 'space-between',
+    paddingHorizontal: 26,
+    paddingTop: 10,
+    paddingBottom: 22,
+    marginBottom: 10,
+  },
+  flashBottomActionLeft: {
+    alignItems: 'center',
+    gap: 10,
+  },
+  flashBottomActionRight: {
+    alignItems: 'center',
+    gap: 10,
+  },
+  flashBottomIconGhost: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    borderWidth: 2,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'transparent',
+  },
+  flashBottomIconPrimary: {
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#0F4BD7',
+    shadowOffset: { width: 0, height: 18 },
+    shadowOpacity: 0.22,
+    shadowRadius: 22,
+    elevation: 6,
+  },
+  flashBottomLabel: {
+    fontSize: 11,
+    fontWeight: '800',
+    letterSpacing: 1.1,
+  },
+  flashBottomLabelPrimary: {
+    fontSize: 11,
+    fontWeight: '900',
+    letterSpacing: 1.1,
+  },
+
+  // Results screen (per design)
+  flashResultsHeader: {
+    backgroundColor: '#FFFFFF',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 18,
+    paddingTop: 10,
+    paddingBottom: 10,
+  },
+  flashResultsBrand: {
+    color: '#0F4BD7',
+    fontWeight: '900',
+    fontSize: 18,
+    width: 40,
+  },
+  flashResultsTitle: {
+    flex: 1,
+    textAlign: 'center',
+    color: '#0F4BD7',
+    fontWeight: '800',
+    fontSize: 16,
+  },
+  flashResultsProfileBtn: {
+    width: 40,
+    alignItems: 'flex-end',
+  },
+  flashResultsScroll: {
+    paddingHorizontal: 18,
+    paddingTop: 20,
+    paddingBottom: 18,
+    flexGrow: 1,
+  },
+  flashRingWrap: {
+    alignSelf: 'center',
+    width: 260,
+    height: 260,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 18,
+  },
+  flashRingCenter: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  flashRingPct: {
+    fontSize: 44,
+    fontWeight: '900',
+    color: '#111827',
+    letterSpacing: -0.6,
+    lineHeight: 54,
+  },
+  flashRingSub: {
+    marginTop: 4,
+    fontSize: 12,
+    fontWeight: '900',
+    letterSpacing: 2.4,
+    color: '#0F4BD7',
+  },
+  flashRingBadge: {
+    position: 'absolute',
+    right: 42,
+    top: 28,
+    width: 34,
+    height: 34,
+    borderRadius: 17,
+    backgroundColor: '#0F4BD7',
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#0F4BD7',
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.18,
+    shadowRadius: 12,
+    elevation: 3,
+  },
+  flashResultCards: {
+    gap: 14,
+    marginTop: 8,
+    marginBottom: 18,
+  },
+  flashResultCard: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 16,
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.08,
+    shadowRadius: 16,
+    elevation: 2,
+  },
+  flashResultIcon: {
+    width: 42,
+    height: 42,
+    borderRadius: 21,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  flashResultCardText: {
+    flex: 1,
+  },
+  flashResultCardLabel: {
+    fontSize: 11,
+    fontWeight: '900',
+    letterSpacing: 2.2,
+    color: '#9AA3B2',
+    marginBottom: 6,
+  },
+  flashResultCardValue: {
+    fontSize: 20,
+    fontWeight: '800',
+    color: '#111827',
+  },
+  flashResultButtons: {
+    gap: 14,
+    paddingTop: 8,
+    paddingBottom: 18,
+    marginTop: 'auto',
+  },
+  flashRetryBtn: {
+    height: 54,
+    borderRadius: 16,
+    backgroundColor: '#E5E7EB',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 10,
+  },
+  flashRetryText: {
+    fontSize: 16,
+    fontWeight: '800',
+    color: '#6B7280',
+  },
+  flashDoneBtn: {
+    height: 58,
+    borderRadius: 18,
+    backgroundColor: '#0F4BD7',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 12,
+    shadowColor: '#0F4BD7',
+    shadowOffset: { width: 0, height: 16 },
+    shadowOpacity: 0.24,
+    shadowRadius: 18,
+    elevation: 5,
+  },
+  flashDoneText: {
+    fontSize: 16,
+    fontWeight: '900',
+    color: '#FFFFFF',
   },
   scrollView: {
     flex: 1,
