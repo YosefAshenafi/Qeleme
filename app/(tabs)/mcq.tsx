@@ -24,6 +24,7 @@ import ActivityTrackingService from '../../services/activityTrackingService';
 import PictureMCQScreen from '../screens/PictureMCQScreen';
 import PictureMCQInstructionScreen from '../screens/PictureMCQInstructionScreen';
 import SponsoredBy from '../../components/SponsoredBy';
+import Svg, { Circle } from 'react-native-svg';
 
 const BRAND_BLUE = '#0F4BD7';
 const BOOK_CTA_ON = '#FFFFFF';
@@ -512,11 +513,11 @@ export default function MCQScreen() {
       headerTitleAlign: 'center',
       headerTitle: () => (
         <Text style={{ color: colors.text, fontWeight: '800', fontSize: 16 }}>
-          MCQ Practise
+          {showResult ? 'Practise result' : 'MCQ Practise'}
         </Text>
       ),
     });
-  }, [navigation, colors.text]);
+  }, [navigation, colors.text, showResult]);
 
   useEffect(() => {
     // Handle reset parameters
@@ -1230,139 +1231,166 @@ export default function MCQScreen() {
   }
 
   if (showResult) {
+    const correctCount = score;
+    const incorrectCount = Math.max(0, totalQuestions - score);
+    const accuracy = totalQuestionsSafe > 0 ? Math.round((score / totalQuestionsSafe) * 100) : 0;
+    const resultCopy =
+      accuracy >= 90
+        ? { title: 'Outstanding work.', subtitle: 'You’re performing at a top level — keep it up.' }
+        : accuracy >= 75
+          ? { title: 'Great job.', subtitle: 'Solid accuracy — a little more practice and you’ll master it.' }
+          : accuracy >= 50
+            ? { title: 'Good progress.', subtitle: 'You’re getting there — review mistakes and try again.' }
+            : { title: 'Keep practising.', subtitle: 'Focus on the explanations and retake the session.' };
+    const ringSize = 220;
+    const ringStroke = 14;
+    const ringRadius = (ringSize - ringStroke) / 2;
+    const ringCircumference = 2 * Math.PI * ringRadius;
+    const ringOffset = ringCircumference - (accuracy / 100) * ringCircumference;
+
+    const handleDone = () => {
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+        timerRef.current = null;
+      }
+
+      setShowResult(false);
+      setShowTest(false);
+      setSelectedSubject('');
+      setSelectedChapter('');
+      setSelectedChapterName('');
+      setSelectedYear('');
+      setTime(0);
+      setIsTimerRunning(false);
+      setCurrentQuestionIndex(0);
+      setSelectedAnswer(null);
+      setShowExplanation(false);
+      setAnsweredQuestions({});
+      setScore(0);
+
+      if (selectedExamType === 'national') {
+        setSelectedExamType('national');
+      } else {
+        setSelectedExamType('mcq');
+      }
+
+      fetchMCQData();
+    };
+
     return (
-      <ThemedView style={[styles.container, { backgroundColor: colors.background }]}>
-        <ScrollView 
-          contentContainerStyle={styles.scrollContent}
-          showsVerticalScrollIndicator={false}
-        >
-          <ThemedText type="title" style={[styles.title, { color: colors.text }]}>
-            {t('mcq.results.title')}
-          </ThemedText>
-          <View style={[styles.timerContainer, { backgroundColor: colors.tint }]}>
-            <ThemedText style={[styles.timerText, { color: '#fff' }]}>
-              {t('mcq.results.timeTaken', { time: formatTime(time) })}
-            </ThemedText>
-          </View>
-          {percentage >= 90 && (
-            <View style={styles.fireworkContainer}>
-              {particleAnims.map((anim, index) => (
-                <Animated.View
-                  key={index}
-                  style={[
-                    styles.particle,
-                    {
-                      transform: [
-                        { scale: anim.scale },
-                        { translateX: anim.translateX },
-                        { translateY: anim.translateY },
-                        { rotate: anim.rotate.interpolate({
-                          inputRange: [0, 1],
-                          outputRange: ['0deg', '360deg'],
-                        })},
-                      ],
-                      opacity: anim.opacity,
-                    },
-                  ]}
-                >
-                  <IconSymbol
-                    name="trophy.fill"
-                    size={24}
-                    color={index % 4 === 0 ? '#FFD700' :
-                           index % 4 === 1 ? '#FFA500' :
-                           index % 4 === 2 ? '#FF69B4' : '#FF1493'}
+      <SafeAreaView
+        edges={['left', 'right']}
+        style={[styles.safeArea, { backgroundColor: colors.background }]}
+      >
+        <ThemedView style={[styles.container, { backgroundColor: colors.background }]}>
+          <ScrollView contentContainerStyle={styles.resultScrollContent} showsVerticalScrollIndicator={false}>
+            <View style={styles.resultHero}>
+              <View style={[styles.resultPill, { backgroundColor: isDarkMode ? '#1F2A44' : '#E9EEFF' }]}>
+                <Text style={[styles.resultPillText, { color: BRAND_BLUE }]}>SESSION FINALIZED</Text>
+              </View>
+
+              <Text style={[styles.resultHeadline, { color: colors.text }]}>{resultCopy.title}</Text>
+              <Text style={[styles.resultSubhead, { color: isDarkMode ? '#C7CDD8' : '#6B7280' }]}>
+                {resultCopy.subtitle}
+              </Text>
+            </View>
+
+            <View style={styles.resultRingWrap}>
+              <View style={styles.resultRingShadow}>
+                <Svg width={ringSize} height={ringSize}>
+                  <Circle
+                    cx={ringSize / 2}
+                    cy={ringSize / 2}
+                    r={ringRadius}
+                    stroke={isDarkMode ? '#2A3140' : '#E5E7EB'}
+                    strokeWidth={ringStroke}
+                    fill="none"
+                    strokeLinecap="round"
                   />
-                </Animated.View>
-              ))}
-            </View>
-          )}
-          <ThemedView style={[styles.resultCard, { backgroundColor: colors.card }]}>
-            <LinearGradient
-              colors={[colors.cardGradientStart, colors.cardGradientEnd]}
-              style={StyleSheet.absoluteFill}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 1 }}
-            />
-            
-            <View style={styles.trophyContainer}>
-              <Animated.View style={{ transform: [{ scale: scaleAnim }, { rotate: spin }] }}>
-                <IconSymbol name="trophy.fill" size={80} color={percentage >= 90 ? '#FFD700' : colors.tint} />
-              </Animated.View>
-            </View>
-            
-            <View style={styles.resultContent}>
-              <ThemedText style={[styles.scoreText, { color: colors.text }]}>
-                {t('mcq.results.score', { score: score, total: totalQuestions })}
-              </ThemedText>
-              
-              <View style={[styles.percentageContainer, { backgroundColor: colors.cardAlt, borderColor: colors.border }]}>
-                <ThemedText style={[styles.percentageText, { color: colors.text }]}>
-                  {t('mcq.results.percentage', { percentage: percentage })}
-                </ThemedText>
-              </View>
-              
-              <View style={[styles.messageContainer, { backgroundColor: colors.cardAlt, borderColor: colors.border }]}>
-                <ThemedText style={[styles.messageText, { color: colors.text }]}>
-                  {getMessage()}
-                </ThemedText>
+                  <Circle
+                    cx={ringSize / 2}
+                    cy={ringSize / 2}
+                    r={ringRadius}
+                    stroke={BRAND_BLUE}
+                    strokeWidth={ringStroke}
+                    fill="none"
+                    strokeDasharray={`${ringCircumference} ${ringCircumference}`}
+                    strokeDashoffset={ringOffset}
+                    strokeLinecap="round"
+                    rotation={-90}
+                    originX={ringSize / 2}
+                    originY={ringSize / 2}
+                  />
+                </Svg>
+
+                <View style={styles.resultRingCenter}>
+                  <Text style={[styles.resultRingPercent, { color: BRAND_BLUE }]}>{accuracy}%</Text>
+                  <Text style={[styles.resultRingLabel, { color: isDarkMode ? '#C7CDD8' : '#6B7280' }]}>
+                    ACCURACY
+                  </Text>
+                </View>
               </View>
             </View>
-          </ThemedView>
 
-          <ThemedView style={styles.actionButtons}>
-            <TouchableOpacity
-              style={[styles.button, styles.retryButton, { backgroundColor: colors.tint, marginBottom: 12 }]}
-              onPress={selectedExamType === 'national' ? handleRetry : handleCheckOtherQuestions}
-            >
-              <ThemedText style={[styles.retryButtonText, { color: '#fff' }]}>
-                {selectedExamType === 'national' ? t('mcq.results.tryOtherNationalExam') : t('mcq.results.checkOtherQuestions')}
-              </ThemedText>
-              <Ionicons name={selectedExamType === 'national' ? "refresh" : "arrow-forward"} size={24} color="#fff" />
-            </TouchableOpacity>
-            
-            <TouchableOpacity
-              style={[styles.button, styles.homeButton, { backgroundColor: colors.cardAlt, borderColor: colors.border }]}
-              onPress={() => {
-                // Clear timer first
-                if (timerRef.current) {
-                  clearInterval(timerRef.current);
-                  timerRef.current = null;
-                }
-                
-                setShowResult(false);
-                setShowTest(false);
-                setSelectedSubject('');
-                setSelectedChapter('');
-                setSelectedChapterName('');
-                setSelectedYear('');
-                setTime(0);
-                setIsTimerRunning(false);
-                setCurrentQuestionIndex(0);
-                setSelectedAnswer(null);
-                setShowExplanation(false);
-                setAnsweredQuestions({});
-                setScore(0);
-                
-                // For National Exam results, set exam type to national to redirect to National Exam page
-                if (selectedExamType === 'national') {
-                  setSelectedExamType('national');
-                } else {
-                  setSelectedExamType('mcq');
-                }
+            <View style={styles.resultStatsGrid}>
+              <View style={[styles.resultStatCard, { backgroundColor: isDarkMode ? '#141821' : '#FFFFFF', borderColor: isDarkMode ? '#273043' : '#E5E7EB' }]}>
+                <View style={[styles.resultStatIconBox, { backgroundColor: isDarkMode ? '#0E2A17' : '#E9FBEF' }]}>
+                  <Ionicons name="checkmark" size={20} color="#16A34A" />
+                </View>
+                <View style={styles.resultStatTextCol}>
+                  <Text style={[styles.resultStatValue, { color: colors.text }]}>{String(correctCount).padStart(2, '0')}</Text>
+                  <Text style={[styles.resultStatLabel, { color: isDarkMode ? '#C7CDD8' : '#6B7280' }]}>CORRECT</Text>
+                </View>
+              </View>
 
-                fetchMCQData();
-              }}
-            >
-              <ThemedText style={[styles.homeButtonText, { color: colors.text }]}>
-                {selectedExamType === 'national' ? t('mcq.results.chooseAnotherNationalExamYear') : t('mcq.results.chooseAnotherSubject')}
-              </ThemedText>
-            </TouchableOpacity>
-          </ThemedView>
+              <View style={[styles.resultStatCard, { backgroundColor: isDarkMode ? '#141821' : '#FFFFFF', borderColor: isDarkMode ? '#273043' : '#E5E7EB' }]}>
+                <View style={[styles.resultStatIconBox, { backgroundColor: isDarkMode ? '#2B1215' : '#FCE7EA' }]}>
+                  <Ionicons name="close" size={18} color="#DC2626" />
+                </View>
+                <View style={styles.resultStatTextCol}>
+                  <Text style={[styles.resultStatValue, { color: colors.text }]}>{String(incorrectCount).padStart(2, '0')}</Text>
+                  <Text style={[styles.resultStatLabel, { color: isDarkMode ? '#C7CDD8' : '#6B7280' }]}>INCORRECT</Text>
+                </View>
+              </View>
 
-          {/* Sponsored By Section */}
-          {/* <SponsoredBy /> */}
-        </ScrollView>
-      </ThemedView>
+              <View style={[styles.resultStatCard, { backgroundColor: isDarkMode ? '#141821' : '#FFFFFF', borderColor: isDarkMode ? '#273043' : '#E5E7EB' }]}>
+                <View style={[styles.resultStatIconBox, { backgroundColor: isDarkMode ? '#0D2233' : '#E6F0FF' }]}>
+                  <Ionicons name="time-outline" size={20} color={BRAND_BLUE} />
+                </View>
+                <View style={styles.resultStatTextCol}>
+                  <Text style={[styles.resultStatValue, { color: colors.text }]}>{formatTime(time)}</Text>
+                  <Text style={[styles.resultStatLabel, { color: isDarkMode ? '#C7CDD8' : '#6B7280' }]}>TIME</Text>
+                </View>
+              </View>
+
+              <View style={[styles.resultStatCard, styles.resultMasteryCard, { backgroundColor: BRAND_BLUE, borderColor: BRAND_BLUE }]}>
+                <View style={[styles.resultStatIconBadge, { backgroundColor: 'rgba(255,255,255,0.18)' }]}>
+                  <Ionicons name="trending-up-outline" size={18} color="#FFFFFF" />
+                </View>
+                <View style={styles.resultStatTextCol}>
+                  <Text style={[styles.resultMasteryTitle, { color: '#FFFFFF' }]}>{accuracy}%</Text>
+                  <Text
+                    numberOfLines={1}
+                    ellipsizeMode="clip"
+                    style={[styles.resultMasterySub, { color: 'rgba(255,255,255,0.85)' }]}
+                  >
+                    PERFORMANCE
+                  </Text>
+                </View>
+              </View>
+            </View>
+
+            <View style={styles.resultButtonsWrap}>
+              <TouchableOpacity style={[styles.resultButton, styles.resultButtonSecondary, { backgroundColor: isDarkMode ? '#2A3140' : '#E5E7EB' }]} onPress={handleRetry}>
+                <Text style={[styles.resultButtonSecondaryText, { color: BRAND_BLUE }]}>RETRY SESSION</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={[styles.resultButton, styles.resultButtonPrimary, { backgroundColor: BRAND_BLUE }]} onPress={handleDone}>
+                <Text style={styles.resultButtonPrimaryText}>DONE</Text>
+              </TouchableOpacity>
+            </View>
+          </ScrollView>
+        </ThemedView>
+      </SafeAreaView>
     );
   }
 
@@ -2346,6 +2374,165 @@ const styles = StyleSheet.create({
   scrollContent: {
     flexGrow: 1,
     paddingBottom: 20,
+  },
+  resultScrollContent: {
+    paddingTop: 8,
+    paddingBottom: 8,
+    paddingHorizontal: 18,
+    flexGrow: 1,
+  },
+  // resultTopBar/resultBrandMark/resultTopTitle removed (header handled by native top bar)
+  resultHero: {
+    alignItems: 'center',
+    paddingBottom: 8,
+  },
+  resultPill: {
+    paddingHorizontal: 14,
+    paddingVertical: 7,
+    borderRadius: 999,
+    marginBottom: 14,
+  },
+  resultPillText: {
+    fontSize: 11,
+    fontWeight: '800',
+    letterSpacing: 1.2,
+  },
+  resultHeadline: {
+    fontSize: 34,
+    fontWeight: '900',
+    letterSpacing: -0.4,
+    textAlign: 'center',
+  },
+  resultSubhead: {
+    marginTop: 8,
+    fontSize: 13,
+    lineHeight: 18,
+    textAlign: 'center',
+    maxWidth: 300,
+  },
+  resultRingWrap: {
+    alignItems: 'center',
+    paddingTop: 14,
+    paddingBottom: 18,
+  },
+  resultRingShadow: {
+    width: 220,
+    height: 220,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  resultRingCenter: {
+    position: 'absolute',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  resultRingPercent: {
+    fontSize: 48,
+    fontWeight: '900',
+    letterSpacing: -0.5,
+  },
+  resultRingLabel: {
+    marginTop: 2,
+    fontSize: 11,
+    fontWeight: '800',
+    letterSpacing: 1.1,
+  },
+  resultStatsGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
+    rowGap: 14,
+    columnGap: 14,
+    paddingTop: 4,
+    paddingBottom: 18,
+  },
+  resultStatCard: {
+    width: '47.5%',
+    borderRadius: 14,
+    borderWidth: 1,
+    padding: 14,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  resultStatIconBox: {
+    width: 44,
+    height: 44,
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  resultStatIconBadge: {
+    width: 32,
+    height: 32,
+    borderRadius: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  resultStatTextCol: {
+    flex: 1,
+    minWidth: 0,
+  },
+  resultStatValue: {
+    fontSize: 22,
+    fontWeight: '900',
+    letterSpacing: -0.2,
+  },
+  resultStatLabel: {
+    marginTop: 2,
+    fontSize: 10,
+    fontWeight: '800',
+    letterSpacing: 1.1,
+  },
+  resultMasteryCard: {
+    justifyContent: 'space-between',
+  },
+  resultMasteryTitle: {
+    fontSize: 18,
+    fontWeight: '900',
+    letterSpacing: -0.2,
+  },
+  resultMasterySub: {
+    marginTop: 2,
+    fontSize: 9,
+    fontWeight: '800',
+    letterSpacing: 1.1,
+  },
+  resultButtonsWrap: {
+    marginTop: 'auto',
+    paddingTop: 10,
+    gap: 14,
+  },
+  resultButton: {
+    height: 56,
+    borderRadius: 28,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  resultButtonSecondary: {
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.06,
+    shadowRadius: 18,
+    elevation: 2,
+  },
+  resultButtonSecondaryText: {
+    fontSize: 13,
+    fontWeight: '900',
+    letterSpacing: 1.4,
+  },
+  resultButtonPrimary: {
+    shadowColor: BRAND_BLUE,
+    shadowOffset: { width: 0, height: 14 },
+    shadowOpacity: 0.22,
+    shadowRadius: 18,
+    elevation: 4,
+  },
+  resultButtonPrimaryText: {
+    color: '#FFFFFF',
+    fontSize: 13,
+    fontWeight: '900',
+    letterSpacing: 1.6,
   },
   title: {
     fontSize: 20,
