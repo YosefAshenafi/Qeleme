@@ -640,7 +640,7 @@ export default function FlashcardsScreen() {
         <ThemedView style={[styles.container, { backgroundColor: isDarkMode ? colors.background : '#F4F6FA' }]}>
           <View style={styles.flashResultsHeader}>
             <ThemedText style={styles.flashResultsBrand}>M+</ThemedText>
-            <ThemedText style={styles.flashResultsTitle}>Session Results</ThemedText>
+            <ThemedText style={styles.flashResultsTitle}>{t('flashcards.sessionResults', { defaultValue: 'Session Results' })}</ThemedText>
             <TouchableOpacity accessibilityRole="button" accessibilityLabel="Profile" style={styles.flashResultsProfileBtn}>
               <IconSymbol name={'person.crop.circle' as any} size={22} color="#111827" />
             </TouchableOpacity>
@@ -690,9 +690,9 @@ export default function FlashcardsScreen() {
                   <IconSymbol name={'checkmark' as any} size={16} color="#10B981" />
                 </View>
                 <View style={styles.flashResultCardText}>
-                  <ThemedText style={styles.flashResultCardLabel}>ACCURACY</ThemedText>
+                  <ThemedText style={styles.flashResultCardLabel}>{t('flashcards.accuracy', { defaultValue: 'ACCURACY' })}</ThemedText>
                   <ThemedText style={styles.flashResultCardValue}>
-                    {masteredCount} Mastered
+                    {masteredCount} {t('flashcards.mastered', { defaultValue: 'Mastered' })}
                   </ThemedText>
                 </View>
                 <IconSymbol name="chevron.right" size={18} color="#9CA3AF" />
@@ -703,9 +703,9 @@ export default function FlashcardsScreen() {
                   <IconSymbol name={'exclamationmark' as any} size={14} color="#F59E0B" />
                 </View>
                 <View style={styles.flashResultCardText}>
-                  <ThemedText style={styles.flashResultCardLabel}>PERSISTENCE</ThemedText>
+                  <ThemedText style={styles.flashResultCardLabel}>{t('flashcards.persistence', { defaultValue: 'PERSISTENCE' })}</ThemedText>
                   <ThemedText style={styles.flashResultCardValue}>
-                    {stillLearningCount} Still Learning
+                    {stillLearningCount} {t('flashcards.stillLearning', { defaultValue: 'Still Learning' })}
                   </ThemedText>
                 </View>
                 <IconSymbol name="chevron.right" size={18} color="#9CA3AF" />
@@ -727,7 +727,7 @@ export default function FlashcardsScreen() {
                 }}
               >
                 <IconSymbol name={'arrow.counterclockwise' as any} size={18} color="#6B7280" />
-                <ThemedText style={styles.flashRetryText}>Retry Session</ThemedText>
+                <ThemedText style={styles.flashRetryText}>{t('flashcards.retry', { defaultValue: 'Retry' })}</ThemedText>
               </TouchableOpacity>
 
               <TouchableOpacity
@@ -744,7 +744,7 @@ export default function FlashcardsScreen() {
                   router.replace('/(tabs)/mcq');
                 }}
               >
-                <ThemedText style={styles.flashDoneText}>Done</ThemedText>
+                <ThemedText style={styles.flashDoneText}>{t('flashcards.done', { defaultValue: 'Done' })}</ThemedText>
                 <IconSymbol name={'checkmark' as any} size={18} color="#FFFFFF" />
               </TouchableOpacity>
             </View>

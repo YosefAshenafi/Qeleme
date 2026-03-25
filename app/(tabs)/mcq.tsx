@@ -518,12 +518,12 @@ export default function MCQScreen() {
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
           <TouchableOpacity
             accessibilityRole="button"
-            accessibilityLabel="Back"
             onPress={() => {
-              try {
+              if (showResult) {
+                setShowResult(false);
+                setShowTest(false);
+              } else {
                 router.back();
-              } catch {
-                router.replace('/(tabs)');
               }
             }}
             style={{ paddingLeft: 12, paddingRight: 6, paddingVertical: 8 }}
@@ -534,11 +534,6 @@ export default function MCQScreen() {
         </View>
       ),
       headerTitleAlign: 'center',
-      headerTitle: () => (
-        <Text style={{ color: colors.text, fontWeight: '800', fontSize: 16 }}>
-          {showResult ? 'Practise result' : 'MCQ Practise'}
-        </Text>
-      ),
     });
   }, [navigation, colors.text, showResult]);
 

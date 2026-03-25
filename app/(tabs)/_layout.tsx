@@ -6,6 +6,7 @@ import { useAuth } from '@/contexts/AuthContext';
 
 import { HapticTab } from '../../components/HapticTab';
 import { IconSymbol } from '../../components/ui/IconSymbol';
+import { LanguageToggle } from '../../components/ui/LanguageToggle';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -47,14 +48,7 @@ export default function TabLayout() {
 
   const megaHeaderRight = () => (
     <View style={styles.headerRight}>
-      <TouchableOpacity
-        style={[styles.headerIconButton, { backgroundColor: iconCircle }]}
-        onPress={() => Alert.alert(t('common.info'), t('home.header.notificationsPlaceholder'))}
-        accessibilityRole="button"
-        accessibilityLabel={t('home.header.notificationsAccessibility')}
-      >
-        <IconSymbol name="bell" size={22} color={iconColor} />
-      </TouchableOpacity>
+      <LanguageToggle colors={{ card: iconCircle, text: iconColor }} />
     </View>
   );
 

@@ -21,7 +21,6 @@ import { useTranslation } from 'react-i18next';
 import * as ImagePicker from 'expo-image-picker';
 
 import { IconSymbol } from '@/components/ui/IconSymbol';
-import { LanguageToggle } from '@/components/ui/LanguageToggle';
 import { AccountSettings } from '@/components/profile/AccountSettings';
 import { DeleteAccount } from '@/components/profile/DeleteAccount';
 import { getColors } from '@/constants/Colors';
@@ -266,9 +265,7 @@ export default function ProfileScreen() {
             {t('profile.settings.header', { defaultValue: 'Profile' })}
           </Text>
         </View>
-        <View style={styles.headerRightWrap}>
-          <LanguageToggle colors={{ card: colors.card, text: colors.text }} />
-        </View>
+        <View style={styles.headerRightWrap} />
       </View>
 
       <ScrollView
