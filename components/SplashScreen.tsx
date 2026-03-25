@@ -2,16 +2,12 @@ import React, { useEffect, useRef } from 'react';
 import { View, Image, Animated, Text, useColorScheme } from 'react-native';
 
 export default function CustomSplashScreen() {
-  const colorScheme = useColorScheme();
-  const isDarkMode = colorScheme === 'dark';
   const scaleAnim = useRef(new Animated.Value(0.3)).current;
   const opacityAnim = useRef(new Animated.Value(0)).current;
   const textScaleAnim = useRef(new Animated.Value(0.5)).current;
   const textOpacityAnim = useRef(new Animated.Value(0)).current;
-  
-  // Sponsor animation values
-  // const sponsorSlideAnim = useRef(new Animated.Value(-width)).current;
-  // const sponsorOpacityAnim = useRef(new Animated.Value(0)).current;
+  const lineScaleAnim = useRef(new Animated.Value(0)).current;
+  const subtitleOpacityAnim = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
     // Start the zoom animation for icon
@@ -44,34 +40,52 @@ export default function CustomSplashScreen() {
       ]).start();
     }, 300);
 
-    // Start the sponsor animation after the main content is shown
-    // setTimeout(() => {
-    //   Animated.parallel([
-    //     Animated.timing(sponsorSlideAnim, {
-    //       toValue: 0,
-    //       duration: 800,
-    //       useNativeDriver: true,
-    //     }),
-    //     Animated.timing(sponsorOpacityAnim, {
-    //       toValue: 1,
-    //       duration: 600,
-    //       useNativeDriver: true,
-    //     }),
-    //   ]).start();
-    // }, 1200);
-  }, []);
+    // Start the line animation
+    setTimeout(() => {
+      Animated.timing(lineScaleAnim, {
+        toValue: 1,
+        duration: 400,
+        useNativeDriver: true,
+      }).start();
+    }, 600);
 
-  const themeColor = isDarkMode ? '#8B6BCE' : '#6B54AE';
+    // Start the subtitle animation
+    setTimeout(() => {
+      Animated.timing(subtitleOpacityAnim, {
+        toValue: 1,
+        duration: 600,
+        useNativeDriver: true,
+      }).start();
+    }, 800);
+  }, []);
 
   return (
     <View 
       style={{
         flex: 1,
-        backgroundColor: themeColor,
+        backgroundColor: '#2563EB', // Blue background as shown in design
         justifyContent: 'center',
         alignItems: 'center',
       }}
     >
+      {/* Background watermark M */}
+      <View
+        style={{
+          position: 'absolute',
+          opacity: 0.1,
+        }}
+      >
+        <Text
+          style={{
+            color: 'white',
+            fontSize: 200,
+            fontWeight: 'bold',
+          }}
+        >
+          M
+        </Text>
+      </View>
+
       <Animated.View
         style={{
           transform: [{ scale: scaleAnim }],
@@ -79,88 +93,82 @@ export default function CustomSplashScreen() {
           alignItems: 'center',
         }}
       >
-        <Image
-          source={require('@/assets/images/logo/white-logo.png')}
+        {/* White square with rounded corners containing M+ icon */}
+        <View
           style={{
-            width: 150,
-            height: 150,
-            resizeMode: 'contain',
+            width: 120,
+            height: 120,
+            backgroundColor: 'white',
+            borderRadius: 20,
+            justifyContent: 'center',
+            alignItems: 'center',
+            marginBottom: 20,
+          }}
+        >
+          <Text
+            style={{
+              color: '#4B5563', // Dark grey for M+
+              fontSize: 48,
+              fontWeight: 'bold',
+            }}
+          >
+            M+
+          </Text>
+        </View>
+
+        {/* White horizontal line */}
+        <Animated.View
+          style={{
+            width: 60,
+            height: 2,
+            backgroundColor: 'white',
+            marginBottom: 15,
+            transform: [{ scaleX: lineScaleAnim }],
+            opacity: textOpacityAnim,
           }}
         />
+
+        {/* Mega+ text */}
         <Animated.View
           style={{
             transform: [{ scale: textScaleAnim }],
             opacity: textOpacityAnim,
-            marginTop: 20,
+            alignItems: 'center',
           }}
         >
           <Text
             style={{
               color: 'white',
-              fontSize: 32,
+              fontSize: 36,
               fontWeight: 'bold',
               letterSpacing: 2,
               textAlign: 'center',
             }}
           >
-            Qelem
+            Mega+
           </Text>
-        </Animated.View>
-      </Animated.View>
-
-      {/* Sponsored by section */}
-      {/* <Animated.View
-        style={{
-          position: 'absolute',
-          bottom: 60,
-          left: 0,
-          right: 0,
-          transform: [{ translateX: sponsorSlideAnim }],
-          opacity: sponsorOpacityAnim,
-          alignItems: 'center',
-          paddingHorizontal: 20,
-        }}
-      >
-        <View
-          style={{
-            backgroundColor: 'rgba(255, 255, 255, 0.1)',
-            borderRadius: 25,
-            paddingVertical: 12,
-            paddingHorizontal: 20,
-            flexDirection: 'row',
-            alignItems: 'center',
-            justifyContent: 'center',
-            shadowColor: '#000',
-            shadowOffset: {
-              width: 0,
-              height: 2,
-            },
-            shadowOpacity: 0.25,
-            shadowRadius: 3.84,
-            elevation: 5,
-          }}
-        >
-          <Text
+          
+          {/* Subtitle text */}
+          <Animated.View
             style={{
-              color: 'rgba(255, 255, 255, 0.8)',
-              fontSize: 14,
-              fontWeight: '500',
-              marginRight: 8,
-              letterSpacing: 0.5,
+              opacity: subtitleOpacityAnim,
+              marginTop: 8,
             }}
           >
-            Sponsored by
-          </Text>
-          <Image
-            source={require('@/assets/images/sponsor/zemen-bank-logo.png')}
-            style={{
-              width: 80,
-              height: 30,
-              resizeMode: 'contain',
-            }}
-          />
-        </View>
-      </Animated.View> */}
+            <Text
+              style={{
+                color: 'rgba(255, 255, 255, 0.7)',
+                fontSize: 12,
+                fontWeight: '300',
+                letterSpacing: 3,
+                textAlign: 'center',
+              }}
+            >
+              THE ACADEMIC VANGUARD
+            </Text>
+          </Animated.View>
+        </Animated.View>
+      </Animated.View>
     </View>
   );
 }

@@ -1,22 +1,22 @@
 {
   "expo": {
-    "name": "Qelem",
-    "slug": "Qelem",
+    "name": "Mega+",
+    "slug": "mega-plus",
     "version": "1.0.6",
     "orientation": "default",
     "icon": "./assets/images/logo/app-icon.png",
-    "scheme": "qelem",
+    "scheme": "mega-plus",
     "userInterfaceStyle": "automatic",
-    "newArchEnabled": false,
-    "description": "Qelem - Educational platform for interactive learning",
+    "newArchEnabled": true,
+    "description": "Mega+ - The Academic Vanguard Educational platform for interactive learning",
     "splash": {
-      "image": "./assets/images/logo/white-logo.png",
+      "image": "./assets/images/logo/mega-plus-logo.png",
       "resizeMode": "contain",
-      "backgroundColor": "#6B54AE"
+      "backgroundColor": "#2563EB"
     },
     "sdkVersion": "54.0.0",
     "extra": {
-      "apiUrl": "https://api.qelem.com",
+      "apiUrl": "https://api.megaplus.com",
       "router": {
         "origin": false
       },
@@ -27,7 +27,7 @@
     "ios": {
       "supportsTablet": true,
       "requireFullScreen": false,
-      "bundleIdentifier": "com.qelem.edu",
+      "bundleIdentifier": "com.megaplus.edu",
       "buildNumber": "6",
       "icon": "./assets/images/logo/app-icon.png",
       "infoPlist": {
@@ -39,29 +39,29 @@
         "NSPhotoLibraryAddUsageDescription": "Allow $(PRODUCT_NAME) to save photos to your library."
       },
       "splash": {
-        "image": "./assets/images/logo/white-logo.png",
+        "image": "./assets/images/logo/mega-plus-logo.png",
         "resizeMode": "contain",
-        "backgroundColor": "#6B54AE"
+        "backgroundColor": "#2563EB"
       }
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/logo/app-icon.png",
-        "backgroundColor": "#6B54AE"
+        "backgroundColor": "#2563EB"
       },
       "splash": {
-        "image": "./assets/images/logo/white-logo.png",
+        "image": "./assets/images/logo/mega-plus-logo.png",
         "resizeMode": "contain",
-        "backgroundColor": "#6B54AE"
+        "backgroundColor": "#2563EB"
       },
-      "package": "com.qelem.edu",
+      "package": "com.megaplus.edu",
       "versionCode": 15,
       "permissions": [
         "android.permission.INTERNET",
         "android.permission.ACCESS_NETWORK_STATE",
         "android.permission.CAMERA"
       ],
-      "playStoreUrl": "https://play.google.com/store/apps/details?id=com.qelem.edu"
+      "playStoreUrl": "https://play.google.com/store/apps/details?id=com.megaplus.edu"
     },
     "web": {
       "bundler": "metro",
@@ -73,10 +73,10 @@
       [
         "expo-splash-screen",
         {
-          "image": "./assets/images/logo/white-logo.png",
+          "image": "./assets/images/logo/mega-plus-logo.png",
           "imageWidth": 150,
           "resizeMode": "contain",
-          "backgroundColor": "#6B54AE"
+          "backgroundColor": "#2563EB"
         }
       ],
       "expo-secure-store",

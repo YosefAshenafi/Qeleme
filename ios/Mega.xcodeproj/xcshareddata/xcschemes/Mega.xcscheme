@@ -15,9 +15,9 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "13B07F861A680F5B00A75B9A"
-               BuildableName = "Qelem.app"
-               BlueprintName = "Qelem"
-               ReferencedContainer = "container:Qelem.xcodeproj">
+               BuildableName = "Mega.app"
+               BlueprintName = "Mega"
+               ReferencedContainer = "container:Mega.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
       </BuildActionEntries>
@@ -33,9 +33,9 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "00E356ED1AD99517003FC87E"
-               BuildableName = "QelemTests.xctest"
-               BlueprintName = "QelemTests"
-               ReferencedContainer = "container:Qelem.xcodeproj">
+               BuildableName = "MegaTests.xctest"
+               BlueprintName = "MegaTests"
+               ReferencedContainer = "container:Mega.xcodeproj">
             </BuildableReference>
          </TestableReference>
       </Testables>
@@ -55,9 +55,9 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "13B07F861A680F5B00A75B9A"
-            BuildableName = "Qelem.app"
-            BlueprintName = "Qelem"
-            ReferencedContainer = "container:Qelem.xcodeproj">
+            BuildableName = "Mega.app"
+            BlueprintName = "Mega"
+            ReferencedContainer = "container:Mega.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
    </LaunchAction>
@@ -72,9 +72,9 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "13B07F861A680F5B00A75B9A"
-            BuildableName = "Qelem.app"
-            BlueprintName = "Qelem"
-            ReferencedContainer = "container:Qelem.xcodeproj">
+            BuildableName = "Mega.app"
+            BlueprintName = "Mega"
+            ReferencedContainer = "container:Mega.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
    </ProfileAction>

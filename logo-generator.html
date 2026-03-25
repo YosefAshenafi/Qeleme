@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Mega+ Logo Generator</title>
+</head>
+<body>
+    <canvas id="logoCanvas" width="150" height="150"></canvas>
+    <br><br>
+    <button onclick="downloadLogo()">Download PNG</button>
+    
+    <script>
+        const canvas = document.getElementById('logoCanvas');
+        const ctx = canvas.getContext('2d');
+        
+        // Draw white square with rounded corners
+        ctx.fillStyle = 'white';
+        roundRect(ctx, 0, 0, 150, 150, 20);
+        ctx.fill();
+        
+        // Draw M+ text in dark grey
+        ctx.fillStyle = '#4B5563';
+        ctx.font = 'bold 48px Arial, sans-serif';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText('M+', 75, 75);
+        
+        function roundRect(ctx, x, y, width, height, radius) {
+            ctx.beginPath();
+            ctx.moveTo(x + radius, y);
+            ctx.lineTo(x + width - radius, y);
+            ctx.quadraticCurveTo(x + width, y, x + width, y + radius);
+            ctx.lineTo(x + width, y + height - radius);
+            ctx.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
+            ctx.lineTo(x + radius, y + height);
+            ctx.quadraticCurveTo(x, y + height, x, y + height - radius);
+            ctx.lineTo(x, y + radius);
+            ctx.quadraticCurveTo(x, y, x + radius, y);
+            ctx.closePath();
+        }
+        
+        function downloadLogo() {
+            const link = document.createElement('a');
+            link.download = 'mega-plus-logo.png';
+            link.href = canvas.toDataURL();
+            link.click();
+        }
+    </script>
+</body>
+</html>
