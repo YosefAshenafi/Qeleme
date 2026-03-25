@@ -465,7 +465,20 @@ export default {
     progressFormat: '{{progress}}% ተጠናቅቋል',
     noData: 'የትምህርት ሪፖርቶችዎን ለማየት ምርጫ ጥያቄዎች ወይም ፍላሽ ካርዶች ይሥሩ።',
     comingSoon: 'ተጨማሪ ሪፖርቶች በመሰራት ላይ!',
-    comingSoonDescription: 'ለእርስዎ የትምህርት ጉዞ ተጨማሪ ትንታኔዎችን እና ሪፖርቶችን በቅርቡ ይጠብቁ።'
+    comingSoonDescription: 'ለእርስዎ የትምህርት ጉዞ ተጨማሪ ትንታኔዎችን እና ሪፖርቶችን በቅርቡ ይጠብቁ።',
+    kpi: {
+      practiceQuestions: 'የልምምድ ጥያቄዎች',
+      studyTime: 'የትምህርት ጊዜ',
+      streakDays: '{{count}} ቀን ተከታታይ'
+    },
+    scoreProgression: {
+      title: 'የነጥብ እድገት',
+      subtitle: 'ጠቅላላ የአካዳሚክ አፈፃፀም',
+      empty: 'የነጥብ እድገትዎን ለማየት የምርጫ ክፍለ ጊዜ ይፈጽሙ።'
+    },
+    topPerformingSubjects: {
+      title: 'በጣም የሚዳሰሱ የትምህርት ዓይነቶች'
+    }
   },
   common: {
     info: 'ማስታወቂያ',
@@ -479,6 +492,9 @@ export default {
     imageLoadError: 'ምስሉ ለመጫን አልተቻለም',
     grade: 'ክፍል',
     kindergarten: 'ኪንደርጋርተን',
+    confirmation: 'ማረጋገጫ',
+    cancel: 'ይቅለት',
+    confirm: 'ይረጋግጡ'
   },
   mcq: {
     question: 'ጥያቄ',
@@ -534,6 +550,7 @@ export default {
       timeTaken: 'የተወሰደ ጊዜ: {{time}}',
       score: 'ነጥብ: {{score}}/{{total}}',
       percentage: '{{percentage}}%',
+      performance: 'አፈፃፀም',
       message: {
         outstanding: 'በጣም ጥሩ! እርስዎ ኮከብ ነዎት!',
         great: 'በጣም ጥሩ! ይቀጥሉ!',
@@ -549,7 +566,16 @@ export default {
       checkOtherQuestions: 'ሌሎች ቀሪ ጥያቄዎችን ይሞክሩ',
       chooseAnotherSubject: 'ሌላ የትምህርት ዓይነት ይምረጡ',
       tryOtherNationalExam: 'ሌሎች ቀሪ የብሔራዊ ፈተናዎችን ይሞክሩ',
-      chooseAnotherNationalExamYear: 'ሌላ የብሔራዊ ፈተና ዓመት ይምረጡ'
+      chooseAnotherNationalExamYear: 'ሌላ የብሔራዊ ፈተና ዓመት ይምረጡ',
+      retrySession: 'እንደገና ይሞክሩ',
+      done: 'ጨርሰዋል',
+      sessionProgress: 'የክፍለ ጊዜ እድገት',
+      reviewLater: 'በኋላ ይገምግሙ',
+      timeLabels: {
+        hours: 'ሰዓታት',
+        minutes: 'ደቂታት',
+        seconds: 'ሰከንዶች'
+      }
     },
     selectAnswer: 'እባክዎ ከመቀጠልዎ በፊት መልስ ይምረጡ',
     noSubjectsFound: {
@@ -611,7 +637,16 @@ export default {
       "grade-10": "10ኛ ክፍል",
       "grade-11": "11ኛ ክፍል",
       "grade-12": "12ኛ ክፍል"
-    }
+    },
+    noFlashcardsAvailable: 'ለተመረጡት ምዕራፍ ፍላሽ ካርዶች የሉም።',
+    sessionResults: 'የክፍለ ጊዜ ውጤቶች',
+    accuracy: 'ትክክለኛነት',
+    mastered: 'ተምሷል',
+    persistence: 'ቆይታ',
+    stillLearning: 'እየተማረ',
+    retry: 'እንደገና ይሞክሩ',
+    done: 'ጨርሰዋል',
+    preSelected: 'ቀደም-ተመረጡ'
   },
   homework: {
     title: 'የቤት ስራ',
@@ -705,7 +740,49 @@ export default {
     confirmDelete: 'መለያ ሰርዝ',
     accountDeleted: 'መለያ በተሳካ ሁኔታ ተሰርዟል',
     enterPassword: 'የይለፍ ቃልዎን ያስገቡ',
-    enterAllFields: 'እባክዎ ስልክ ቁጥር፣ የማረጋገጫ ኮድ እና የይለፍ ቃል ያስገቡ'
+    enterAllFields: 'እባክዎ ስልክ ቁጥር፣ የማረጋገጫ ኮድ እና የይለፍ ቃል ያስገቡ',
+    username: 'ተማሪ',
+    paymentPlan: 'ነጻ እቅድ',
+    membership: {
+      premium: 'ፕሪሚየም አባል',
+      member: 'አባል'
+    },
+    groups: {
+      accountManagement: 'የመለያ አስተዳዳሪ',
+      appCustomization: 'የመተግበሪያ ብቅርተኝነት',
+      about: 'ስለ'
+    },
+    personalInformation: 'የግል መረጃ',
+    personalInformationSubtitle: 'ስም፣ መለያ ስም፣ ክፍል',
+    securityPrivacy: 'ደህነት እና ግላዊነት',
+    securityPrivacySubtitle: 'መለያ መሰረዝ',
+    themeMode: 'የገጽታ ዘዴ',
+    themeModeDark: 'ጨለማ ዘዴ',
+    themeModeLight: 'ብርሃን ዘዴ',
+    pushNotifications: 'ፑሽ ማሳወቂያዎች',
+    pushNotificationsSubtitle: 'በእውነተኛ ጊዜ ዝመታ',
+    languageEnglish: 'እንግሊዘኛ',
+    languageAmharic: 'አማርኛ',
+    appName: 'ቀለም',
+    resetProgress: 'እድገትን ዳግም ጀምር',
+    resetProgressConfirm: 'በዚህ መሳሪያ ላይ የትምህርትዎን እድገት ለመጀመር እርግጠኛ ነዎት?',
+    resetProgressSubtitle: 'ሪፖርቶችን እና እንቅስቃሴዎችን ያጸዳል',
+    imagePicker: {
+      permissionRequired: 'ፍቃድ ያስፈልጋል',
+      permissionMessage: 'የመገለጫ ስዕልዎን ለመቀየር የፎቶ ቤተሰብዎን መድረስ ፍቃድ ይስጡ።',
+      selectPhoto: 'ፎቶ ይምረጡ',
+      cancel: 'ይቅለት',
+      camera: 'ካሜራ',
+      gallery: 'ጋለሪ',
+      cameraError: 'የካሜራ ስህተት',
+      cameraErrorMessage: 'ካሜራውን መድረስ አልተሳካም። ፍቃዶችን ይመልከቱ።',
+      galleryError: 'የጋለሪ ስህተት',
+      galleryErrorMessage: 'ጋለሪውን መድረስ አልተሳካም። ፍቃዶችን ይመልከቱ።',
+      error: 'ስህተት',
+      errorMessage: 'ምስል መምረጥ አልተሳካም። እባክዎ እንደገና ይሞክሩ።',
+      success: 'ተሳክቷል',
+      successMessage: 'የመገለጫ ስዕል በተሳካ ሁኔታ ተዘምኗል!'
+    }
   },
   auth: {
     errors: {

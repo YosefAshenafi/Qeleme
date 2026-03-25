@@ -1403,7 +1403,7 @@ export default function MCQScreen() {
                     ellipsizeMode="clip"
                     style={[styles.resultMasterySub, { color: 'rgba(255,255,255,0.85)' }]}
                   >
-                    PERFORMANCE
+                    {t('mcq.results.performance')}
                   </Text>
                 </View>
               </View>
@@ -1411,10 +1411,10 @@ export default function MCQScreen() {
 
             <View style={styles.resultButtonsWrap}>
               <TouchableOpacity style={[styles.resultButton, styles.resultButtonSecondary, { backgroundColor: isDarkMode ? '#2A3140' : '#E5E7EB' }]} onPress={handleRetry}>
-                <Text style={[styles.resultButtonSecondaryText, { color: BRAND_BLUE }]}>RETRY SESSION</Text>
+                <Text style={[styles.resultButtonSecondaryText, { color: BRAND_BLUE }]}>{t('mcq.results.retrySession')}</Text>
               </TouchableOpacity>
               <TouchableOpacity style={[styles.resultButton, styles.resultButtonPrimary, { backgroundColor: BRAND_BLUE }]} onPress={handleDone}>
-                <Text style={styles.resultButtonPrimaryText}>DONE</Text>
+                <Text style={styles.resultButtonPrimaryText}>{t('mcq.results.done')}</Text>
               </TouchableOpacity>
             </View>
           </ScrollView>
@@ -2145,7 +2145,7 @@ export default function MCQScreen() {
               <View style={styles.sessionProgressSection}>
                 <View style={styles.sessionProgressTopRow}>
                   <ThemedText style={[styles.sessionProgressLabel, { color: isDarkMode ? '#FFFFFF' : '#6B7280' }]}>
-                    SESSION PROGRESS
+                    {t('mcq.results.sessionProgress')}
                   </ThemedText>
                   <ThemedText style={[styles.sessionProgressCount, { color: BRAND_BLUE }]}>
                     {currentQuestionIndex + 1} of {totalQuestions}
@@ -2169,19 +2169,19 @@ export default function MCQScreen() {
                     <ThemedText style={styles.timeValueText}>
                       {String(timeHours).padStart(2, '0')}
                     </ThemedText>
-                    <ThemedText style={[styles.timeLabelText, { color: colors.tabIconDefault }]}>HOURS</ThemedText>
+                    <ThemedText style={[styles.timeLabelText, { color: colors.tabIconDefault }]}>{t('mcq.results.timeLabels.hours')}</ThemedText>
                   </View>
                   <View style={[styles.timeBox, { backgroundColor: colors.cardAlt, borderColor: colors.border }]}>
                     <ThemedText style={styles.timeValueText}>
                       {String(timeMinutes).padStart(2, '0')}
                     </ThemedText>
-                    <ThemedText style={[styles.timeLabelText, { color: colors.tabIconDefault }]}>MINUTES</ThemedText>
+                    <ThemedText style={[styles.timeLabelText, { color: colors.tabIconDefault }]}>{t('mcq.results.timeLabels.minutes')}</ThemedText>
                   </View>
                   <View style={[styles.timeBox, { backgroundColor: colors.cardAlt, borderColor: colors.border }]}>
                     <ThemedText style={styles.timeValueText}>
                       {String(timeSeconds).padStart(2, '0')}
                     </ThemedText>
-                    <ThemedText style={[styles.timeLabelText, { color: colors.tabIconDefault }]}>SECONDS</ThemedText>
+                    <ThemedText style={[styles.timeLabelText, { color: colors.tabIconDefault }]}>{t('mcq.results.timeLabels.seconds')}</ThemedText>
                   </View>
                 </View>
               </View>
@@ -2333,7 +2333,7 @@ export default function MCQScreen() {
                     onPress={() => (isLastQuestion ? handleResult() : handleNextQuestion())}
                   >
                     <Ionicons name="bookmark-outline" size={20} color={BRAND_BLUE} />
-                    <ThemedText style={styles.bottomSecondaryButtonText}>Review Later</ThemedText>
+                    <ThemedText style={styles.bottomSecondaryButtonText}>{t('mcq.results.reviewLater')}</ThemedText>
                   </TouchableOpacity>
 
                   <TouchableOpacity

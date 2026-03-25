@@ -43,18 +43,35 @@ export default function ProfileScreen() {
   const [showSecurityModal, setShowSecurityModal] = useState(false);
   const [showAboutModal, setShowAboutModal] = useState(false);
   const [pushNotificationsEnabled, setPushNotificationsEnabled] = useState(true);
+  const [currentLanguage, setCurrentLanguage] = useState(i18n.language);
 
   useEffect(() => {
     const loadPrefs = async () => {
       try {
         const push = await AsyncStorage.getItem('@prefs_push_notifications');
         if (push !== null) setPushNotificationsEnabled(push === 'true');
+        
+        const savedLanguage = await AsyncStorage.getItem('@prefs_language');
+        if (savedLanguage) {
+          setCurrentLanguage(savedLanguage);
+          i18n.changeLanguage(savedLanguage);
+        }
       } catch {
         // ignore
       }
     };
     loadPrefs();
   }, []);
+
+  const handleLanguageChange = async (language: string) => {
+    try {
+      setCurrentLanguage(language);
+      i18n.changeLanguage(language);
+      await AsyncStorage.setItem('@prefs_language', language);
+    } catch (error) {
+      console.error('Error saving language preference:', error);
+    }
+  };
 
   const setPref = async (key: string, value: string) => {
     try {
@@ -364,6 +381,28 @@ export default function ProfileScreen() {
               </Text>
             </View>
             <Switch value={isDarkMode} onValueChange={toggleTheme} />
+          </View>
+
+          <View style={[styles.divider, { backgroundColor: colors.border }]} />
+
+          <View style={styles.row}>
+            <View style={[styles.rowIcon, { backgroundColor: BRAND_BLUE + '12' }]}>
+              <IconSymbol name="globe" size={18} color={BRAND_BLUE} />
+            </View>
+            <View style={styles.rowText}>
+              <Text style={[styles.rowTitle, { color: colors.text }]}>
+                {t('profile.language', { defaultValue: 'Language' })}
+              </Text>
+              <Text style={[styles.rowSubtitle, { color: colors.text + '70' }]}>
+                {currentLanguage === 'am' 
+                  ? t('profile.languageAmharic', { defaultValue: 'Amharic' })
+                  : t('profile.languageEnglish', { defaultValue: 'English' })}
+              </Text>
+            </View>
+            <Switch
+              value={currentLanguage === 'am'}
+              onValueChange={(value) => handleLanguageChange(value ? 'am' : 'en')}
+            />
           </View>
         </View>
 

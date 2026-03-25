@@ -227,7 +227,20 @@ export default {
     progressFormat: '{{progress}}% Completed',
     noData: 'Complete MCQs or study flashcards to see your learning reports here.',
     comingSoon: 'More reports coming soon!',
-    comingSoonDescription: 'We are working on additional analytics and insights for your learning journey.'
+    comingSoonDescription: 'We are working on additional analytics and insights for your learning journey.',
+    kpi: {
+      practiceQuestions: 'Practice Questions',
+      studyTime: 'Study Time',
+      streakDays: '{{count}} day streak'
+    },
+    scoreProgression: {
+      title: 'Score Progression',
+      subtitle: 'Overall Academic Performance',
+      empty: 'Complete an MCQ session to see your score trend.'
+    },
+    topPerformingSubjects: {
+      title: 'Top Performing Subjects'
+    }
   },
   homework: {
     title: 'Homework Help',
@@ -372,7 +385,49 @@ export default {
     confirmDelete: 'Delete Account',
     accountDeleted: 'Account deleted successfully',
     enterPassword: 'Enter your password',
-    enterAllFields: 'Please enter phone number, verification code, and password'
+    enterAllFields: 'Please enter phone number, verification code, and password',
+    username: 'Student',
+    paymentPlan: 'Free Plan',
+    membership: {
+      premium: 'Premium Member',
+      member: 'Member'
+    },
+    groups: {
+      accountManagement: 'ACCOUNT MANAGEMENT',
+      appCustomization: 'APP CUSTOMIZATION',
+      about: 'ABOUT'
+    },
+    personalInformation: 'Personal Information',
+    personalInformationSubtitle: 'Name, username, grade',
+    securityPrivacy: 'Security & Privacy',
+    securityPrivacySubtitle: 'Account deletion',
+    themeMode: 'Theme Mode',
+    themeModeDark: 'Dark mode',
+    themeModeLight: 'Light mode',
+    pushNotifications: 'Push Notifications',
+    pushNotificationsSubtitle: 'Real-time updates',
+    languageEnglish: 'English',
+    languageAmharic: 'Amharic',
+    appName: 'Qeleme',
+    resetProgress: 'Reset Progress',
+    resetProgressConfirm: 'Reset your learning progress on this device?',
+    resetProgressSubtitle: 'Clears reports and activity on this device',
+    imagePicker: {
+      permissionRequired: 'Permission Required',
+      permissionMessage: 'Please grant permission to access your photo library to change your profile picture.',
+      selectPhoto: 'Select Photo',
+      cancel: 'Cancel',
+      camera: 'Camera',
+      gallery: 'Gallery',
+      cameraError: 'Camera Error',
+      cameraErrorMessage: 'Failed to access camera. Please check permissions.',
+      galleryError: 'Gallery Error',
+      galleryErrorMessage: 'Failed to access gallery. Please check permissions.',
+      error: 'Error',
+      errorMessage: 'Failed to select image. Please try again.',
+      success: 'Success',
+      successMessage: 'Profile picture updated successfully!'
+    }
   },
   auth: {
     errors: {
@@ -503,6 +558,9 @@ export default {
     imageLoadError: 'Image failed to load',
     grade: 'Grade',
     kindergarten: 'Kindergarten',
+    confirmation: 'Confirmation',
+    cancel: 'Cancel',
+    confirm: 'Confirm'
   },
   mcq: {
     question: 'Question',
@@ -558,6 +616,7 @@ export default {
       timeTaken: 'Time Taken: {{time}}',
       score: 'Score: {{score}}/{{total}}',
       percentage: '{{percentage}}%',
+      performance: 'PERFORMANCE',
       message: {
         outstanding: 'Outstanding! You are a star!',
         great: 'Great job! Keep it up!',
@@ -573,7 +632,16 @@ export default {
       checkOtherQuestions: 'Check Other Questions',
       chooseAnotherSubject: 'Choose Another Subject',
       tryOtherNationalExam: 'Try Other Remaining National Exams',
-      chooseAnotherNationalExamYear: 'Choose Another National Exam Year'
+      chooseAnotherNationalExamYear: 'Choose Another National Exam Year',
+      retrySession: 'RETRY SESSION',
+      done: 'DONE',
+      sessionProgress: 'SESSION PROGRESS',
+      reviewLater: 'Review Later',
+      timeLabels: {
+        hours: 'HOURS',
+        minutes: 'MINUTES',
+        seconds: 'SECONDS'
+      }
     },
     selectAnswer: 'Please select an answer before proceeding',
     noSubjectsFound: {
@@ -635,7 +703,16 @@ export default {
       "grade-10": "Grade 10",
       "grade-11": "Grade 11",
       "grade-12": "Grade 12"
-    }
+    },
+    noFlashcardsAvailable: 'No flashcards available for the selected chapter.',
+    sessionResults: 'Session Results',
+    accuracy: 'ACCURACY',
+    mastered: 'Mastered',
+    persistence: 'PERSISTENCE',
+    stillLearning: 'Still Learning',
+    retry: 'Retry',
+    done: 'Done',
+    preSelected: 'Pre-selected'
   },
   login: {
     welcome: 'Welcome to Qelem',
