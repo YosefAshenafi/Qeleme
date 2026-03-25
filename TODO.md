@@ -193,7 +193,7 @@ When I ask for a screen, please send:
 - [x] MCQ
 - [x] Flashcards
 - [x] Reports
-- [ ] Profile/Settings
+- [x] Profile/Settings
 - [ ] KG Pages
 
 ---
