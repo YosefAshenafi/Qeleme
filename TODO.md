@@ -191,8 +191,8 @@ When I ask for a screen, please send:
 - [x] Payment Success
 - [x] Home/Dashboard (Figma cross-check + QA pending)
 - [x] MCQ
-- [ ] Flashcards
-- [ ] Reports
+- [x] Flashcards
+- [x] Reports
 - [ ] Profile/Settings
 - [ ] KG Pages
 

@@ -151,9 +151,9 @@ class ActivityTrackingService {
   }
 
   // Load stats from AsyncStorage
-  private async loadStats(): Promise<void> {
+  private async loadStats(username: string): Promise<void> {
     try {
-      const statsJson = await AsyncStorage.getItem(STATS_KEY);
+      const statsJson = await AsyncStorage.getItem(getStatsKey(username));
       if (statsJson) {
         this.stats = JSON.parse(statsJson);
       }

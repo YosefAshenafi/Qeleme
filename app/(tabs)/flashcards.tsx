@@ -378,9 +378,14 @@ export default function FlashcardsScreen() {
             const timeSpent = Date.now() - (sessionStartTime || Date.now()); // Approximate time spent
             
             // Get proper names for tracking
-            const gradeName = selectedGradeData?.name || selectedGrade || 'Unknown Grade';
-            const subjectName = selectedSubjectData?.name || selectedSubject || 'Unknown Subject';
-            const chapterName = selectedChapterData?.name || selectedChapter || 'Unknown Chapter';
+            const gradeName = selectedGradeData?.name || selectedGrade || '';
+            const subjectName = selectedSubjectData?.name || '';
+            const chapterName = selectedChapterData?.name || '';
+
+            if (!subjectName) {
+              // Don’t record incomplete/unknown activities
+              return;
+            }
             
             console.log('Tracking flashcard activity:', {
               grade: gradeName,
@@ -397,9 +402,9 @@ export default function FlashcardsScreen() {
             });
             
             await trackingService.trackFlashcardActivity({
-              grade: gradeName,
+              grade: gradeName || user?.grade || 'unknown',
               subject: subjectName,
-              chapter: chapterName,
+              chapter: chapterName || undefined,
               cardsReviewed: cardsReviewed,
               cardsMastered: cardsMastered,
               timeSpent: Math.round(timeSpent / 1000), // Convert to seconds

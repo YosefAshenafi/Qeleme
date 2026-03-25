@@ -670,10 +670,15 @@ export default function MCQScreen() {
       const timeSpent = time; // time in seconds
       const scorePercentage = totalQuestions > 0 ? Math.round((correctAnswers / totalQuestions) * 100) : 0;
       
+      const subjectName = selectedSubjectData?.name || '';
+      if (!subjectName) {
+        return;
+      }
+
       await trackingService.trackMCQActivity({
         grade: selectedGrade?.id || user?.grade || 'unknown',
-        subject: selectedSubjectData?.name || selectedSubject || 'unknown',
-        chapter: selectedChapterData?.name || selectedChapter,
+        subject: subjectName,
+        chapter: selectedChapterData?.name || undefined,
         examType: selectedExamType as 'national' | 'regular' | undefined,
         year: selectedYear ? parseInt(selectedYear) : undefined,
         questionsAnswered: totalQuestions,
