@@ -2,12 +2,12 @@ import { Tabs, Redirect } from 'expo-router';
 import React from 'react';
 import { Platform, TouchableOpacity, View, StyleSheet, Text, Alert, Image } from 'react-native';
 import { useTranslation } from 'react-i18next';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/core/providers/AuthProvider';
 
-import { HapticTab } from '../../components/HapticTab';
-import { IconSymbol } from '../../components/ui/IconSymbol';
-import { LanguageToggle } from '../../components/ui/LanguageToggle';
-import { useTheme } from '../../contexts/ThemeContext';
+import { HapticTab } from '@/shared/components/HapticTab';
+import { IconSymbol } from '@/shared/components/ui/IconSymbol';
+import { LanguageToggle } from '@/shared/components/ui/LanguageToggle';
+import { useTheme } from '@/core/providers/ThemeProvider';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 const BRAND_BLUE = '#0F4BD7';

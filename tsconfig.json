@@ -10,7 +10,6 @@
     "strictNullChecks": false,
     "paths": {
       "@/*": [
-        "./*",
         "./src/*"
       ]
     }

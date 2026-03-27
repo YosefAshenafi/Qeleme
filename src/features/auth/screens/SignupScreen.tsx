@@ -1,0 +1,1294 @@
+import { StyleSheet, TextInput, TouchableOpacity, View, KeyboardAvoidingView, Platform, ScrollView, Modal, Pressable, Text } from 'react-native';
+import { router, useLocalSearchParams } from 'expo-router';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { useState, useEffect } from 'react';
+import { LinearGradient } from 'expo-linear-gradient';
+import { Picker } from '@react-native-picker/picker';
+import Checkbox from 'expo-checkbox';
+import { Ionicons } from '@expo/vector-icons';
+import { useTheme } from '@/core/providers/ThemeProvider';
+import { getColors } from '@/shared/constants/Colors';
+import { sendOTP } from '@/shared/utils/otpService';
+import { grades, Grade } from '@/shared/constants/Grades';
+import { useTranslation } from 'react-i18next';
+import { BASE_URL } from '@/shared/config/constants';
+import { fetchRegions, Region } from '@/features/auth/services/regionService';
+
+import { ThemedText } from '@/shared/components/ThemedText';
+import { LanguageToggle } from '@/shared/components/ui/LanguageToggle';
+import { PasswordInput } from '@/shared/components/ui/PasswordInput';
+
+interface ChildData {
+  fullName: string;
+  username: string;
+  grade: Grade | '';
+  password: string;
+  confirmPassword: string;
+  plan?: string;
+  usernameValid?: boolean | null;
+  usernameChecking?: boolean;
+  region?: string;
+}
+
+export default function SignupScreen() {
+  const { t } = useTranslation();
+  const { isDarkMode } = useTheme();
+  const colors = getColors(isDarkMode);
+  const params = useLocalSearchParams();
+  const numberOfChildren = Number(params.numberOfChildren ?? 1);
+  const role: 'student' | 'parent' = params.role === 'parent' ? 'parent' : 'student';
+  const initialChildrenData = params.childrenData ? JSON.parse(params.childrenData as string) : 
+    Array(numberOfChildren).fill({ fullName: '', username: '', grade: '' as Grade, password: '', confirmPassword: '', region: '' });
+  
+  
+  const [fullName, setFullName] = useState('');
+  const [username, setUsername] = useState('');
+  const [phoneNumber, setPhoneNumber] = useState('');
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [grade, setGrade] = useState<Grade | ''>('KG');
+  const [region, setRegion] = useState('');
+  const [acceptTerms, setAcceptTerms] = useState(false);
+  const [showGradeModal, setShowGradeModal] = useState(false);
+  const [showRegionModal, setShowRegionModal] = useState(false);
+  const [showTermsModal, setShowTermsModal] = useState(false);
+  const [childrenData, setChildrenData] = useState<ChildData[]>(initialChildrenData);
+  const [selectedChildIndex, setSelectedChildIndex] = useState<number | null>(null);
+  const [error, setError] = useState('');
+  const [usernameValid, setUsernameValid] = useState<boolean | null>(null);
+  const [usernameChecking, setUsernameChecking] = useState(false);
+  const [usernameError, setUsernameError] = useState('');
+  const [validationErrors, setValidationErrors] = useState<{[key: string]: string}>({});
+  const [regions, setRegions] = useState<Region[]>([]);
+  const [regionsLoading, setRegionsLoading] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Handle pre-filled data from OTP screen
+  useEffect(() => {
+    if (params.prefillData) {
+      try {
+        const prefillData = JSON.parse(decodeURIComponent(params.prefillData as string));
+        
+        // Pre-fill the form with the data
+        setFullName(prefillData.fullName || '');
+        setUsername(prefillData.username || '');
+        setPassword(prefillData.password || '');
+        setConfirmPassword(prefillData.password || ''); // Pre-fill confirm password too
+        setGrade(prefillData.grade || '');
+        setRegion(prefillData.region || '');
+        
+        // Pre-fill phone number (remove country code if present)
+        const phone = prefillData.phoneNumber || '';
+        const cleanPhone = phone.replace(/^\+251/, ''); // Remove +251 country code
+        setPhoneNumber(cleanPhone);
+        
+        // Pre-fill children data if present
+        if (prefillData.childrenData && Array.isArray(prefillData.childrenData)) {
+          setChildrenData(prefillData.childrenData);
+        }
+      } catch (error) {
+        console.error('Error parsing prefill data:', error);
+      }
+    }
+  }, [params.prefillData]);
+
+  // Fetch regions on component mount
+  useEffect(() => {
+    const loadRegions = async () => {
+      setRegionsLoading(true);
+      try {
+        const regionsData = await fetchRegions();
+        setRegions(regionsData);
+      } catch (error) {
+        console.error('Error loading regions:', error);
+        setError('Failed to load regions. Please try again.');
+      } finally {
+        setRegionsLoading(false);
+      }
+    };
+
+    loadRegions();
+  }, []);
+
+  // Validation functions
+  const validateFullName = (name: string): string => {
+    if (!name || name.trim().length === 0) {
+      return t('signup.errors.fullNameRequired');
+    }
+    if (name.trim().length < 2) {
+      return t('signup.errors.fullNameMinLength');
+    }
+    // Check for valid characters (letters, spaces, and common punctuation)
+    const validNameRegex = /^[a-zA-Z\u1200-\u137F\s\-'\.]+$/;
+    if (!validNameRegex.test(name.trim())) {
+      return t('signup.errors.fullNameInvalid');
+    }
+    return '';
+  };
+
+  const validatePhoneNumber = (phone: string): string => {
+    if (!phone || phone.length === 0) {
+      return t('signup.errors.phoneRequired');
+    }
+    if (phone.length !== 9) {
+      return t('signup.errors.phoneInvalid');
+    }
+    if (!/^[0-9]{9}$/.test(phone)) {
+      return t('signup.errors.phoneInvalid');
+    }
+    // Check if it starts with valid Ethiopian mobile prefixes
+    const validPrefixes = ['9', '7', '8'];
+    if (!validPrefixes.includes(phone[0])) {
+      return t('signup.errors.phoneInvalidPrefix');
+    }
+    return '';
+  };
+
+  const validatePassword = (password: string): string => {
+    if (!password || password.length === 0) {
+      return t('signup.errors.passwordRequired');
+    }
+    if (password.length < 6) {
+      return t('signup.errors.passwordMinLength');
+    }
+    if (password.length > 50) {
+      return t('signup.errors.passwordMaxLength');
+    }
+    return '';
+  };
+
+  const validatePasswordConfirmation = (password: string, confirmPassword: string): string => {
+    if (!confirmPassword || confirmPassword.length === 0) {
+      return t('signup.errors.confirmPasswordRequired');
+    }
+    if (password !== confirmPassword) {
+      return t('signup.errors.passwordMismatch');
+    }
+    return '';
+  };
+
+  const validateUsername = (username: string): string => {
+    if (!username || username.length === 0) {
+      return t('signup.errors.usernameRequired');
+    }
+    if (username.length < 5) {
+      return t('signup.errors.usernameMinLength');
+    }
+    if (username.length > 20) {
+      return t('signup.errors.usernameMaxLength');
+    }
+    // Check for valid characters (letters, numbers, underscore, hyphen)
+    const validUsernameRegex = /^[a-zA-Z0-9_-]+$/;
+    if (!validUsernameRegex.test(username)) {
+      return t('signup.errors.usernameInvalid');
+    }
+    return '';
+  };
+
+  const validateGrade = (grade: Grade | ''): string => {
+    if (!grade) {
+      return t('signup.errors.gradeRequired');
+    }
+    return '';
+  };
+
+
+  const validateChildData = (child: ChildData, index: number): {[key: string]: string} => {
+    const errors: {[key: string]: string} = {};
+    
+    const fullNameError = validateFullName(child.fullName);
+    if (fullNameError) {
+      errors[`child${index}_fullName`] = fullNameError;
+    }
+
+    const usernameError = validateUsername(child.username);
+    if (usernameError) {
+      errors[`child${index}_username`] = usernameError;
+    }
+
+    const gradeError = validateGrade(child.grade);
+    if (gradeError) {
+      errors[`child${index}_grade`] = gradeError;
+    }
+
+    // Region is optional - no validation needed
+
+    const passwordError = validatePassword(child.password);
+    if (passwordError) {
+      errors[`child${index}_password`] = passwordError;
+    }
+
+    const confirmPasswordError = validatePasswordConfirmation(child.password, child.confirmPassword);
+    if (confirmPasswordError) {
+      errors[`child${index}_confirmPassword`] = confirmPasswordError;
+    }
+
+    return errors;
+  };
+
+  const validateAllFields = (): {isValid: boolean, errors: {[key: string]: string}} => {
+    const errors: {[key: string]: string} = {};
+
+    // Only validate full name for single student (not for multiple students - parent name generated in backend)
+    if (role === 'student') {
+      const fullNameError = validateFullName(fullName);
+      if (fullNameError) errors.fullName = fullNameError;
+    }
+
+    const phoneError = validatePhoneNumber(phoneNumber);
+    if (phoneError) errors.phoneNumber = phoneError;
+
+    // Only validate username and password for single student (not for multiple students)
+    if (role === 'student') {
+      const usernameError = validateUsername(username);
+      if (usernameError) errors.username = usernameError;
+
+      const passwordError = validatePassword(password);
+      if (passwordError) errors.password = passwordError;
+
+      const confirmPasswordError = validatePasswordConfirmation(password, confirmPassword);
+      if (confirmPasswordError) errors.confirmPassword = confirmPasswordError;
+
+      const gradeError = validateGrade(grade);
+      if (gradeError) errors.grade = gradeError;
+    }
+
+    // Region is optional - no validation needed
+
+    // Validate children data if role is parent (multiple students)
+    if (role === 'parent') {
+      childrenData.forEach((child, index) => {
+        const childErrors = validateChildData(child, index);
+        Object.assign(errors, childErrors);
+      });
+    }
+
+    // Check if terms are accepted
+    if (!acceptTerms) {
+      errors.acceptTerms = t('signup.errors.acceptTerms');
+    }
+
+    // Check username availability (only for single student)
+    if (role === 'student' && usernameValid === false) {
+      errors.username = t('signup.errors.usernameTaken');
+    }
+
+    // Check children usernames availability
+    childrenData.forEach((child, index) => {
+      if (child.usernameValid === false) {
+        errors[`child${index}_username`] = t('signup.errors.usernameTaken');
+      }
+    });
+
+    return {
+      isValid: Object.keys(errors).length === 0,
+      errors
+    };
+  };
+
+  const handleGradeSelect = (value: string, childIndex?: number) => {
+    if (childIndex !== undefined) {
+      const newChildrenData = [...childrenData];
+      newChildrenData[childIndex] = { ...newChildrenData[childIndex], grade: value as Grade };
+      setChildrenData(newChildrenData);
+    } else {
+      setGrade(value as Grade);
+    }
+    setShowGradeModal(false);
+  };
+
+  const handleRegionSelect = (value: string, childIndex?: number) => {
+    if (childIndex !== undefined) {
+      const newChildrenData = [...childrenData];
+      newChildrenData[childIndex] = { ...newChildrenData[childIndex], region: value };
+      setChildrenData(newChildrenData);
+    } else {
+      setRegion(value);
+    }
+    setShowRegionModal(false);
+  };
+
+  const openGradeModal = (childIndex?: number) => {
+    setSelectedChildIndex(childIndex ?? null);
+    setShowGradeModal(true);
+  };
+
+  const openRegionModal = (childIndex?: number) => {
+    setSelectedChildIndex(childIndex ?? null);
+    setShowRegionModal(true);
+  };
+
+  const handleFullNameChange = (text: string) => {
+    setFullName(text);
+  };
+
+  const handleChildNameChange = (text: string, index: number) => {
+    const newChildrenData = [...childrenData];
+    newChildrenData[index] = { ...newChildrenData[index], fullName: text };
+    setChildrenData(newChildrenData);
+  };
+
+  const checkUsernameAvailability = async (username: string) => {
+    if (username.length < 5) {
+      setUsernameValid(null);
+      setUsernameError('');
+      return;
+    }
+
+    setUsernameChecking(true);
+    try {
+      const response = await fetch(`${BASE_URL}/api/auth/check-username?username=${encodeURIComponent(username)}`, {
+        headers: {
+          'Accept': 'application/json',
+          'X-Requested-With': 'XMLHttpRequest',
+        }
+      });
+      const data = await response.json();
+      setUsernameValid(!data.exists);
+      setUsernameError(data.exists ? 'Username is already taken' : '');
+    } catch (error) {
+      setUsernameError('Error checking username availability');
+    } finally {
+      setUsernameChecking(false);
+    }
+  };
+
+  const handleUsernameChange = (text: string) => {
+    setUsername(text);
+    if (text.length >= 5) {
+      checkUsernameAvailability(text);
+    } else {
+      setUsernameValid(null);
+      setUsernameError(text.length > 0 ? t('signup.errors.usernameMinLength') : '');
+    }
+  };
+
+  const handleChildUsernameChange = (text: string, index: number) => {
+    const newChildrenData = [...childrenData];
+    
+    if (text.length >= 5) {
+      newChildrenData[index] = { 
+        ...newChildrenData[index], 
+        username: text,
+        usernameValid: null,
+        usernameChecking: false
+      };
+      setChildrenData(newChildrenData);
+      checkChildUsernameAvailability(text, index);
+    } else {
+      newChildrenData[index] = { 
+        ...newChildrenData[index], 
+        username: text,
+        usernameValid: null,
+        usernameChecking: false
+      };
+      setChildrenData(newChildrenData);
+    }
+  };
+
+  const checkChildUsernameAvailability = async (username: string, index: number) => {
+    const newChildrenData = [...childrenData];
+    newChildrenData[index] = { 
+      ...newChildrenData[index], 
+      username: username,
+      usernameChecking: true 
+    };
+    setChildrenData(newChildrenData);
+
+    try {
+      const response = await fetch(`${BASE_URL}/api/auth/check-username?username=${encodeURIComponent(username)}`, {
+        headers: {
+          'Accept': 'application/json',
+          'X-Requested-With': 'XMLHttpRequest',
+        }
+      });
+      const data = await response.json();
+      newChildrenData[index] = { 
+        ...newChildrenData[index], 
+        username: username,
+        usernameValid: !data.exists,
+        usernameChecking: false
+      };
+      setChildrenData(newChildrenData);
+    } catch (error) {
+      newChildrenData[index] = { 
+        ...newChildrenData[index], 
+        username: username,
+        usernameChecking: false 
+      };
+      setChildrenData(newChildrenData);
+    }
+  };
+
+  const handleChildPasswordChange = (text: string, index: number) => {
+    const newChildrenData = [...childrenData];
+    newChildrenData[index] = { ...newChildrenData[index], password: text };
+    setChildrenData(newChildrenData);
+  };
+
+  const handleChildConfirmPasswordChange = (text: string, index: number) => {
+    const newChildrenData = [...childrenData];
+    newChildrenData[index] = { ...newChildrenData[index], confirmPassword: text };
+    setChildrenData(newChildrenData);
+  };
+
+  const handleChildRegionChange = (text: string, index: number) => {
+    const newChildrenData = [...childrenData];
+    newChildrenData[index] = { ...newChildrenData[index], region: text };
+    setChildrenData(newChildrenData);
+  };
+
+  const handleSignup = async () => {
+    // Reset error states
+    setError('');
+    setValidationErrors({});
+
+    // Validate all fields
+    const validation = validateAllFields();
+    
+    if (!validation.isValid) {
+      setValidationErrors(validation.errors);
+      setError(t('signup.errors.validationFailed'));
+      return;
+    }
+
+    // Disable button while processing
+    setIsSubmitting(true);
+
+    // Add country code to phone number for OTP service
+    const fullPhoneNumber = `+251${phoneNumber}`;
+    
+    // Default region to "Addis Ababa" if not selected
+    const finalRegion = role === 'student' 
+      ? (region || 'Addis Ababa')
+      : '';
+    
+    // For multiple children, default region to "Addis Ababa" if not selected
+    const finalChildrenData = role === 'parent'
+      ? childrenData.map(child => ({
+          ...child,
+          region: child.region || 'Addis Ababa'
+        }))
+      : childrenData;
+    
+    // Try to send OTP (but don't block navigation if it fails)
+    try {
+      const otpResponse = await sendOTP(fullPhoneNumber);
+      console.log('[OTP] sendOTP response (signup):', otpResponse);
+      if (!otpResponse.success) {
+        console.warn('[OTP] send failed on signup, proceeding to OTP screen:', otpResponse.message);
+      }
+    } catch (err) {
+      // Don't set error here, just log it and continue
+      console.error('OTP send error:', err);
+    }
+    
+    // Always navigate to OTP screen regardless of OTP service response
+    try {
+      await router.replace({
+        pathname: '/(auth)/otp',
+        params: {
+          phoneNumber: fullPhoneNumber, // Pass the full phone number with country code
+          // For multiple students (parent role), send empty strings - backend will generate credentials
+          fullName: role === 'parent' ? '' : fullName,
+          username: role === 'parent' ? '' : username,
+          password: role === 'parent' ? '' : password,
+          grade,
+          // Region defaults to "Addis Ababa" if not selected
+          region: finalRegion,
+          role,
+          numberOfChildren: numberOfChildren.toString(),
+          childrenData: JSON.stringify(finalChildrenData)
+        }
+      });
+    } catch (navigationError) {
+      setError(t('signup.errors.navigationFailed'));
+      setIsSubmitting(false); // Re-enable button on navigation error
+    }
+  };
+
+  return (
+    <SafeAreaView style={[styles.safeArea, { backgroundColor: isDarkMode ? '#101216' : '#F1F2F4' }]}>
+      <View pointerEvents="none" style={styles.bgLettersLayer}>
+        <Text style={[styles.bgLetter, styles.bgLetterLeft, { color: isDarkMode ? 'rgba(255,255,255,0.02)' : 'rgba(255,255,255,0.22)' }]}>MegaTest</Text>
+        <Text style={[styles.bgLetter, styles.bgLetterRight, { color: isDarkMode ? 'rgba(255,255,255,0.018)' : 'rgba(255,255,255,0.18)' }]}>M</Text>
+      </View>
+        <KeyboardAvoidingView 
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          style={styles.keyboardView}
+          keyboardVerticalOffset={Platform.OS === 'ios' ? -64 : 0}
+        >
+          <ScrollView 
+            style={styles.scrollView}
+            contentContainerStyle={styles.scrollContent}
+            showsVerticalScrollIndicator={false}
+            keyboardShouldPersistTaps="handled"
+            keyboardDismissMode="on-drag"
+          >
+            <View style={styles.container}>
+              <TouchableOpacity 
+                style={styles.backButton}
+                onPress={() => router.push('/(auth)/welcome')}
+              >
+                <Ionicons name="arrow-back" size={24} color={isDarkMode ? '#A0A0A5' : '#1F2937'} />
+              </TouchableOpacity>
+              <View style={styles.languageToggleContainer}>
+                <LanguageToggle colors={colors} />
+              </View>
+
+              <View style={styles.header}>
+                <ThemedText style={styles.stepLabel}>STEP 01 / 03</ThemedText>
+                <ThemedText style={[styles.welcomeText, { color: colors.text }]}>Account Details</ThemedText>
+                <ThemedText style={[styles.subtitleText, { color: colors.text + '80' }]}>Enter your basic information to get started.</ThemedText>
+              </View>
+
+              <View style={[styles.formContainer, {
+                backgroundColor: isDarkMode ? '#1C1C1E' : '#FFFFFF',
+              }]}>
+                <View style={styles.inputWrapper}>
+                  {/* Full Name field - only for single student */}
+                  {role === 'student' ? (
+                    <>
+                      <View style={[styles.inputContainer, {
+                        backgroundColor: isDarkMode ? '#2C2C2E' : '#F9FAFB',
+                        borderColor: validationErrors.fullName ? '#F44336' : (isDarkMode ? '#3C3C3E' : '#E5E7EB'),
+                      }]}>
+                        <Ionicons name="settings-outline" size={20} color={isDarkMode ? '#A0A0A5' : '#6B7280'} style={styles.inputIcon} />
+                        <TextInput
+                          style={[styles.input, { color: colors.text }]}
+                          placeholder={t('signup.fullName')}
+                          placeholderTextColor={isDarkMode ? '#A0A0A5' : '#9CA3AF'}
+                          value={fullName}
+                          onChangeText={handleFullNameChange}
+                        />
+                      </View>
+                      {validationErrors.fullName ? (
+                        <ThemedText style={[styles.errorText, { color: '#F44336' }]}>{validationErrors.fullName}</ThemedText>
+                      ) : null}
+                    </>
+                  ) : null}
+
+                  {/* Username field - only for single student */}
+                  {role === 'student' ? (
+                    <>
+                      <View style={[styles.inputContainer, {
+                        backgroundColor: isDarkMode ? '#2C2C2E' : '#F9FAFB',
+                        borderColor: (validationErrors.username || usernameError) ? '#F44336' : (isDarkMode ? '#3C3C3E' : '#E5E7EB'),
+                      }]}>
+                        <Ionicons name="at-outline" size={20} color={isDarkMode ? '#A0A0A5' : '#6B7280'} style={styles.inputIcon} />
+                        <TextInput
+                          style={[styles.input, { color: colors.text }]}
+                          placeholder={t('signup.username')}
+                          placeholderTextColor={isDarkMode ? '#A0A0A5' : '#9CA3AF'}
+                          value={username}
+                          onChangeText={handleUsernameChange}
+                          autoCapitalize="none"
+                          autoCorrect={false}
+                          textContentType="username"
+                          keyboardType="default"
+                          keyboardAppearance={isDarkMode ? 'dark' : 'light'}
+                        />
+                        {usernameChecking && (
+                          <Ionicons name="time-outline" size={20} color={isDarkMode ? '#A0A0A5' : '#6B7280'} style={styles.inputIcon} />
+                        )}
+                        {usernameValid === true && (
+                          <Ionicons name="checkmark-circle" size={20} color="#4CAF50" style={styles.inputIcon} />
+                        )}
+                        {usernameValid === false && (
+                          <Ionicons name="close-circle" size={20} color="#F44336" style={styles.inputIcon} />
+                        )}
+                      </View>
+
+                      {(validationErrors.username || usernameError) ? (
+                        <ThemedText style={[styles.errorText, { color: '#F44336' }]}>{validationErrors.username || usernameError}</ThemedText>
+                      ) : null}
+                    </>
+                  ) : null}
+
+                  <View style={[styles.inputContainer, {
+                    backgroundColor: isDarkMode ? '#2C2C2E' : '#F9FAFB',
+                    borderColor: validationErrors.phoneNumber ? '#F44336' : (isDarkMode ? '#3C3C3E' : '#E5E7EB'),
+                  }]}>
+                    <Ionicons name="call-outline" size={20} color={isDarkMode ? '#A0A0A5' : '#6B7280'} style={styles.inputIcon} />
+                    <View style={styles.phoneInputContainer}>
+                      <ThemedText style={[styles.phonePrefix, { color: colors.text }]}>+251</ThemedText>
+                      <TextInput
+                        style={[styles.phoneInput, { color: colors.text }]}
+                        placeholder={t('signup.phoneNumber')}
+                        placeholderTextColor={isDarkMode ? '#A0A0A5' : '#9CA3AF'}
+                        value={phoneNumber}
+                        onChangeText={(text) => {
+                          const numericValue = text.replace(/[^0-9]/g, '').slice(0, 9);
+                          setPhoneNumber(numericValue);
+                        }}
+                        keyboardType="phone-pad"
+                        maxLength={9}
+                        autoCapitalize="none"
+                      />
+                    </View>
+                  </View>
+                  {validationErrors.phoneNumber ? (
+                    <ThemedText style={[styles.errorText, { color: '#F44336' }]}>{validationErrors.phoneNumber}</ThemedText>
+                  ) : null}
+
+                  {/* Password fields - only for single student */}
+                  {role === 'student' ? (
+                    <>
+                      <PasswordInput
+                        value={password}
+                        onChangeText={setPassword}
+                        placeholder={t('signup.password')}
+                        autoCapitalize="none"
+                        textContentType="newPassword"
+                        keyboardType="default"
+                        keyboardAppearance={isDarkMode ? 'dark' : 'light'}
+                        error={!!validationErrors.password}
+                        errorMessage={validationErrors.password}
+                      />
+
+                      <PasswordInput
+                        value={confirmPassword}
+                        onChangeText={setConfirmPassword}
+                        placeholder={t('signup.confirmPassword')}
+                        autoCapitalize="none"
+                        textContentType="newPassword"
+                        error={!!validationErrors.confirmPassword}
+                        errorMessage={validationErrors.confirmPassword}
+                      />
+                    </>
+                  ) : null}
+
+                  {role === 'parent' && numberOfChildren >= 1 ? (
+                    childrenData.map((child, index) => (
+                      <View key={index} style={styles.childSection}>
+                        <ThemedText style={[styles.childTitle, { color: colors.text }]}>
+                          {t(`signup.childrenSelection.child${index + 1}`)}
+                        </ThemedText>
+                        <View style={[styles.inputContainer, {
+                          backgroundColor: isDarkMode ? '#2C2C2E' : '#F9FAFB',
+                          borderColor: validationErrors[`child${index}_fullName`] ? '#F44336' : (isDarkMode ? '#3C3C3E' : '#E5E7EB'),
+                        }]}>
+                          <Ionicons name="settings-outline" size={20} color={isDarkMode ? '#A0A0A5' : '#6B7280'} style={styles.inputIcon} />
+                          <TextInput
+                            style={[styles.input, { color: colors.text }]}
+                            placeholder={t('signup.fullName')}
+                            placeholderTextColor={isDarkMode ? '#A0A0A5' : '#9CA3AF'}
+                            value={child.fullName}
+                            onChangeText={(text) => handleChildNameChange(text, index)}
+                          />
+                        </View>
+                        {validationErrors[`child${index}_fullName`] ? (
+                          <ThemedText style={[styles.errorText, { color: '#F44336' }]}>{validationErrors[`child${index}_fullName`]}</ThemedText>
+                        ) : null}
+                        <View style={[styles.inputContainer, {
+                          backgroundColor: isDarkMode ? '#2C2C2E' : '#F9FAFB',
+                          borderColor: validationErrors[`child${index}_username`] ? '#F44336' : (isDarkMode ? '#3C3C3E' : '#E5E7EB'),
+                        }]}>
+                          <Ionicons name="at-outline" size={20} color={isDarkMode ? '#A0A0A5' : '#6B7280'} style={styles.inputIcon} />
+                          <TextInput
+                            style={[styles.input, { color: colors.text }]}
+                            placeholder={t('signup.username')}
+                            placeholderTextColor={isDarkMode ? '#A0A0A5' : '#9CA3AF'}
+                            value={child.username}
+                            onChangeText={(text) => handleChildUsernameChange(text, index)}
+                            autoCapitalize="none"
+                            autoCorrect={false}
+                            textContentType="username"
+                            keyboardType="default"
+                            keyboardAppearance={isDarkMode ? 'dark' : 'light'}
+                          />
+                          {child.usernameChecking && (
+                            <Ionicons name="time-outline" size={20} color={isDarkMode ? '#A0A0A5' : '#6B7280'} style={styles.inputIcon} />
+                          )}
+                          {child.usernameValid === true && (
+                            <Ionicons name="checkmark-circle" size={20} color="#4CAF50" style={styles.inputIcon} />
+                          )}
+                          {child.usernameValid === false && (
+                            <Ionicons name="close-circle" size={20} color="#F44336" style={styles.inputIcon} />
+                          )}
+                        </View>
+                        {validationErrors[`child${index}_username`] ? (
+                          <ThemedText style={[styles.errorText, { color: '#F44336' }]}>{validationErrors[`child${index}_username`]}</ThemedText>
+                        ) : null}
+                        <PasswordInput
+                          value={child.password}
+                          onChangeText={(text) => handleChildPasswordChange(text, index)}
+                          placeholder={t('signup.password')}
+                          autoCapitalize="none"
+                          autoCorrect={false}
+                          textContentType="newPassword"
+                          autoComplete="off"
+                          spellCheck={false}
+                          error={!!validationErrors[`child${index}_password`]}
+                          errorMessage={validationErrors[`child${index}_password`]}
+                        />
+                        <PasswordInput
+                          value={child.confirmPassword}
+                          onChangeText={(text) => handleChildConfirmPasswordChange(text, index)}
+                          placeholder={t('signup.confirmPassword')}
+                          autoCapitalize="none"
+                          autoCorrect={false}
+                          textContentType="newPassword"
+                          autoComplete="off"
+                          spellCheck={false}
+                          error={!!validationErrors[`child${index}_confirmPassword`]}
+                          errorMessage={validationErrors[`child${index}_confirmPassword`]}
+                        />
+                        <View style={[styles.inputContainer, {
+                          backgroundColor: isDarkMode ? '#2C2C2E' : '#F9FAFB',
+                          borderColor: validationErrors[`child${index}_grade`] ? '#F44336' : (isDarkMode ? '#3C3C3E' : '#E5E7EB'),
+                        }]}>
+                          <Ionicons name="school-outline" size={20} color={isDarkMode ? '#A0A0A5' : '#6B7280'} style={styles.inputIcon} />
+                          <TouchableOpacity 
+                            style={styles.dropdownButton}
+                            onPress={() => openGradeModal(index)}
+                          >
+                            <ThemedText style={[styles.input, { color: child.grade ? colors.text : (isDarkMode ? '#A0A0A5' : '#9CA3AF') }]}>
+                              {child.grade ? grades.find(g => g.value === child.grade)?.label || t('signup.grade.label') : t('signup.grade.label')}
+                            </ThemedText>
+                            <Ionicons name="chevron-down" size={20} color={isDarkMode ? '#A0A0A5' : '#6B7280'} />
+                          </TouchableOpacity>
+                        </View>
+                        {validationErrors[`child${index}_grade`] ? (
+                          <ThemedText style={[styles.errorText, { color: '#F44336' }]}>{validationErrors[`child${index}_grade`]}</ThemedText>
+                        ) : null}
+                        <View style={[styles.inputContainer, {
+                          backgroundColor: isDarkMode ? '#2C2C2E' : '#F9FAFB',
+                          borderColor: validationErrors[`child${index}_region`] ? '#F44336' : (isDarkMode ? '#3C3C3E' : '#E5E7EB'),
+                        }]}>
+                          <Ionicons name="location-outline" size={20} color={isDarkMode ? '#A0A0A5' : '#6B7280'} style={styles.inputIcon} />
+                          <TouchableOpacity 
+                            style={styles.dropdownButton}
+                            onPress={() => openRegionModal(index)}
+                          >
+                            <ThemedText style={[styles.input, { color: child.region ? colors.text : (isDarkMode ? '#A0A0A5' : '#9CA3AF') }]}>
+                              {child.region ? regions.find(r => r.name === child.region)?.name || t('signup.region.label') : t('signup.region.label')}
+                            </ThemedText>
+                            <Ionicons name="chevron-down" size={20} color={isDarkMode ? '#A0A0A5' : '#6B7280'} />
+                          </TouchableOpacity>
+                        </View>
+                        {validationErrors[`child${index}_region`] ? (
+                          <ThemedText style={[styles.errorText, { color: '#F44336' }]}>{validationErrors[`child${index}_region`]}</ThemedText>
+                        ) : null}
+                      </View>
+                    ))
+                  ) : null}
+                </View>
+
+                {error ? (
+                  <View style={styles.errorContainer}>
+                    <ThemedText style={styles.errorText}>{error}</ThemedText>
+                  </View>
+                ) : null}
+
+                <View style={styles.termsContainer}>
+                  <Checkbox
+                    value={acceptTerms}
+                    onValueChange={setAcceptTerms}
+                    color={acceptTerms ? '#4F46E5' : undefined}
+                    style={styles.checkbox}
+                  />
+                  <View style={styles.termsTextContainer}>
+                    <ThemedText style={[styles.termsText, { color: isDarkMode ? '#A0A0A5' : '#6B7280' }]}>{t('signup.terms.prefix')}</ThemedText>
+                    <TouchableOpacity onPress={() => setShowTermsModal(true)}>
+                      <ThemedText style={styles.termsLink}>{t('signup.terms.link')}</ThemedText>
+                    </TouchableOpacity>
+                  </View>
+                </View>
+                {validationErrors.acceptTerms ? (
+                  <ThemedText style={[styles.errorText, { color: '#F44336' }]}>{validationErrors.acceptTerms}</ThemedText>
+                ) : null}
+
+                <Modal
+                  visible={showGradeModal}
+                  transparent={true}
+                  animationType="fade"
+                  onRequestClose={() => setShowGradeModal(false)}
+                >
+                  <Pressable 
+                    style={styles.modalOverlay}
+                    onPress={() => setShowGradeModal(false)}
+                  >
+                    <View style={[styles.modalContent, {
+                      backgroundColor: isDarkMode ? '#1C1C1E' : '#FFFFFF',
+                    }]}>
+                      <View style={[styles.modalHeader, {
+                        borderBottomColor: isDarkMode ? '#3C3C3E' : '#E5E7EB',
+                      }]}>
+                        <ThemedText style={[styles.modalTitle, { color: colors.text }]}>{t('signup.grade.title')}</ThemedText>
+                        <TouchableOpacity onPress={() => setShowGradeModal(false)}>
+                          <Ionicons name="close" size={24} color={isDarkMode ? '#A0A0A5' : '#6B7280'} />
+                        </TouchableOpacity>
+                      </View>
+                      <ScrollView style={styles.gradeScrollView}>
+                        {grades.map((item) => (
+                          <TouchableOpacity
+                            key={item.value}
+                            style={[
+                              styles.gradeOption,
+                              ((selectedChildIndex !== null ? 
+                                childrenData[selectedChildIndex].grade : grade) === item.value) && 
+                              [styles.gradeOptionSelected, {
+                                backgroundColor: isDarkMode ? '#2C2C2E' : '#EEF2FF'
+                              }]
+                            ]}
+                            onPress={() => handleGradeSelect(item.value, selectedChildIndex ?? undefined)}
+                          >
+                            <ThemedText style={[
+                              styles.gradeOptionText,
+                              { color: isDarkMode ? colors.text : '#1F2937' },
+                              ((selectedChildIndex !== null ? 
+                                childrenData[selectedChildIndex].grade : grade) === item.value) && 
+                              styles.gradeOptionTextSelected
+                            ]}>
+                              {item.label}
+                            </ThemedText>
+                          </TouchableOpacity>
+                        ))}
+                      </ScrollView>
+                    </View>
+                  </Pressable>
+                </Modal>
+
+                <Modal
+                  visible={showRegionModal}
+                  transparent={true}
+                  animationType="fade"
+                  onRequestClose={() => setShowRegionModal(false)}
+                >
+                  <Pressable 
+                    style={styles.modalOverlay}
+                    onPress={() => setShowRegionModal(false)}
+                  >
+                    <View style={[styles.modalContent, {
+                      backgroundColor: isDarkMode ? '#1C1C1E' : '#FFFFFF',
+                    }]}>
+                      <View style={[styles.modalHeader, {
+                        borderBottomColor: isDarkMode ? '#3C3C3E' : '#E5E7EB',
+                      }]}>
+                        <ThemedText style={[styles.modalTitle, { color: colors.text }]}>{t('signup.region.title')}</ThemedText>
+                        <TouchableOpacity onPress={() => setShowRegionModal(false)}>
+                          <Ionicons name="close" size={24} color={isDarkMode ? '#A0A0A5' : '#6B7280'} />
+                        </TouchableOpacity>
+                      </View>
+                      <ScrollView style={styles.gradeScrollView}>
+                        {regions.map((item) => (
+                          <TouchableOpacity
+                            key={item.id}
+                            style={[
+                              styles.gradeOption,
+                              ((selectedChildIndex !== null ? 
+                                childrenData[selectedChildIndex].region : region) === item.name) && 
+                              [styles.gradeOptionSelected, {
+                                backgroundColor: isDarkMode ? '#2C2C2E' : '#EEF2FF'
+                              }]
+                            ]}
+                            onPress={() => handleRegionSelect(item.name, selectedChildIndex ?? undefined)}
+                          >
+                            <ThemedText style={[
+                              styles.gradeOptionText,
+                              { color: isDarkMode ? colors.text : '#1F2937' },
+                              ((selectedChildIndex !== null ? 
+                                childrenData[selectedChildIndex].region : region) === item.name) && 
+                              styles.gradeOptionTextSelected
+                            ]}>
+                              {item.name}
+                            </ThemedText>
+                          </TouchableOpacity>
+                        ))}
+                      </ScrollView>
+                    </View>
+                  </Pressable>
+                </Modal>
+
+                <Modal
+                  visible={showTermsModal}
+                  transparent={true}
+                  animationType="fade"
+                  onRequestClose={() => setShowTermsModal(false)}
+                >
+                  <View style={styles.modalOverlay}>
+                    <TouchableOpacity 
+                      style={StyleSheet.absoluteFill}
+                      activeOpacity={1}
+                      onPress={() => setShowTermsModal(false)}
+                    />
+                    <View 
+                      style={[styles.modalContent, {
+                        backgroundColor: isDarkMode ? '#1C1C1E' : '#FFFFFF',
+                      }]}
+                      pointerEvents="box-none"
+                    >
+                      <View pointerEvents="auto">
+                        <View style={[styles.modalHeader, {
+                          borderBottomColor: isDarkMode ? '#3C3C3E' : '#E5E7EB',
+                        }]}>
+                          <ThemedText style={[styles.modalTitle, { color: colors.text }]}>{t('signup.terms.title')}</ThemedText>
+                          <TouchableOpacity onPress={() => setShowTermsModal(false)}>
+                            <Ionicons name="close" size={24} color={isDarkMode ? '#A0A0A5' : '#6B7280'} />
+                          </TouchableOpacity>
+                        </View>
+                        <ScrollView 
+                          style={styles.termsModalContent}
+                          showsVerticalScrollIndicator={true}
+                          nestedScrollEnabled={true}
+                          contentContainerStyle={styles.termsModalScrollContent}
+                        >
+                          <ThemedText style={[styles.termsModalText, { color: colors.text }]}>
+                            {t('signup.terms.content')}
+                          </ThemedText>
+                        </ScrollView>
+                      </View>
+                    </View>
+                  </View>
+                </Modal>
+
+                <TouchableOpacity 
+                  style={[styles.signupButton, (!acceptTerms || isSubmitting) && styles.signupButtonDisabled]} 
+                  onPress={handleSignup}
+                  activeOpacity={0.8}
+                  disabled={!acceptTerms || isSubmitting}
+                >
+                  <LinearGradient
+                    colors={['#0F4BD7', '#4E7CFF']}
+                    style={styles.buttonGradient}
+                    start={{ x: 0, y: 0.5 }}
+                    end={{ x: 1, y: 0.5 }}
+                  >
+                    <View style={styles.primaryActionInner}>
+                      <ThemedText style={styles.buttonText}>
+                        {isSubmitting ? t('common.processing') : 'Continue to Verification'}
+                      </ThemedText>
+                      <Ionicons name="arrow-forward" size={20} color="#0B1B46" />
+                    </View>
+                  </LinearGradient>
+                </TouchableOpacity>
+              </View>
+
+              <View style={styles.footer}>
+                <ThemedText style={[styles.footerText, { color: isDarkMode ? '#A0A0A5' : '#6B7280' }]}>{t('signup.alreadyHaveAccount')}</ThemedText>
+                <TouchableOpacity 
+                  style={styles.loginButton} 
+                  onPress={() => router.push('/(auth)/login')}
+                  activeOpacity={0.8}
+                >
+                  <ThemedText style={styles.loginText}>{t('signup.signIn')}</ThemedText>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </ScrollView>
+        </KeyboardAvoidingView>
+      </SafeAreaView>
+  );
+}
+
+const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+  },
+  bgLettersLayer: {
+    ...StyleSheet.absoluteFillObject,
+    zIndex: 0,
+    overflow: 'hidden',
+  },
+  bgLetter: {
+    position: 'absolute',
+    fontSize: 360,
+    fontWeight: '800',
+    lineHeight: 360,
+  },
+  bgLetterLeft: {
+    left: -52,
+    top: 44,
+    transform: [{ rotate: '-7deg' }],
+  },
+  bgLetterRight: {
+    right: -78,
+    bottom: -74,
+    transform: [{ rotate: '7deg' }],
+  },
+  keyboardView: {
+    flex: 1,
+  },
+  scrollView: {
+    flex: 1,
+  },
+  scrollContent: {
+    flexGrow: 1,
+    paddingBottom: Platform.OS === 'ios' ? 120 : 80,
+  },
+  container: {
+    flex: 1,
+    paddingHorizontal: 10,
+    paddingTop: 10,
+    justifyContent: 'space-between',
+    minHeight: '100%',
+    zIndex: 1,
+  },
+  header: {
+    alignItems: 'center',
+    marginTop: 8,
+    marginBottom: 22,
+    paddingTop: 12,
+    zIndex: 1,
+  },
+  stepLabel: {
+    color: '#0F4BD7',
+    fontSize: 12,
+    fontWeight: '700',
+    letterSpacing: 1.1,
+    marginTop: 4,
+    marginBottom: 8,
+  },
+  welcomeText: {
+    fontSize: 36,
+    lineHeight: 44,
+    fontWeight: '700',
+    marginBottom: 8,
+    textAlign: 'center',
+  },
+  subtitleText: {
+    fontSize: 16,
+    textAlign: 'center',
+    marginBottom: 22,
+    lineHeight: 28,
+  },
+  formContainer: {
+    width: '100%',
+    gap: 18,
+    borderRadius: 28,
+    paddingHorizontal: 26,
+    paddingTop: 24,
+    paddingBottom: 30,
+  },
+  inputWrapper: {
+    gap: 16,
+  },
+  inputContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#F9FAFB',
+    borderRadius: 16,
+    paddingHorizontal: 16,
+    height: 60,
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+  },
+  inputIcon: {
+    marginRight: 12,
+  },
+  input: {
+    textTransform: 'none',
+    flex: 1,
+    height: '100%',
+    fontSize: 16,
+    color: '#1F2937',
+  },
+  picker: {
+    marginLeft: -12,
+    marginRight: Platform.OS === 'ios' ? -40 : -20,
+  },
+  termsContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginTop: 8,
+  },
+  checkbox: {
+    width: 20,
+    height: 20,
+    borderRadius: 4,
+  },
+  termsTextContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+  },
+  termsText: {
+    fontSize: 14,
+    color: '#6B7280',
+  },
+  termsLink: {
+    fontSize: 14,
+    color: '#4F46E5',
+    fontWeight: '600',
+    textDecorationLine: 'none',
+  },
+  signupButton: {
+    width: '100%',
+    height: 60,
+    borderRadius: 30,
+    overflow: 'hidden',
+    marginTop: 8,
+    shadowColor: '#4F46E5',
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.25,
+    shadowRadius: 14,
+    elevation: 8,
+  },
+  primaryActionInner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    width: '100%',
+  },
+  signupButtonDisabled: {
+    opacity: 0.5,
+    shadowOpacity: 0.1,
+  },
+  buttonGradient: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  buttonText: {
+    color: '#FFFFFF',
+    fontSize: 18,
+    lineHeight: 22,
+    fontWeight: '600',
+  },
+  footer: {
+    marginTop: 20,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    marginBottom: 24,
+  },
+  footerText: {
+    color: '#6B7280',
+    fontSize: 14,
+  },
+  loginButton: {
+    paddingVertical: 4,
+  },
+  loginText: {
+    color: '#4F46E5',
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  dropdownButton: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    height: '100%',
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 24,
+  },
+  modalContent: {
+    backgroundColor: '#FFFFFF',
+    width: '100%',
+    borderRadius: 24,
+    padding: 16,
+    maxHeight: '80%',
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingBottom: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#E5E7EB',
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#1F2937',
+  },
+  gradeScrollView: {
+    maxHeight: 400,
+  },
+  gradeOption: {
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderRadius: 12,
+  },
+  gradeOptionSelected: {
+    backgroundColor: '#EEF2FF',
+  },
+  gradeOptionText: {
+    fontSize: 16,
+    color: '#1F2937',
+  },
+  gradeOptionTextSelected: {
+    color: '#4F46E5',
+    fontWeight: '600',
+  },
+  termsModalContent: {
+    marginTop: 16,
+    paddingRight: 8,
+    paddingBottom: 16,
+    maxHeight: 500,
+  },
+  termsModalScrollContent: {
+    paddingBottom: 20,
+  },
+  termsModalText: {
+    fontSize: 14,
+    color: '#1F2937',
+    lineHeight: 22,
+    paddingHorizontal: 4,
+  },
+  phoneInputContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
+  },
+  phonePrefix: {
+    fontSize: 16,
+    color: '#1F2937',
+    marginRight: 8,
+  },
+  phoneInput: {
+    flex: 1,
+    height: '100%',
+    fontSize: 16,
+    color: '#1F2937',
+  },
+  childSection: {
+    gap: 8,
+  },
+  childTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    marginBottom: 4,
+  },
+  backButton: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    padding: 12,
+    zIndex: 1,
+  },
+  errorContainer: {
+    backgroundColor: '#FEE2E2',
+    padding: 12,
+    borderRadius: 8,
+    marginBottom: 16,
+  },
+  errorText: {
+    color: '#DC2626',
+    fontSize: 14,
+    textAlign: 'center',
+  },
+  languageToggleContainer: {
+    position: 'absolute',
+    top: 0,
+    right: 0,
+    marginTop: 8,
+    marginRight: 16,
+    zIndex: 1,
+  },
+  sectionTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    marginBottom: 8,
+    marginTop: 8,
+  },
+});
