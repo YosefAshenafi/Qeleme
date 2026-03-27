@@ -1,4 +1,4 @@
-import { StyleSheet, ScrollView, TouchableOpacity, View, Dimensions, RefreshControl } from 'react-native';
+import { StyleSheet, ScrollView, TouchableOpacity, View, Dimensions, RefreshControl, Modal, Text } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -10,6 +10,7 @@ import { useFocusEffect } from '@react-navigation/native';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '@/contexts/AuthContext';
 import { BASE_URL } from '../../config/constants';
+import { Ionicons } from '@expo/vector-icons';
 
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
@@ -23,7 +24,7 @@ const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const CARD_WIDTH = SCREEN_WIDTH - 40;
 const CARD_SPACING = 16;
 
-/** Canvas + welcome card (Mega+ home design). */
+/** Canvas + welcome card for the MegaTest home screen. */
 const HOME_CANVAS = { light: '#F1F2F4', dark: '#101216' } as const;
 const WELCOME_CARD_BG = { light: '#E8F0FE', dark: '#1E2A3D' } as const;
 const GRID_GAP = 12;
@@ -118,6 +119,7 @@ export default function HomeScreen() {
   const [isMCQLoading, setIsMCQLoading] = useState(false);
   const [nationalExamYears, setNationalExamYears] = useState<number[]>([]);
   const [isNationalExamLoading, setIsNationalExamLoading] = useState(false);
+  const [showNationalExamYearChooser, setShowNationalExamYearChooser] = useState(false);
 
   // Check if user is KG student
   const isKGStudent = typeof user?.grade === 'string' && user.grade.toLowerCase().includes('kg');
@@ -487,8 +489,14 @@ export default function HomeScreen() {
     }
   };
 
-  const handleNationalExamYearPress = (year: number) => {
-    console.log('National exam year pressed:', year);
+  const handleNationalExamYearPress = () => {
+    console.log('National exam clicked - show year chooser');
+    // Show year chooser modal instead of directly navigating
+    setShowNationalExamYearChooser(true);
+  };
+
+  const handleYearSelect = (year: number) => {
+    console.log('Year selected:', year);
     // Navigate to MCQ screen with national exam type and pre-selected year
     router.push({
       pathname: '/(tabs)/mcq',
@@ -497,6 +505,7 @@ export default function HomeScreen() {
         preSelectedYear: year.toString()
       }
     });
+    setShowNationalExamYearChooser(false);
   };
 
   const canvasBg = isDarkMode ? HOME_CANVAS.dark : HOME_CANVAS.light;
@@ -537,7 +546,6 @@ export default function HomeScreen() {
               onPress={() => handleBookPress('mcq', book)}
               coverWidth={SUBJECT_COVER_INNER_WIDTH}
               coverHeight={SUBJECT_COVER_INNER_HEIGHT}
-              suppressCoverText
               compact
             />
           </View>
@@ -704,7 +712,7 @@ export default function HomeScreen() {
                             coverGradient={coverData.coverGradient}
                             icon={coverData.icon as any}
                             imageUrl=""
-                            onPress={() => handleNationalExamYearPress(year)}
+                            onPress={() => handleNationalExamYearPress()}
                             questionCount={Math.floor(Math.random() * 100) + 50}
                           />
                         );
@@ -771,6 +779,84 @@ export default function HomeScreen() {
           )}
         </ThemedView>
       </ScrollView>
+
+      {/* National Exam Year Chooser Modal */}
+      <Modal
+        visible={showNationalExamYearChooser}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setShowNationalExamYearChooser(false)}
+      >
+        <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'center', alignItems: 'center' }}>
+          <TouchableOpacity
+            style={StyleSheet.absoluteFill}
+            activeOpacity={1}
+            onPress={() => setShowNationalExamYearChooser(false)}
+          />
+          <View style={{
+            backgroundColor: '#0F4BD7',
+            borderRadius: 16,
+            margin: 20,
+            maxHeight: '80%',
+            width: '90%',
+            shadowColor: '#000',
+            shadowOffset: { width: 0, height: 2 },
+            shadowOpacity: 0.25,
+            shadowRadius: 3.84,
+            elevation: 5
+          }}>
+            <View style={{
+              backgroundColor: 'rgba(255,255,255,0.1)',
+              borderTopLeftRadius: 16,
+              borderTopRightRadius: 16,
+              padding: 20,
+              borderBottomWidth: 1,
+              borderBottomColor: 'rgba(255,255,255,0.2)'
+            }}>
+              <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+                <Text style={{ color: '#FFFFFF', fontSize: 18, fontWeight: '600' }}>
+                  Select Year
+                </Text>
+                <TouchableOpacity
+                  onPress={() => setShowNationalExamYearChooser(false)}
+                  style={{ padding: 4 }}
+                >
+                  <Ionicons name="close" size={20} color="#FFFFFF" />
+                </TouchableOpacity>
+              </View>
+              <Text style={{ color: 'rgba(255,255,255,0.8)', fontSize: 14, marginTop: 4 }}>
+                Choose a national exam year
+              </Text>
+            </View>
+
+            <ScrollView
+              style={{ flex: 1 }}
+              showsVerticalScrollIndicator={false}
+              contentContainerStyle={{ padding: 16 }}
+            >
+              {nationalExamYears.map((year) => (
+                <TouchableOpacity
+                  key={year}
+                  style={{
+                    backgroundColor: 'rgba(255,255,255,0.1)',
+                    borderColor: 'rgba(255,255,255,0.2)',
+                    borderWidth: 1,
+                    borderRadius: 8,
+                    padding: 16,
+                    marginBottom: 8
+                  }}
+                  onPress={() => handleYearSelect(year)}
+                  activeOpacity={0.8}
+                >
+                  <Text style={{ color: '#FFFFFF', fontSize: 16, fontWeight: '500' }}>
+                    {year} National Exam
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+          </View>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 }

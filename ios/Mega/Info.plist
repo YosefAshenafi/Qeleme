@@ -7,7 +7,7 @@
     <key>CFBundleDevelopmentRegion</key>
     <string>$(DEVELOPMENT_LANGUAGE)</string>
     <key>CFBundleDisplayName</key>
-    <string>Mega+</string>
+    <string>MegaTest</string>
     <key>CFBundleExecutable</key>
     <string>$(EXECUTABLE_NAME)</string>
     <key>CFBundleIdentifier</key>
@@ -27,8 +27,8 @@
       <dict>
         <key>CFBundleURLSchemes</key>
         <array>
-          <string>mega-plus</string>
-          <string>com.megaplus.edu</string>
+          <string>megatest</string>
+          <string>com.megatest.edu</string>
         </array>
       </dict>
     </array>

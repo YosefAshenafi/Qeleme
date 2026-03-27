@@ -32,7 +32,7 @@
   "submit": {
     "production": {
       "ios": {
-        "bundleIdentifier": "com.qelem.edu"
+        "bundleIdentifier": "com.megatest.edu"
       }
     }
   }

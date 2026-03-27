@@ -1,6 +1,6 @@
 import { Tabs, Redirect } from 'expo-router';
 import React from 'react';
-import { Platform, TouchableOpacity, View, StyleSheet, Text, Alert } from 'react-native';
+import { Platform, TouchableOpacity, View, StyleSheet, Text, Alert, Image } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '@/contexts/AuthContext';
 
@@ -39,10 +39,11 @@ export default function TabLayout() {
 
   const megaHeaderLeft = () => (
     <View style={styles.headerLeft}>
-      <View style={styles.brandMark}>
-        <Text style={styles.brandMarkText}>M+</Text>
-      </View>
-      <Text style={[styles.brandWordmark, { color: primaryText }]}>Mega+</Text>
+      <Image
+        source={require('../../assets/images/logo.png')}
+        style={styles.brandMark}
+        resizeMode="contain"
+      />
     </View>
   );
 
@@ -143,23 +144,8 @@ const styles = StyleSheet.create({
     gap: 10,
   },
   brandMark: {
-    width: 40,
-    height: 40,
-    borderRadius: 12,
-    backgroundColor: BRAND_BLUE,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  brandMarkText: {
-    color: '#FFFFFF',
-    fontSize: 15,
-    fontWeight: '800',
-    letterSpacing: -0.5,
-  },
-  brandWordmark: {
-    fontSize: 20,
-    fontWeight: '800',
-    letterSpacing: -0.3,
+    width: 50,
+    height: 44,
   },
   headerRight: {
     flexDirection: 'row',

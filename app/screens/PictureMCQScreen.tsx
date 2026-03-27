@@ -29,7 +29,6 @@ import { IconSymbol } from '@/components/ui/IconSymbol';
 import { ProfileAvatar } from '@/components/ui/ProfileAvatar';
 import { LanguageToggle } from '@/components/ui/LanguageToggle';
 import { ImageSkeleton } from '@/components/ui/ImageSkeleton';
-import SponsoredBy from '@/components/SponsoredBy';
 import RichText from '@/components/ui/RichText';
 import { getKGQuestions, getKGSubcategoryQuestions, getKGCategories, KGQuestion, KGCategory } from '@/services/kgService';
 import ActivityTrackingService from '@/services/activityTrackingService';
@@ -977,7 +976,6 @@ export default function PictureMCQScreen({ onBackToInstructions }: PictureMCQScr
               </View>
 
               {/* Sponsored By Section */}
-              {/* <SponsoredBy style={{ marginTop: 20 }} /> */}
             </ScrollView>
           </LinearGradient>
         </SafeAreaView>

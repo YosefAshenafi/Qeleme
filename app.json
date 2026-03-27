@@ -1,22 +1,22 @@
 {
   "expo": {
-    "name": "Mega+",
-    "slug": "mega-plus",
+    "name": "MegaTest",
+    "slug": "megatest",
     "version": "1.0.6",
     "orientation": "default",
-    "icon": "./assets/images/logo/app-icon.png",
-    "scheme": "mega-plus",
+    "icon": "./assets/images/logo.png",
+    "scheme": "megatest",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
-    "description": "Mega+ - The Academic Vanguard Educational platform for interactive learning",
+    "description": "MegaTest educational platform for interactive learning",
     "splash": {
-      "image": "./assets/images/logo/mega-plus-logo.png",
+      "image": "./assets/images/logo.png",
       "resizeMode": "contain",
       "backgroundColor": "#2563EB"
     },
     "sdkVersion": "54.0.0",
     "extra": {
-      "apiUrl": "https://api.megaplus.com",
+      "apiUrl": "https://api.megatest.app",
       "router": {
         "origin": false
       },
@@ -27,9 +27,9 @@
     "ios": {
       "supportsTablet": true,
       "requireFullScreen": false,
-      "bundleIdentifier": "com.megaplus.edu",
+      "bundleIdentifier": "com.megatest.edu",
       "buildNumber": "6",
-      "icon": "./assets/images/logo/app-icon.png",
+      "icon": "./assets/images/logo.png",
       "infoPlist": {
         "UIRequiresFullScreen": false,
         "UIStatusBarStyle": "UIStatusBarStyleDefault",
@@ -39,41 +39,41 @@
         "NSPhotoLibraryAddUsageDescription": "Allow $(PRODUCT_NAME) to save photos to your library."
       },
       "splash": {
-        "image": "./assets/images/logo/mega-plus-logo.png",
+        "image": "./assets/images/logo.png",
         "resizeMode": "contain",
         "backgroundColor": "#2563EB"
       }
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/images/logo/app-icon.png",
+        "foregroundImage": "./assets/images/logo.png",
         "backgroundColor": "#2563EB"
       },
       "splash": {
-        "image": "./assets/images/logo/mega-plus-logo.png",
+        "image": "./assets/images/logo.png",
         "resizeMode": "contain",
         "backgroundColor": "#2563EB"
       },
-      "package": "com.megaplus.edu",
+      "package": "com.megatest.edu",
       "versionCode": 15,
       "permissions": [
         "android.permission.INTERNET",
         "android.permission.ACCESS_NETWORK_STATE",
         "android.permission.CAMERA"
       ],
-      "playStoreUrl": "https://play.google.com/store/apps/details?id=com.megaplus.edu"
+      "playStoreUrl": "https://play.google.com/store/apps/details?id=com.megatest.edu"
     },
     "web": {
       "bundler": "metro",
       "output": "static",
-      "favicon": "./assets/images/favicon.png"
+      "favicon": "./assets/images/logo.png"
     },
     "plugins": [
       "expo-router",
       [
         "expo-splash-screen",
         {
-          "image": "./assets/images/logo/mega-plus-logo.png",
+          "image": "./assets/images/logo.png",
           "imageWidth": 150,
           "resizeMode": "contain",
           "backgroundColor": "#2563EB"

@@ -93,7 +93,7 @@ export default function CustomSplashScreen() {
           alignItems: 'center',
         }}
       >
-        {/* White square with rounded corners containing M+ icon */}
+        {/* White square with rounded corners containing the MegaTest icon */}
         <View
           style={{
             width: 120,
@@ -105,15 +105,11 @@ export default function CustomSplashScreen() {
             marginBottom: 20,
           }}
         >
-          <Text
-            style={{
-              color: '#4B5563', // Dark grey for M+
-              fontSize: 48,
-              fontWeight: 'bold',
-            }}
-          >
-            M+
-          </Text>
+          <Image
+            source={require('@/assets/images/logo.png')}
+            style={{ width: 90, height: 90 }}
+            resizeMode="contain"
+          />
         </View>
 
         {/* White horizontal line */}
@@ -128,7 +124,7 @@ export default function CustomSplashScreen() {
           }}
         />
 
-        {/* Mega+ text */}
+        {/* MegaTest text */}
         <Animated.View
           style={{
             transform: [{ scale: textScaleAnim }],
@@ -145,7 +141,7 @@ export default function CustomSplashScreen() {
               textAlign: 'center',
             }}
           >
-            Mega+
+            MegaTest
           </Text>
           
           {/* Subtitle text */}

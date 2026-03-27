@@ -91,7 +91,7 @@ export default function ForgotPasswordScreen() {
   return (
     <SafeAreaView style={[styles.safeArea, { backgroundColor: pageBg }]}>
       <View pointerEvents="none" style={styles.bgLettersLayer}>
-        <Text style={[styles.bgLetter, styles.bgLetterCenter, { color: watermarkColor }]}>M+</Text>
+        <Text style={[styles.bgLetter, styles.bgLetterCenter, { color: watermarkColor }]}>MegaTest</Text>
       </View>
 
       <KeyboardAvoidingView
@@ -114,7 +114,7 @@ export default function ForgotPasswordScreen() {
           </View>
 
           <View style={styles.brandRow}>
-            <ThemedText style={styles.brandText}>Mega+</ThemedText>
+            <ThemedText style={styles.brandText}>MegaTest</ThemedText>
           </View>
 
           <View style={[styles.shieldCard, { backgroundColor: shieldCardBg }]}>

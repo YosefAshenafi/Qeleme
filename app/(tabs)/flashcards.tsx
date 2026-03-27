@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect, useLayoutEffect } from 'react';
-import { StyleSheet, TouchableOpacity, Dimensions, View, Modal, ScrollView, StatusBar } from 'react-native';
+import { StyleSheet, TouchableOpacity, Dimensions, View, Modal, ScrollView, StatusBar, Image } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useNavigation } from '@react-navigation/native';
@@ -14,6 +14,8 @@ import Animated, {
   Easing,
 } from 'react-native-reanimated';
 import { LinearGradient } from 'expo-linear-gradient';
+import { Ionicons } from '@expo/vector-icons';
+import { LanguageToggle } from '../../components/ui/LanguageToggle';
 import Svg, { Circle } from 'react-native-svg';
 import { useTheme } from '@/contexts/ThemeContext';
 import { getColors } from '@/constants/Colors';
@@ -639,7 +641,7 @@ export default function FlashcardsScreen() {
         <StatusBar translucent={false} backgroundColor="#FFFFFF" barStyle="dark-content" />
         <ThemedView style={[styles.container, { backgroundColor: isDarkMode ? colors.background : '#F4F6FA' }]}>
           <View style={styles.flashResultsHeader}>
-            <ThemedText style={styles.flashResultsBrand}>M+</ThemedText>
+            <Image source={require('../../assets/images/logo.png')} style={styles.flashResultsBrand} resizeMode="contain" />
             <ThemedText style={styles.flashResultsTitle}>{t('flashcards.sessionResults', { defaultValue: 'Session Results' })}</ThemedText>
             <TouchableOpacity accessibilityRole="button" accessibilityLabel="Profile" style={styles.flashResultsProfileBtn}>
               <IconSymbol name={'person.crop.circle' as any} size={22} color="#111827" />
@@ -775,13 +777,11 @@ export default function FlashcardsScreen() {
           <StatusBar translucent={false} backgroundColor="#FFFFFF" barStyle="dark-content" />
           <View style={styles.flashHeaderWrap}>
             <View style={styles.flashTopBar}>
-              <View style={styles.flashBrandPill}>
-                <ThemedText style={styles.flashBrandText}>M+</ThemedText>
-              </View>
-              <ThemedText style={[styles.flashTopTitle, { color: '#0F4BD7' }]} numberOfLines={1}>
-                Mega+
-              </ThemedText>
-              <View style={styles.flashCloseBtn} />
+              <TouchableOpacity onPress={() => router.back()} style={{ padding: 8 }}>
+                <Ionicons name="chevron-back" size={24} color="#111827" />
+              </TouchableOpacity>
+              <View style={styles.flashTopLogoLeft} />
+              <LanguageToggle colors={{ card: '#F3F4F6', text: '#4B5563' }} />
             </View>
           </View>
           <ThemedView style={[styles.formContainer, { backgroundColor: colors.background }]}>
@@ -993,31 +993,11 @@ export default function FlashcardsScreen() {
         <StatusBar translucent={false} backgroundColor="#FFFFFF" barStyle="dark-content" />
         <View style={styles.flashHeaderWrap}>
           <View style={styles.flashTopBar}>
-            <View style={styles.flashBrandPill}>
-              <ThemedText style={styles.flashBrandText}>M+</ThemedText>
-            </View>
-            <ThemedText style={[styles.flashTopTitle, { color: '#0F4BD7' }]} numberOfLines={1}>
-              {(selectedSubjectData?.name || (typeof params.preSelectedSubject === 'string' ? params.preSelectedSubject : '') || t('flashcards.subject'))}
-              {(selectedChapterData?.name || deepLinkChapterName) ? `: ${selectedChapterData?.name || deepLinkChapterName}` : ''}
-            </ThemedText>
-            <TouchableOpacity
-              accessibilityRole="button"
-              accessibilityLabel="Close"
-              hitSlop={12}
-              onPress={() => {
-                setShowFlashcards(false);
-                setCurrentIndex(0);
-                setIsRevealed(false);
-                setCurrentFlashcards([]);
-                setSessionStartTime(null);
-                progressAnimation.value = withTiming(0);
-                revealAnimation.value = withSpring(0, { damping: 12, stiffness: 80, mass: 0.8 });
-                router.replace('/(tabs)/mcq');
-              }}
-              style={styles.flashCloseBtn}
-            >
-              <IconSymbol name={'xmark' as any} size={18} color={colors.text} />
+            <TouchableOpacity onPress={() => router.back()} style={{ padding: 8 }}>
+              <Ionicons name="chevron-back" size={24} color="#111827" />
             </TouchableOpacity>
+            <View style={styles.flashTopLogoLeft} />
+            <LanguageToggle colors={{ card: '#F3F4F6', text: '#4B5563' }} />
           </View>
 
         </View>
@@ -1182,10 +1162,14 @@ const styles = StyleSheet.create({
   flashTopBar: {
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'space-between',
     paddingHorizontal: 16,
-    paddingTop: 6,
-    paddingBottom: 12,
-    gap: 10,
+    paddingTop: 8,
+    paddingBottom: 8,
+  },
+  flashTopLogoLeft: {
+    width: 50,
+    height: 44,
   },
   flashBrandPill: {
     width: 38,
@@ -1204,6 +1188,15 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     fontWeight: '900',
     fontSize: 15,
+  },
+  flashBrandImg: {
+    width: 50,
+    height: 44,
+  },
+  flashTopLogo: {
+    width: 50,
+    height: 44,
+    alignSelf: 'center',
   },
   flashTopTitle: {
     flex: 1,
@@ -1383,10 +1376,8 @@ const styles = StyleSheet.create({
     paddingBottom: 10,
   },
   flashResultsBrand: {
-    color: '#0F4BD7',
-    fontWeight: '900',
-    fontSize: 18,
-    width: 40,
+    width: 50,
+    height: 44,
   },
   flashResultsTitle: {
     flex: 1,

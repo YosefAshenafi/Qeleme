@@ -33,9 +33,9 @@ export function ContactFooter() {
           </Text>
         </TouchableOpacity>
       </View>
-      <TouchableOpacity onPress={() => Linking.openURL('mailto:contact@qelem.net')}>
+      <TouchableOpacity onPress={() => Linking.openURL('mailto:support@megatest.app')}>
         <Text style={[styles.contactFooterLink, { color: isDarkMode ? '#FFFFFF' : colors.tint }]}>
-          contact@qelem.net
+          support@megatest.app
         </Text>
       </TouchableOpacity>
     </View>
@@ -75,5 +75,4 @@ const styles = StyleSheet.create({
     marginHorizontal: 4,
   },
 });
-
 

@@ -13,17 +13,19 @@ import { useNavigation } from '@react-navigation/native';
 import { Redirect } from 'expo-router';
 
 import { ThemedText } from '../../components/ThemedText';
+import { LanguageToggle } from '../../components/ui/LanguageToggle';
 import { ThemedView } from '../../components/ThemedView';
 import { IconSymbol } from '../../components/ui/IconSymbol';
 import { getBookCover } from '../../services/bookCoverService';
 import RichText from '../../components/ui/RichText';
 import { getMCQData, MCQData, Grade, Subject, Chapter, Question, Option, ExamType, getNationalExamQuestions, getNationalExamAvailable, NationalExamAPIResponse, getRegularMCQQuestions } from '../../services/mcqService';
 import { getFlashcardStructure, getFlashcardsForChapter, Flashcard } from '../../services/flashcardService';
+import { getAuthToken } from '../../utils/authStorage';
+import { BASE_URL } from '../../config/constants';
 // Flashcards now open in the Flashcards tab screen (not a full-screen modal)
 import ActivityTrackingService from '../../services/activityTrackingService';
 import PictureMCQScreen from '../screens/PictureMCQScreen';
 import PictureMCQInstructionScreen from '../screens/PictureMCQInstructionScreen';
-import SponsoredBy from '../../components/SponsoredBy';
 import Svg, { Circle } from 'react-native-svg';
 
 const BRAND_BLUE = '#0F4BD7';
@@ -99,13 +101,16 @@ export default function MCQScreen() {
   const [availableYears, setAvailableYears] = useState<number[]>([]);
   const [nationalExamQuestions, setNationalExamQuestions] = useState<NationalExamAPIResponse[]>([]);
   const [showChapterChooser, setShowChapterChooser] = useState(false);
+  const [showNationalExamSubjectChooser, setShowNationalExamSubjectChooser] = useState(false);
   const [isPreSelected, setIsPreSelected] = useState(false);
   const [booksSearchQuery, setBooksSearchQuery] = useState('');
-  const [booksCategory, setBooksCategory] = useState<BooksCategoryFilter>('all');
+  const [booksCategory, setBooksCategory] = useState<BooksCategoryFilter | 'national'>('all');
   const [booksChapterIntent, setBooksChapterIntent] = useState<BooksChapterIntent>(null);
   /** Subjects chapter popup: grid vs pick QA/Flash after chapter (subject card tap). */
   const [booksChapterModalStep, setBooksChapterModalStep] = useState<'grid' | 'eitherPick'>('grid');
   const [booksEitherPendingChapter, setBooksEitherPendingChapter] = useState<Chapter | null>(null);
+  const [subjectLoading, setSubjectLoading] = useState(false);
+
   const booksChapterModeLabel =
     booksChapterIntent === 'mcq'
       ? 'Multiple Questions'
@@ -151,11 +156,34 @@ export default function MCQScreen() {
     let list = mcqSubjectsSorted;
     const q = booksSearchQuery.trim().toLowerCase();
     if (q) list = list.filter((s) => s.name.toLowerCase().includes(q));
+    
+    // Apply category filter for regular subjects only
     if (booksCategory !== 'all') {
       list = list.filter((s) => getSubjectBooksCategory(s.name) === booksCategory);
     }
+    
     return list;
   }, [mcqSubjectsSorted, booksSearchQuery, booksCategory]);
+
+  // Separate national exam years
+  const nationalExamYears = useMemo(() => {
+    if (availableYears.length === 0) return [];
+    
+    return availableYears.map(year => ({
+      id: `national-${year}`,
+      name: `${year} National Exam`,
+      chapters: [] // National exams don't have chapters
+    }));
+  }, [availableYears]);
+
+  // Combined subjects list based on filter
+  const displaySubjects = useMemo(() => {
+    if (booksCategory === 'national') {
+      return nationalExamYears;
+    } else {
+      return filteredBooksSubjects;
+    }
+  }, [booksCategory, filteredBooksSubjects, nationalExamYears]);
 
   const chapterGridColumns = useMemo(() => {
     // Modal maxWidth is 420, but we still want it to feel good on smaller screens.
@@ -181,6 +209,13 @@ export default function MCQScreen() {
   const totalQuestions = nationalExamQuestions.length;
   const totalQuestionsSafe = Math.max(1, totalQuestions);
   const percentage = Math.round((score / totalQuestions) * 100);
+
+  // Debug: Log current question for filtering verification
+  useEffect(() => {
+    if (currentQuestion?.question) {
+      console.log('🔍 Displaying question:', currentQuestion.question);
+    }
+  }, [currentQuestion]);
 
   // Timer functions (were accidentally removed)
   const startTimer = () => {
@@ -367,6 +402,25 @@ export default function MCQScreen() {
     }
   }, [params.preSelectedSubject, params.preSelectedSubjectId, mcqData]);
 
+  // Auto-scroll to national exam subjects when they become available
+  useEffect(() => {
+    if (selectedExamType === 'national' && availableSubjects.length > 0 && booksListScrollRef.current) {
+      const scrollToNationalSubject = () => {
+        const firstNationalSubject = availableSubjects[0];
+        if (firstNationalSubject && booksSubjectRowY.current[firstNationalSubject]) {
+          booksListScrollRef.current.scrollTo({
+            y: booksSubjectRowY.current[firstNationalSubject],
+            animated: true,
+          });
+        }
+      };
+
+      // Small delay to ensure the subjects are rendered
+      const timer = setTimeout(scrollToNationalSubject, 500);
+      return () => clearTimeout(timer);
+    };
+  }, [selectedExamType, availableSubjects, booksSubjectRowY]);
+
   // Auto-scroll Subjects hub list to the pre-selected subject card
   useEffect(() => {
     if (selectedExamType !== 'mcq') return;
@@ -412,7 +466,7 @@ export default function MCQScreen() {
       setSelectedChapter('');
       setSelectedChapterName('');
       
-      // Set the exam type to 'national' and pre-select the year
+      // Set the exam type to 'national' and pre-select year
       setSelectedExamType('national');
       setSelectedYear(params.preSelectedYear as string);
       setIsPreSelected(true); // Mark as pre-selected
@@ -428,16 +482,18 @@ export default function MCQScreen() {
     }
   }, [params.preSelectedExamType, params.preSelectedYear, mcqData]);
 
-  // Clear pre-selected flag when user manually changes subject
+  // Clear pre-selected flag when user manually changes subject or year
   useEffect(() => {
-    if (isPreSelected && selectedSubject) {
+    if (isPreSelected) {
       // Check if this is a manual change (not from pre-selection)
-      const isFromPreSelection = params.preSelectedSubjectId === selectedSubject;
+      const isFromPreSelection = params.preSelectedSubjectId === selectedSubject || 
+        (params.preSelectedExamType === 'national' && params.preSelectedYear === selectedYear);
+      
       if (!isFromPreSelection) {
         setIsPreSelected(false);
       }
     }
-  }, [selectedSubject, isPreSelected, params.preSelectedSubjectId]);
+  }, [selectedSubject, selectedYear, isPreSelected, params.preSelectedSubjectId, params.preSelectedExamType, params.preSelectedYear]);
 
   // Function to fetch available national exam data
   const fetchNationalExamAvailable = async () => {
@@ -446,7 +502,7 @@ export default function MCQScreen() {
     }
     
     try {
-      // Normalize the grade to extract just the number
+      setLoading(true);
       const gradeNumber = getGradeNumber(user.grade);
       
       if (![6, 8, 12].includes(gradeNumber)) {
@@ -454,16 +510,122 @@ export default function MCQScreen() {
         return;
       }
       
-      const response = await getNationalExamAvailable(gradeNumber);
+      // Fetch national exam data
+      const data = await getNationalExamAvailable(gradeNumber);
+      setAvailableYears(data.data.years);
+      setAvailableSubjects(data.data.subjects);
       
-      if (response.success) {
-        setAvailableSubjects(response.data.subjects);
-        setAvailableYears(response.data.years);
-      } else {
-        setError('Failed to fetch available national exam data');
-      }
     } catch (error) {
       setError(error instanceof Error ? error.message : 'Failed to fetch available national exam data');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Function to handle national exam year selection - show subject chooser
+  const handleNationalExamYearPress = async (year: string) => {
+    try {
+      const gradeNumber = getGradeNumber(user?.grade);
+      console.log('🔍 Debug - Grade number:', gradeNumber);
+      console.log('🔍 Debug - User grade:', user?.grade);
+      console.log('🔍 Debug - Selected year:', year);
+      
+      // Fetch raw API response to get subjects for specific year
+      const token = await getAuthToken();
+      if (!token) {
+        throw new Error('No authentication token found');
+      }
+      
+      console.log('🔍 Debug - Token exists:', !!token);
+
+      const response = await fetch(`${BASE_URL}/api/national-exams/${gradeNumber}`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Accept': 'application/json',
+          'Content-Type': 'application/json',
+        },
+      });
+
+      console.log('🔍 Debug - Response status:', response.status);
+      console.log('🔍 Debug - Response ok:', response.ok);
+
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: Failed to fetch national exam data`);
+      }
+
+      const data = await response.json();
+      console.log('🔍 Debug - Raw API response:', JSON.stringify(data, null, 2));
+      
+      // Check the structure of the response
+      if (!data || !data.data) {
+        console.error('🔍 Debug - Invalid data structure:', data);
+        throw new Error('Invalid API response structure');
+      }
+      
+      console.log('🔍 Debug - Years array:', data.data.years);
+      console.log('🔍 Debug - Years length:', data.data.years?.length);
+      
+      // Find the specific year data to get subjects for that year
+      const yearData = data.data.years.find((y: any) => y.year === parseInt(year));
+      console.log('🔍 Debug - Looking for year:', parseInt(year));
+      console.log('🔍 Debug - Found year data:', yearData);
+      
+      const subjectsForYear = yearData ? yearData.subjects : [];
+      console.log('🔍 Debug - Subjects for year:', subjectsForYear);
+      console.log('🔍 Debug - Subjects length:', subjectsForYear.length);
+      
+      setAvailableSubjects(subjectsForYear);
+      setSelectedYear(year);
+      setShowNationalExamSubjectChooser(true);
+    } catch (error) {
+      console.error('🔍 Debug - Error loading national exam subjects:', error); // Debug log
+      setError(error instanceof Error ? error.message : 'Failed to load subjects');
+    }
+  };
+
+  // Function to handle national exam subject selection - start test
+  const handleNationalExamSubjectPress = async (subject: string) => {
+    if (!selectedYear) {
+      setError('Please select a year first');
+      return;
+    }
+
+    try {
+      setSubjectLoading(true);
+      const gradeNumber = getGradeNumber(user?.grade);
+      const questions = await getNationalExamQuestions(
+        gradeNumber,
+        parseInt(selectedYear),
+        subject
+      );
+      
+      // Filter out questions containing unwanted text
+      const filteredQuestions = questions?.filter(q => {
+        const questionText = q.question?.toLowerCase() || '';
+        console.log('🔍 Filtering question:', questionText);
+        const shouldFilter = questionText.includes('valuing our elders') || 
+                             questionText.includes('valuing') && questionText.includes('elders');
+        if (shouldFilter) {
+          console.log('❌ Filtering out question:', questionText);
+        }
+        return !shouldFilter;
+      }) || [];
+      
+      if (filteredQuestions && filteredQuestions.length > 0) {
+        setNationalExamQuestions(filteredQuestions);
+        setShowTest(true);
+        startTimer();
+        setSelectedSubject(subject);
+        setIsPreSelected(true);
+        setShowNationalExamSubjectChooser(false);
+      } else {
+        setError('No questions available for this subject');
+      }
+    } catch (error) {
+      setError(error instanceof Error ? error.message : 'Failed to load questions');
+    } finally {
+      setSubjectLoading(false);
     }
   };
 
@@ -474,12 +636,14 @@ export default function MCQScreen() {
     }
   }, [selectedExamType]);
 
-  // Pre-fetch national exam years when grade needs exam type selection, so we can hide National Exam if empty
+  // Auto-fetch national exam data when user has a grade that supports national exams
   useEffect(() => {
     if (selectedGrade && needsExamTypeSelection(selectedGrade)) {
       fetchNationalExamAvailable();
     }
   }, [selectedGrade?.id]);
+
+  // Pre-fetch national exam years when grade needs exam type selection, so we can hide National Exam if empty
 
   useFocusEffect(
     React.useCallback(() => {
@@ -515,19 +679,19 @@ export default function MCQScreen() {
     // Use the native top bar (already has logo/mega+). We only inject a back button.
     (navigation as any)?.setOptions?.({
       headerLeft: () => (
-        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
-          <View style={{
-            width: 40,
-            height: 40,
-            borderRadius: 12,
-            backgroundColor: BRAND_BLUE,
-            alignItems: 'center',
-            justifyContent: 'center',
-          }}>
-            <Text style={{ color: '#FFFFFF', fontSize: 15, fontWeight: '800', letterSpacing: -0.5 }}>M+</Text>
-          </View>
-          <Text style={{ color: BRAND_BLUE, fontSize: 20, fontWeight: '800', letterSpacing: -0.3 }}>Mega+</Text>
-        </View>
+        <TouchableOpacity onPress={() => router.back()} style={{ padding: 8 }}>
+          <Ionicons name="chevron-back" size={24} color="#111827" />
+        </TouchableOpacity>
+      ),
+      headerTitle: () => (
+        <Image
+          source={require('../../assets/images/logo.png')}
+          style={{ width: 50, height: 44 }}
+          resizeMode="contain"
+        />
+      ),
+      headerRight: () => (
+        <LanguageToggle colors={{ card: '#F3F4F6', text: '#4B5563' }} />
       ),
       headerTitleAlign: 'center',
     });
@@ -781,8 +945,13 @@ export default function MCQScreen() {
             selectedSubject
           );
           
-          if (questions && questions.length > 0) {
-            setNationalExamQuestions(questions);
+          // Filter out questions containing unwanted text
+          const filteredQuestions = questions?.filter(q => 
+            !q.question?.toLowerCase().includes('valuing our elders')
+          ) || [];
+          
+          if (filteredQuestions && filteredQuestions.length > 0) {
+            setNationalExamQuestions(filteredQuestions);
             setShowTest(true);
             startTimer();
           } else {
@@ -879,14 +1048,19 @@ export default function MCQScreen() {
 
         console.log('✅ National Exam Questions Received:', questions?.length || 0);
 
-        if (!questions || questions.length === 0) {
+        // Filter out questions containing unwanted text
+        const filteredQuestions = questions?.filter(q => 
+          !q.question?.toLowerCase().includes('valuing our elders')
+        ) || [];
+
+        if (!filteredQuestions || filteredQuestions.length === 0) {
           console.log('❌ No national exam questions found');
           setError('No questions found for this exam. Please try another year or subject.');
           return;
         }
 
         // Store the questions in state
-        setNationalExamQuestions(questions);
+        setNationalExamQuestions(filteredQuestions);
 
         // Start the test with national exam questions
         setShowTest(true);
@@ -1444,7 +1618,7 @@ export default function MCQScreen() {
         ]}
         edges={selectedExamType === 'mcq' ? ['bottom', 'left', 'right'] : undefined}
       >
-        {/* National exam browse: local header; Subjects hub uses tab Mega+ only */}
+        {/* National exam browse: local header; Subjects hub uses tab MegaTest only */}
         {selectedExamType === 'national' && (
             <View style={[styles.headerContainer, { backgroundColor: colors.background, borderBottomColor: colors.border }]}>
               <TouchableOpacity
@@ -1686,25 +1860,6 @@ export default function MCQScreen() {
                             nestedScrollEnabled
                             ref={booksListScrollRef}
                           >
-                            {selectedGrade &&
-                              needsExamTypeSelection(selectedGrade) &&
-                              availableYears.length > 0 && (
-                                <TouchableOpacity
-                                  style={styles.booksNationalLink}
-                                  onPress={() => {
-                                    setSelectedExamType('national');
-                                    fetchNationalExamAvailable();
-                                  }}
-                                  activeOpacity={0.75}
-                                >
-                                  <ThemedText
-                                    style={[styles.booksNationalLinkText, { color: BRAND_BLUE }]}
-                                  >
-                                    {t('mcq.subjects.openNationalExam')}
-                                  </ThemedText>
-                                  <IconSymbol name="chevron.right" size={16} color={BRAND_BLUE} />
-                                </TouchableOpacity>
-                              )}
                           <ScrollView
                             horizontal
                             nestedScrollEnabled
@@ -1712,8 +1867,13 @@ export default function MCQScreen() {
                             contentContainerStyle={styles.booksChipsRow}
                           >
                             {(
-                              ['all', 'science', 'languages', 'mathematics', 'humanities'] as BooksCategoryFilter[]
+                              ['all', 'science', 'languages', 'mathematics', 'humanities', 'national'] as (BooksCategoryFilter | 'national')[]
                             ).map((key) => {
+                              // Only show national filter if national exams are available
+                              if (key === 'national' && availableYears.length === 0) {
+                                return null;
+                              }
+                              
                               const active = booksCategory === key;
                               return (
                                 <TouchableOpacity
@@ -1741,7 +1901,7 @@ export default function MCQScreen() {
                             })}
                           </ScrollView>
 
-                          {filteredBooksSubjects.map((subject, index) => {
+                          {displaySubjects.map((subject, index) => {
                             const ext = subject as Subject & { image_url?: string };
                             const imageUrl = ext.image_url?.trim() ? ext.image_url : undefined;
                             const cover = getBookCover(subject.name);
@@ -1766,13 +1926,24 @@ export default function MCQScreen() {
                               >
                                 <TouchableOpacity
                                   onPress={() => {
-                                    setSelectedSubject(subject.id);
-                                    setSelectedChapter('');
-                                    setSelectedChapterName('');
-                                    setIsPreSelected(false);
-                                    setBooksChapterIntent('either');
-                                    setBooksChapterModalStep('grid');
-                                    setShowChapterChooser(true);
+                                    // Check if this is a national exam year
+                                    const isNationalExamYear = subject.id.startsWith('national-');
+                                    
+                                    if (isNationalExamYear) {
+                                      // Extract year from ID (e.g., "national-2016" -> "2016")
+                                      const year = subject.id.replace('national-', '');
+                                      // Show subject chooser for national exam
+                                      handleNationalExamYearPress(year);
+                                    } else {
+                                      // For regular MCQ, show chapter selection
+                                      setSelectedSubject(subject.id);
+                                      setSelectedChapter('');
+                                      setSelectedChapterName('');
+                                      setIsPreSelected(false);
+                                      setBooksChapterIntent('either');
+                                      setBooksChapterModalStep('grid');
+                                      setShowChapterChooser(true);
+                                    }
                                   }}
                                   activeOpacity={0.92}
                                   accessibilityRole="button"
@@ -1794,18 +1965,30 @@ export default function MCQScreen() {
                                         resizeMode="cover"
                                       />
                                     ) : (
-                                      <LinearGradient
-                                        colors={[...cover.coverGradient]}
-                                        start={{ x: 0, y: 0 }}
-                                        end={{ x: 1, y: 1 }}
-                                        style={StyleSheet.absoluteFill}
-                                      />
+                                      <>
+                                        <LinearGradient
+                                          colors={[...cover.coverGradient]}
+                                          start={{ x: 0, y: 0 }}
+                                          end={{ x: 1, y: 1 }}
+                                          style={StyleSheet.absoluteFill}
+                                        />
+                                        <View style={styles.bookRowNoImageText}>
+                                          <Text style={styles.bookRowNoImageTitle}>
+                                            {subject.name}
+                                          </Text>
+                                          <Text style={styles.bookRowNoImageSubtitle}>
+                                            Grade {gradeDigit}
+                                          </Text>
+                                        </View>
+                                      </>
                                     )}
                                     <View style={styles.bookRowBadge}>
                                       <Text style={styles.bookRowBadgeText}>
-                                        {index % 2 === 0
-                                          ? t('mcq.subjects.badgeNew')
-                                          : t('mcq.subjects.badgeUpdated')}
+                                        {subject.id.startsWith('national-') 
+                                          ? t('mcq.subjects.badgeNational', { defaultValue: 'NATIONAL' })
+                                          : index % 2 === 0
+                                            ? t('mcq.subjects.badgeNew')
+                                            : t('mcq.subjects.badgeUpdated')}
                                       </Text>
                                     </View>
                                   </View>
@@ -1837,13 +2020,24 @@ export default function MCQScreen() {
                                       { backgroundColor: BRAND_BLUE, shadowColor: BRAND_BLUE },
                                     ]}
                                     onPress={() => {
-                                      setSelectedSubject(subject.id);
-                                      setSelectedChapter('');
-                                      setSelectedChapterName('');
-                                      setIsPreSelected(false);
-                                      setBooksChapterIntent('mcq');
-                                      setBooksChapterModalStep('grid');
-                                      setShowChapterChooser(true);
+                                      // Check if this is a national exam year
+                                      const isNationalExamYear = subject.id.startsWith('national-');
+                                      
+                                      if (isNationalExamYear) {
+                                        // Extract year from ID (e.g., "national-2016" -> "2016")
+                                        const year = subject.id.replace('national-', '');
+                                        // Show subject chooser for national exam
+                                        handleNationalExamYearPress(year);
+                                      } else {
+                                        // For regular MCQ, show chapter selection
+                                        setSelectedSubject(subject.id);
+                                        setSelectedChapter('');
+                                        setSelectedChapterName('');
+                                        setIsPreSelected(false);
+                                        setBooksChapterIntent('mcq');
+                                        setBooksChapterModalStep('grid');
+                                        setShowChapterChooser(true);
+                                      }
                                     }}
                                     activeOpacity={0.9}
                                   >
@@ -1852,27 +2046,30 @@ export default function MCQScreen() {
                                       {t('mcq.subjects.qaPractice')}
                                     </Text>
                                   </TouchableOpacity>
-                                  <TouchableOpacity
-                                    style={[
-                                      styles.bookRowPillFilled,
-                                      { backgroundColor: BRAND_BLUE, shadowColor: BRAND_BLUE },
-                                    ]}
-                                    onPress={() => {
-                                      setSelectedSubject(subject.id);
-                                      setSelectedChapter('');
-                                      setSelectedChapterName('');
-                                      setIsPreSelected(false);
-                                      setBooksChapterIntent('flashcards');
-                                      setBooksChapterModalStep('grid');
-                                      setShowChapterChooser(true);
-                                    }}
-                                    activeOpacity={0.9}
-                                  >
-                                    <IconSymbol name="rectangle.stack" size={20} color={BOOK_CTA_ON} />
-                                    <Text style={styles.bookRowPillTextOnBlue}>
-                                      {t('mcq.subjects.flashcards')}
-                                    </Text>
-                                  </TouchableOpacity>
+                                  {/* Only show flashcards button for regular subjects, not national exams */}
+                                  {!subject.id.startsWith('national-') && (
+                                    <TouchableOpacity
+                                      style={[
+                                        styles.bookRowPillFilled,
+                                        { backgroundColor: BRAND_BLUE, shadowColor: BRAND_BLUE },
+                                      ]}
+                                      onPress={() => {
+                                        setSelectedSubject(subject.id);
+                                        setSelectedChapter('');
+                                        setSelectedChapterName('');
+                                        setIsPreSelected(false);
+                                        setBooksChapterIntent('flashcards');
+                                        setBooksChapterModalStep('grid');
+                                        setShowChapterChooser(true);
+                                      }}
+                                      activeOpacity={0.9}
+                                    >
+                                      <IconSymbol name="rectangle.stack" size={20} color={BOOK_CTA_ON} />
+                                      <Text style={styles.bookRowPillTextOnBlue}>
+                                        {t('mcq.subjects.flashcards')}
+                                      </Text>
+                                    </TouchableOpacity>
+                                  )}
                                 </View>
                               </View>
                             );
@@ -2105,6 +2302,131 @@ export default function MCQScreen() {
                 </ScrollView>
               )}
             </ThemedView>
+          </View>
+        </Modal>
+
+        {/* National Exam Subject Chooser Modal */}
+        <Modal
+          visible={showNationalExamSubjectChooser}
+          transparent
+          animationType="fade"
+          onRequestClose={() => setShowNationalExamSubjectChooser(false)}
+        >
+          <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'center', alignItems: 'center' }}>
+            <TouchableOpacity
+              style={StyleSheet.absoluteFill}
+              activeOpacity={1}
+              onPress={() => setShowNationalExamSubjectChooser(false)}
+            />
+            <View style={{
+              backgroundColor: '#FFFFFF',
+              borderRadius: 16,
+              margin: 20,
+              maxHeight: '80%',
+              width: '90%',
+              shadowColor: '#000',
+              shadowOffset: { width: 0, height: 2 },
+              shadowOpacity: 0.25,
+              shadowRadius: 3.84,
+              elevation: 5
+            }}>
+              <View style={{
+                backgroundColor: 'rgba(15,75,215,0.05)',
+                borderTopLeftRadius: 16,
+                borderTopRightRadius: 16,
+                padding: 20,
+                borderBottomWidth: 1,
+                borderBottomColor: 'rgba(15,75,215,0.1)'
+              }}>
+                <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <Text style={{ color: '#0F4BD7', fontSize: 18, fontWeight: '600' }}>
+                    {t('mcq.subjects.selectSubject', { defaultValue: 'Select Subject' })}
+                  </Text>
+                  <TouchableOpacity
+                    onPress={() => setShowNationalExamSubjectChooser(false)}
+                    style={{ padding: 4 }}
+                  >
+                    <Ionicons name="close" size={20} color="#0F4BD7" />
+                  </TouchableOpacity>
+                </View>
+                <Text style={{ color: 'rgba(15,75,215,0.7)', fontSize: 14, marginTop: 4 }}>
+                  {t('mcq.subjects.nationalExam', { defaultValue: 'National Exam' })}
+                </Text>
+              </View>
+
+              <ScrollView
+                style={styles.booksChapterGridScroll}
+                contentContainerStyle={styles.booksChapterGridScrollContent}
+                showsVerticalScrollIndicator={false}
+                keyboardShouldPersistTaps="handled"
+              >
+                <View style={styles.booksChapterBody}>
+                  <View style={styles.booksChapterGrid}>
+                  {subjectLoading ? (
+                    <View style={{ 
+                      flex: 1, 
+                      justifyContent: 'center', 
+                      alignItems: 'center', 
+                      minHeight: 200 
+                    }}>
+                      <Text style={{ 
+                        color: '#0F4BD7', 
+                        fontSize: 18, 
+                        fontWeight: '500',
+                        textAlign: 'center'
+                      }}>
+                        Loading...
+                      </Text>
+                    </View>
+                  ) : availableSubjects.length === 0 ? (
+                    <Text style={[styles.booksChapterGridEmpty, { color: 'rgba(15,75,215,0.6)' }]}>
+                      No subjects available.
+                    </Text>
+                  ) : (
+                    availableSubjects.map((subject, idx) => (
+                      <TouchableOpacity
+                        key={subject}
+                        style={[
+                          styles.booksChapterGridCell,
+                          { width: `${100 / 2}%`, maxWidth: `${100 / 2}%` }, // 2 columns for subjects
+                        ]}
+                        onPress={() => handleNationalExamSubjectPress(subject)}
+                        activeOpacity={0.85}
+                      >
+                        <View
+                          style={[
+                            styles.booksChapterTile,
+                            {
+                              backgroundColor: 'rgba(15,75,215,0.05)',
+                              borderColor: 'rgba(15,75,215,0.15)',
+                              justifyContent: 'center',
+                              alignItems: 'center',
+                            },
+                          ]}
+                        >
+                          <Text
+                            numberOfLines={2}
+                            style={[
+                              styles.booksChapterTileLabel,
+                              { 
+                                color: '#0F4BD7',
+                                fontSize: 16,
+                                fontWeight: '500',
+                                textAlign: 'center',
+                                textAlignVertical: 'center'
+                              },
+                            ]}
+                          >
+                            {subject}
+                          </Text>
+                        </View>
+                      </TouchableOpacity>
+                    ))
+                  )}
+                  </View>
+                </View>
+              </ScrollView>
+            </View>
           </View>
         </Modal>
 
@@ -3436,6 +3758,25 @@ const styles = StyleSheet.create({
     fontSize: 11,
     fontWeight: '700',
   },
+  bookRowNoImageText: {
+    ...StyleSheet.absoluteFillObject,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 10,
+  },
+  bookRowNoImageTitle: {
+    color: '#FFFFFF',
+    fontSize: 28,
+    fontWeight: '700',
+    textAlign: 'center',
+  },
+  bookRowNoImageSubtitle: {
+    color: 'rgba(255, 255, 255, 0.8)',
+    fontSize: 16,
+    fontWeight: '500',
+    textAlign: 'center',
+    marginTop: 6,
+  },
   bookRowBody: {
     paddingHorizontal: 12,
     paddingTop: 12,
@@ -3538,7 +3879,7 @@ const styles = StyleSheet.create({
     paddingBottom: 0,
   },
 
-  // MCQ question screen (Mega+ MCQ Practice)
+  // MCQ question screen (MegaTest MCQ Practice)
   mcqQuestionContainer: {
     // SESSION PROGRESS should start at the very top of the page content.
     paddingTop: 20,

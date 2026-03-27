@@ -31,7 +31,7 @@ export default function PaymentScreen() {
   const [registrationCompleted, setRegistrationCompleted] = useState(false);
 
   useEffect(() => {
-    // Store user data for PaymentButton component
+    // Store user data for the payment flow
     if (userData?.phoneNumber) {
       AsyncStorage.setItem('userPhoneNumber', userData.phoneNumber);
     }

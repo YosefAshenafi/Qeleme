@@ -5,7 +5,7 @@ import { storeOTP, getStoredOTP, clearStoredOTP, isOTPValid } from './authStorag
 
 const OTP_API_KEY = 'eyJhbGciOiJIUzI1NiJ9.eyJpZGVudGlmaWVyIjoiUGJqTk9oSmJkVlR4SnlCUWt2R2RHdVozZHV2ZDRDWmUiLCJleHAiOjE4OTcwNzQ2NzUsImlhdCI6MTczOTMwODI3NSwianRpIjoiNjcyYzViYjUtNTVmMC00NDM0LWEyOGUtM2RiMGI4ZTIyOWUzIn0.PLOFqilQnoDF-idjF6jmkGCA7CC5XXViq6u28pD5weg';
 
-const SENDER_NAME = 'Qelem';
+const SENDER_NAME = 'MegaTest';
 const IDENTIFIER_ID = 'e80ad9d8-adf3-463f-80f4-7c4b39f7f164';
 
 // Generate a random 6-digit OTP
@@ -36,7 +36,7 @@ const sendOTP = async (phoneNumber: string): Promise<OTPResponse> => {
     }
     
     // Create the message content
-    const message = `Your Qelem verification code is: ${otp}. Valid for 5 minutes.`;
+    const message = `Your MegaTest verification code is: ${otp}. Valid for 5 minutes.`;
     
     // Build query parameters for the GET request
     const params = new URLSearchParams({

@@ -146,15 +146,12 @@ export default function KGDashboard() {
       ]}>
         <View style={styles.headerLeft}>
           <Image
-            source={isDarkMode 
-              ? require('@/assets/images/logo/white-logo.png')
-              : require('@/assets/images/logo/theme-logo.png')
-            }
+            source={require('@/assets/images/logo.png')}
             style={styles.logo}
             resizeMode="contain"
           />
           <Text style={[styles.logoText, { color: isDarkMode ? '#FFFFFF' : colors.tint }]}>
-            Qelem
+            MegaTest
           </Text>
         </View>
         <View style={styles.headerCenter}>

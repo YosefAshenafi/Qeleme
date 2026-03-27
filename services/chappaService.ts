@@ -18,12 +18,12 @@ export const initiatePayment = async (
 
     // Use a proper success page URL that can handle deep linking back to the app
     const callbackUrl = `https://www.trustechit.com/payment-success.html?orderId=${orderId}`;
-    const returnUrl = 'qelem://payment-success';
+    const returnUrl = 'megatest://payment-success';
 
     console.log('Chappa service - Request URL:', `${CHAPPA_BASE_URL}/pay`);
     console.log('Chappa service - Request body:', {
       amount: amount.toString(),
-      email: customerEmail || 'customer@qelem.com',
+      email: customerEmail || 'customer@megatest.app',
       first_name: firstName,
       last_name: lastName,
       tx_ref: orderId,
@@ -38,7 +38,7 @@ export const initiatePayment = async (
       },
       body: JSON.stringify({
         amount: amount.toString(),
-        email: customerEmail || 'customer@qelem.com',
+        email: customerEmail || 'customer@megatest.app',
         first_name: firstName,
         last_name: lastName,
         tx_ref: orderId,

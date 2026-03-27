@@ -1,4 +1,4 @@
-import { StyleSheet, TextInput, TouchableOpacity, View, KeyboardAvoidingView, Platform, ActivityIndicator, ScrollView, Text } from 'react-native';
+import { StyleSheet, TextInput, TouchableOpacity, View, KeyboardAvoidingView, Platform, ActivityIndicator, ScrollView, Text, Image } from 'react-native';
 import { router } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useState } from 'react';
@@ -143,7 +143,7 @@ export default function LoginScreen() {
             { color: isDarkMode ? 'rgba(255,255,255,0.02)' : 'rgba(255,255,255,0.26)' },
           ]}
         >
-          M+
+          MegaTest
         </Text>
         <Text
           style={[
@@ -180,10 +180,11 @@ export default function LoginScreen() {
               </View>
 
               <View style={styles.brand}>
-                <View style={styles.brandIcon}>
-                  <ThemedText style={styles.brandIconText}>M+</ThemedText>
-                </View>
-                <ThemedText style={styles.brandText}>Mega+</ThemedText>
+                <Image
+                  source={require('@/assets/images/logo.png')}
+                  style={styles.brandIcon}
+                  resizeMode="contain"
+                />
               </View>
             </View>
 
@@ -354,28 +355,9 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   brandIcon: {
-    width: 62,
-    height: 62,
+    width: 100,
+    height: 100,
     borderRadius: 18,
-    backgroundColor: '#0F4BD7',
-    alignItems: 'center',
-    justifyContent: 'center',
-    shadowColor: '#0F4BD7',
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.28,
-    shadowRadius: 14,
-    elevation: 6,
-  },
-  brandIconText: {
-    fontSize: 28,
-    color: '#FFFFFF',
-    fontWeight: '800',
-  },
-  brandText: {
-    color: '#0F4BD7',
-    fontSize: 24,
-    fontWeight: '800',
-    lineHeight: 30,
   },
   formContainer: {
     width: '100%',

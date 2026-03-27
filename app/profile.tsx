@@ -275,10 +275,11 @@ export default function ProfileScreen() {
 
       <View style={[styles.header, { backgroundColor: colors.background, borderBottomColor: colors.border }]}>
         <View style={styles.headerLeft}>
-          <View style={styles.brandMark}>
-            <Text style={styles.brandMarkText}>M+</Text>
-          </View>
-          <Text style={[styles.brandWordmark, { color: colors.text }]}>Mega+</Text>
+          <Image
+            source={require('@/assets/images/logo.png')}
+            style={styles.brandMark}
+            resizeMode="contain"
+          />
         </View>
         <View style={styles.headerRightWrap} />
       </View>
@@ -542,7 +543,7 @@ export default function ProfileScreen() {
           <ScrollView contentContainerStyle={{ padding: 16, paddingBottom: 24 }}>
             <View style={[styles.aboutCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
               <Text style={[styles.aboutTitle, { color: colors.text }]}>
-                {t('profile.appName', { defaultValue: 'Qeleme' })}
+                {t('profile.appName', { defaultValue: 'MegaTest' })}
               </Text>
               <Text style={[styles.aboutSub, { color: colors.text + '70' }]}>
                 {t('profile.version', { defaultValue: 'Version' })} {Constants.expoConfig?.version || '1.0.0'}
@@ -566,29 +567,14 @@ const styles = StyleSheet.create({
     gap: 10,
   },
   brandMark: {
-    width: 40,
-    height: 40,
-    borderRadius: 12,
-    backgroundColor: BRAND_BLUE,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  brandMarkText: {
-    color: '#FFFFFF',
-    fontSize: 15,
-    fontWeight: '800',
-    letterSpacing: -0.5,
-  },
-  brandWordmark: {
-    fontSize: 20,
-    fontWeight: '800',
-    letterSpacing: -0.3,
+    width: 50,
+    height: 44,
   },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: 16,
-    paddingVertical: 12,
+    paddingVertical: 8,
     borderBottomWidth: StyleSheet.hairlineWidth,
   },
   headerIconBtn: {

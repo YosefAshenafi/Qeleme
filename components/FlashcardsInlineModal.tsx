@@ -129,7 +129,7 @@ export function FlashcardsInlineModal({
       <SafeAreaView style={[styles.safeArea, { backgroundColor: isDarkMode ? colors.background : '#F4F6FA' }]} edges={['top', 'left', 'right']}>
         <View style={styles.topBar}>
           <View style={styles.brandPill}>
-            <ThemedText style={styles.brandText}>M+</ThemedText>
+            <ThemedText style={styles.brandText}>MegaTest</ThemedText>
           </View>
           <ThemedText style={[styles.topTitle, { color: colors.tint }]} numberOfLines={1}>
             {subjectLabel}{chapterLabel ? `: ${chapterLabel}` : ''}

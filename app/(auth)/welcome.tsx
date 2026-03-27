@@ -1,4 +1,4 @@
-import { StyleSheet, TouchableOpacity, View } from 'react-native';
+import { StyleSheet, TouchableOpacity, View, Image } from 'react-native';
 import { router } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -35,10 +35,11 @@ export default function WelcomeScreen() {
 
         <View style={styles.content}>
           <View style={styles.brandRow}>
-            <View style={styles.brandIcon}>
-              <ThemedText style={styles.brandIconText}>M+</ThemedText>
-            </View>
-            <ThemedText style={styles.brandText}>Mega+</ThemedText>
+            <Image
+              source={require('@/assets/images/logo.png')}
+              style={styles.brandIcon}
+              resizeMode="contain"
+            />
           </View>
 
           <View style={styles.textContainer}>
@@ -114,29 +115,11 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   brandIcon: {
-    width: 72,
-    height: 72,
+    width: 140,
+    height: 140,
     borderRadius: 20,
-    backgroundColor: '#0F4BD7',
-    alignItems: 'center',
-    justifyContent: 'center',
-    shadowColor: '#0F4BD7',
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.3,
-    shadowRadius: 16,
-    elevation: 6,
   },
-  brandIconText: {
-    color: '#FFFFFF',
-    fontSize: 30,
-    fontWeight: '800',
-  },
-  brandText: {
-    color: '#0F4BD7',
-    fontSize: 44,
-    fontWeight: '800',
-    lineHeight: 48,
-  },
+
   textContainer: {
     marginTop: 12,
     gap: 2,
