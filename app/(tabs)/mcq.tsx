@@ -678,24 +678,51 @@ export default function MCQScreen() {
   useLayoutEffect(() => {
     // Use the native top bar (already has logo/mega+). We only inject a back button.
     (navigation as any)?.setOptions?.({
-      headerLeft: () => (
-        <TouchableOpacity onPress={() => router.back()} style={{ padding: 8 }}>
+      headerLeft: () => (showResult || nationalExamQuestions.length > 0) ? (
+        <TouchableOpacity 
+          onPress={() => {
+            setNationalExamQuestions([]);
+            setShowResult(false);
+            setShowTest(false);
+            setSelectedSubject('');
+            setSelectedChapter('');
+            setSelectedChapterName('');
+            setSelectedGrade(null);
+            setSelectedYear(null);
+            setCurrentQuestionIndex(0);
+            setAnsweredQuestions({});
+            setSelectedAnswer(null);
+            setSelectedExamType('mcq');
+          }} 
+          style={{ padding: 8 }}
+        >
           <Ionicons name="chevron-back" size={24} color="#111827" />
         </TouchableOpacity>
-      ),
-      headerTitle: () => (
+      ) : (
         <Image
           source={require('../../assets/images/logo.png')}
-          style={{ width: 50, height: 44 }}
+          style={{ width: 50, height: 44, marginLeft: 8 }}
           resizeMode="contain"
         />
       ),
+      headerTitle: () => showResult ? (
+        <View style={{ alignItems: 'center' }}>
+          <Text style={{ fontSize: 16, fontWeight: '600', color: '#111827' }}>{selectedSubject}</Text>
+          {selectedChapterName ? (
+            <Text style={{ fontSize: 12, color: '#6B7280' }}>{selectedChapterName.replace(/-(\d+)$/, '')}</Text>
+          ) : null}
+        </View>
+      ) : nationalExamQuestions.length > 0 ? (
+        <View style={{ alignItems: 'center' }}>
+          <Text style={{ fontSize: 16, fontWeight: '600', color: '#111827' }}>{selectedSubject}{selectedChapterName ? `: ${selectedChapterName.replace(/-(\d+)$/, '')}` : ''}</Text>
+        </View>
+      ) : null,
       headerRight: () => (
         <LanguageToggle colors={{ card: '#F3F4F6', text: '#4B5563' }} />
       ),
       headerTitleAlign: 'center',
     });
-  }, [navigation, colors.text, showResult]);
+  }, [navigation, colors.text, showResult, nationalExamQuestions.length]);
 
   useEffect(() => {
     // Handle reset parameters

@@ -759,7 +759,7 @@ export default function FlashcardsScreen() {
   // Show selection screen when not showing flashcards
   if (!showFlashcards) {
     // When opening from another tab via deep-link, don't flash the chooser UI.
-    if (isDeepLinkAutoStart) {
+    if (isDeepLinkAutoStart && selectedSubject && isLoading) {
       return (
         <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]}>
           <ThemedView style={[styles.container, { backgroundColor: colors.background, justifyContent: 'center' }]}>
