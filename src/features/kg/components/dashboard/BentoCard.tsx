@@ -105,20 +105,18 @@ export const BentoCard: React.FC<BentoCardProps> = ({
 
 const styles = StyleSheet.create({
   container: {
-    borderRadius: 32,
+    borderRadius: 24,
     overflow: 'hidden',
     marginBottom: 0,
     position: 'relative',
-    borderBottomWidth: 4,
-    borderBottomColor: 'rgba(0,0,0,0.1)',
   },
   large: {
     width: '100%',
-    height: 240,
+    height: 220,
   },
   small: {
     width: '100%',
-    height: 240,
+    height: 220,
   },
   backgroundImage: {
     ...StyleSheet.absoluteFillObject,

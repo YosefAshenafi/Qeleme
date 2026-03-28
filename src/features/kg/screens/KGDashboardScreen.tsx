@@ -213,13 +213,13 @@ const styles = StyleSheet.create({
     flexGrow: 1,
   },
   bentoGrid: {
-    paddingHorizontal: 24,
+    paddingHorizontal: 16,
   },
   gridContainer: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     justifyContent: 'space-between',
-    gap: 16,
+    gap: 12,
   },
   loader: {
     marginTop: 40,
