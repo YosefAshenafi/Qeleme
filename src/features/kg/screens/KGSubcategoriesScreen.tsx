@@ -4,9 +4,11 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { useTheme } from '@/core/providers/ThemeProvider';
 import { getColors } from '@/shared/constants/Colors';
+import { KG_DESIGN_TOKENS } from '../constants/DesignTokens';
 import { useTranslation } from 'react-i18next';
 import { LanguageToggle } from '@/shared/components/ui/LanguageToggle';
 import { IconSymbol } from '@/shared/components/ui/IconSymbol';
+import { BentoCard } from '../components/dashboard/BentoCard';
 import { useAuth } from '@/core/providers/AuthProvider';
 import { ProfileAvatar } from '@/shared/components/ui/ProfileAvatar';
 import { CategoryImage } from '@/shared/components/ui/CategoryImage';
@@ -175,9 +177,6 @@ export default function KGSubcategoriesScreen() {
           <Text style={[styles.headerTitle, { color: colors.text }]}>
             {categoryName}
           </Text>
-          <Text style={[styles.headerSubtitle, { color: colors.text + '80' }]}>
-            {t('kg.subcategories.title', 'Choose your learning path!')}
-          </Text>
         </View>
         <View style={styles.headerRight}>
           <LanguageToggle colors={colors} />
@@ -190,59 +189,12 @@ export default function KGSubcategoriesScreen() {
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
-        {/* Welcome Section */}
-        <Animated.View style={[styles.welcomeSection, floatingAnimatedStyle]}>
-          <LinearGradient
-            colors={[colors.tint, colors.tint + 'CC']}
-            style={[styles.welcomeGradient, { 
-              borderRadius: STYLE_CONFIG.welcome.borderRadius,
-              shadowOffset: STYLE_CONFIG.welcome.shadowOffset,
-              shadowOpacity: STYLE_CONFIG.welcome.shadowOpacity,
-              shadowRadius: STYLE_CONFIG.welcome.shadowRadius,
-              elevation: STYLE_CONFIG.welcome.elevation
-            }]}
-          >
-            <View style={styles.welcomeIconContainer}>
-              <Text style={styles.welcomeEmoji}>🌟</Text>
-            </View>
-            <Text style={styles.welcomeTitle}>
-              {t('kg.subcategories.welcome', { category: categoryName as string })}
-            </Text>
-            <Text style={styles.welcomeSubtitle}>
-              {t('kg.subcategories.subtitle', 'Pick a subcategory and start learning!')}
-            </Text>
-            <View style={styles.sparklesContainer}>
-              <Text style={styles.sparkle}>✨</Text>
-              <Text style={styles.sparkle}>⭐</Text>
-              <Text style={styles.sparkle}>🎯</Text>
-            </View>
-          </LinearGradient>
-        </Animated.View>
-
-        {/* Subcategories */}
-        <Animated.View style={[styles.subcategoriesContainer, cardsAnimatedStyle]}>
-          <View style={styles.subcategoriesHeader}>
-            <Text style={[styles.subcategoriesTitle, { color: colors.text }]}>
-              {t('kg.subcategories.title', 'Choose Your Learning Adventure!')}
-            </Text>
-            <Text style={[styles.subcategoriesSubtitle, { color: colors.text + '80' }]}>
-              {t('kg.categories.subtitle', 'Pick a topic and start your amazing journey!')}
-            </Text>
-          </View>
-          
-          <View style={styles.cardsContainer}>
+          <View style={styles.bentoGridContainer}>
             {loading ? (
-              <View style={styles.loadingContainer}>
-                <Text style={styles.loadingEmoji}>🎯</Text>
-                <ActivityIndicator size="large" color={colors.tint} />
-                <Text style={[styles.loadingText, { color: colors.text }]}>
-                  {t('common.loading', 'Loading subcategories...')}
-                </Text>
-              </View>
+              <ActivityIndicator size="large" color={colors.tint} />
             ) : error ? (
               <View style={styles.errorContainer}>
                 <Text style={styles.errorEmoji}>🤔</Text>
-                <IconSymbol name="questionmark.circle.fill" size={48} color={colors.tint} />
                 <Text style={[styles.errorText, { color: colors.text }]}>
                   {error}
                 </Text>
@@ -250,70 +202,44 @@ export default function KGSubcategoriesScreen() {
                   style={[styles.retryButton, { backgroundColor: colors.tint }]}
                   onPress={fetchSubcategories}
                 >
-                  <Text style={styles.retryEmoji}>🔄</Text>
-                  <IconSymbol name="chevron.right" size={20} color="#FFFFFF" />
                   <Text style={styles.retryButtonText}>
                     {t('common.retry', 'Retry')}
                   </Text>
                 </TouchableOpacity>
               </View>
             ) : (
-              subcategories.map((subcategory, index) => {
-                const subcategoryName = getSubcategoryNameByLanguage(subcategory, i18n.language);
-                const subcategoryConfig = getSubcategoryConfig(subcategory.name_en, isDarkMode);
-                const imageSource = getSubcategoryImageSource(subcategory.image_url, subcategoryConfig.defaultImageUrl);
-                
-                return (
-                  <TouchableOpacity
-                    key={subcategory.id}
-                    style={[styles.cardContainer, { 
-                      borderRadius: STYLE_CONFIG.card.borderRadius,
-                      shadowOffset: STYLE_CONFIG.card.shadowOffset,
-                      shadowOpacity: STYLE_CONFIG.card.shadowOpacity,
-                      shadowRadius: STYLE_CONFIG.card.shadowRadius,
-                      elevation: STYLE_CONFIG.card.elevation
-                    }]}
-                    onPress={() => {
-                      router.push({
-                        pathname: '/picture-mcq',
-                        params: { 
-                          category: categoryName, 
-                          categoryId: categoryId,
-                          subcategory: subcategoryName, 
-                          subcategoryId: subcategory.id,
-                          isSubcategory: 'true'
-                        }
-                      });
-                    }}
-                  >
-                    <LinearGradient
-                      colors={subcategoryConfig.colors}
-                      style={[styles.cardGradient, { borderRadius: STYLE_CONFIG.card.borderRadius }]}
-                    >
-                      <View style={[styles.cardContent, { aspectRatio: STYLE_CONFIG.card.aspectRatio }]}>
-                        <View style={styles.cardEmojiContainer}>
-                          <Text style={styles.cardEmoji}>{subcategoryConfig.emoji}</Text>
-                        </View>
-                        <CategoryImage
-                          imageUrl={subcategory.image_url}
-                          fallbackUrl={DEFAULT_SUBCATEGORY_IMAGE_URL}
-                          style={styles.subcategoryImage}
-                          cacheKey={`subcategory_${subcategory.id}`}
-                          preset="subcategory"
-                        />
-                        <View style={[styles.cardOverlay, { borderBottomLeftRadius: STYLE_CONFIG.card.borderRadius, borderBottomRightRadius: STYLE_CONFIG.card.borderRadius }]}>
-                          <Text style={styles.cardText}>
-                            {t(`kg.subcategories.${subcategoryName}`, subcategoryName)}
-                          </Text>
-                        </View>
-                      </View>
-                    </LinearGradient>
-                  </TouchableOpacity>
-                );
-              })
+              <>
+                {subcategories.map((subcategory, index) => {
+                  const subcategoryName = getSubcategoryNameByLanguage(subcategory, i18n.language);
+                  
+                  return (
+                    <BentoCard
+                      key={subcategory.id}
+                      title={subcategoryName}
+                      subtitle="Start learning!"
+                      imageUrl={subcategory.image_url}
+                      variant="large"
+                      backgroundColor={KG_DESIGN_TOKENS.colors.primary}
+                      icon="🌟"
+                      onPress={() => {
+                        router.push({
+                          pathname: '/picture-mcq',
+                          params: { 
+                            category: categoryName, 
+                            categoryId: categoryId,
+                            subcategory: subcategoryName, 
+                            subcategoryId: subcategory.id,
+                            isSubcategory: 'true'
+                          }
+                        });
+                      }}
+                      isDarkMode={isDarkMode}
+                    />
+                  );
+                })}
+              </>
             )}
           </View>
-        </Animated.View>
       </ScrollView>
     </View>
   );
@@ -573,5 +499,9 @@ const styles = StyleSheet.create({
   },
   subcategoryBadgeEmoji: {
     fontSize: 16,
+  },
+  bentoGridContainer: {
+    paddingHorizontal: 16,
+    gap: 12,
   },
 }); 
