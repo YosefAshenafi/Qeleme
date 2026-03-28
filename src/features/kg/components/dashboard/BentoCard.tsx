@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Image, Dimensions } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Image, Dimensions, type ImageSourcePropType } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { KG_DESIGN_TOKENS } from '../../constants/DesignTokens';
 import { IconSymbol } from '@/shared/components/ui/IconSymbol';
@@ -10,6 +10,7 @@ interface BentoCardProps {
   title: string;
   subtitle?: string;
   imageUrl?: string | null;
+  imageSource?: ImageSourcePropType;
   variant: 'large' | 'small' | 'icon';
   backgroundColor?: string;
   icon?: string;
@@ -18,19 +19,21 @@ interface BentoCardProps {
   isDarkMode?: boolean;
 }
 
-export const BentoCard: React.FC<BentoCardProps> = ({ 
-  title, 
-  subtitle, 
-  imageUrl, 
-  variant, 
-  backgroundColor, 
-  icon, 
-  badge, 
+export const BentoCard: React.FC<BentoCardProps> = ({
+  title,
+  subtitle,
+  imageUrl,
+  imageSource,
+  variant,
+  backgroundColor,
+  icon,
+  badge,
   onPress,
-  isDarkMode 
+  isDarkMode
 }) => {
   const colors = KG_DESIGN_TOKENS.colors;
-  const isImageVariant = variant === 'large' || variant === 'small' || (variant === 'icon' && imageUrl);
+  const resolvedImageSource = imageSource || (imageUrl ? { uri: imageUrl } : null);
+  const isImageVariant = variant === 'large' || variant === 'small' || (variant === 'icon' && !!resolvedImageSource);
 
   const cardStyle = [
     styles.container,
@@ -39,17 +42,21 @@ export const BentoCard: React.FC<BentoCardProps> = ({
     { shadowColor: colors.primary, elevation: 4 }
   ];
 
+  if (title !== 'Maths') {
+    console.log(resolvedImageSource);
+  }
+
   return (
-    <TouchableOpacity 
-      style={cardStyle} 
-      activeOpacity={0.9} 
+    <TouchableOpacity
+      style={cardStyle}
+      activeOpacity={0.9}
       onPress={onPress}
     >
-      {isImageVariant && imageUrl ? (
+      {isImageVariant && resolvedImageSource ? (
         <>
-          <Image 
-            source={{ uri: imageUrl }} 
-            style={styles.backgroundImage} 
+          <Image
+            source={resolvedImageSource}
+            style={styles.backgroundImage}
             resizeMode="cover"
           />
           <LinearGradient
@@ -86,9 +93,9 @@ export const BentoCard: React.FC<BentoCardProps> = ({
             <Text style={[styles.titleSmall, { color: backgroundColor || colors.tertiary }]}>{title}</Text>
             {subtitle && <Text style={styles.subtitleSmall}>{subtitle}</Text>}
           </View>
-          
+
           <View style={styles.bottomIconOverlay}>
-             <Text style={[styles.patternText, { color: backgroundColor || colors.tertiary, opacity: 0.1 }]}>+ =</Text>
+            <Text style={[styles.patternText, { color: backgroundColor || colors.tertiary, opacity: 0.1 }]}>+ =</Text>
           </View>
         </View>
       )}

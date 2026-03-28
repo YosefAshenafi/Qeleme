@@ -21,7 +21,7 @@ export default function KGDashboardScreen() {
   const { i18n } = useTranslation();
   const { user } = useAuth();
   const colors = KG_DESIGN_TOKENS.colors;
-  
+
   const [categories, setCategories] = useState<KGCategory[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -47,7 +47,7 @@ export default function KGDashboardScreen() {
   const getCategoryVariant = (category: KGCategory, index: number): 'large' | 'small' | 'icon' => {
     const name = category.name_en.toLowerCase();
     if (name.includes('animal') || name.includes('math') || category.has_subcategories) return 'large';
-    
+
     // Pattern for others
     const pattern = ['large', 'small', 'small', 'large'];
     return pattern[index % 4] as 'large' | 'small';
@@ -85,37 +85,31 @@ export default function KGDashboardScreen() {
   return (
     <View style={[styles.container, { backgroundColor: '#E8E9EB' }]}>
       <StatusBar barStyle={isDarkMode ? 'light-content' : 'dark-content'} />
-      
+
       {/* Header */}
       <View style={[styles.header, { paddingTop: Math.max(insets.top, 16) }]}>
         <View style={styles.headerRow}>
           <View style={styles.logoGroup}>
-             <View style={styles.avatarContainer}>
-                <Image 
-                  source={{ uri: 'https://lh3.googleusercontent.com/aida-public/AB6AXuBg0ZAn1n0nxTciirKYoUe2garvsBGUu0IVoCopl-_YXoG07vIHpcQ3ALjtra5t4-RbGvby6M2w1JgVN8C6ClWB8qgzJAjhZYjqR-fsqEJZd2xCBojCrc9-oIjpQlsDYkN6SIshzGH8WF-yHPR-SsfYDw_Ob7leVBW-lGeX9a5r8mOKGtnsDl8DsbPbLKXiKYidrtJGdgTL5AjyEEvl0ROelfLxxazAwotu27nEPPEvR-G9KSBLj-zbwBiWecpKA4mVF4o7wXKqP-WL' }}
-                  style={styles.avatar}
-                />
-             </View>
-             <Text style={[styles.logoText, { color: colors.primary }]}>M Test</Text>
+            <Image
+              source={require('../../../../assets/images/logo.png')}
+              style={styles.logoImage}
+            />
           </View>
           <View style={styles.headerRight}>
-            <LanguageToggle 
-              colors={{ 
-                card: 'transparent', 
+            <LanguageToggle
+              colors={{
+                card: 'transparent',
                 text: colors.primary,
-                tint: colors.primary 
-              }} 
+                tint: colors.primary
+              }}
             />
-            <TouchableOpacity style={[styles.iconButton, { backgroundColor: isDarkMode ? '#333' : colors.surfaceContainerLow }]}>
-               <IconSymbol name="bell" size={24} color={colors.primary} />
-            </TouchableOpacity>
           </View>
         </View>
       </View>
 
-      <ScrollView 
+      <ScrollView
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={[styles.scrollContent, { paddingBottom: insets.bottom + 100 }]}
+        contentContainerStyle={[styles.scrollContent, { paddingBottom: insets.bottom + 20 }]}
       >
         <ExplorerHero name={user?.fullName || 'Explorer'} isDarkMode={isDarkMode} />
 
@@ -132,20 +126,19 @@ export default function KGDashboardScreen() {
           ) : (
             <View style={styles.gridContainer}>
               {categories.map((category, index) => {
-                const isMath = category.name_en === 'Math';
-                const finalImageUrl = category.image_url || (isMath ? 'https://images.unsplash.com/photo-1596495573175-975a6a4ee05e?auto=format&fit=crop&w=800&q=80' : null);
-                
+                const isMath = category.name_en === 'Maths';
+
                 return (
                   <BentoCard
                     key={category.id}
                     title={i18n.language === 'am' ? category.name_am : category.name_en}
                     subtitle={category.name_en === 'Math' ? '1, 2, 3... Counting is fun!' : 'Start your adventure!'}
-                    imageUrl={finalImageUrl}
+                    imageUrl={isMath ? 'https://kgimages.blr1.cdn.digitaloceanspaces.com/Cover%20Pages/kg/maths.png' : category.image_url}
                     variant={getCategoryVariant(category, index)}
-                  backgroundColor={getCategoryColor(index)}
-                  icon={getCategoryIcon(category.name_en)}
-                  badge={index === 0 ? 'Beginner' : undefined}
-                  onPress={() => handleCategoryPress(category)}
+                    backgroundColor={getCategoryColor(index)}
+                    icon={getCategoryIcon(category.name_en)}
+                    badge={index === 0 ? 'Beginner' : undefined}
+                    onPress={() => handleCategoryPress(category)}
                     isDarkMode={isDarkMode}
                   />
                 );
@@ -166,7 +159,8 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   header: {
-    paddingHorizontal: 24,
+    paddingLeft: 0,
+    paddingRight: 24,
     paddingBottom: 16,
     backgroundColor: '#FFFFFF',
     zIndex: 10,
@@ -180,7 +174,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 12,
-    flex: 1,
   },
   headerRight: {
     flexDirection: 'row',
@@ -198,6 +191,11 @@ const styles = StyleSheet.create({
   avatar: {
     width: '100%',
     height: '100%',
+  },
+  logoImage: {
+    width: 120,
+    height: 40,
+    resizeMode: 'contain',
   },
   logoText: {
     fontSize: 24,
