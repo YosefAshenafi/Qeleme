@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300..700&amp;family=Manrope:wght@200..800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "secondary-dim": "#4042aa",
+              "inverse-primary": "#6889ff",
+              "background": "#f5f6f7",
+              "surface-dim": "#d1d5d7",
+              "on-background": "#2c2f30",
+              "primary-dim": "#0041c7",
+              "inverse-on-surface": "#9b9d9e",
+              "on-tertiary": "#ffeef7",
+              "tertiary-fixed-dim": "#ef8cde",
+              "surface-container": "#e6e8ea",
+              "tertiary-fixed": "#fe99ed",
+              "on-surface": "#2c2f30",
+              "surface-bright": "#f5f6f7",
+              "tertiary-dim": "#812c79",
+              "surface-container-highest": "#dadddf",
+              "primary-container": "#809bff",
+              "surface-container-high": "#e0e3e4",
+              "on-error-container": "#510017",
+              "secondary-fixed": "#cdcdff",
+              "secondary-container": "#cdcdff",
+              "on-primary-fixed-variant": "#002376",
+              "on-primary-fixed": "#000000",
+              "on-secondary-container": "#3839a1",
+              "on-error": "#ffefef",
+              "primary": "#004be2",
+              "outline-variant": "#abadae",
+              "on-primary": "#f2f1ff",
+              "on-secondary-fixed-variant": "#4143ab",
+              "surface-container-lowest": "#ffffff",
+              "surface-container-low": "#eff1f2",
+              "on-surface-variant": "#595c5d",
+              "on-tertiary-fixed-variant": "#701c6a",
+              "tertiary": "#903986",
+              "secondary-fixed-dim": "#bdbeff",
+              "on-tertiary-fixed": "#450042",
+              "tertiary-container": "#fe99ed",
+              "error-container": "#f74b6d",
+              "surface-tint": "#004be2",
+              "inverse-surface": "#0c0f10",
+              "primary-fixed-dim": "#6c8cff",
+              "on-secondary": "#f4f1ff",
+              "surface-variant": "#dadddf",
+              "surface": "#f5f6f7",
+              "secondary": "#4d4fb7",
+              "error-dim": "#a70138",
+              "on-tertiary-container": "#661060",
+              "on-secondary-fixed": "#23228e",
+              "outline": "#757778",
+              "on-primary-container": "#001b60",
+              "primary-fixed": "#809bff",
+              "error": "#b41340"
+            },
+            fontFamily: {
+              "headline": ["Space Grotesk"],
+              "body": ["Manrope"],
+              "label": ["Manrope"]
+            },
+            borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .kids-gradient-bg {
+            background: radial-gradient(circle at top right, #809bff22, transparent),
+                        radial-gradient(circle at bottom left, #fe99ed11, transparent);
+        }
+        .m-logo-watermark {
+            position: fixed;
+            top: 20%;
+            right: -5%;
+            font-size: 40rem;
+            font-weight: 900;
+            color: #004be2;
+            opacity: 0.03;
+            pointer-events: none;
+            z-index: -1;
+            font-family: 'Space Grotesk';
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-on-surface font-body selection:bg-primary-container selection:text-on-primary-container">
+<div class="m-logo-watermark">M+</div>
+<!-- TopAppBar -->
+<header class="fixed top-0 w-full z-50 bg-[#f5f6f7] dark:bg-slate-900/80 backdrop-blur-md flex justify-between items-center px-6 h-16 w-full">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full overflow-hidden border-2 border-primary/20">
+<img alt="Child profile avatar" class="w-full h-full object-cover" data-alt="Close up portrait of a happy young child with a bright friendly smile and soft natural lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBg0ZAn1n0nxTciirKYoUe2garvsBGUu0IVoCopl-_YXoG07vIHpcQ3ALjtra5t4-RbGvby6M2w1JgVN8C6ClWB8qgzJAjhZYjqR-fsqEJZd2xCBojCrc9-oIjpQlsDYkN6SIshzGH8WF-yHPR-SsfYDw_Ob7leVBW-lGeX9a5r8mOKGtnsDl8DsbPbLKXiKYidrtJGdgTL5AjyEEvl0ROelfLxxazAwotu27nEPPEvR-G9KSBLj-zbwBiWecpKA4mVF4o7wXKqP-WL"/>
+</div>
+<span class="text-2xl font-black tracking-tighter text-[#004be2] dark:text-[#809bff]">M Test</span>
+</div>
+<div class="flex items-center gap-4">
+<button class="p-2 rounded-full hover:opacity-80 transition-opacity active:scale-95 duration-200 bg-[#eff1f2] dark:bg-slate-800/50">
+<span class="material-symbols-outlined text-[#004be2] dark:text-[#809bff]">notifications</span>
+</button>
+</div>
+</header>
+<main class="pt-24 pb-32 px-6 max-w-7xl mx-auto kids-gradient-bg min-h-screen">
+<!-- Hero Section -->
+<section class="mb-12">
+<div class="flex flex-col md:flex-row md:items-end justify-between gap-6">
+<div class="max-w-2xl">
+<h1 class="font-headline font-bold text-4xl md:text-6xl text-primary tracking-tight mb-4">
+                        Hello, Explorer!
+                    </h1>
+<p class="text-on-surface-variant text-lg md:text-xl font-medium max-w-lg leading-relaxed">
+                        Ready to learn something amazing today? Choose a path below to start your adventure.
+                    </p>
+</div>
+<div class="hidden md:block">
+<div class="bg-secondary-container text-on-secondary-container px-6 py-3 rounded-full font-bold flex items-center gap-2 shadow-sm">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">stars</span>
+<span>Level 5 Learner</span>
+</div>
+</div>
+</div>
+</section>
+<!-- Bento Grid Categories -->
+<section class="grid grid-cols-1 md:grid-cols-12 gap-6">
+<!-- Domestic Animals Card -->
+<div class="md:col-span-8 group cursor-pointer active:scale-[0.98] transition-all duration-300">
+<div class="relative h-72 md:h-96 rounded-[2rem] overflow-hidden bg-surface-container-lowest shadow-sm hover:shadow-xl transition-shadow border-b-4 border-primary/20">
+<img alt="Domestic Animals" class="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" data-alt="Cute fluffy golden retriever puppy sitting on a soft white rug in a bright sunlit nursery room" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAWi_g4VrijlZsvrxY0z-m600_bn83L0u6Nss4HbWGTPdg3Xstbit6LFYfMikmgQxUDxsZxjWBTj7DIQP4dnbpv7Q8BjjC8f-vcOpvXWZ5Xgcc3AhgkcfhOOhvJEtZKGBwN9uwkXqfweuZNlu3FQyTN3h0VjnEALU2UEhKDGuAOc7aWATd9xI4ItcKL9Rv-BCdOAJS9XjOXAhAgRm4Xxa4Rw-V5DEQzjbhrEpWJ8lQHBy846ZV-H6SnQ-sIhJ2Q60sQlwAgoktzV356"/>
+<div class="absolute inset-0 bg-gradient-to-t from-primary/80 via-transparent to-transparent"></div>
+<div class="absolute bottom-0 left-0 p-8">
+<span class="inline-block px-4 py-1 rounded-full bg-white/20 backdrop-blur-md text-white text-xs font-bold uppercase tracking-widest mb-3">Beginner</span>
+<h3 class="text-white font-headline font-bold text-3xl">Domestic Animals</h3>
+<p class="text-white/80 font-medium">Meet your friendly neighborhood friends!</p>
+</div>
+<div class="absolute top-6 right-6 w-12 h-12 rounded-full bg-white/90 backdrop-blur-sm flex items-center justify-center text-primary shadow-lg">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">pets</span>
+</div>
+</div>
+</div>
+<!-- Math Card -->
+<div class="md:col-span-4 group cursor-pointer active:scale-[0.98] transition-all duration-300">
+<div class="h-full rounded-[2rem] overflow-hidden bg-tertiary/10 flex flex-col justify-between p-8 border-b-4 border-tertiary/20 relative">
+<div class="z-10">
+<div class="w-16 h-16 rounded-2xl bg-tertiary text-white flex items-center justify-center mb-6 shadow-lg rotate-3 group-hover:rotate-0 transition-transform">
+<span class="material-symbols-outlined text-4xl">calculate</span>
+</div>
+<h3 class="font-headline font-bold text-3xl text-tertiary mb-2">Math</h3>
+<p class="text-on-surface-variant font-medium">1, 2, 3... Counting is so much fun!</p>
+</div>
+<div class="mt-8 z-10">
+<div class="flex -space-x-3 mb-4">
+<div class="w-8 h-8 rounded-full border-2 border-white bg-primary-container"></div>
+<div class="w-8 h-8 rounded-full border-2 border-white bg-secondary-container"></div>
+<div class="w-8 h-8 rounded-full border-2 border-white bg-tertiary-container"></div>
+</div>
+<span class="text-sm font-bold text-tertiary">12 Lessons Ready</span>
+</div>
+<!-- Abstract geometric background pattern -->
+<div class="absolute -right-4 -bottom-4 opacity-10 text-9xl font-black text-tertiary select-none">
+                        + =
+                    </div>
+</div>
+</div>
+<!-- Household Items Card -->
+<div class="md:col-span-4 group cursor-pointer active:scale-[0.98] transition-all duration-300">
+<div class="h-80 rounded-[2rem] overflow-hidden bg-surface-container-lowest border-b-4 border-secondary/20 flex flex-col shadow-sm hover:shadow-lg transition-all">
+<div class="h-1/2 overflow-hidden">
+<img alt="Household Items" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" data-alt="Minimalist clean kitchen counter with colorful wooden toy kitchenware and soft pastel tones" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA0QYJnGZSaTvmP3KY8te4i8kxNPTFrYPpGx67RFYtLyYJCS99tDgcJY_3evTPJuWyvObcuIgNTLBrW6b9dFoYwTKZqhTvm66oMxG7bFX3kXge0V6NzTl2TpKDlhcQqstheSNmou7uhwApOYFYFAmpuiQyZmiQGZQ2a0dm2E_cIlnZLfUW-yKpJxTDzAX9PxIhhl7um8MfGo4RTKyvCCG7KAxL8KM_XHt9eEMq3lzDJrMs6XeXLqA7BgpHpa2heNTyCCtqFyZyEzSYP"/>
+</div>
+<div class="p-6 flex flex-col justify-center flex-grow">
+<h3 class="font-headline font-bold text-2xl text-secondary">Household Items</h3>
+<p class="text-on-surface-variant text-sm mt-1">Things we use every single day!</p>
+</div>
+</div>
+</div>
+<!-- Wild Animals Card -->
+<div class="md:col-span-8 group cursor-pointer active:scale-[0.98] transition-all duration-300">
+<div class="h-80 rounded-[2rem] overflow-hidden relative shadow-sm hover:shadow-lg transition-all">
+<img alt="Wild Animals" class="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition-transform duration-1000" data-alt="Majestic lion resting in tall golden savanna grass during a warm hazy sunset" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB436r-k0GEbQpiwZs48JUZ8pXjqecehEXOXGTjKUeYZrv2WakX0zwQm5iMwZWWZNqxZoYCT5ryYvS4ySc0zvZdbZbJQ80RKPtQmd_W0MgDn8WHFBZHLfcCZqJuMTY0hFFF_1eQENbKoxc2rY7e8x7LHiivdIEjHN7lr6v3n3jo-zRv-A-wl2GUFuYUKPN8oatGLlQjIfSF_PegTnq1B6T2XSgbQaezyo3lFi7dF8ZXKGyv2F_JsDBP_0in1wCdCT5u_tyylPlQe_v9"/>
+<div class="absolute inset-0 bg-black/30 group-hover:bg-black/20 transition-colors"></div>
+<div class="absolute inset-0 p-8 flex flex-col justify-end">
+<div class="flex items-center gap-4">
+<div class="bg-white p-3 rounded-2xl shadow-xl">
+<span class="material-symbols-outlined text-error" style="font-variation-settings: 'FILL' 1;">eco</span>
+</div>
+<div>
+<h3 class="text-white font-headline font-bold text-3xl">Wild Animals</h3>
+<p class="text-white/90 font-medium">Roar! Explore the deep jungle.</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Weekly Progress Feature (Asymmetric) -->
+<section class="mt-16 grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+<div class="lg:col-span-5 order-2 lg:order-1">
+<h2 class="font-headline font-bold text-3xl text-on-surface mb-6">Your Star Progress</h2>
+<div class="space-y-4">
+<div class="bg-surface-container-low p-5 rounded-2xl flex items-center justify-between">
+<div class="flex items-center gap-4">
+<div class="w-12 h-12 rounded-full bg-primary flex items-center justify-center text-white">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">bolt</span>
+</div>
+<div>
+<p class="font-bold text-on-surface">Daily Streak</p>
+<p class="text-sm text-on-surface-variant">4 Days in a row!</p>
+</div>
+</div>
+<span class="text-2xl font-black text-primary">04</span>
+</div>
+<div class="bg-surface-container-low p-5 rounded-2xl">
+<div class="flex justify-between mb-2">
+<span class="font-bold">Weekly Goal</span>
+<span class="font-bold text-primary">80%</span>
+</div>
+<div class="w-full bg-surface-container-highest h-3 rounded-full overflow-hidden">
+<div class="bg-primary h-full w-[80%] rounded-full shadow-[0_0_12px_rgba(0,75,226,0.3)]"></div>
+</div>
+</div>
+</div>
+</div>
+<div class="lg:col-span-7 order-1 lg:order-2">
+<div class="bg-primary rounded-[3rem] p-10 text-white relative overflow-hidden shadow-2xl shadow-primary/20">
+<div class="relative z-10 max-w-sm">
+<h3 class="font-headline font-bold text-4xl mb-4 leading-tight">Win the "Jungle Explorer" Badge</h3>
+<p class="text-on-primary/80 mb-6 text-lg">Complete 3 Wild Animal lessons this week to unlock this special prize!</p>
+<button class="bg-white text-primary px-8 py-3 rounded-full font-bold hover:scale-105 transition-transform active:scale-95 shadow-lg">
+                            Go To Jungle
+                        </button>
+</div>
+<!-- Decorative element using M+ concept -->
+<div class="absolute -right-10 -bottom-10 w-64 h-64 bg-white/10 rounded-full blur-3xl"></div>
+<div class="absolute right-12 top-12 text-[120px] font-black opacity-20 rotate-12 select-none font-headline">
+                        M+
+                    </div>
+</div>
+</div>
+</section>
+</main>
+<!-- BottomNavBar -->
+<nav class="fixed bottom-0 left-0 w-full flex justify-around items-end px-4 pb-4 h-24 bg-white/80 dark:bg-slate-950/80 backdrop-blur-xl border-t border-[#004be2]/10 shadow-[0_-4px_24px_rgba(0,75,226,0.06)] rounded-t-[2rem] z-50">
+<a class="flex flex-col items-center justify-center bg-[#004be2] text-white rounded-full p-3 mb-2 transform -translate-y-2 shadow-lg shadow-[#004be2]/20 active:scale-90 transition-transform duration-300 ease-out" href="#">
+<span class="material-symbols-outlined">home</span>
+<span class="font-['Manrope'] font-semibold text-[10px] uppercase tracking-widest mt-1">Home</span>
+</a>
+<a class="flex flex-col items-center justify-center text-[#2c2f30] dark:text-slate-400 p-2 hover:text-[#004be2] dark:hover:text-[#809bff] transition-colors active:scale-90 transition-transform duration-300 ease-out" href="#">
+<span class="material-symbols-outlined">extension</span>
+<span class="font-['Manrope'] font-semibold text-[10px] uppercase tracking-widest mt-1">Play</span>
+</a>
+<a class="flex flex-col items-center justify-center text-[#2c2f30] dark:text-slate-400 p-2 hover:text-[#004be2] dark:hover:text-[#809bff] transition-colors active:scale-90 transition-transform duration-300 ease-out" href="#">
+<span class="material-symbols-outlined">leaderboard</span>
+<span class="font-['Manrope'] font-semibold text-[10px] uppercase tracking-widest mt-1">Stats</span>
+</a>
+<a class="flex flex-col items-center justify-center text-[#2c2f30] dark:text-slate-400 p-2 hover:text-[#004be2] dark:hover:text-[#809bff] transition-colors active:scale-90 transition-transform duration-300 ease-out" href="#">
+<span class="material-symbols-outlined">face</span>
+<span class="font-['Manrope'] font-semibold text-[10px] uppercase tracking-widest mt-1">Me</span>
+</a>
+</nav>
+</body></html>

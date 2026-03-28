@@ -1,0 +1,45 @@
+export const KG_DESIGN_TOKENS = {
+  colors: {
+    primary: '#004be2',
+    primaryDim: '#0041c7',
+    primaryContainer: '#809bff',
+    secondary: '#4d4fb7',
+    secondaryContainer: '#cdcdff',
+    tertiary: '#903986',
+    tertiaryContainer: '#fe99ed',
+    background: '#f5f6f7',
+    surface: '#ffffff',
+    surfaceContainerLow: '#eff1f2',
+    surfaceContainerHighest: '#dadddf',
+    onSurface: '#2c2f30',
+    onSurfaceVariant: '#595c5d',
+    error: '#b41340',
+    onPrimary: '#f2f1ff',
+  },
+  typography: {
+    headline: {
+      fontFamily: 'System', // Fallback for Space Grotesk
+      fontWeight: '700' as const,
+    },
+    body: {
+      fontFamily: 'System', // Fallback for Manrope
+      fontWeight: '500' as const,
+    },
+  },
+  spacing: {
+    xs: 4,
+    sm: 8,
+    md: 16,
+    lg: 24,
+    xl: 32,
+    xxl: 40,
+  },
+  borderRadius: {
+    sm: 4,
+    md: 8,
+    lg: 12,
+    xl: 16,
+    xxl: 32,
+    full: 9999,
+  },
+};

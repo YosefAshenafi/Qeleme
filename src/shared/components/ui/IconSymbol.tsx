@@ -59,6 +59,11 @@ const MAPPING = {
   'exclamationmark.triangle.fill': 'warning',
   'arrow.right.circle.fill': 'arrow-circle-right',
   'folder.fill': 'folder',
+  'pets': 'pets',
+  'calculate': 'calculate',
+  'eco': 'eco',
+  'bolt.fill': 'bolt',
+  'stars': 'stars',
 } as const;
 
 export type IconSymbolName = keyof typeof MAPPING | string;
