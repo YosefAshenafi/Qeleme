@@ -41,7 +41,7 @@ export default function OTPScreen() {
       childrenData: params.childrenData ? JSON.parse(params.childrenData as string) : []
     };
   } catch (error) {
-    setError('Invalid user data. Please try again.');
+    setError(t('auth.otp.error.invalidData'));
   }
 
   // Timer effect
@@ -101,10 +101,10 @@ export default function OTPScreen() {
           setTimeLeft(300);
           setCanResend(false);
         } else {
-          setError(response.message || 'Failed to send OTP');
+          setError(response.message || t('auth.otp.error.sendFailed'));
         }
       } catch (error) {
-        setError('Failed to send OTP. Please try again.');
+        setError(t('auth.otp.error.sendFailedRetry'));
       } finally {
         setIsLoading(false);
       }
@@ -193,9 +193,9 @@ export default function OTPScreen() {
             </View>
 
             <View style={[styles.card, { backgroundColor: isDarkMode ? '#191D24' : '#FAFAFA' }]}>
-              <ThemedText style={[styles.title, { color: isDarkMode ? '#F3F4F6' : '#111827' }]}>Check your device</ThemedText>
+              <ThemedText style={[styles.title, { color: isDarkMode ? '#F3F4F6' : '#111827' }]}>{t('auth.otp.checkDevice')}</ThemedText>
               <ThemedText style={[styles.subtitle, { color: isDarkMode ? '#A8ADB4' : '#6B7280' }]}>
-                We've sent a 6-digit verification code. Enter the code below to continue.
+                {t('auth.otp.otpSent')}
               </ThemedText>
               <View style={styles.otpContainer}>
                 {otp.map((digit, index) => (
@@ -244,14 +244,14 @@ export default function OTPScreen() {
                   end={{ x: 1, y: 0.5 }}
                 >
                   <ThemedText style={styles.buttonText}>
-                    {isLoading ? 'Verifying...' : 'Verify Identity'}
+                    {isLoading ? t('auth.otp.verifying') : t('auth.otp.verifyIdentity')}
                   </ThemedText>
                 </LinearGradient>
               </TouchableOpacity>
 
               <View style={styles.resendContainer}>
                 <ThemedText style={[styles.resendText, { color: isDarkMode ? '#A0A0A5' : '#6B7280' }]}>
-                  Didn’t receive the code?
+                  {t('auth.otp.resend.text')}
                 </ThemedText>
                 <TouchableOpacity 
                   onPress={handleResend} 
@@ -262,7 +262,7 @@ export default function OTPScreen() {
                   ]}
                 >
                   <ThemedText style={styles.resendButton}>
-                    {isLoading ? 'Sending...' : canResend ? 'Resend code' : `Resend in ${formatTime(timeLeft)}`}
+                    {isLoading ? t('auth.otp.resend.sending') : canResend ? t('auth.otp.resend.resendCode') : `${t('auth.otp.resend.resendIn')} ${formatTime(timeLeft)}`}
                   </ThemedText>
                 </TouchableOpacity>
               </View>

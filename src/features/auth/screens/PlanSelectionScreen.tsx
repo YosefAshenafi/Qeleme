@@ -326,8 +326,8 @@ export default function PlanSelectionScreen() {
               <View style={styles.languageToggleContainer}>
                 <LanguageToggle colors={colors} />
               </View>
-              <ThemedText style={[styles.title, { color: colors.text }]}>Choose Subscription</ThemedText>
-              <ThemedText style={[styles.subtitle, { color: colors.text + '80' }]}>Pick a plan that fits your learning journey.</ThemedText>
+              <ThemedText style={[styles.title, { color: colors.text }]}>{t('auth.planSelection.chooseSubscription')}</ThemedText>
+              <ThemedText style={[styles.subtitle, { color: colors.text + '80' }]}>{t('auth.planSelection.subtitleV2')}</ThemedText>
             </View>
 
             <ScrollView
@@ -372,7 +372,7 @@ export default function PlanSelectionScreen() {
                           </ThemedText>
                           {isRecommended && (
                             <ThemedText style={[styles.recommendedInlineText, { color: planColors.text }]}>
-                              (Recommended Plan)
+                              {t('auth.planSelection.recommendedPlan')}
                             </ThemedText>
                           )}
                         </View>

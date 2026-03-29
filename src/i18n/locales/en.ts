@@ -432,6 +432,7 @@ export default {
   auth: {
     errors: {
       paymentFailed: 'Payment failed. Please try again.',
+      fetchPlansFailed: 'Failed to fetch plans. Please try again.',
     },
     signIn: 'Sign In',
     signUp: 'Sign Up',
@@ -443,11 +444,17 @@ export default {
     otp: {
       title: 'Verify Your Phone',
       subtitle: 'Enter the 6-digit code sent to your phone',
+      checkDevice: 'Check your device',
+      otpSent: "We've sent a 6-digit verification code. Enter the code below to continue.",
+      verifying: 'Verifying...',
+      verifyIdentity: 'Verify Identity',
       error: {
         invalid: 'Invalid verification code',
         incomplete: 'Please enter all digits',
         invalidData: 'Invalid user data. Please try again.',
-        verificationFailed: 'Failed to verify OTP. Please try again.'
+        verificationFailed: 'Failed to verify OTP. Please try again.',
+        sendFailed: 'Failed to send OTP',
+        sendFailedRetry: 'Failed to send OTP. Please try again.'
       },
       send: {
         text: "Ready to verify your phone?",
@@ -455,7 +462,10 @@ export default {
       },
       resend: {
         text: "Didn't receive the code?",
-        button: 'Resend'
+        button: 'Resend',
+        sending: 'Sending...',
+        resendCode: 'Resend code',
+        resendIn: 'Resend in'
       },
       timer: {
         text: 'Time remaining:'
@@ -466,12 +476,15 @@ export default {
       title: 'Choose Your Plan',
       subtitleSingle: 'Select your preferred plan',
       subtitleMultiple: 'Select a plan for all children',
+      chooseSubscription: 'Choose Subscription',
+      subtitleV2: 'Pick a plan that fits your learning journey.',
       total: 'Total',
       continue: 'Continue',
       finish: 'Finish',
       pay: 'Pay',
       free: 'Free',
       recommended: 'Recommended',
+      recommendedPlan: '(Recommended Plan)',
       months: 'months',
       calculation: '{{planPrice}} ETB × {{numberOfChildren}} children = {{total}} ETB',
       pricePerChild: 'Price per child: {{price}} ETB',
@@ -752,6 +765,9 @@ export default {
   signup: {
     title: 'Create Account',
     subtitle: 'Join MegaTest',
+    step: 'STEP 01 / 03',
+    accountDetails: 'Account Details',
+    accountDetailsSubtitle: 'Enter your basic information to get started.',
     roleSelection: {
       title: 'Register',
       subtitle: 'Choose how you want to use MegaTest',
@@ -811,6 +827,7 @@ export default {
     createAccount: 'Create Account',
     alreadyHaveAccount: 'Already have an account?',
     signIn: 'Sign In',
+    continueToVerification: 'Continue to Verification',
     errors: {
       fullNameRequired: 'Please enter your full name',
       fullNameMinLength: 'Full name must be at least 2 characters',

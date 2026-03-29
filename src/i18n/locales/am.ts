@@ -238,6 +238,9 @@ export default {
   signup: {
     title: 'አካውንት ይፍጠሩ',
     subtitle: 'ቀለምን ይቀላቀሉ',
+    step: 'ደረጃ 01 / 03',
+    accountDetails: 'የመለያ ዝርዝሮች',
+    accountDetailsSubtitle: 'ለመጀመር የመሠረታዊ መረጃዎን ያስገቡ።',
     roleSelection: {
       title: 'ይመዝገቡ',
       subtitle: 'በቀለም እንዴት መጠቀም እንደሚፈልጉ ይምረጡ',
@@ -296,6 +299,7 @@ export default {
     createAccount: 'አካውንት ይፍጠሩ',
     alreadyHaveAccount: 'አካውንት አለዎት?',
     signIn: 'ይግቡ',
+    continueToVerification: 'ማረጋገጫ ይቀጥሉ',
     errors: {
       fullNameRequired: 'እባክዎ ሙሉ ስምዎን ያስገቡ',
       fullNameMinLength: 'ሙሉ ስም ቢያንስ 2 ፊደል መሆን አለበት',
@@ -791,6 +795,7 @@ export default {
   auth: {
     errors: {
       paymentFailed: 'ክፍያው አልተሳካም። እባክዎ እንደገና ይሞክሩ።',
+      fetchPlansFailed: 'እቅዶችን ማግኘት አልተሳካም። እባክዎ እንደገና ይሞክሩ።',
     },
     signIn: 'ይግቡ',
     signUp: 'ይመዝገቡ',
@@ -802,11 +807,17 @@ export default {
     otp: {
       title: 'ስልክዎን ያረጋግጡ',
       subtitle: 'ወደ ስልክዎ የተላከውን 6-አሃዝ ኮድ ያስገቡ',
+      checkDevice: 'ስልክዎን ያረጋግጡ',
+      otpSent: "6-አሃዝ የማረጋገጫ ኮድ ልከናል። ለመቀጠል ኮዱን ከታች ያስገቡ።",
+      verifying: 'በማረጋገጥ ላይ...',
+      verifyIdentity: 'ያረጋግጡ',
       error: {
         invalid: 'ልክ ያልሆነ የማረጋገጫ ኮድ',
         incomplete: 'እባክዎ ሁሉንም አሃዞች ያስገቡ',
         invalidData: 'ልክ ያልሆነ የተጠቃሚ ውሂብ። እባክዎ እንደገና ይሞክሩ።',
-        verificationFailed: 'OTP ማረጋገጥ አልተሳካም። እባክዎ እንደገና ይሞክሩ።'
+        verificationFailed: 'OTP ማረጋገጥ አልተሳካም። እባክዎ እንደገና ይሞክሩ።',
+        sendFailed: 'OTP መላክ አልተሳካም',
+        sendFailedRetry: 'OTP መላክ አልተሳካም። እባክዎ እንደገና ይሞክሩ።'
       },
       send: {
         text: 'ስልክዎን ለማረጋገጥ ዝግጁ ነዎት?',
@@ -814,7 +825,10 @@ export default {
       },
       resend: {
         text: 'ኮዱን አላገኙም?',
-        button: 'ዳግም ላክ'
+        button: 'ዳግም ላክ',
+        sending: 'በማስገባት ላይ...',
+        resendCode: 'ኮድ እንደገና ላክ',
+        resendIn: 'እንደገና ለመላክ'
       },
       timer: {
         text: 'የቀረ ጊዜ:'
@@ -825,12 +839,15 @@ export default {
       title: 'የእርስዎን እቅድ ይምረጡ',
       subtitleSingle: 'የሚፈልጉትን እቅድ ይምረጡ',
       subtitleMultiple: 'ለሁሉም ልጆች እቅድ ይምረጡ',
+      chooseSubscription: 'የመስመር እቅድ ይምረጡ',
+      subtitleV2: 'የመማሪያ ጉዞዎን ለሚስማር እቅድ ይምረጡ።',
       total: 'ጠቅላላ',
       continue: 'ይቀጥሉ',
       finish: 'ያጠናቁ',
       pay: 'ይክፈሉ',
       free: 'ነጻ',
       recommended: 'የሚመከር',
+      recommendedPlan: '(የሚመከር እቅድ)',
       months: 'ወራት',
       calculation: '{{planPrice}} ብር × {{numberOfChildren}} ልጆች = {{total}} ብር',
       pricePerChild: 'በአንድ ልጅ ዋጋ: {{price}} ብር',

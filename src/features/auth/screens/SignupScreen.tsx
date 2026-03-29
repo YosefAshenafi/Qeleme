@@ -82,9 +82,11 @@ export default function SignupScreen() {
             </View>
 
             <View style={styles.header}>
-              <ThemedText style={styles.stepLabel}>STEP 01 / 03</ThemedText>
-              <ThemedText style={[styles.welcomeText, { color: colors.text }]}>Account Details</ThemedText>
-              <ThemedText style={[styles.subtitleText, { color: colors.text + '80' }]}>Enter your basic information to get started.</ThemedText>
+              <ThemedText style={styles.stepLabel}>{t('signup.step')}</ThemedText>
+              <ThemedText style={[styles.welcomeText, { color: colors.text }]}>{t('signup.accountDetails')}</ThemedText>
+              <ThemedText style={[styles.subtitleText, { color: isDarkMode ? '#A8ADB4' : '#4B5563' }]}>
+                {t('signup.accountDetailsSubtitle')}
+              </ThemedText>
             </View>
 
             <View style={[styles.formContainer, { backgroundColor: isDarkMode ? '#1C1C1E' : '#FFFFFF' }]}>
@@ -273,9 +275,9 @@ export default function SignupScreen() {
                 <LinearGradient colors={['#0F4BD7', '#4E7CFF']} style={styles.buttonGradient} start={{ x: 0, y: 0.5 }} end={{ x: 1, y: 0.5 }}>
                   <View style={styles.primaryActionInner}>
                     <ThemedText style={styles.buttonText}>
-                      {formState.isSubmitting ? t('common.processing') : 'Continue to Verification'}
+                      {formState.isSubmitting ? t('common.processing') : t('signup.continueToVerification')}
                     </ThemedText>
-                    <Ionicons name="arrow-forward" size={20} color="#0B1B46" />
+                    <Ionicons name="arrow-forward" size={20} color="#FFFFFF" />
                   </View>
                 </LinearGradient>
               </TouchableOpacity>
