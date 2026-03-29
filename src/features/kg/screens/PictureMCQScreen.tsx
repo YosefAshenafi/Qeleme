@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { StyleSheet, TouchableOpacity, ScrollView, View, Dimensions, Image, Modal, Text, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -28,6 +28,7 @@ import Animated, {
   ZoomOut,
 } from 'react-native-reanimated';
 import * as Haptics from 'expo-haptics';
+import { Audio } from 'expo-av';
 import { useTranslation } from 'react-i18next';
 import i18n from 'i18next';
 
@@ -161,21 +162,21 @@ interface FireworkParticle {
   size: number;
 }
 
-const FireworkBurst = ({ visible, onAnimationEnd }: { visible: boolean; onAnimationEnd?: () => void }) => {
+const FireworkBurst = ({ visible, onAnimationEnd, delay = 2000 }: { visible: boolean; onAnimationEnd?: () => void; delay?: number }) => {
   const [burstKey, setBurstKey] = useState(0);
 
   useEffect(() => {
     if (visible) {
       setBurstKey(prev => prev + 1);
 
-      // Call onAnimationEnd after animation completes (1500ms)
+      // Call onAnimationEnd after animation completes
       const timer = setTimeout(() => {
         onAnimationEnd?.();
-      }, 1500);
+      }, delay);
 
       return () => clearTimeout(timer);
     }
-  }, [visible]);
+  }, [visible, delay]);
 
   const fireworks = useMemo(() => {
     const bursts = [];
@@ -273,9 +274,10 @@ interface ShakeOverlayProps {
   visible: boolean;
   onAnimationEnd?: () => void;
   language?: string;
+  delay?: number;
 }
 
-const ShakeOverlay = ({ visible, onAnimationEnd, language = 'en' }: ShakeOverlayProps) => {
+const ShakeOverlay = ({ visible, onAnimationEnd, language = 'en', delay = 2000 }: ShakeOverlayProps) => {
   const shakeX = useSharedValue(0);
 
   useEffect(() => {
@@ -286,14 +288,14 @@ const ShakeOverlay = ({ visible, onAnimationEnd, language = 'en' }: ShakeOverlay
         withTiming(0, { duration: 50 })
       );
 
-      // Call onAnimationEnd after the shake animation completes
+      // Call onAnimationEnd after the delay
       const timer = setTimeout(() => {
         onAnimationEnd?.();
-      }, 600);
+      }, delay);
 
       return () => clearTimeout(timer);
     }
-  }, [visible]);
+  }, [visible, delay]);
 
   const animatedStyle = useAnimatedStyle(() => ({
     transform: [{ translateX: shakeX.value }],
@@ -339,6 +341,75 @@ export default function PictureMCQScreen({ onBackToInstructions }: PictureMCQScr
   const [allCategories, setAllCategories] = useState<KGCategory[]>([]);
   const [nextCategory, setNextCategory] = useState<KGCategory | null>(null);
   const { t } = useTranslation();
+
+  const [showSettings, setShowSettings] = useState(false);
+  const [soundEnabled, setSoundEnabled] = useState(true);
+  const [autoAdvanceDelay, setAutoAdvanceDelay] = useState(2000);
+
+  const correctSoundRef = useRef<Audio.Sound | null>(null);
+  const incorrectSoundRef = useRef<Audio.Sound | null>(null);
+
+  useEffect(() => {
+    loadSettings();
+  }, []);
+
+  const loadSettings = async () => {
+    try {
+      const savedSettings = await AsyncStorage.getItem('kgQuizSettings');
+      if (savedSettings) {
+        const parsed = JSON.parse(savedSettings);
+        setSoundEnabled(parsed.soundEnabled ?? true);
+        setAutoAdvanceDelay(parsed.autoAdvanceDelay ?? 2000);
+      }
+    } catch (error) {
+      console.log('Error loading settings:', error);
+    }
+  };
+
+  const saveSettings = async (newSoundEnabled: boolean, newDelay: number) => {
+    try {
+      await AsyncStorage.setItem('kgQuizSettings', JSON.stringify({
+        soundEnabled: newSoundEnabled,
+        autoAdvanceDelay: newDelay,
+      }));
+    } catch (error) {
+      console.log('Error saving settings:', error);
+    }
+  };
+
+  const playCorrectSound = async () => {
+    if (!soundEnabled) return;
+    try {
+      await Audio.setAudioModeAsync({ playsInSilentModeIOS: true });
+      const { sound } = await Audio.Sound.createAsync(
+        { uri: 'https://www.soundjay.com/misc/sounds/bell-ringing-05.mp3' },
+        { shouldPlay: true, volume: 0.5 }
+      );
+      correctSoundRef.current = sound;
+      setTimeout(async () => {
+        await sound.unloadAsync();
+      }, 1000);
+    } catch (error) {
+      console.log('Error playing correct sound:', error);
+    }
+  };
+
+  const playIncorrectSound = async () => {
+    if (!soundEnabled) return;
+    try {
+      await Audio.setAudioModeAsync({ playsInSilentModeIOS: true });
+      const { sound } = await Audio.Sound.createAsync(
+        { uri: 'https://www.soundjay.com/misc/sounds/fail-buzzer-01.mp3' },
+        { shouldPlay: true, volume: 0.5 }
+      );
+      incorrectSoundRef.current = sound;
+      setTimeout(async () => {
+        await sound.unloadAsync();
+      }, 500);
+    } catch (error) {
+      console.log('Error playing incorrect sound:', error);
+    }
+  };
 
   // Get localized category name based on current language
   const getLocalizedCategoryName = useCallback(() => {
@@ -692,10 +763,12 @@ export default function PictureMCQScreen({ onBackToInstructions }: PictureMCQScr
         setScore(prev => prev + 1);
         setShowCorrectVideo(true);
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+        playCorrectSound();
         // Firework animation will call handleNextQuestion via onAnimationEnd
       } else {
         setShowIncorrectVideo(true);
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+        playIncorrectSound();
         // Shake animation will call handleNextQuestion via onAnimationEnd
       }
     }
@@ -1171,12 +1244,87 @@ export default function PictureMCQScreen({ onBackToInstructions }: PictureMCQScr
           </View>
           <View style={[styles.headerRight, { marginRight: 10 }]}>
             <LanguageToggle colors={{ card: 'transparent', text: KG_DESIGN_TOKENS.colors.primary, tint: KG_DESIGN_TOKENS.colors.primary }} />
+            <TouchableOpacity onPress={() => setShowSettings(true)} style={styles.settingsButton}>
+              <Ionicons name="settings-outline" size={24} color={KG_DESIGN_TOKENS.colors.primary} />
+            </TouchableOpacity>
           </View>
         </View>
         <LinearGradient
           colors={['#f0f4ff', '#e8f5e9', '#fff8e1']}
           style={styles.funContainer}
         >
+          {/* Settings Modal */}
+          <Modal
+            visible={showSettings}
+            transparent={true}
+            animationType="slide"
+            onRequestClose={() => setShowSettings(false)}
+          >
+            <View style={styles.settingsModalOverlay}>
+              <View style={styles.settingsModalContent}>
+                <View style={styles.settingsModalHeader}>
+                  <Text style={styles.settingsModalTitle}>
+                    {i18n.language === 'am' ? 'ቅንብሮች' : 'Settings'}
+                  </Text>
+                  <TouchableOpacity onPress={() => setShowSettings(false)}>
+                    <Ionicons name="close" size={28} color="#333" />
+                  </TouchableOpacity>
+                </View>
+
+                {/* Sound Toggle */}
+                <View style={styles.settingsRow}>
+                  <View style={styles.settingsLabelContainer}>
+                    <Ionicons name="volume-high" size={24} color={KG_DESIGN_TOKENS.colors.primary} />
+                    <Text style={styles.settingsLabel}>
+                      {i18n.language === 'am' ? 'ድምጽ' : 'Sound Effects'}
+                    </Text>
+                  </View>
+                  <TouchableOpacity
+                    style={[styles.settingsToggle, soundEnabled && styles.settingsToggleActive]}
+                    onPress={() => {
+                      const newValue = !soundEnabled;
+                      setSoundEnabled(newValue);
+                      saveSettings(newValue, autoAdvanceDelay);
+                    }}
+                  >
+                    <View style={[styles.settingsToggleKnob, soundEnabled && styles.settingsToggleKnobActive]} />
+                  </TouchableOpacity>
+                </View>
+
+                {/* Delay Setting */}
+                <View style={styles.settingsRow}>
+                  <View style={styles.settingsLabelContainer}>
+                    <Ionicons name="time" size={24} color={KG_DESIGN_TOKENS.colors.primary} />
+                    <Text style={styles.settingsLabel}>
+                      {i18n.language === 'am' ? 'የቀጣይ ጥያቄ ቆይታ' : 'Next Question Delay'}
+                    </Text>
+                  </View>
+                </View>
+                <View style={styles.delayOptionsContainer}>
+                  {[1000, 2000, 3000].map((delay) => (
+                    <TouchableOpacity
+                      key={delay}
+                      style={[styles.delayOption, autoAdvanceDelay === delay && styles.delayOptionActive]}
+                      onPress={() => {
+                        setAutoAdvanceDelay(delay);
+                        saveSettings(soundEnabled, delay);
+                      }}
+                    >
+                      <Text style={[styles.delayOptionText, autoAdvanceDelay === delay && styles.delayOptionTextActive]}>
+                        {delay / 1000}s
+                      </Text>
+                    </TouchableOpacity>
+                  ))}
+                </View>
+
+                <TouchableOpacity style={styles.settingsDoneButton} onPress={() => setShowSettings(false)}>
+                  <Text style={styles.settingsDoneButtonText}>
+                    {i18n.language === 'am' ? 'ጨርሻለሁ' : 'Done'}
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </Modal>
           <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
             {/* Progress Bar */}
             <View style={styles.kgProgressContainer}>
@@ -1220,6 +1368,7 @@ export default function PictureMCQScreen({ onBackToInstructions }: PictureMCQScr
                     <FireworkBurst
                       visible={showCorrectVideo}
                       onAnimationEnd={handleNextQuestion}
+                      delay={autoAdvanceDelay}
                     />
 
                     {/* Shake Animation for Incorrect Answer */}
@@ -1227,6 +1376,7 @@ export default function PictureMCQScreen({ onBackToInstructions }: PictureMCQScr
                       visible={showIncorrectVideo}
                       onAnimationEnd={handleNextQuestion}
                       language={i18n.language}
+                      delay={autoAdvanceDelay}
                     />
                   </Animated.View>
                 </GestureDetector>
@@ -1557,6 +1707,112 @@ const styles = StyleSheet.create<any>({
   incorrectText: {
     color: '#D32F2F',
     fontWeight: 'bold',
+  },
+  settingsButton: {
+    marginLeft: 12,
+    padding: 4,
+  },
+  settingsModalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'flex-end',
+  },
+  settingsModalContent: {
+    backgroundColor: '#FFFFFF',
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    padding: 24,
+    paddingBottom: 40,
+  },
+  settingsModalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 24,
+  },
+  settingsModalTitle: {
+    fontSize: 24,
+    fontWeight: '700',
+    color: '#333',
+  },
+  settingsRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#E0E0E0',
+  },
+  settingsLabelContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  settingsLabel: {
+    fontSize: 18,
+    color: '#333',
+    fontWeight: '500',
+  },
+  settingsToggle: {
+    width: 56,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: '#E0E0E0',
+    padding: 2,
+    justifyContent: 'center',
+  },
+  settingsToggleActive: {
+    backgroundColor: '#4CAF50',
+  },
+  settingsToggleKnob: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    backgroundColor: '#FFFFFF',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 2,
+    elevation: 2,
+  },
+  settingsToggleKnobActive: {
+    alignSelf: 'flex-end',
+  },
+  delayOptionsContainer: {
+    flexDirection: 'row',
+    gap: 12,
+    marginTop: 12,
+    marginBottom: 24,
+  },
+  delayOption: {
+    flex: 1,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderRadius: 12,
+    backgroundColor: '#F0F0F0',
+    alignItems: 'center',
+  },
+  delayOptionActive: {
+    backgroundColor: '#2196F3',
+  },
+  delayOptionText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#666',
+  },
+  delayOptionTextActive: {
+    color: '#FFFFFF',
+  },
+  settingsDoneButton: {
+    backgroundColor: '#4CAF50',
+    paddingVertical: 16,
+    borderRadius: 16,
+    alignItems: 'center',
+  },
+  settingsDoneButtonText: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#FFFFFF',
   },
   instructionTextContainer: {
     paddingHorizontal: 20,
