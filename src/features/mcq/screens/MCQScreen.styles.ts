@@ -12,9 +12,11 @@ export const MCQScreenStyles = StyleSheet.create<any>({
     padding: 16,
   },
   containerBooks: {
+    flex: 1,
     paddingTop: 0,
-    paddingHorizontal: 16,
-    paddingBottom: 16,
+    paddingHorizontal: 0,
+    paddingBottom: 0,
+    minHeight: SCREEN_HEIGHT - 100,
   },
   scrollContent: {
     flexGrow: 1,
@@ -198,7 +200,7 @@ export const MCQScreenStyles = StyleSheet.create<any>({
   formContainer: {
     flex: 1,
     padding: 20,
-    borderRadius: 20,
+    borderRadius: 12,
     elevation: 4,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
@@ -768,7 +770,8 @@ export const MCQScreenStyles = StyleSheet.create<any>({
     paddingTop: 12,
     paddingBottom: 20,
     gap: 12,
-    flexGrow: 1,
+    flexGrow: 0,
+    flexShrink: 1,
   },
   booksNationalLink: {
     flexDirection: 'row',
@@ -954,6 +957,7 @@ export const MCQScreenStyles = StyleSheet.create<any>({
     gap: 8,
     paddingVertical: 0,
     paddingRight: 4,
+    minHeight: 40,
   },
   booksChip: {
     paddingHorizontal: 16,
