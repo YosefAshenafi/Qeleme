@@ -11,18 +11,25 @@ import { useTheme } from '@/core/providers/ThemeProvider';
 import { getColors } from '@/shared/constants/Colors';
 import { KG_DESIGN_TOKENS } from '../constants/DesignTokens';
 import { useAuth } from '@/core/providers/AuthProvider';
-import Animated, { 
-  useAnimatedStyle, 
-  useSharedValue, 
+import Animated, {
+  useAnimatedStyle,
+  useSharedValue,
   withSpring,
   withTiming,
   withSequence,
+  withRepeat,
+  withDelay,
   runOnJS,
   useAnimatedReaction,
+  Easing,
+  FadeIn,
+  FadeOut,
+  ZoomIn,
+  ZoomOut,
 } from 'react-native-reanimated';
+import * as Haptics from 'expo-haptics';
 import { useTranslation } from 'react-i18next';
 import i18n from 'i18next';
-import { Video, ResizeMode } from 'expo-av';
 
 import { Header } from '@/shared/components/Header';
 import { ThemedText } from '@/shared/components/ThemedText';
@@ -58,13 +65,13 @@ interface PictureMCQScreenProps {
 }
 
 // Memoized image component for better performance
-const QuestionImage = React.memo(({ 
-  question, 
-  imageStates, 
-  setImageStates, 
-  isDarkMode, 
-  colors, 
-  t 
+const QuestionImage = React.memo(({
+  question,
+  imageStates,
+  setImageStates,
+  isDarkMode,
+  colors,
+  t
 }: {
   question: Question;
   imageStates: { [key: number]: { loading: boolean; error: boolean; loaded: boolean } };
@@ -74,7 +81,7 @@ const QuestionImage = React.memo(({
   t: any;
 }) => {
   const imageState = imageStates[question.id] || { loading: true, error: false, loaded: false };
-  
+
   // Initialize loading state if not set for this question
   React.useEffect(() => {
     if (question.image && !imageStates[question.id]) {
@@ -84,18 +91,18 @@ const QuestionImage = React.memo(({
       }));
     }
   }, [question.id, question.image]);
-  
+
   return (
     <>
       {/* Image Loading Skeleton - only show if not loaded and not error */}
       {(!imageState.loaded && !imageState.error && question.image) && (
-        <ImageSkeleton 
-          width="100%" 
-          height="100%" 
+        <ImageSkeleton
+          width="100%"
+          height="100%"
           style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, zIndex: 1 }}
         />
       )}
-      
+
       {/* Main Image */}
       {question.image && !imageState.error && (
         <Image
@@ -104,26 +111,31 @@ const QuestionImage = React.memo(({
           style={styles.questionImage}
           resizeMode="contain"
           onLoadStart={() => {
-            setImageStates(prev => ({ 
-              ...prev, 
-              [question.id]: { loading: true, error: false, loaded: false } 
-            }));
+            // Only set loading if not already loaded
+            setImageStates(prev => {
+              const existing = prev[question.id];
+              if (existing && existing.loaded) return prev;
+              return {
+                ...prev,
+                [question.id]: { loading: true, error: false, loaded: false }
+              };
+            });
           }}
           onLoad={() => {
-            setImageStates(prev => ({ 
-              ...prev, 
-              [question.id]: { loading: false, error: false, loaded: true } 
+            setImageStates(prev => ({
+              ...prev,
+              [question.id]: { loading: false, error: false, loaded: true }
             }));
           }}
           onError={() => {
-            setImageStates(prev => ({ 
-              ...prev, 
-              [question.id]: { loading: false, error: true, loaded: false } 
+            setImageStates(prev => ({
+              ...prev,
+              [question.id]: { loading: false, error: true, loaded: false }
             }));
           }}
         />
       )}
-      
+
       {/* Image Error State */}
       {imageState.error && (
         <View style={styles.imageErrorContainer}>
@@ -136,6 +148,172 @@ const QuestionImage = React.memo(({
     </>
   );
 });
+
+const FIREWORK_COLORS = ['#FFD700', '#FF4136', '#FF851B', '#FFFFFF', '#FF69B4', '#7FDBFF', '#01FF70', '#FFDC00'];
+const FIREWORK_COLORS2 = ['#FF0000', '#FFFF00', '#FF6600', '#FFFFFF'];
+const FIREWORK_COLORS3 = ['#00FF00', '#00FFFF', '#FF00FF', '#FFFFFF'];
+
+interface FireworkParticle {
+  id: number;
+  angle: number;
+  speed: number;
+  color: string;
+  size: number;
+}
+
+const FireworkBurst = ({ visible, onAnimationEnd }: { visible: boolean; onAnimationEnd?: () => void }) => {
+  const [burstKey, setBurstKey] = useState(0);
+
+  useEffect(() => {
+    if (visible) {
+      setBurstKey(prev => prev + 1);
+
+      // Call onAnimationEnd after animation completes (1500ms)
+      const timer = setTimeout(() => {
+        onAnimationEnd?.();
+      }, 1500);
+
+      return () => clearTimeout(timer);
+    }
+  }, [visible]);
+
+  const fireworks = useMemo(() => {
+    const bursts = [];
+    for (let b = 0; b < 1; b++) {
+      const colorSet = b === 0 ? FIREWORK_COLORS : b === 1 ? FIREWORK_COLORS2 : b === 2 ? FIREWORK_COLORS3 : b === 3 ? FIREWORK_COLORS : FIREWORK_COLORS2;
+      const particles: FireworkParticle[] = [];
+      const particleCount = 60;
+
+      for (let i = 0; i < particleCount; i++) {
+        particles.push({
+          id: b * 1000 + i,
+          angle: (i / particleCount) * Math.PI * 2,
+          speed: 80 + Math.random() * 120,
+          color: colorSet[Math.floor(Math.random() * colorSet.length)],
+          size: 6 + Math.random() * 6,
+        });
+      }
+      bursts.push({ id: b, particles, x: 50, y: 50 });
+    }
+    return bursts;
+  }, [burstKey]);
+
+  if (!visible) return null;
+
+  return (
+    <View style={styles.fireworkContainer} pointerEvents="none">
+      {fireworks.map((firework) => (
+        <View key={`${burstKey}-${firework.id}`} style={styles.fireworkOrigin}>
+          {firework.particles.map((particle) => (
+            <FireworkParticleComponent key={`${burstKey}-${particle.id}`} particle={particle} />
+          ))}
+        </View>
+      ))}
+    </View>
+  );
+};
+
+const FireworkParticleComponent = ({ particle }: { particle: FireworkParticle }) => {
+  const progress = useSharedValue(0);
+  const opacity = useSharedValue(1);
+  const particleOpacity = useSharedValue(1);
+
+  useEffect(() => {
+    progress.value = 0;
+    opacity.value = 1;
+    particleOpacity.value = 1;
+
+    progress.value = withTiming(1, { duration: 1200, easing: Easing.out(Easing.quad) });
+    opacity.value = withTiming(0, { duration: 1200 });
+    particleOpacity.value = withDelay(600, withTiming(0, { duration: 600 }));
+  }, [particle.id]);
+
+  const animatedStyle = useAnimatedStyle(() => {
+    const x = Math.cos(particle.angle) * particle.speed * progress.value;
+    const y = Math.sin(particle.angle) * particle.speed * progress.value;
+    const scale = 1 - progress.value * 0.3;
+
+    return {
+      transform: [
+        { translateX: x },
+        { translateY: y },
+        { scale: scale },
+      ] as any,
+      opacity: opacity.value,
+    };
+  });
+
+  const dotStyle = useAnimatedStyle(() => ({
+    opacity: particleOpacity.value,
+  }));
+
+  return (
+    <Animated.View style={[styles.fireworkParticle, animatedStyle]}>
+      <Animated.View
+        style={[
+          styles.fireworkDot,
+          dotStyle,
+          {
+            backgroundColor: particle.color,
+            width: particle.size,
+            height: particle.size,
+            borderRadius: particle.size / 2,
+            shadowColor: particle.color,
+            shadowOffset: { width: 0, height: 0 },
+            shadowOpacity: 1,
+            shadowRadius: particle.size,
+          },
+        ]}
+      />
+    </Animated.View>
+  );
+};
+
+interface ShakeOverlayProps {
+  visible: boolean;
+  onAnimationEnd?: () => void;
+  language?: string;
+}
+
+const ShakeOverlay = ({ visible, onAnimationEnd, language = 'en' }: ShakeOverlayProps) => {
+  const shakeX = useSharedValue(0);
+
+  useEffect(() => {
+    if (visible) {
+      shakeX.value = withSequence(
+        withTiming(-10, { duration: 50, easing: Easing.linear }),
+        withRepeat(withTiming(10, { duration: 100, easing: Easing.linear }), 4, true),
+        withTiming(0, { duration: 50 })
+      );
+
+      // Call onAnimationEnd after the shake animation completes
+      const timer = setTimeout(() => {
+        onAnimationEnd?.();
+      }, 600);
+
+      return () => clearTimeout(timer);
+    }
+  }, [visible]);
+
+  const animatedStyle = useAnimatedStyle(() => ({
+    transform: [{ translateX: shakeX.value }],
+  }));
+
+  const getTryAgainText = () => {
+    return language === 'am' ? 'እንደገና ይሞክሩ!' : 'Try Again!';
+  };
+
+  if (!visible) return null;
+
+  return (
+    <Animated.View style={[styles.shakeOverlayContainer, animatedStyle]}>
+      <View style={styles.shakeIconContainer}>
+        <Text style={styles.shakeEmoji}>😢</Text>
+        <Text style={styles.shakeText}>{getTryAgainText()}</Text>
+      </View>
+    </Animated.View>
+  );
+};
 
 export default function PictureMCQScreen({ onBackToInstructions }: PictureMCQScreenProps) {
   const { isDarkMode } = useTheme();
@@ -185,7 +363,7 @@ export default function PictureMCQScreen({ onBackToInstructions }: PictureMCQScr
       options: apiQuestion.choices.map((choice, choiceIndex) => {
         // Extract only the English part (before newline) from text_en
         const englishOnly = choice.text_en.split('\n')[0].trim();
-        
+
         return {
           id: String.fromCharCode(65 + choiceIndex), // A, B, C, D...
           text: choice.text_en, // Keep for backward compatibility
@@ -250,17 +428,17 @@ export default function PictureMCQScreen({ onBackToInstructions }: PictureMCQScr
       try {
         // Use React Native's Image.prefetch for better performance
         await Image.prefetch(question.image);
-        
+
         // Mark as preloaded
-        setImageStates(prev => ({ 
-          ...prev, 
-          [question.id]: { loading: false, error: false, loaded: true } 
+        setImageStates(prev => ({
+          ...prev,
+          [question.id]: { loading: false, error: false, loaded: true }
         }));
       } catch (error) {
         // Mark as error
-        setImageStates(prev => ({ 
-          ...prev, 
-          [question.id]: { loading: false, error: true, loaded: false } 
+        setImageStates(prev => ({
+          ...prev,
+          [question.id]: { loading: false, error: true, loaded: false }
         }));
       }
     }
@@ -273,18 +451,26 @@ export default function PictureMCQScreen({ onBackToInstructions }: PictureMCQScr
         try {
           // Use React Native's Image.prefetch for better performance
           await Image.prefetch(question.image);
-          
-          // Mark as preloaded
-          setImageStates(prev => ({ 
-            ...prev, 
-            [question.id]: { loading: false, error: false, loaded: true } 
-          }));
+
+          // Mark as preloaded (only if not already loaded)
+          setImageStates(prev => {
+            const existing = prev[question.id];
+            if (existing && existing.loaded) return prev;
+            return {
+              ...prev,
+              [question.id]: { loading: false, error: false, loaded: true }
+            };
+          });
         } catch (error) {
-          // Mark as error
-          setImageStates(prev => ({ 
-            ...prev, 
-            [question.id]: { loading: false, error: true, loaded: false } 
-          }));
+          // Mark as error only if not already loaded
+          setImageStates(prev => {
+            const existing = prev[question.id];
+            if (existing && existing.loaded) return prev;
+            return {
+              ...prev,
+              [question.id]: { loading: false, error: true, loaded: false }
+            };
+          });
         }
       }
     });
@@ -300,29 +486,29 @@ export default function PictureMCQScreen({ onBackToInstructions }: PictureMCQScr
       const categoryId = params.categoryId as string;
       const subcategoryId = params.subcategoryId as string;
       const isSubcategory = params.isSubcategory === 'true';
-      
+
       if (!categoryId) {
         throw new Error('Category ID is required');
       }
 
       // Check cache first
       const cachedQuestions = await getCachedQuestions(categoryId, isSubcategory ? subcategoryId : undefined);
-      
+
       if (cachedQuestions && cachedQuestions.length > 0) {
         console.log('Using cached questions, transforming...');
         const transformedQuestions = transformQuestions(cachedQuestions);
         console.log('Transformed cached questions:', transformedQuestions);
-        
+
         // Show first question immediately
         setQuestions(transformedQuestions);
         setLoading(false);
         setSessionStartTime(Date.now());
-        
+
         // Load first question's image first (prioritize it)
         if (transformedQuestions.length > 0) {
           // Wait for first image to load before preloading others
           await preloadSingleImage(transformedQuestions[0]);
-          
+
           // After first image is loaded, preload next 2-3 questions in background
           if (transformedQuestions.length > 1) {
             const nextQuestions = transformedQuestions.slice(1, Math.min(4, transformedQuestions.length));
@@ -330,7 +516,7 @@ export default function PictureMCQScreen({ onBackToInstructions }: PictureMCQScr
             preloadImages(nextQuestions);
           }
         }
-        
+
         // Fetch from API in background to update cache (don't block UI)
         fetchAndUpdateCache(categoryId, subcategoryId, isSubcategory, transformedQuestions);
         return;
@@ -339,7 +525,7 @@ export default function PictureMCQScreen({ onBackToInstructions }: PictureMCQScr
       // No cache, fetch from API
       setLoading(true);
       let apiQuestions: KGQuestion[];
-      
+
       if (isSubcategory && subcategoryId) {
         const { questions } = await getKGSubcategoryQuestions(parseInt(subcategoryId), parseInt(categoryId));
         apiQuestions = questions;
@@ -349,23 +535,23 @@ export default function PictureMCQScreen({ onBackToInstructions }: PictureMCQScr
         apiQuestions = questions;
         console.log('Raw API category questions:', apiQuestions);
       }
-      
+
       // Cache the fetched questions
       await cacheQuestions(categoryId, apiQuestions, isSubcategory ? subcategoryId : undefined);
-      
+
       const transformedQuestions = transformQuestions(apiQuestions);
       console.log('Fetched and transformed questions:', transformedQuestions);
-      
+
       // Show first question immediately
       setQuestions(transformedQuestions);
       setLoading(false);
       setSessionStartTime(Date.now());
-      
+
       // Load first question's image first (prioritize it)
       if (transformedQuestions.length > 0) {
         // Wait for first image to load before preloading others
         await preloadSingleImage(transformedQuestions[0]);
-        
+
         // After first image is loaded, preload next 2-3 questions in background
         if (transformedQuestions.length > 1) {
           const nextQuestions = transformedQuestions.slice(1, Math.min(4, transformedQuestions.length));
@@ -382,14 +568,14 @@ export default function PictureMCQScreen({ onBackToInstructions }: PictureMCQScr
 
   // Fetch from API and update cache in background (non-blocking)
   const fetchAndUpdateCache = async (
-    categoryId: string, 
-    subcategoryId: string | undefined, 
+    categoryId: string,
+    subcategoryId: string | undefined,
     isSubcategory: boolean,
     currentQuestions: Question[]
   ) => {
     try {
       let apiQuestions: KGQuestion[];
-      
+
       if (isSubcategory && subcategoryId) {
         const { questions } = await getKGSubcategoryQuestions(parseInt(subcategoryId), parseInt(categoryId));
         apiQuestions = questions;
@@ -397,21 +583,21 @@ export default function PictureMCQScreen({ onBackToInstructions }: PictureMCQScr
         const { questions } = await getKGQuestions(parseInt(categoryId));
         apiQuestions = questions;
       }
-      
+
       // Update cache with fresh data
       await cacheQuestions(categoryId, apiQuestions, isSubcategory ? subcategoryId : undefined);
-      
+
       // Only update questions if current questions are different (to avoid flicker)
       const transformedQuestions = transformQuestions(apiQuestions);
       const currentIds = new Set(currentQuestions.map(q => q.id));
       const newIds = new Set(transformedQuestions.map(q => q.id));
-      
+
       // Check if questions have changed
-      if (currentIds.size !== newIds.size || 
-          ![...currentIds].every(id => newIds.has(id))) {
+      if (currentIds.size !== newIds.size ||
+        ![...currentIds].every(id => newIds.has(id))) {
         // Questions changed, update state
         setQuestions(transformedQuestions);
-        
+
         // Preload any new images
         const newQuestions = transformedQuestions.filter(q => !currentIds.has(q.id));
         if (newQuestions.length > 0) {
@@ -429,11 +615,11 @@ export default function PictureMCQScreen({ onBackToInstructions }: PictureMCQScr
     try {
       const categories = await getKGCategories();
       setAllCategories(categories);
-      
+
       // Find next category after current one
       const currentCategoryId = parseInt(params.categoryId as string);
       const currentIndex = categories.findIndex(cat => cat.id === currentCategoryId);
-      
+
       if (currentIndex !== -1 && currentIndex < categories.length - 1) {
         setNextCategory(categories[currentIndex + 1]);
       }
@@ -460,7 +646,7 @@ export default function PictureMCQScreen({ onBackToInstructions }: PictureMCQScr
   const imageScale = useSharedValue(1);
   const isDraggingShared = useSharedValue(false);
   const hoveredOptionShared = useSharedValue<string | null>(null);
-  
+
   // Video animation states
   const [showCorrectVideo, setShowCorrectVideo] = useState(false);
   const [showIncorrectVideo, setShowIncorrectVideo] = useState(false);
@@ -496,17 +682,21 @@ export default function PictureMCQScreen({ onBackToInstructions }: PictureMCQScr
 
   const handleAnswerSelection = useCallback((optionId: string) => {
     if (!currentQuestion) return;
-    
+
     const selectedOption = currentQuestion.options.find(opt => opt.id === optionId);
     if (selectedOption) {
       setDroppedOption(optionId);
       setSelectedAnswer(optionId);
-      
+
       if (selectedOption.isCorrect) {
         setScore(prev => prev + 1);
         setShowCorrectVideo(true);
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+        // Firework animation will call handleNextQuestion via onAnimationEnd
       } else {
         setShowIncorrectVideo(true);
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+        // Shake animation will call handleNextQuestion via onAnimationEnd
       }
     }
   }, [currentQuestion]);
@@ -516,7 +706,7 @@ export default function PictureMCQScreen({ onBackToInstructions }: PictureMCQScr
       'worklet';
       // Prevent dragging if an option has already been dropped
       if (droppedOption) return;
-      
+
       isDraggingShared.value = true;
       imageScale.value = withSpring(0.5);
     })
@@ -524,7 +714,7 @@ export default function PictureMCQScreen({ onBackToInstructions }: PictureMCQScr
       'worklet';
       // Don't update position if an option has been dropped
       if (droppedOption) return;
-      
+
       imagePosition.value = {
         x: event.translationX,
         y: event.translationY,
@@ -539,9 +729,9 @@ export default function PictureMCQScreen({ onBackToInstructions }: PictureMCQScr
       Object.entries(dropZones).forEach(([optionId, zone]) => {
         const zoneCenterX = zone.x + zone.width / 2;
         const zoneCenterY = zone.y + zone.height / 2;
-        
+
         const distance = Math.sqrt(
-          Math.pow(imageCenterX - zoneCenterX, 2) + 
+          Math.pow(imageCenterX - zoneCenterX, 2) +
           Math.pow(imageCenterY - zoneCenterY, 2)
         );
 
@@ -558,7 +748,7 @@ export default function PictureMCQScreen({ onBackToInstructions }: PictureMCQScr
       'worklet';
       // Don't process drop if an option has already been dropped
       if (droppedOption) return;
-      
+
       isDraggingShared.value = false;
       imageScale.value = withSpring(1);
       imagePosition.value = withSpring({ x: 0, y: 0 });
@@ -576,11 +766,11 @@ export default function PictureMCQScreen({ onBackToInstructions }: PictureMCQScr
     const checkPhoneNumber = async () => {
       const phoneNumber = await AsyncStorage.getItem('userPhoneNumber');
       setUserPhoneNumber(phoneNumber);
-      
+
       // For KG students, always allow access
       if (typeof user?.grade === 'string' && user.grade.toLowerCase().includes('kg')) {
         setIsAuthorized(true);
-        
+
         // Check if we need to reset the state
         if (params?.reset === 'true') {
           handleRetry();
@@ -590,7 +780,7 @@ export default function PictureMCQScreen({ onBackToInstructions }: PictureMCQScr
     checkPhoneNumber();
   }, [params]);
 
-   // Fetch questions when component mounts
+  // Fetch questions when component mounts
   useEffect(() => {
     fetchQuestions();
     fetchAllCategories();
@@ -606,21 +796,31 @@ export default function PictureMCQScreen({ onBackToInstructions }: PictureMCQScr
       const nextIndex = currentQuestionIndex + 1;
       const nextQuestion = questions[nextIndex];
       console.log('Moving to next question', { from: currentQuestionIndex, to: nextIndex });
-      
-      // Preload images for upcoming questions (next 2-3) in background
+
+      // Preload images for upcoming questions synchronously before moving
       if (nextIndex + 1 < questions.length) {
         const upcomingQuestions = questions.slice(nextIndex + 1, Math.min(nextIndex + 4, questions.length));
         preloadImages(upcomingQuestions);
       }
-      
-      // Reset image state for next question to ensure it loads
+
+      // Only reset image state if not already preloaded/cached
       if (nextQuestion && nextQuestion.image) {
-        setImageStates(prev => ({
-          ...prev,
-          [nextQuestion.id]: { loading: true, error: false, loaded: false }
-        }));
+        const currentImageState = imageStates[nextQuestion.id];
+        if (!currentImageState || !currentImageState.loaded) {
+          Image.prefetch(nextQuestion.image).then(() => {
+            setImageStates(prev => ({
+              ...prev,
+              [nextQuestion.id]: { loading: false, error: false, loaded: true }
+            }));
+          }).catch(() => {
+            setImageStates(prev => ({
+              ...prev,
+              [nextQuestion.id]: { loading: false, error: true, loaded: false }
+            }));
+          });
+        }
       }
-      
+
       setCurrentQuestionIndex(nextIndex);
       setSelectedAnswer(null);
       setShowExplanation(false);
@@ -629,7 +829,8 @@ export default function PictureMCQScreen({ onBackToInstructions }: PictureMCQScr
       setDroppedOption(null);
       setHoveredOption(null);
     } else {
-      console.log('Already at last question');
+      console.log('Already at last question, showing results');
+      setShowResult(true);
     }
   };
 
@@ -638,7 +839,7 @@ export default function PictureMCQScreen({ onBackToInstructions }: PictureMCQScr
     if (currentQuestionIndex > 0) {
       const prevIndex = currentQuestionIndex - 1;
       const prevQuestion = questions[prevIndex];
-      
+
       // Reset image state for previous question to ensure it loads
       if (prevQuestion && prevQuestion.image) {
         setImageStates(prev => ({
@@ -646,7 +847,7 @@ export default function PictureMCQScreen({ onBackToInstructions }: PictureMCQScr
           [prevQuestion.id]: { loading: true, error: false, loaded: false }
         }));
       }
-      
+
       setCurrentQuestionIndex(prevIndex);
       setSelectedAnswer(null);
       setShowExplanation(false);
@@ -702,7 +903,7 @@ export default function PictureMCQScreen({ onBackToInstructions }: PictureMCQScr
       setHoveredOption(null);
       setShowCorrectVideo(false);
       setShowIncorrectVideo(false);
-      
+
       // Navigate to next category questions
       const categoryName = i18n.language === 'am' ? (nextCategory.name_am || nextCategory.name_en) : nextCategory.name_en;
 
@@ -726,23 +927,23 @@ export default function PictureMCQScreen({ onBackToInstructions }: PictureMCQScr
 
   const handleNavigation = async () => {
     if (!currentQuestion) return;
-    
+
     // Prevent navigation if no answer is selected
     if (!selectedAnswer) {
       return;
     }
-    
+
     const currentScore = Number(score) || 0; // Ensure score is a number
     if (isLastQuestion) {
       // Track activity when quiz is completed
       try {
         const trackingService = ActivityTrackingService.getInstance();
         await trackingService.initialize();
-        
+
         const categoryId = parseInt(params.categoryId as string);
         const categoryName = params.categoryName as string || 'Unknown Category';
         const timeSpent = Date.now() - (sessionStartTime || Date.now());
-        
+
         await trackingService.trackPictureMCQActivity({
           grade: user?.grade || 'kg',
           subject: categoryName,
@@ -756,35 +957,12 @@ export default function PictureMCQScreen({ onBackToInstructions }: PictureMCQScr
         console.error('Failed to track picture MCQ activity:', error);
         // Silently fail - activity tracking is not critical
       }
-      
+
       setShowResult(true);
     } else {
       handleNextQuestion();
     }
   };
-
-  // Auto-advance to next question after showing video animations
-  useEffect(() => {
-    if (selectedAnswer && (showCorrectVideo || showIncorrectVideo)) {
-      console.log('Auto-advance timer started', { currentQuestionIndex, questionsLength: questions.length });
-      const timer = setTimeout(() => {
-        console.log('Auto-advance timer triggered', { currentQuestionIndex, questionsLength: questions.length });
-        // Hide videos first
-        setShowCorrectVideo(false);
-        setShowIncorrectVideo(false);
-        
-        if (currentQuestionIndex < questions.length - 1) {
-          console.log('Moving to next question');
-          handleNextQuestion();
-        } else {
-          console.log('Showing results');
-          setShowResult(true);
-        }
-      }, 3000); // Wait 3 seconds to show the video
-
-      return () => clearTimeout(timer);
-    }
-  }, [selectedAnswer, showCorrectVideo, showIncorrectVideo, currentQuestionIndex, questions.length]);
 
 
 
@@ -879,7 +1057,7 @@ export default function PictureMCQScreen({ onBackToInstructions }: PictureMCQScr
       <GestureHandlerRootView style={{ flex: 1 }}>
         <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]}>
           <View style={[styles.header, { backgroundColor: colors.background }]}>
-            <TouchableOpacity 
+            <TouchableOpacity
               style={styles.backButton}
               onPress={handleGoToInstructions}
             >
@@ -890,7 +1068,7 @@ export default function PictureMCQScreen({ onBackToInstructions }: PictureMCQScr
             </ThemedText>
             <View style={styles.headerRight}>
               <LanguageToggle colors={{ ...colors, text: isDarkMode ? '#FFFFFF' : colors.tint }} />
-              <TouchableOpacity 
+              <TouchableOpacity
                 onPress={() => router.push('/profile')}
                 style={[styles.profileIconContainer, { backgroundColor: colors.tint + '20' }]}
               >
@@ -951,7 +1129,7 @@ export default function PictureMCQScreen({ onBackToInstructions }: PictureMCQScr
                         key={index}
                         name="star.fill"
                         size={32}
-                        color={index < Math.ceil(percentage/20) ? "#FFD700" : "#E0E0E0"}
+                        color={index < Math.ceil(percentage / 20) ? "#FFD700" : "#E0E0E0"}
                         style={styles.star}
                       />
                     ))}
@@ -959,11 +1137,11 @@ export default function PictureMCQScreen({ onBackToInstructions }: PictureMCQScr
                 </View>
               </Animated.View>
 
-               {/* Action Buttons */}
+              {/* Action Buttons */}
               <View style={styles.actionButtons}>
                 <TouchableOpacity
                   style={[
-                    styles.button, 
+                    styles.button,
                     styles.retryButton,
                     nextCategory && { backgroundColor: '#FF9800' }
                   ]}
@@ -974,7 +1152,7 @@ export default function PictureMCQScreen({ onBackToInstructions }: PictureMCQScr
                     {nextCategory ? t('mcq.results.tryOtherQuestions', 'Try other remaining Questions') : t('mcq.results.tryAgain')}
                   </ThemedText>
                 </TouchableOpacity>
-                
+
                 <TouchableOpacity
                   style={[styles.button, styles.homeButton]}
                   onPress={handleGoToInstructions}
@@ -996,7 +1174,7 @@ export default function PictureMCQScreen({ onBackToInstructions }: PictureMCQScr
     <GestureHandlerRootView style={{ flex: 1 }}>
       <SafeAreaView style={styles.safeArea} edges={['top', 'left', 'right']}>
         <View style={[styles.header, { backgroundColor: '#FFFFFF', paddingHorizontal: 0 }]}>
-          <TouchableOpacity 
+          <TouchableOpacity
             style={styles.backButton}
             onPress={handleGoToInstructions}
           >
@@ -1017,14 +1195,14 @@ export default function PictureMCQScreen({ onBackToInstructions }: PictureMCQScr
             {/* Progress Bar */}
             <View style={styles.kgProgressContainer}>
               <View style={styles.kgProgressBar}>
-                <View 
+                <View
                   style={[
-                    styles.kgProgressFill, 
-                    { 
+                    styles.kgProgressFill,
+                    {
                       backgroundColor: KG_DESIGN_TOKENS.colors.primary,
                       width: `${((currentQuestionIndex + 1) / questions.length) * 100}%`
                     }
-                  ]} 
+                  ]}
                 />
               </View>
               <Text style={styles.kgProgressText}>
@@ -1035,14 +1213,14 @@ export default function PictureMCQScreen({ onBackToInstructions }: PictureMCQScr
             {memoizedCurrentQuestion && (
               <>
                 <GestureDetector gesture={imagePan}>
-                  <Animated.View 
+                  <Animated.View
                     style={[
                       styles.imageContainer,
                       imageAnimatedStyle,
                       { backgroundColor: isDarkMode ? '#1C1C1E' : '#FFFFFF' }
                     ]}
                   >
-                    <QuestionImage 
+                    <QuestionImage
                       key={`question-${memoizedCurrentQuestion.id}`}
                       question={memoizedCurrentQuestion}
                       imageStates={imageStates}
@@ -1051,44 +1229,19 @@ export default function PictureMCQScreen({ onBackToInstructions }: PictureMCQScr
                       colors={colors}
                       t={t}
                     />
-                     
-                     {/* Correct Video Animation on top of image */}
-                     {showCorrectVideo && (
-                       <View style={styles.overlayVideoContainer}>
-                         <Video
-                           source={require('../../../../assets/animations/correct.mp4')}
-                           style={styles.inlineVideo}
-                           shouldPlay
-                           isLooping={true}
-                           resizeMode={ResizeMode.CONTAIN}
-                           onPlaybackStatusUpdate={(status) => {
-                             if ('didJustFinish' in status && status.didJustFinish) {
-                               console.log('Correct video finished');
-                               // Don't hide the video - let the auto-advance timer handle it
-                             }
-                           }}
-                         />
-                       </View>
-                     )}
 
-                     {/* Incorrect Video Animation on top of image */}
-                     {showIncorrectVideo && (
-                       <View style={styles.overlayVideoContainer}>
-                         <Video
-                           source={require('../../../../assets/animations/not-correct.mp4')}
-                           style={styles.inlineVideo}
-                           shouldPlay
-                           isLooping={true}
-                           resizeMode={ResizeMode.CONTAIN}
-                           onPlaybackStatusUpdate={(status) => {
-                             if ('didJustFinish' in status && status.didJustFinish) {
-                               console.log('Incorrect video finished');
-                               // Don't hide the video - let the auto-advance timer handle it
-                             }
-                           }}
-                         />
-                       </View>
-                     )}
+                    {/* Firework Animation for Correct Answer */}
+                    <FireworkBurst
+                      visible={showCorrectVideo}
+                      onAnimationEnd={handleNextQuestion}
+                    />
+
+                    {/* Shake Animation for Incorrect Answer */}
+                    <ShakeOverlay
+                      visible={showIncorrectVideo}
+                      onAnimationEnd={handleNextQuestion}
+                      language={i18n.language}
+                    />
                   </Animated.View>
                 </GestureDetector>
 
@@ -1096,15 +1249,15 @@ export default function PictureMCQScreen({ onBackToInstructions }: PictureMCQScr
                   {memoizedCurrentQuestion.options.map((option, index) => {
                     const funColors = ['#4CAF50', '#FF9800', '#2196F3', '#9C27B0'];
                     const funColor = funColors[index % funColors.length];
-                    
+
                     return (
                       <TouchableOpacity
                         key={option.id}
                         style={[
                           styles.kgOptionButton,
                           styles.kgOptionButtonBounce,
-                          { 
-                            backgroundColor: selectedAnswer === option.id 
+                          {
+                            backgroundColor: selectedAnswer === option.id
                               ? (option.isCorrect ? '#4CAF50' : '#F44336')
                               : funColor
                           },
@@ -1129,7 +1282,7 @@ export default function PictureMCQScreen({ onBackToInstructions }: PictureMCQScr
                 {showExplanation && memoizedCurrentQuestion?.explanation && memoizedCurrentQuestion.explanation.trim() !== '' && memoizedCurrentQuestion.explanation !== 'No explanation available' && (
                   <View style={[styles.explanationContainer, { backgroundColor: isDarkMode ? '#1C1C1E' : '#F5F5F5' }]}>
                     <ThemedText style={[styles.explanationTitle, { color: '#6B54AE' }]}>{t('mcq.explanation')}</ThemedText>
-                    <RichText 
+                    <RichText
                       text={memoizedCurrentQuestion.explanation}
                       style={styles.explanationText}
                       color={colors.text}
@@ -1849,6 +2002,57 @@ const styles = StyleSheet.create<any>({
   inlineVideo: {
     width: '100%',
     height: '100%',
+  },
+  fireworkContainer: {
+    ...StyleSheet.absoluteFillObject,
+    zIndex: 1000,
+    overflow: 'visible',
+    elevation: 1000,
+  },
+  fireworkOrigin: {
+    position: 'absolute',
+    left: '50%',
+    top: '50%',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  fireworkParticle: {
+    position: 'absolute',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  fireworkDot: {
+    elevation: 10,
+  },
+  shakeOverlayContainer: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    zIndex: 100,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  shakeIconContainer: {
+    backgroundColor: 'rgba(255, 100, 100, 0.9)',
+    borderRadius: 20,
+    padding: 20,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 8,
+  },
+  shakeEmoji: {
+    fontSize: 48,
+    marginBottom: 8,
+  },
+  shakeText: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#FFFFFF',
   },
   // KG Question Page Styles
   headerCenter: {
