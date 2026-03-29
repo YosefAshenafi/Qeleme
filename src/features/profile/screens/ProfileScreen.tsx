@@ -43,15 +43,11 @@ export default function ProfileScreen() {
   const [showAccountModal, setShowAccountModal] = useState(false);
   const [showSecurityModal, setShowSecurityModal] = useState(false);
   const [showAboutModal, setShowAboutModal] = useState(false);
-  const [pushNotificationsEnabled, setPushNotificationsEnabled] = useState(true);
   const [currentLanguage, setCurrentLanguage] = useState(i18n.language);
 
   useEffect(() => {
     const loadPrefs = async () => {
       try {
-        const push = await AsyncStorage.getItem('@prefs_push_notifications');
-        if (push !== null) setPushNotificationsEnabled(push === 'true');
-        
         const savedLanguage = await AsyncStorage.getItem('@prefs_language');
         if (savedLanguage) {
           setCurrentLanguage(savedLanguage);
@@ -274,17 +270,6 @@ export default function ProfileScreen() {
     <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]}>
       <StatusBar style={isDarkMode ? 'light' : 'dark'} />
 
-      <View style={[styles.header, { backgroundColor: colors.background, borderBottomColor: colors.border }]}>
-        <View style={styles.headerLeft}>
-          <Image
-            source={require('../../../../assets/images/logo.png')}
-            style={styles.brandMark}
-            resizeMode="contain"
-          />
-        </View>
-        <View style={styles.headerRightWrap} />
-      </View>
-
       <ScrollView
         contentContainerStyle={styles.scrollContent}
         refreshControl={
@@ -404,30 +389,6 @@ export default function ProfileScreen() {
             <Switch
               value={currentLanguage === 'am'}
               onValueChange={(value) => handleLanguageChange(value ? 'am' : 'en')}
-            />
-          </View>
-        </View>
-
-        {/* App customization continued */}
-        <View style={[styles.groupCard, { backgroundColor: colors.card, borderColor: colors.border, marginTop: 12 }]}>
-          <View style={styles.row}>
-            <View style={[styles.rowIcon, { backgroundColor: BRAND_BLUE + '12' }]}>
-              <IconSymbol name="bell.fill" size={18} color={BRAND_BLUE} />
-            </View>
-            <View style={styles.rowText}>
-              <Text style={[styles.rowTitle, { color: colors.text }]}>
-                {t('profile.pushNotifications', { defaultValue: 'Push Notifications' })}
-              </Text>
-              <Text style={[styles.rowSubtitle, { color: colors.text + '70' }]}>
-                {t('profile.pushNotificationsSubtitle', { defaultValue: 'Real-time updates' })}
-              </Text>
-            </View>
-            <Switch
-              value={pushNotificationsEnabled}
-              onValueChange={(v) => {
-                setPushNotificationsEnabled(v);
-                setPref('@prefs_push_notifications', String(v));
-              }}
             />
           </View>
         </View>

@@ -43,7 +43,7 @@ export const ReportsScreenStyles = StyleSheet.create({
   creditsCard: {
     borderRadius: 16,
     padding: 14,
-    minHeight: 92,
+    minHeight: 120,
     justifyContent: 'space-between',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },

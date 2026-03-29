@@ -372,7 +372,7 @@ export default {
     edit: 'Edit',
     title: 'Settings',
     about: 'About MegaTest',
-    aboutInfo: 'MegaTest is an innovative educational platform designed to enhance learning through interactive content, personalized experiences, and comprehensive progress tracking.',
+    aboutInfo: 'MegaTest is a premium learning ecosystem designed to accelerate academic success through engaging, interactive content, customized study paths, and precise performance tracking.',
     contactUs: 'Contact Us',
     version: 'App Version',
     dangerZone: 'Danger Zone',
