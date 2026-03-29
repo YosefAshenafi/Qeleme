@@ -300,7 +300,7 @@ const ShakeOverlay = ({ visible, onAnimationEnd, language = 'en' }: ShakeOverlay
   }));
 
   const getTryAgainText = () => {
-    return language === 'am' ? 'እንደገና ይሞክሩ!' : 'Try Again!';
+    return language === 'am' ? 'ስህተት!' : 'Incorrect!';
   };
 
   if (!visible) return null;
