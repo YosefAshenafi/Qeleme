@@ -1069,16 +1069,10 @@ export default function PictureMCQScreen({ onBackToInstructions }: PictureMCQScr
             </ThemedText>
             <View style={styles.headerRight}>
               <LanguageToggle colors={{ ...colors, text: isDarkMode ? '#FFFFFF' : colors.tint }} />
-              <TouchableOpacity
-                onPress={() => router.push('/profile')}
-                style={[styles.profileIconContainer, { backgroundColor: colors.tint + '20' }]}
-              >
-                <IconSymbol name="gearshape.fill" size={24} color={isDarkMode ? '#FFFFFF' : colors.tint} />
-              </TouchableOpacity>
             </View>
           </View>
           <LinearGradient
-            colors={['#667eea', '#764ba2', '#f093fb']}
+            colors={['#4CAF50', '#2196F3', '#00BCD4']}
             style={styles.resultGradientContainer}
           >
             <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
@@ -1089,15 +1083,6 @@ export default function PictureMCQScreen({ onBackToInstructions }: PictureMCQScr
                     <Text style={styles.celebrationEmoji}>
                       {percentage >= 70 ? '🎉' : percentage >= 50 ? '👍' : '💪'}
                     </Text>
-                  </View>
-
-                  {/* Trophy Icon */}
-                  <View style={styles.trophyContainer}>
-                    <IconSymbol
-                      name="trophy.fill"
-                      size={60}
-                      color="#FFD700"
-                    />
                   </View>
 
                   {/* Score Display */}
@@ -1129,8 +1114,8 @@ export default function PictureMCQScreen({ onBackToInstructions }: PictureMCQScr
                       <IconSymbol
                         key={index}
                         name="star.fill"
-                        size={32}
-                        color={index < Math.ceil(percentage / 20) ? "#FFD700" : "#E0E0E0"}
+                        size={40}
+                        color={index < Math.ceil(percentage / 20) ? "#FFD700" : "rgba(255,255,255,0.3)"}
                         style={styles.star}
                       />
                     ))}
@@ -1158,8 +1143,8 @@ export default function PictureMCQScreen({ onBackToInstructions }: PictureMCQScr
                   style={[styles.button, styles.homeButton]}
                   onPress={handleGoToInstructions}
                 >
-                  <IconSymbol name="house.fill" size={24} color="#FFFFFF" />
-                  <ThemedText style={styles.buttonText}>{t('mcq.pictureQuiz.goToInstructions')}</ThemedText>
+                  <IconSymbol name="checkmark.circle.fill" size={24} color="#FFFFFF" />
+                  <ThemedText style={styles.buttonText}>Done</ThemedText>
                 </TouchableOpacity>
               </View>
 
@@ -1184,7 +1169,7 @@ export default function PictureMCQScreen({ onBackToInstructions }: PictureMCQScr
           <View style={styles.headerCenter}>
             <Text style={styles.headerTitleText}>{getLocalizedCategoryName()}</Text>
           </View>
-          <View style={styles.headerRight}>
+          <View style={[styles.headerRight, { marginRight: 10 }]}>
             <LanguageToggle colors={{ card: 'transparent', text: KG_DESIGN_TOKENS.colors.primary, tint: KG_DESIGN_TOKENS.colors.primary }} />
           </View>
         </View>
@@ -1640,93 +1625,93 @@ const styles = StyleSheet.create<any>({
     width: '100%',
   },
   resultContainer: {
-    padding: 12,
+    padding: 20,
   },
   resultContent: {
     alignItems: 'center',
-    backgroundColor: 'rgba(255, 255, 255, 0.15)',
-    borderRadius: 20,
-    padding: 12,
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    borderRadius: 30,
+    padding: 24,
     marginTop: 10,
   },
   trophyContainer: {
-    width: 80,
-    height: 80,
-    backgroundColor: 'rgba(255, 255, 255, 0.3)',
-    borderRadius: 40,
+    width: 100,
+    height: 100,
+    backgroundColor: '#FFD700',
+    borderRadius: 50,
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 16,
-    borderWidth: 3,
-    borderColor: '#FFD700',
+    marginBottom: 20,
+    borderWidth: 4,
+    borderColor: '#FFFFFF',
     shadowColor: '#FFD700',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.5,
-    shadowRadius: 8,
-    elevation: 8,
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.6,
+    shadowRadius: 12,
+    elevation: 10,
   },
   celebrationEmojiContainer: {
-    marginBottom: 12,
+    marginBottom: 16,
   },
   celebrationEmoji: {
-    fontSize: 64,
+    fontSize: 72,
     textAlign: 'center',
   },
   funMessageText: {
-    fontSize: 20,
-    lineHeight: 28,
+    fontSize: 22,
+    lineHeight: 30,
   },
   scoreContainer: {
     alignItems: 'center',
-    marginBottom: 10,
+    marginBottom: 16,
   },
   scoreCircle: {
-    width: 100,
-    height: 100,
-    borderRadius: 50,
-    backgroundColor: 'rgba(255, 255, 255, 0.3)',
+    width: 120,
+    height: 120,
+    borderRadius: 60,
+    backgroundColor: '#4CAF50',
     justifyContent: 'center',
     alignItems: 'center',
-    borderWidth: 3,
+    borderWidth: 4,
     borderColor: '#FFFFFF',
-    shadowColor: '#FFFFFF',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 8,
+    shadowColor: '#4CAF50',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.5,
+    shadowRadius: 10,
+    elevation: 10,
   },
   scoreText: {
     paddingTop: 8,
-    fontSize: 28,
+    fontSize: 32,
     fontWeight: 'bold',
     color: '#FFFFFF',
   },
   percentageContainer: {
-    backgroundColor: 'rgba(255, 255, 255, 0.3)',
-    paddingHorizontal: 28,
-    paddingVertical: 12,
-    borderRadius: 24,
-    marginBottom: 16,
-    borderWidth: 2,
+    backgroundColor: '#2196F3',
+    paddingHorizontal: 32,
+    paddingVertical: 16,
+    borderRadius: 30,
+    marginBottom: 20,
+    borderWidth: 3,
     borderColor: '#FFFFFF',
   },
   percentageText: {
     paddingTop: 6,
-    fontSize: 28,
+    fontSize: 32,
     fontWeight: 'bold',
     color: '#FFFFFF',
   },
   messageContainer: {
-    backgroundColor: 'rgba(255, 255, 255, 0.2)',
-    padding: 12,
-    borderRadius: 15,
-    marginBottom: 10,
+    backgroundColor: 'rgba(255, 255, 255, 0.25)',
+    padding: 16,
+    borderRadius: 20,
+    marginBottom: 16,
     borderWidth: 2,
     borderColor: '#FFFFFF',
     width: '100%',
   },
   messageText: {
-    fontSize: 16,
+    fontSize: 18,
     textAlign: 'center',
     color: '#FFFFFF',
     fontWeight: 'bold',
@@ -1734,8 +1719,8 @@ const styles = StyleSheet.create<any>({
   starsContainer: {
     flexDirection: 'row',
     justifyContent: 'center',
-    gap: 8,
-    marginTop: 12,
+    gap: 12,
+    marginTop: 16,
   },
   star: {
     marginHorizontal: 4,
@@ -1762,8 +1747,8 @@ const styles = StyleSheet.create<any>({
     elevation: 6,
   },
   homeButton: {
-    backgroundColor: '#FF9800',
-    shadowColor: '#FF9800',
+    backgroundColor: '#2196F3',
+    shadowColor: '#2196F3',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.4,
     shadowRadius: 8,
