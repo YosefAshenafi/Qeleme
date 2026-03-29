@@ -1,8 +1,9 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Linking } from 'react-native';
+import { View, Text, TouchableOpacity, Linking } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '@/core/providers/ThemeProvider';
 import { getColors } from '@/shared/constants/Colors';
+import { ContactFooterStyles as styles } from './ContactFooter.styles';
 
 export function ContactFooter() {
   const { t } = useTranslation();
@@ -41,38 +42,4 @@ export function ContactFooter() {
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  contactFooter: {
-    marginTop: 32,
-    paddingTop: 24,
-    borderTopWidth: 1,
-    borderTopColor: 'rgba(128, 128, 128, 0.2)',
-    alignItems: 'center',
-    width: '100%',
-  },
-  contactFooterTitle: {
-    fontSize: 12,
-    fontWeight: '500',
-    marginBottom: 8,
-    textTransform: 'uppercase',
-    letterSpacing: 0.5,
-  },
-  contactFooterContent: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    flexWrap: 'wrap',
-    justifyContent: 'center',
-    marginBottom: 8,
-    gap: 8,
-  },
-  contactFooterLink: {
-    fontSize: 14,
-    fontWeight: '500',
-  },
-  contactFooterSeparator: {
-    fontSize: 14,
-    marginHorizontal: 4,
-  },
-});
 

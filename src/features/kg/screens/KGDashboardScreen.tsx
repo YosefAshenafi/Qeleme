@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, ScrollView, StyleSheet, ActivityIndicator, Dimensions, Image, TouchableOpacity, StatusBar } from 'react-native';
+import React, { useState, useEffect, useRef } from 'react';
+import { View, Text, ScrollView, ActivityIndicator, Dimensions, Image, TouchableOpacity, StatusBar, Modal } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { useTheme } from '@/core/providers/ThemeProvider';
@@ -9,6 +9,11 @@ import { getKGCategories, KGCategory } from '@/shared/services/kgService';
 import { IconSymbol } from '@/shared/components/ui/IconSymbol';
 import { LanguageToggle } from '@/shared/components/ui/LanguageToggle';
 import { KG_DESIGN_TOKENS } from '../constants/DesignTokens';
+import { KGDashboardScreenStyles as styles } from './KGDashboardScreen.styles';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { Audio } from 'expo-av';
+import { Ionicons } from '@expo/vector-icons';
+import i18n from 'i18next';
 
 // New Dashboard Components
 import { ExplorerHero } from '../components/dashboard/ExplorerHero';
@@ -19,12 +24,44 @@ export default function KGDashboardScreen() {
   const router = useRouter();
   const { isDarkMode } = useTheme();
   const { i18n } = useTranslation();
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
   const colors = KG_DESIGN_TOKENS.colors;
 
   const [categories, setCategories] = useState<KGCategory[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  const [showSettings, setShowSettings] = useState(false);
+  const [soundEnabled, setSoundEnabled] = useState(true);
+  const [autoAdvanceDelay, setAutoAdvanceDelay] = useState(2000);
+
+  const loadSettings = async () => {
+    try {
+      const savedSettings = await AsyncStorage.getItem('kgQuizSettings');
+      if (savedSettings) {
+        const parsed = JSON.parse(savedSettings);
+        setSoundEnabled(parsed.soundEnabled ?? true);
+        setAutoAdvanceDelay(parsed.autoAdvanceDelay ?? 2000);
+      }
+    } catch (error) {
+      console.log('Error loading settings:', error);
+    }
+  };
+
+  const saveSettings = async (newSoundEnabled: boolean, newDelay: number) => {
+    try {
+      await AsyncStorage.setItem('kgQuizSettings', JSON.stringify({
+        soundEnabled: newSoundEnabled,
+        autoAdvanceDelay: newDelay,
+      }));
+    } catch (error) {
+      console.log('Error saving settings:', error);
+    }
+  };
+
+  useEffect(() => {
+    loadSettings();
+  }, []);
 
   useEffect(() => {
     fetchCategories();
@@ -103,6 +140,9 @@ export default function KGDashboardScreen() {
                 tint: colors.primary
               }}
             />
+            <TouchableOpacity onPress={() => setShowSettings(true)} style={styles.iconButton}>
+              <Ionicons name="settings-outline" size={24} color={colors.primary} />
+            </TouchableOpacity>
           </View>
         </View>
       </View>
@@ -150,106 +190,95 @@ export default function KGDashboardScreen() {
 
       </ScrollView>
 
+      {/* Settings Modal */}
+      <Modal
+        visible={showSettings}
+        transparent={true}
+        animationType="slide"
+        onRequestClose={() => setShowSettings(false)}
+      >
+        <View style={styles.settingsModalOverlay}>
+          <View style={styles.settingsModalContent}>
+            <View style={styles.settingsModalHeader}>
+              <Text style={styles.settingsModalTitle}>
+                {i18n.language === 'am' ? 'ቅንብሮች' : 'Settings'}
+              </Text>
+              <TouchableOpacity onPress={() => setShowSettings(false)}>
+                <Ionicons name="close" size={28} color="#333" />
+              </TouchableOpacity>
+            </View>
+
+            {/* Sound Toggle */}
+            <View style={styles.settingsRow}>
+              <View style={styles.settingsLabelContainer}>
+                <Ionicons name="volume-high" size={24} color={KG_DESIGN_TOKENS.colors.primary} />
+                <Text style={styles.settingsLabel}>
+                  {i18n.language === 'am' ? 'ድምጽ' : 'Sound Effects'}
+                </Text>
+              </View>
+              <TouchableOpacity
+                style={[styles.settingsToggle, soundEnabled && styles.settingsToggleActive]}
+                onPress={() => {
+                  const newValue = !soundEnabled;
+                  setSoundEnabled(newValue);
+                  saveSettings(newValue, autoAdvanceDelay);
+                }}
+              >
+                <View style={[styles.settingsToggleKnob, soundEnabled && styles.settingsToggleKnobActive]} />
+              </TouchableOpacity>
+            </View>
+
+            {/* Delay Setting */}
+            <View style={styles.settingsRow}>
+              <View style={styles.settingsLabelContainer}>
+                <Ionicons name="time" size={24} color={KG_DESIGN_TOKENS.colors.primary} />
+                <Text style={styles.settingsLabel}>
+                  {i18n.language === 'am' ? 'የቀጣይ ጥያቄ ቆይታ' : 'Next Question Delay'}
+                </Text>
+              </View>
+            </View>
+            <View style={styles.delayOptionsContainer}>
+              {[1000, 2000, 3000].map((delay) => (
+                <TouchableOpacity
+                  key={delay}
+                  style={[styles.delayOption, autoAdvanceDelay === delay && styles.delayOptionActive]}
+                  onPress={() => {
+                    setAutoAdvanceDelay(delay);
+                    saveSettings(soundEnabled, delay);
+                  }}
+                >
+                  <Text style={[styles.delayOptionText, autoAdvanceDelay === delay && styles.delayOptionTextActive]}>
+                    {delay / 1000}s
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+
+            {/* Logout Button */}
+            <TouchableOpacity
+              style={styles.logoutButton}
+              onPress={() => {
+                setShowSettings(false);
+                logout();
+              }}
+            >
+              <Ionicons name="log-out-outline" size={24} color="#EF4444" />
+              <Text style={styles.logoutButtonText}>
+                {i18n.language === 'am' ? 'ውጣ' : 'Sign Out'}
+              </Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity style={styles.settingsDoneButton} onPress={() => setShowSettings(false)}>
+              <Text style={styles.settingsDoneButtonText}>
+                {i18n.language === 'am' ? 'ጨርሻለሁ' : 'Done'}
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
+
     </View>
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  header: {
-    paddingLeft: 0,
-    paddingRight: 24,
-    paddingBottom: 16,
-    backgroundColor: '#FFFFFF',
-    zIndex: 10,
-  },
-  headerRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  logoGroup: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-  },
-  headerRight: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-  },
-  avatarContainer: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    overflow: 'hidden',
-    borderWidth: 2,
-    borderColor: 'rgba(0, 75, 226, 0.2)',
-  },
-  avatar: {
-    width: '100%',
-    height: '100%',
-  },
-  logoImage: {
-    width: 120,
-    height: 40,
-    resizeMode: 'contain',
-  },
-  logoText: {
-    fontSize: 24,
-    fontWeight: '900',
-    letterSpacing: -1.5,
-  },
-  iconButton: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  scrollContent: {
-    flexGrow: 1,
-  },
-  bentoGrid: {
-    paddingHorizontal: 16,
-  },
-  gridContainer: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'space-between',
-    gap: 12,
-  },
-  loader: {
-    marginTop: 40,
-  },
-  errorBox: {
-    padding: 20,
-    alignItems: 'center',
-  },
-  errorText: {
-    color: 'red',
-    marginBottom: 10,
-  },
-  retryBtn: {
-    padding: 10,
-    backgroundColor: '#004be2',
-    borderRadius: 8,
-  },
-  retryText: {
-    color: 'white',
-  },
-  watermarkBg: {
-    position: 'absolute',
-    top: '20%',
-    right: '-10%',
-    zIndex: -1,
-    opacity: 0.03,
-  },
-  watermarkText: {
-    fontSize: 500,
-    fontWeight: '900',
-    fontFamily: 'System',
-  },
-});
+

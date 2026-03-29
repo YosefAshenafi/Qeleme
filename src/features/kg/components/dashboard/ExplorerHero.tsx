@@ -1,6 +1,7 @@
 import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text } from 'react-native';
 import { KG_DESIGN_TOKENS } from '../../constants/DesignTokens';
+import { ExplorerHeroStyles as styles } from './ExplorerHero.styles';
 
 interface ExplorerHeroProps {
   name?: string;
@@ -21,25 +22,3 @@ export const ExplorerHero: React.FC<ExplorerHeroProps> = ({ name, isDarkMode }) 
     </View>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    paddingHorizontal: 24,
-    marginTop: 24,
-    marginBottom: 32,
-  },
-  title: {
-    fontFamily: 'System',
-    fontSize: 40,
-    fontWeight: '800',
-    letterSpacing: -1,
-    marginBottom: 12,
-  },
-  subtitle: {
-    fontFamily: 'System',
-    fontSize: 18,
-    fontWeight: '500',
-    lineHeight: 24,
-    maxWidth: '90%',
-  },
-});
