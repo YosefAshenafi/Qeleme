@@ -208,7 +208,7 @@ export default {
     welcome: 'እንኳን በደህና መጡ',
     welcomeBack: 'እንኳን ደህና መጡ',
     subtitle: 'አእምሮዎን በእያንዳንዱ ትምህርት ያበልጽጉ!',
-    subtitleV2: 'በአካዳሚክ ጉዞዎ ላይ ቀጥሉ።',
+    subtitleV2: 'በትምህርት ጉዞዎ ላይ ቀጥሉ።',
     usernameOrEmail: 'መለያ ስም ወይም ኢሜይል',
     usernameOrEmailPlaceholder: 'name@institution.edu',
     username: {
@@ -473,7 +473,7 @@ export default {
     },
     scoreProgression: {
       title: 'የነጥብ እድገት',
-      subtitle: 'ጠቅላላ የአካዳሚክ አፈፃፀም',
+      subtitle: 'ጠቅላላ የትምህርት አፈፃፀም',
       empty: 'የነጥብ እድገትዎን ለማየት የምርጫ ክፍለ ጊዜ ይፈጽሙ።'
     },
     topPerformingSubjects: {
@@ -589,7 +589,7 @@ export default {
     },
     subjects: {
       heroTitlePrefix: 'የእርስዎ {{grade}} ክፍል',
-      heroTitleHighlight: 'አካዳሚክ',
+      heroTitleHighlight: 'ትምህርት',
       heroTitleSuffix: 'መርሃ ግብር',
       heroDescription:
         'ለዓመትዎ የተዘጋጁ የትምህርት መርጃዎችን ያግኙ። በተለይ የተዘጋጁ የመለማመጃ መሳሪያዎች ይጠቀሙ።',
@@ -909,10 +909,10 @@ export default {
     title: 'እንኳን ወደ ቀለም በደህና መጡ!',
     subtitle: 'አዲስ ከሆኑ እባክዎ ይመዝገቡ። አስቀድመው መለያ ካለዎት እባክዎ በመለያዎ ይግቡ።',
     startYour: 'የእርስዎን',
-    academic: 'የአካዳሚክ',
+    academic: 'የትምህርት',
     journey: 'ጉዞ ይጀምሩ።',
     subtitleV2: 'ከዘመናዊ እና ጥልቅ የትምህርት ልምድ ጋር ወደ ወደፊታዊ የመማር ዓለም ይግቡ።',
-    createAccount: 'መለያ ፍጠር',
+    createAccount: 'መለያ ይፍጠሩ',
     signIn: 'ይግቡ',
     signUp: 'ይመዝገቡ',
     orExplore: 'ወይም ይመልከቱ',
