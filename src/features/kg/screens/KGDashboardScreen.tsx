@@ -262,7 +262,7 @@ export default function KGDashboardScreen() {
                 logout();
               }}
             >
-              <Ionicons name="log-out-outline" size={24} color="#EF4444" />
+              <Ionicons name="log-out" size={22} color="#DC2626" />
               <Text style={styles.logoutButtonText}>
                 {i18n.language === 'am' ? 'ውጣ' : 'Sign Out'}
               </Text>
