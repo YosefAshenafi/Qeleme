@@ -828,6 +828,7 @@ export default function PictureMCQScreen({ onBackToInstructions }: PictureMCQScr
       setShowIncorrectVideo(false);
       setDroppedOption(null);
       setHoveredOption(null);
+      setDropZones({});
     } else {
       console.log('Already at last question, showing results');
       setShowResult(true);
@@ -1249,25 +1250,48 @@ export default function PictureMCQScreen({ onBackToInstructions }: PictureMCQScr
                   {memoizedCurrentQuestion.options.map((option, index) => {
                     const funColors = ['#4CAF50', '#FF9800', '#2196F3', '#9C27B0'];
                     const funColor = funColors[index % funColors.length];
+                    const isHovered = hoveredOption === option.id;
 
                     return (
-                      <TouchableOpacity
+                      <View
                         key={option.id}
-                        style={[
-                          styles.kgOptionButton,
-                          styles.kgOptionButtonBounce,
-                          {
-                            backgroundColor: selectedAnswer === option.id
-                              ? (option.isCorrect ? '#4CAF50' : '#F44336')
-                              : funColor
-                          },
-                        ]}
-                        onPress={() => handleAnswerSelection(option.id)}
-                        activeOpacity={0.8}
+                        onLayout={(event) => {
+                          const { x, y, width, height } = event.nativeEvent.layout;
+                          event.target.measureInWindow((pageX, pageY, measuredWidth, measuredHeight) => {
+                            setDropZones(prev => ({
+                              ...prev,
+                              [option.id]: {
+                                x: pageX,
+                                y: pageY,
+                                width: measuredWidth || width,
+                                height: measuredHeight || height
+                              }
+                            }));
+                          });
+                        }}
                       >
-                        <Text style={styles.kgOptionText}>{option.text_en}</Text>
-                        <Text style={styles.kgOptionTextAmharic}>{option.text_am}</Text>
-                      </TouchableOpacity>
+                        <TouchableOpacity
+                          style={[
+                            styles.kgOptionButton,
+                            styles.kgOptionButtonBounce,
+                            isHovered && styles.kgOptionButtonHovered,
+                            {
+                              backgroundColor: selectedAnswer === option.id
+                                ? (option.isCorrect ? '#4CAF50' : '#F44336')
+                                : isHovered
+                                  ? '#2E7D32'
+                                  : funColor
+                            },
+                          ]}
+                          onPress={() => handleAnswerSelection(option.id)}
+                          activeOpacity={0.8}
+                        >
+                          <View style={styles.optionTextRow}>
+                            <Text style={styles.kgOptionText}>{option.text_en}</Text>
+                            <Text style={styles.kgOptionTextAmharic}>{option.text_am}</Text>
+                          </View>
+                        </TouchableOpacity>
+                      </View>
                     );
                   })}
                 </View>
@@ -2090,18 +2114,16 @@ const styles = StyleSheet.create<any>({
     textAlign: 'right',
   },
   kgOptionsContainer: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'space-between',
-    gap: 12,
+    flexDirection: 'column',
+    gap: 26,
     paddingHorizontal: 16,
     paddingVertical: 20,
   },
   kgOptionButton: {
-    width: '48%',
-    paddingHorizontal: 16,
-    paddingVertical: 16,
-    borderRadius: 20,
+    width: '100%',
+    paddingHorizontal: 20,
+    paddingVertical: 20,
+    borderRadius: 24,
     alignItems: 'center',
     shadowColor: KG_DESIGN_TOKENS.colors.primary,
     shadowOffset: { width: 0, height: 4 },
@@ -2112,17 +2134,29 @@ const styles = StyleSheet.create<any>({
   kgOptionButtonBounce: {
     transform: [{ scale: 1 }],
   },
+  kgOptionButtonHovered: {
+    transform: [{ scale: 1.05 }],
+    shadowOpacity: 0.5,
+    shadowRadius: 12,
+    elevation: 10,
+  },
   kgOptionText: {
     color: '#FFFFFF',
     fontSize: 18,
     fontWeight: '700',
     textAlign: 'center',
+    flexShrink: 1,
   },
   kgOptionTextAmharic: {
     color: 'rgba(255, 255, 255, 0.85)',
     fontSize: 16,
     fontWeight: '500',
     textAlign: 'center',
-    marginTop: 4,
+    marginLeft: 8,
+  },
+  optionTextRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 }); 
