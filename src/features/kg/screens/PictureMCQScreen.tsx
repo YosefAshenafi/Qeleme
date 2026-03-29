@@ -2,12 +2,14 @@ import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { StyleSheet, TouchableOpacity, ScrollView, View, Dimensions, Image, Modal, Text, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
+import { StatusBar } from 'expo-status-bar';
 import { router, useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { GestureHandlerRootView, GestureDetector, Gesture } from 'react-native-gesture-handler';
 import { useTheme } from '@/core/providers/ThemeProvider';
 import { getColors } from '@/shared/constants/Colors';
+import { KG_DESIGN_TOKENS } from '../constants/DesignTokens';
 import { useAuth } from '@/core/providers/AuthProvider';
 import Animated, { 
   useAnimatedStyle, 
@@ -897,17 +899,24 @@ export default function PictureMCQScreen({ onBackToInstructions }: PictureMCQScr
             </View>
           </View>
           <LinearGradient
-            colors={['#6B54AE', '#4CAF50']}
+            colors={['#667eea', '#764ba2', '#f093fb']}
             style={styles.resultGradientContainer}
           >
             <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
               <Animated.View style={[styles.resultContainer]}>
                 <View style={styles.resultContent}>
+                  {/* Celebration Emoji */}
+                  <View style={styles.celebrationEmojiContainer}>
+                    <Text style={styles.celebrationEmoji}>
+                      {percentage >= 70 ? '🎉' : percentage >= 50 ? '👍' : '💪'}
+                    </Text>
+                  </View>
+
                   {/* Trophy Icon */}
                   <View style={styles.trophyContainer}>
                     <IconSymbol
                       name="trophy.fill"
-                      size={50}
+                      size={60}
                       color="#FFD700"
                     />
                   </View>
@@ -930,7 +939,7 @@ export default function PictureMCQScreen({ onBackToInstructions }: PictureMCQScr
 
                   {/* Encouraging Message */}
                   <View style={styles.messageContainer}>
-                    <ThemedText style={styles.messageText}>
+                    <ThemedText style={[styles.messageText, styles.funMessageText]}>
                       {getMessage()}
                     </ThemedText>
                   </View>
@@ -940,8 +949,8 @@ export default function PictureMCQScreen({ onBackToInstructions }: PictureMCQScr
                     {[...Array(5)].map((_, index) => (
                       <IconSymbol
                         key={index}
-                        name="trophy.fill"
-                        size={20}
+                        name="star.fill"
+                        size={32}
                         color={index < Math.ceil(percentage/20) ? "#FFD700" : "#E0E0E0"}
                         style={styles.star}
                       />
@@ -985,74 +994,42 @@ export default function PictureMCQScreen({ onBackToInstructions }: PictureMCQScr
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
-      <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]}>
-        <View style={[styles.header, { backgroundColor: colors.background }]}>
+      <SafeAreaView style={styles.safeArea} edges={['top', 'left', 'right']}>
+        <View style={[styles.header, { backgroundColor: '#FFFFFF', paddingHorizontal: 0 }]}>
           <TouchableOpacity 
-            style={[styles.backButton, { backgroundColor: colors.tint + '20' }]}
+            style={styles.backButton}
             onPress={handleGoToInstructions}
           >
-            <IconSymbol name="house.fill" size={24} color={isDarkMode ? '#FFFFFF' : colors.tint} />
+            <Ionicons name="chevron-back" size={28} color="#111827" />
           </TouchableOpacity>
-          <View style={styles.headerTextContainer}>
-            <View style={[styles.gradeBadge, { 
-              backgroundColor: colors.tint + '20',
-              borderColor: colors.tint + '40'
-            }]}>
-              <Text style={styles.gradeIcon}>🎓</Text>
-              <Text style={[styles.gradeText, { color: isDarkMode ? '#FFFFFF' : colors.tint }]}>
-                {user?.grade ? (user.grade.toLowerCase() === 'kg' ? t('common.kindergarten') : `Grade ${user.grade.replace('grade ', '')}`) : t('common.kindergarten')}
-              </Text>
-            </View>
+          <View style={styles.headerCenter}>
+            <Text style={styles.headerTitleText}>{getLocalizedCategoryName()}</Text>
           </View>
           <View style={styles.headerRight}>
-            <LanguageToggle colors={{ ...colors, text: isDarkMode ? '#FFFFFF' : colors.tint }} />
-            <TouchableOpacity 
-              onPress={() => router.push('/profile')}
-              style={[styles.profileIconContainer, { backgroundColor: colors.tint + '20' }]}
-            >
-              <IconSymbol name="gearshape.fill" size={24} color={isDarkMode ? '#FFFFFF' : colors.tint} />
-            </TouchableOpacity>
+            <LanguageToggle colors={{ card: 'transparent', text: KG_DESIGN_TOKENS.colors.primary, tint: KG_DESIGN_TOKENS.colors.primary }} />
           </View>
         </View>
-        <ThemedView style={[styles.container, { backgroundColor: colors.background }]}>
+        <LinearGradient
+          colors={['#f0f4ff', '#e8f5e9', '#fff8e1']}
+          style={styles.funContainer}
+        >
           <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
-            {/* Compact Progress and Navigation Container */}
-            <View style={styles.progressContainer}>
-              <LinearGradient
-                colors={[colors.tint, colors.tint + 'DD']}
-                style={styles.progressGradient}
-              >
-                <View style={styles.progressContent}>
-                  {/* Category Display */}
-                  <View style={styles.progressCategoryContainer}>
-                    <IconSymbol name="folder.fill" size={18} color="#FFFFFF" />
-                    <ThemedText style={styles.progressCategoryText}>
-                      {getLocalizedCategoryName()}
-                    </ThemedText>
-                  </View>
-                  
-                  <View style={styles.progressBarContainer}>
-                    <View style={[styles.progressBar, { backgroundColor: 'rgba(255, 255, 255, 0.3)' }]}>
-                      <View 
-                        style={[
-                          styles.progressFill, 
-                          { 
-                            backgroundColor: '#FFFFFF',
-                            width: `${((currentQuestionIndex + 1) / questions.length) * 100}%`
-                          }
-                        ]} 
-                      />
-                    </View>
-                  </View>
-                  
-                  {/* Question Counter */}
-                  <View style={styles.questionCounterContainer}>
-                    <ThemedText style={styles.compactProgressText} numberOfLines={1}>
-                      {currentQuestionIndex + 1}/{questions.length}
-                    </ThemedText>
-                  </View>
-                </View>
-              </LinearGradient>
+            {/* Progress Bar */}
+            <View style={styles.kgProgressContainer}>
+              <View style={styles.kgProgressBar}>
+                <View 
+                  style={[
+                    styles.kgProgressFill, 
+                    { 
+                      backgroundColor: KG_DESIGN_TOKENS.colors.primary,
+                      width: `${((currentQuestionIndex + 1) / questions.length) * 100}%`
+                    }
+                  ]} 
+                />
+              </View>
+              <Text style={styles.kgProgressText}>
+                {currentQuestionIndex + 1} / {questions.length}
+              </Text>
             </View>
 
             {memoizedCurrentQuestion && (
@@ -1115,54 +1092,31 @@ export default function PictureMCQScreen({ onBackToInstructions }: PictureMCQScr
                   </Animated.View>
                 </GestureDetector>
 
-                <View style={styles.optionsContainer}>
-                  {memoizedCurrentQuestion.options.map((option) => (
-                    <View
-                      key={option.id}
-                      style={[
-                        styles.optionContainer,
-                        { 
-                          backgroundColor: isDarkMode ? '#1C1C1E' : '#FFFFFF',
-                          borderColor: isDarkMode ? '#3A3A3C' : '#E0E0E0'
-                        },
-                        hoveredOption === option.id && styles.optionHovered,
-                        droppedOption === option.id && option.isCorrect && styles.optionDroppedCorrect,
-                        droppedOption === option.id && !option.isCorrect && styles.optionDroppedIncorrect,
-                      ]}
-                                              onLayout={(event) => {
-                          const { x, y, width, height } = event.nativeEvent.layout;
-                          setDropZones(prev => ({
-                            ...prev,
-                            [option.id]: { x, y, width, height }
-                          }));
-                        }}
-                    >
-                      <View style={styles.optionContent}>
-                        <View style={styles.bilingualTextContainer}>
-                          <ThemedText 
-                            style={[
-                              styles.optionTextEnglish,
-                              { color: isDarkMode ? colors.text : '#333333' },
-                              ...(selectedAnswer === option.id && option.isCorrect ? [styles.correctText] : []),
-                              ...(selectedAnswer === option.id && !option.isCorrect ? [styles.incorrectText] : []),
-                            ]}
-                          >
-                            {option.text_en}
-                          </ThemedText>
-                          <ThemedText 
-                            style={[
-                              styles.optionTextAmharic,
-                              { color: isDarkMode ? colors.text + 'CC' : '#666666' },
-                              ...(selectedAnswer === option.id && option.isCorrect ? [styles.correctText] : []),
-                              ...(selectedAnswer === option.id && !option.isCorrect ? [styles.incorrectText] : []),
-                            ]}
-                          >
-                            {option.text_am}
-                          </ThemedText>
-                        </View>
-                      </View>
-                    </View>
-                  ))}
+                <View style={styles.kgOptionsContainer}>
+                  {memoizedCurrentQuestion.options.map((option, index) => {
+                    const funColors = ['#4CAF50', '#FF9800', '#2196F3', '#9C27B0'];
+                    const funColor = funColors[index % funColors.length];
+                    
+                    return (
+                      <TouchableOpacity
+                        key={option.id}
+                        style={[
+                          styles.kgOptionButton,
+                          styles.kgOptionButtonBounce,
+                          { 
+                            backgroundColor: selectedAnswer === option.id 
+                              ? (option.isCorrect ? '#4CAF50' : '#F44336')
+                              : funColor
+                          },
+                        ]}
+                        onPress={() => handleAnswerSelection(option.id)}
+                        activeOpacity={0.8}
+                      >
+                        <Text style={styles.kgOptionText}>{option.text_en}</Text>
+                        <Text style={styles.kgOptionTextAmharic}>{option.text_am}</Text>
+                      </TouchableOpacity>
+                    );
+                  })}
                 </View>
 
                 {/* Instruction text below choices */}
@@ -1190,7 +1144,7 @@ export default function PictureMCQScreen({ onBackToInstructions }: PictureMCQScr
             )}
 
           </ScrollView>
-        </ThemedView>
+        </LinearGradient>
       </SafeAreaView>
     </GestureHandlerRootView>
   );
@@ -1199,12 +1153,20 @@ export default function PictureMCQScreen({ onBackToInstructions }: PictureMCQScr
 const styles = StyleSheet.create<any>({
   safeArea: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: 'transparent',
+  },
+  safeAreaFooter: {
+    backgroundColor: 'transparent',
   },
   container: {
     flex: 1,
     padding: 20,
     backgroundColor: '#fff',
+  },
+  funContainer: {
+    flex: 1,
+    paddingHorizontal: 16,
+    paddingVertical: 20,
   },
   scrollView: {
     flex: 1,
@@ -1322,18 +1284,20 @@ const styles = StyleSheet.create<any>({
   },
   imageContainer: {
     width: '100%',
-    height: 250,
+    height: 300,
     marginBottom: 20,
-    borderRadius: 16,
+    borderRadius: 24,
     overflow: 'hidden',
     backgroundColor: '#FFFFFF',
+    borderWidth: 4,
+    borderColor: KG_DESIGN_TOKENS.colors.primary,
     alignItems: 'center',
     justifyContent: 'center',
     position: 'relative',
     zIndex: 2,
-    shadowColor: '#000',
+    shadowColor: KG_DESIGN_TOKENS.colors.primary,
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.15,
+    shadowOpacity: 0.3,
     shadowRadius: 8,
     elevation: 8,
   },
@@ -1434,14 +1398,14 @@ const styles = StyleSheet.create<any>({
   },
   instructionTextContainer: {
     paddingHorizontal: 20,
-    paddingVertical: 12,
+    paddingVertical: 16,
     alignItems: 'center',
-    marginBottom: 8,
+    marginBottom: 12,
   },
   instructionText: {
-    fontSize: 14,
+    fontSize: 18,
     textAlign: 'center',
-    fontStyle: 'italic',
+    fontWeight: '600',
     opacity: 0.8,
   },
   explanationContainer: {
@@ -1509,48 +1473,69 @@ const styles = StyleSheet.create<any>({
     marginTop: 10,
   },
   trophyContainer: {
-    width: 70,
-    height: 70,
-    backgroundColor: 'rgba(255, 255, 255, 0.2)',
-    borderRadius: 35,
+    width: 80,
+    height: 80,
+    backgroundColor: 'rgba(255, 255, 255, 0.3)',
+    borderRadius: 40,
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 10,
-    borderWidth: 2,
+    marginBottom: 16,
+    borderWidth: 3,
     borderColor: '#FFD700',
+    shadowColor: '#FFD700',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.5,
+    shadowRadius: 8,
+    elevation: 8,
+  },
+  celebrationEmojiContainer: {
+    marginBottom: 12,
+  },
+  celebrationEmoji: {
+    fontSize: 64,
+    textAlign: 'center',
+  },
+  funMessageText: {
+    fontSize: 20,
+    lineHeight: 28,
   },
   scoreContainer: {
     alignItems: 'center',
     marginBottom: 10,
   },
   scoreCircle: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
-    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+    backgroundColor: 'rgba(255, 255, 255, 0.3)',
     justifyContent: 'center',
     alignItems: 'center',
-    borderWidth: 2,
+    borderWidth: 3,
     borderColor: '#FFFFFF',
+    shadowColor: '#FFFFFF',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 8,
   },
   scoreText: {
     paddingTop: 8,
-    fontSize: 24,
+    fontSize: 28,
     fontWeight: 'bold',
     color: '#FFFFFF',
   },
   percentageContainer: {
-    backgroundColor: 'rgba(255, 255, 255, 0.2)',
-    paddingHorizontal: 20,
-    paddingVertical: 8,
-    borderRadius: 20,
-    marginBottom: 10,
+    backgroundColor: 'rgba(255, 255, 255, 0.3)',
+    paddingHorizontal: 28,
+    paddingVertical: 12,
+    borderRadius: 24,
+    marginBottom: 16,
     borderWidth: 2,
     borderColor: '#FFFFFF',
   },
   percentageText: {
     paddingTop: 6,
-    fontSize: 22,
+    fontSize: 28,
     fontWeight: 'bold',
     color: '#FFFFFF',
   },
@@ -1572,48 +1557,48 @@ const styles = StyleSheet.create<any>({
   starsContainer: {
     flexDirection: 'row',
     justifyContent: 'center',
-    gap: 6,
-    marginTop: 6,
+    gap: 8,
+    marginTop: 12,
   },
   star: {
-    marginHorizontal: 3,
+    marginHorizontal: 4,
   },
   actionButtons: {
     paddingHorizontal: 20,
-    paddingVertical: 12,
-    gap: 10,
+    paddingVertical: 16,
+    gap: 14,
   },
   button: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    padding: 12,
-    borderRadius: 20,
-    gap: 8,
+    padding: 16,
+    borderRadius: 24,
+    gap: 10,
   },
   retryButton: {
     backgroundColor: '#4CAF50',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
-    elevation: 5,
+    shadowColor: '#4CAF50',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.4,
+    shadowRadius: 8,
+    elevation: 6,
   },
   homeButton: {
-    backgroundColor: '#6B54AE',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
-    elevation: 5,
+    backgroundColor: '#FF9800',
+    shadowColor: '#FF9800',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.4,
+    shadowRadius: 8,
+    elevation: 6,
   },
   retryButtonText: {
-    fontSize: 16,
+    fontSize: 18,
     fontWeight: 'bold',
     color: '#FFFFFF',
   },
   buttonText: {
-    fontSize: 16,
+    fontSize: 18,
     fontWeight: 'bold',
     color: '#FFFFFF',
   },
@@ -1864,5 +1849,76 @@ const styles = StyleSheet.create<any>({
   inlineVideo: {
     width: '100%',
     height: '100%',
+  },
+  // KG Question Page Styles
+  headerCenter: {
+    flex: 1,
+    alignItems: 'center',
+  },
+  headerTitleText: {
+    fontSize: 22,
+    fontWeight: '800',
+    color: '#111827',
+  },
+  kgProgressContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    paddingVertical: 16,
+    gap: 16,
+  },
+  kgProgressBar: {
+    flex: 1,
+    height: 14,
+    backgroundColor: '#E5E7EB',
+    borderRadius: 7,
+    overflow: 'hidden',
+  },
+  kgProgressFill: {
+    height: '100%',
+    borderRadius: 7,
+  },
+  kgProgressText: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#374151',
+    minWidth: 50,
+    textAlign: 'right',
+  },
+  kgOptionsContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
+    gap: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 20,
+  },
+  kgOptionButton: {
+    width: '48%',
+    paddingHorizontal: 16,
+    paddingVertical: 16,
+    borderRadius: 20,
+    alignItems: 'center',
+    shadowColor: KG_DESIGN_TOKENS.colors.primary,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.25,
+    shadowRadius: 8,
+    elevation: 6,
+  },
+  kgOptionButtonBounce: {
+    transform: [{ scale: 1 }],
+  },
+  kgOptionText: {
+    color: '#FFFFFF',
+    fontSize: 18,
+    fontWeight: '700',
+    textAlign: 'center',
+  },
+  kgOptionTextAmharic: {
+    color: 'rgba(255, 255, 255, 0.85)',
+    fontSize: 16,
+    fontWeight: '500',
+    textAlign: 'center',
+    marginTop: 4,
   },
 }); 
