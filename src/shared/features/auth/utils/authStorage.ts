@@ -5,6 +5,8 @@ const AUTH_TOKEN_KEY = '@auth_token';
 const USER_DATA_KEY = '@user_data';
 const OTP_PREFIX = '@otp_';
 
+const isWeb = typeof window !== 'undefined' && !window.navigator?.product;
+
 export interface UserData {
   id: string;
   fullName: string;
@@ -12,11 +14,11 @@ export interface UserData {
   type: string;
   isSelfStudent: boolean;
   grade?: string;
-  joinDate?: string; // ISO date string format (e.g., "2024-01-01T00:00:00.000Z")
+  joinDate?: string;
   paymentPlan?: string;
-  lastPaymentDate?: string; // ISO date string format (e.g., "2024-01-01T00:00:00.000Z")
-  phoneNumber?: string; // Phone number for OTP verification
-  profileImage?: string; // Profile image URL
+  lastPaymentDate?: string;
+  phoneNumber?: string;
+  profileImage?: string;
 }
 
 export interface AuthResponse {
@@ -28,10 +30,25 @@ export interface AuthResponse {
 export interface OTPData {
   otp: string;
   phoneNumber: string;
-  expiresAt: number; // Unix timestamp
+  expiresAt: number;
 }
 
-const tokenStorage = {
+const webTokenStorage = {
+  getItem: (): string | null => {
+    if (typeof window === 'undefined') return null;
+    return localStorage.getItem(AUTH_TOKEN_KEY);
+  },
+  setItem: (value: string): void => {
+    if (typeof window === 'undefined') return;
+    localStorage.setItem(AUTH_TOKEN_KEY, value);
+  },
+  removeItem: (): void => {
+    if (typeof window === 'undefined') return;
+    localStorage.removeItem(AUTH_TOKEN_KEY);
+  },
+};
+
+const mobileTokenStorage = {
   async getItem() {
     try {
       return await SecureStore.getItemAsync(AUTH_TOKEN_KEY);
@@ -56,6 +73,8 @@ const tokenStorage = {
   },
 };
 
+const tokenStorage = isWeb ? webTokenStorage : mobileTokenStorage;
+
 export const storeAuthData = async (authData: AuthResponse): Promise<void> => {
   try {
     await tokenStorage.setItem(authData.token);
@@ -66,6 +85,10 @@ export const storeAuthData = async (authData: AuthResponse): Promise<void> => {
 };
 
 export const storeUserData = async (userData: UserData): Promise<void> => {
+  if (isWeb) {
+    localStorage.setItem(USER_DATA_KEY, JSON.stringify(userData));
+    return;
+  }
   try {
     await AsyncStorage.setItem(USER_DATA_KEY, JSON.stringify(userData));
   } catch (error) {
@@ -74,6 +97,9 @@ export const storeUserData = async (userData: UserData): Promise<void> => {
 };
 
 export const getAuthToken = async (): Promise<string | null> => {
+  if (isWeb) {
+    return webTokenStorage.getItem();
+  }
   try {
     return await tokenStorage.getItem();
   } catch (error) {
@@ -82,6 +108,10 @@ export const getAuthToken = async (): Promise<string | null> => {
 };
 
 export const getUserData = async (): Promise<UserData | null> => {
+  if (isWeb) {
+    const userDataString = localStorage.getItem(USER_DATA_KEY);
+    return userDataString ? JSON.parse(userDataString) : null;
+  }
   try {
     const userDataString = await AsyncStorage.getItem(USER_DATA_KEY);
     return userDataString ? JSON.parse(userDataString) : null;
@@ -91,6 +121,11 @@ export const getUserData = async (): Promise<UserData | null> => {
 };
 
 export const clearAuthData = async (): Promise<void> => {
+  if (isWeb) {
+    webTokenStorage.removeItem();
+    localStorage.removeItem(USER_DATA_KEY);
+    return;
+  }
   try {
     await tokenStorage.removeItem();
     await AsyncStorage.removeItem(USER_DATA_KEY);
@@ -108,16 +143,20 @@ export const isAuthenticated = async (): Promise<boolean> => {
   }
 };
 
-// OTP Storage functions
 export const storeOTP = async (phoneNumber: string, otp: string, expirationMinutes: number = 5): Promise<void> => {
+  const expiresAt = Date.now() + (expirationMinutes * 60 * 1000);
+  const otpData: OTPData = {
+    otp,
+    phoneNumber,
+    expiresAt
+  };
+  
+  if (isWeb) {
+    localStorage.setItem(`${OTP_PREFIX}${phoneNumber}`, JSON.stringify(otpData));
+    return;
+  }
+  
   try {
-    const expiresAt = Date.now() + (expirationMinutes * 60 * 1000);
-    const otpData: OTPData = {
-      otp,
-      phoneNumber,
-      expiresAt
-    };
-    
     const key = `${OTP_PREFIX}${phoneNumber}`;
     await AsyncStorage.setItem(key, JSON.stringify(otpData));
   } catch (error) {
@@ -126,17 +165,27 @@ export const storeOTP = async (phoneNumber: string, otp: string, expirationMinut
 };
 
 export const getStoredOTP = async (phoneNumber: string): Promise<string | null> => {
+  if (isWeb) {
+    const key = `${OTP_PREFIX}${phoneNumber}`;
+    const otpDataString = localStorage.getItem(key);
+    if (!otpDataString) return null;
+    
+    const otpData: OTPData = JSON.parse(otpDataString);
+    if (Date.now() > otpData.expiresAt) {
+      localStorage.removeItem(key);
+      return null;
+    }
+    return otpData.otp;
+  }
+  
   try {
     const key = `${OTP_PREFIX}${phoneNumber}`;
     const otpDataString = await AsyncStorage.getItem(key);
     
-    if (!otpDataString) {
-      return null;
-    }
+    if (!otpDataString) return null;
     
     const otpData: OTPData = JSON.parse(otpDataString);
     
-    // Check if OTP has expired
     if (Date.now() > otpData.expiresAt) {
       await AsyncStorage.removeItem(key);
       return null;
@@ -149,6 +198,11 @@ export const getStoredOTP = async (phoneNumber: string): Promise<string | null> 
 };
 
 export const clearStoredOTP = async (phoneNumber: string): Promise<void> => {
+  if (isWeb) {
+    localStorage.removeItem(`${OTP_PREFIX}${phoneNumber}`);
+    return;
+  }
+  
   try {
     const key = `${OTP_PREFIX}${phoneNumber}`;
     await AsyncStorage.removeItem(key);
@@ -164,4 +218,4 @@ export const isOTPValid = async (phoneNumber: string, otp: string): Promise<bool
   } catch (error) {
     return false;
   }
-}; 
+};

@@ -28,9 +28,9 @@ class ApiClient {
     this.client.interceptors.response.use(
       (response) => response,
       (error) => {
-        const isAuthRequest = error.config?.url?.includes('/auth/login') || 
-                            error.config?.url?.includes('/auth/register');
-        
+        const isAuthRequest = error.config?.url?.includes('/auth/login') ||
+          error.config?.url?.includes('/auth/register');
+
         if (error.response?.status === 401 && !isAuthRequest) {
           if (typeof window !== 'undefined') {
             const currentPath = window.location.pathname;
@@ -80,12 +80,12 @@ class ApiClient {
     return response.data;
   }
 
-  async registerStudent(data: { 
-    name: string; 
-    username: string; 
-    password: string; 
-    phoneNumber: string; 
-    grade: string; 
+  async registerStudent(data: {
+    name: string;
+    username: string;
+    password: string;
+    phoneNumber: string;
+    grade: string;
     region: string;
     plan?: string;
   }) {

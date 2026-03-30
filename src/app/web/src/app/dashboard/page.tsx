@@ -100,7 +100,7 @@ export default function DashboardPage() {
         const user = userData?.data || userData;
         if (user) {
           setUser(user);
-          
+
           try {
             const statsData = await api.getUserStats();
             if (statsData?.data) {
@@ -110,7 +110,7 @@ export default function DashboardPage() {
             }
           } catch {
           }
-          
+
           if (user.progress !== undefined || user.mastery !== undefined) {
             setStats(prev => ({
               ...prev,
@@ -125,18 +125,17 @@ export default function DashboardPage() {
         }
 
         const gradeNumber = user?.grade?.replace(/[^\d]/g, '') || '12';
-        
         if (mcqData?.grades) {
-          const userGrade = mcqData.grades.find((g: Grade) => 
+          const userGrade = mcqData.grades.find((g: Grade) =>
             g.id === `grade-${gradeNumber}` || g.name?.toLowerCase().includes(gradeNumber.toLowerCase())
           );
-          
+
           if (userGrade?.subjects && userGrade.subjects.length > 0) {
             const gradeSubjects: Subject[] = userGrade.subjects.map((subject: Subject) => ({
               ...subject,
               gradeId: userGrade.id
             }));
-            
+
             const gradeBooks: Book[] = userGrade.subjects.map((subject: Subject) => {
               const coverData = getSubjectCoverColor(subject.name);
               return {
@@ -149,13 +148,13 @@ export default function DashboardPage() {
                 coverGradient: coverData.coverGradient
               };
             });
-            
+
             setSubjects(gradeSubjects);
             setBooks(gradeBooks.slice(0, 4));
           } else {
             const allSubjects: Subject[] = [];
             const allBooks: Book[] = [];
-            
+
             mcqData.grades.forEach((grade: Grade) => {
               if (grade.subjects) {
                 grade.subjects.forEach((subject: Subject) => {
@@ -176,7 +175,7 @@ export default function DashboardPage() {
                 });
               }
             });
-            
+
             setSubjects(allSubjects);
             setBooks(allBooks.slice(0, 4));
           }
@@ -205,18 +204,18 @@ export default function DashboardPage() {
   return (
     <div className="min-h-screen bg-surface font-body text-on-surface antialiased m-plus-motif relative">
       <TopNav user={user} />
-      
+
       <main className="pt-24 pb-12 px-6 md:px-12 w-full max-w-screen-2xl mx-auto flex flex-col lg:flex-row gap-8 relative z-10">
         <div className="flex-1 space-y-8">
-          <HeroSection 
+          <HeroSection
             userName={userName}
             grade={userGrade}
             stats={stats || undefined}
           />
           <QuickAccessGrid />
-          <LibrarySection 
-            books={books} 
-            userGrade={userGrade} 
+          <LibrarySection
+            books={books}
+            userGrade={userGrade}
             loading={false}
             subjects={subjects}
           />
@@ -226,7 +225,7 @@ export default function DashboardPage() {
       </main>
 
       <Footer />
-      
+
       <div className="fixed inset-0 pointer-events-none z-0 opacity-20">
         <div className="absolute top-0 right-0 w-1/2 h-1/2 bg-primary/5 blur-3xl rounded-full -translate-y-1/2 translate-x-1/4"></div>
         <div className="absolute bottom-0 left-0 w-1/3 h-1/3 bg-tertiary/5 blur-3xl rounded-full translate-y-1/4 -translate-x-1/4"></div>
