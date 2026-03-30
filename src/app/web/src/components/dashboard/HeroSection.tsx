@@ -61,7 +61,6 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
           </div>
         </div>
         
-        {/* Performance Chart */}
         <div className="w-full md:w-1/2 flex items-end justify-center h-48 gap-3 px-4">
           {performanceHistory.map((height, index) => (
             <div 
@@ -73,7 +72,6 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
         </div>
       </div>
       
-      {/* Background Motif */}
       <div className="absolute -right-16 -top-16 opacity-[0.03] pointer-events-none">
         <span className="material-symbols-outlined text-[20rem]">school</span>
       </div>

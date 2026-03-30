@@ -77,7 +77,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
   return (
     <aside className="w-full lg:w-80 space-y-8">
-      {/* Profile Summary / Streak */}
       <div className="bg-surface-container-low p-6 rounded-xl text-center border border-surface-container">
         <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-white shadow-sm mb-4">
           <span className="material-symbols-outlined text-primary text-3xl" style={{ fontVariationSettings: "'FILL' 1" }}>
@@ -98,7 +97,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
         </div>
       </div>
 
-      {/* Recent Activity */}
       <div className="space-y-4">
         <h3 className="font-headline font-bold text-lg flex items-center gap-2">
           <span className="material-symbols-outlined text-primary">history</span>
@@ -125,7 +123,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
         </div>
       </div>
 
-      {/* Grade Progress */}
       <div className="bg-surface-container-high p-6 rounded-xl border border-surface-container">
         <h3 className="font-headline font-bold text-lg mb-4 flex items-center gap-2">
           <span className="material-symbols-outlined text-primary">school</span>

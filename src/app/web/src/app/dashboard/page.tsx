@@ -39,6 +39,13 @@ interface Subject {
   id: string;
   name: string;
   gradeId?: string;
+  image_url?: string;
+}
+
+interface Grade {
+  id: string;
+  name: string;
+  subjects?: Subject[];
 }
 
 interface Book {
@@ -47,7 +54,23 @@ interface Book {
   subject?: string;
   grade?: string;
   image?: string;
+  coverColor?: string;
+  coverGradient?: string[];
 }
+
+const SUBJECT_COLORS: Record<string, { coverColor: string; coverGradient: string[] }> = {
+  'mathematics': { coverColor: '#4A90E2', coverGradient: ['#4A90E2', '#357ABD'] },
+  'math': { coverColor: '#4A90E2', coverGradient: ['#4A90E2', '#357ABD'] },
+  'physics': { coverColor: '#9C27B0', coverGradient: ['#9C27B0', '#7B1FA2'] },
+  'chemistry': { coverColor: '#FF9800', coverGradient: ['#FF9800', '#F57C00'] },
+  'biology': { coverColor: '#4CAF50', coverGradient: ['#4CAF50', '#388E3C'] },
+  'english': { coverColor: '#E91E63', coverGradient: ['#E91E63', '#C2185B'] },
+  'amharic': { coverColor: '#FF5722', coverGradient: ['#FF5722', '#D84315'] },
+  'history': { coverColor: '#795548', coverGradient: ['#795548', '#5D4037'] },
+  'geography': { coverColor: '#607D8B', coverGradient: ['#607D8B', '#455A64'] },
+  'civics': { coverColor: '#3F51B5', coverGradient: ['#3F51B5', '#303F9F'] },
+  'economics': { coverColor: '#009688', coverGradient: ['#009688', '#00796B'] },
+};
 
 export default function DashboardPage() {
   const [user, setUser] = useState<User | null>(null);
@@ -55,6 +78,16 @@ export default function DashboardPage() {
   const [subjects, setSubjects] = useState<Subject[]>([]);
   const [books, setBooks] = useState<Book[]>([]);
   const [loading, setLoading] = useState(true);
+
+  const getSubjectCoverColor = (subjectName: string): { coverColor: string; coverGradient: string[] } => {
+    const normalizedName = subjectName.toLowerCase();
+    for (const [key, value] of Object.entries(SUBJECT_COLORS)) {
+      if (normalizedName.includes(key)) {
+        return value;
+      }
+    }
+    return { coverColor: '#4A90E2', coverGradient: ['#4A90E2', '#357ABD'] };
+  };
 
   useEffect(() => {
     const fetchDashboardData = async () => {
@@ -68,7 +101,6 @@ export default function DashboardPage() {
         if (user) {
           setUser(user);
           
-          // Try to get stats if available
           try {
             const statsData = await api.getUserStats();
             if (statsData?.data) {
@@ -77,10 +109,8 @@ export default function DashboardPage() {
               setStats(statsData);
             }
           } catch {
-            // Stats not available, use defaults
           }
           
-          // Also try to extract stats from user object if available
           if (user.progress !== undefined || user.mastery !== undefined) {
             setStats(prev => ({
               ...prev,
@@ -94,31 +124,62 @@ export default function DashboardPage() {
           }
         }
 
-        // Process MCQ data to get subjects and books
+        const gradeNumber = user?.grade?.replace(/[^\d]/g, '') || '12';
+        
         if (mcqData?.grades) {
-          const allSubjects: Subject[] = [];
-          const allBooks: Book[] = [];
+          const userGrade = mcqData.grades.find((g: Grade) => 
+            g.id === `grade-${gradeNumber}` || g.name?.toLowerCase().includes(gradeNumber.toLowerCase())
+          );
           
-          mcqData.grades.forEach((grade: { id: string; name: string; subjects?: Subject[] }) => {
-            if (grade.subjects) {
-              grade.subjects.forEach((subject: Subject) => {
-                allSubjects.push({
-                  ...subject,
-                  gradeId: grade.id
+          if (userGrade?.subjects && userGrade.subjects.length > 0) {
+            const gradeSubjects: Subject[] = userGrade.subjects.map((subject: Subject) => ({
+              ...subject,
+              gradeId: userGrade.id
+            }));
+            
+            const gradeBooks: Book[] = userGrade.subjects.map((subject: Subject) => {
+              const coverData = getSubjectCoverColor(subject.name);
+              return {
+                id: subject.id,
+                title: subject.name,
+                subject: subject.name,
+                grade: userGrade.name,
+                image: subject.image_url || '',
+                coverColor: coverData.coverColor,
+                coverGradient: coverData.coverGradient
+              };
+            });
+            
+            setSubjects(gradeSubjects);
+            setBooks(gradeBooks.slice(0, 4));
+          } else {
+            const allSubjects: Subject[] = [];
+            const allBooks: Book[] = [];
+            
+            mcqData.grades.forEach((grade: Grade) => {
+              if (grade.subjects) {
+                grade.subjects.forEach((subject: Subject) => {
+                  const coverData = getSubjectCoverColor(subject.name);
+                  allSubjects.push({
+                    ...subject,
+                    gradeId: grade.id
+                  });
+                  allBooks.push({
+                    id: subject.id,
+                    title: subject.name,
+                    subject: subject.name,
+                    grade: grade.name,
+                    image: subject.image_url || '',
+                    coverColor: coverData.coverColor,
+                    coverGradient: coverData.coverGradient
+                  });
                 });
-                allBooks.push({
-                  id: subject.id,
-                  title: subject.name,
-                  subject: subject.name,
-                  grade: grade.name,
-                  image: getBookImage(subject.name)
-                });
-              });
-            }
-          });
-          
-          setSubjects(allSubjects);
-          setBooks(allBooks.slice(0, 4));
+              }
+            });
+            
+            setSubjects(allSubjects);
+            setBooks(allBooks.slice(0, 4));
+          }
         }
       } catch (error) {
         console.error("Failed to fetch dashboard data:", error);
@@ -130,21 +191,6 @@ export default function DashboardPage() {
     fetchDashboardData();
   }, []);
 
-  const getBookImage = (subjectName: string): string => {
-    const images: Record<string, string> = {
-      'Mathematics': 'https://images.unsplash.com/photo-1635070041078-e363dbe005cb?w=400&h=600&fit=crop',
-      'Physics': 'https://images.unsplash.com/photo-1636466497217-26a8cbeaf0aa?w=400&h=600&fit=crop',
-      'Chemistry': 'https://images.unsplash.com/photo-1603126857599-f6e157fa2fe6?w=400&h=600&fit=crop',
-      'Biology': 'https://images.unsplash.com/photo-1530026405186-ed1f139313f8?w=400&h=600&fit=crop',
-      'English': 'https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?w=400&h=600&fit=crop',
-      'History': 'https://images.unsplash.com/photo-1461360370896-922624d12a74?w=400&h=600&fit=crop',
-      'Geography': 'https://images.unsplash.com/photo-1524661135-423995f22d0b?w=400&h=600&fit=crop',
-    };
-    
-    const key = Object.keys(images).find(k => subjectName.toLowerCase().includes(k.toLowerCase()));
-    return images[key || 'Mathematics'] || images['Mathematics'];
-  };
-
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-surface">
@@ -154,14 +200,13 @@ export default function DashboardPage() {
   }
 
   const userName = user?.fullName || user?.username || 'Student';
-  const userGrade = user?.grade ? `Grade ${user.grade}` : 'Grade 12';
+  const userGrade = user?.grade ? `Grade ${user.grade.replace(/[^\d]/g, '')}` : 'Grade 12';
 
   return (
     <div className="min-h-screen bg-surface font-body text-on-surface antialiased m-plus-motif relative">
       <TopNav user={user} />
       
       <main className="pt-24 pb-12 px-6 md:px-12 w-full max-w-screen-2xl mx-auto flex flex-col lg:flex-row gap-8 relative z-10">
-        {/* Left Column: Main Dashboard */}
         <div className="flex-1 space-y-8">
           <HeroSection 
             userName={userName}
@@ -169,16 +214,19 @@ export default function DashboardPage() {
             stats={stats || undefined}
           />
           <QuickAccessGrid />
-          <LibrarySection books={books} userGrade={userGrade} loading={false} />
+          <LibrarySection 
+            books={books} 
+            userGrade={userGrade} 
+            loading={false}
+            subjects={subjects}
+          />
         </div>
 
-        {/* Right Column: Sidebar */}
         <Sidebar stats={stats || undefined} />
       </main>
 
       <Footer />
       
-      {/* Background motif for whole page */}
       <div className="fixed inset-0 pointer-events-none z-0 opacity-20">
         <div className="absolute top-0 right-0 w-1/2 h-1/2 bg-primary/5 blur-3xl rounded-full -translate-y-1/2 translate-x-1/4"></div>
         <div className="absolute bottom-0 left-0 w-1/3 h-1/3 bg-tertiary/5 blur-3xl rounded-full translate-y-1/4 -translate-x-1/4"></div>
