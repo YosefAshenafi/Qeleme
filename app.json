@@ -1,0 +1,8 @@
+{
+  "android": {
+    "package": "com.jossyfreelancer.megatest"
+  },
+  "ios": {
+    "bundleIdentifier": "com.jossyfreelancer.megatest"
+  }
+}

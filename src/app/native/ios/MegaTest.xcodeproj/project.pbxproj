@@ -7,29 +7,29 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		0972C0DB19CF0EEE1385F7D2 /* ExpoModulesProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = E32E02672F5ABCF12ADFF304 /* ExpoModulesProvider.swift */; };
 		13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB51A68108700A75B9A /* Images.xcassets */; };
+		15E50E2459A53FE9119154B8 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 338B78D25C1019B732E5005F /* PrivacyInfo.xcprivacy */; };
 		3E461D99554A48A4959DE609 /* SplashScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = AA286B85B6C04FC6940260E9 /* SplashScreen.storyboard */; };
-		7450779F4327BCA45D5E9C31 /* libPods-Mega.a in Frameworks */ = {isa = PBXBuildFile; fileRef = F384EBD14C009A2012CD8B33 /* libPods-Mega.a */; };
-		7CE359DBF20E0A1F4B72B868 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 6057F4EEDDF8731F449B0A13 /* PrivacyInfo.xcprivacy */; };
-		855FC849FEF2CF64E4700D96 /* ExpoModulesProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 26C65CD1EAFBA10A2C138245 /* ExpoModulesProvider.swift */; };
+		A1418865A90679897F124F46 /* libPods-MegaTest.a in Frameworks */ = {isa = PBXBuildFile; fileRef = C5C019313D2D2B5BFCFE9E3B /* libPods-MegaTest.a */; };
 		BB2F792D24A3F905000567C9 /* Expo.plist in Resources */ = {isa = PBXBuildFile; fileRef = BB2F792C24A3F905000567C9 /* Expo.plist */; };
 		F11748422D0307B40044C1D9 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = F11748412D0307B40044C1D9 /* AppDelegate.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		13B07F961A680F5B00A75B9A /* Mega.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Mega.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		13B07FB51A68108700A75B9A /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Images.xcassets; path = Mega/Images.xcassets; sourceTree = "<group>"; };
-		13B07FB61A68108700A75B9A /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = Info.plist; path = Mega/Info.plist; sourceTree = "<group>"; };
-		26C65CD1EAFBA10A2C138245 /* ExpoModulesProvider.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ExpoModulesProvider.swift; path = "Pods/Target Support Files/Pods-Mega/ExpoModulesProvider.swift"; sourceTree = "<group>"; };
-		6057F4EEDDF8731F449B0A13 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; includeInIndex = 1; name = PrivacyInfo.xcprivacy; path = Mega/PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
-		9285418731D72722F3562E28 /* Pods-Mega.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Mega.debug.xcconfig"; path = "Target Support Files/Pods-Mega/Pods-Mega.debug.xcconfig"; sourceTree = "<group>"; };
-		AA286B85B6C04FC6940260E9 /* SplashScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = SplashScreen.storyboard; path = Mega/SplashScreen.storyboard; sourceTree = "<group>"; };
+		13B07F961A680F5B00A75B9A /* MegaTest.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MegaTest.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		13B07FB51A68108700A75B9A /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Images.xcassets; path = MegaTest/Images.xcassets; sourceTree = "<group>"; };
+		13B07FB61A68108700A75B9A /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = Info.plist; path = MegaTest/Info.plist; sourceTree = "<group>"; };
+		338B78D25C1019B732E5005F /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; includeInIndex = 1; name = PrivacyInfo.xcprivacy; path = MegaTest/PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
+		7CDF174418477E7AA4CE5601 /* Pods-MegaTest.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-MegaTest.debug.xcconfig"; path = "Target Support Files/Pods-MegaTest/Pods-MegaTest.debug.xcconfig"; sourceTree = "<group>"; };
+		7E341F42BC3CF632CB0122BB /* Pods-MegaTest.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-MegaTest.release.xcconfig"; path = "Target Support Files/Pods-MegaTest/Pods-MegaTest.release.xcconfig"; sourceTree = "<group>"; };
+		AA286B85B6C04FC6940260E9 /* SplashScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = SplashScreen.storyboard; path = MegaTest/SplashScreen.storyboard; sourceTree = "<group>"; };
 		BB2F792C24A3F905000567C9 /* Expo.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Expo.plist; sourceTree = "<group>"; };
-		E93E8227105154C88707C0B7 /* Pods-Mega.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Mega.release.xcconfig"; path = "Target Support Files/Pods-Mega/Pods-Mega.release.xcconfig"; sourceTree = "<group>"; };
+		C5C019313D2D2B5BFCFE9E3B /* libPods-MegaTest.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-MegaTest.a"; sourceTree = BUILT_PRODUCTS_DIR; };
+		E32E02672F5ABCF12ADFF304 /* ExpoModulesProvider.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ExpoModulesProvider.swift; path = "Pods/Target Support Files/Pods-MegaTest/ExpoModulesProvider.swift"; sourceTree = "<group>"; };
 		ED297162215061F000B7C4FE /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = System/Library/Frameworks/JavaScriptCore.framework; sourceTree = SDKROOT; };
-		F11748412D0307B40044C1D9 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = AppDelegate.swift; path = Mega/AppDelegate.swift; sourceTree = "<group>"; };
-		F11748442D0722820044C1D9 /* Mega-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = "Mega-Bridging-Header.h"; path = "Mega/Mega-Bridging-Header.h"; sourceTree = "<group>"; };
-		F384EBD14C009A2012CD8B33 /* libPods-Mega.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-Mega.a"; sourceTree = BUILT_PRODUCTS_DIR; };
+		F11748412D0307B40044C1D9 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = AppDelegate.swift; path = MegaTest/AppDelegate.swift; sourceTree = "<group>"; };
+		F11748442D0722820044C1D9 /* MegaTest-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = "MegaTest-Bridging-Header.h"; path = "MegaTest/MegaTest-Bridging-Header.h"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -37,42 +37,50 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				7450779F4327BCA45D5E9C31 /* libPods-Mega.a in Frameworks */,
+				A1418865A90679897F124F46 /* libPods-MegaTest.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		13B07FAE1A68108700A75B9A /* Mega */ = {
+		13B07FAE1A68108700A75B9A /* MegaTest */ = {
 			isa = PBXGroup;
 			children = (
 				F11748412D0307B40044C1D9 /* AppDelegate.swift */,
-				F11748442D0722820044C1D9 /* Mega-Bridging-Header.h */,
+				F11748442D0722820044C1D9 /* MegaTest-Bridging-Header.h */,
 				BB2F792B24A3F905000567C9 /* Supporting */,
 				13B07FB51A68108700A75B9A /* Images.xcassets */,
 				13B07FB61A68108700A75B9A /* Info.plist */,
 				AA286B85B6C04FC6940260E9 /* SplashScreen.storyboard */,
-				6057F4EEDDF8731F449B0A13 /* PrivacyInfo.xcprivacy */,
+				338B78D25C1019B732E5005F /* PrivacyInfo.xcprivacy */,
 			);
-			name = Mega;
+			name = MegaTest;
+			sourceTree = "<group>";
+		};
+		2A88FA7E816A7982E2210BCB /* MegaTest */ = {
+			isa = PBXGroup;
+			children = (
+				E32E02672F5ABCF12ADFF304 /* ExpoModulesProvider.swift */,
+			);
+			name = MegaTest;
 			sourceTree = "<group>";
 		};
 		2D16E6871FA4F8E400B85C8A /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
 				ED297162215061F000B7C4FE /* JavaScriptCore.framework */,
-				F384EBD14C009A2012CD8B33 /* libPods-Mega.a */,
+				C5C019313D2D2B5BFCFE9E3B /* libPods-MegaTest.a */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
 		};
-		827D6443F6EAAEFD0E8632E9 /* Mega */ = {
+		5FC54124DCEB6D53FAA155DD /* ExpoModulesProviders */ = {
 			isa = PBXGroup;
 			children = (
-				26C65CD1EAFBA10A2C138245 /* ExpoModulesProvider.swift */,
+				2A88FA7E816A7982E2210BCB /* MegaTest */,
 			);
-			name = Mega;
+			name = ExpoModulesProviders;
 			sourceTree = "<group>";
 		};
 		832341AE1AAA6A7D00B99B32 /* Libraries */ = {
@@ -85,12 +93,12 @@
 		83CBB9F61A601CBA00E9B192 = {
 			isa = PBXGroup;
 			children = (
-				13B07FAE1A68108700A75B9A /* Mega */,
+				13B07FAE1A68108700A75B9A /* MegaTest */,
 				832341AE1AAA6A7D00B99B32 /* Libraries */,
 				83CBBA001A601CBA00E9B192 /* Products */,
 				2D16E6871FA4F8E400B85C8A /* Frameworks */,
-				8BC270CB6A4AE9A8663BCF4E /* Pods */,
-				9325BA56B2C9B0E58C7343C5 /* ExpoModulesProviders */,
+				8A6DFC49C951E31632282ABE /* Pods */,
+				5FC54124DCEB6D53FAA155DD /* ExpoModulesProviders */,
 			);
 			indentWidth = 2;
 			sourceTree = "<group>";
@@ -100,27 +108,19 @@
 		83CBBA001A601CBA00E9B192 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				13B07F961A680F5B00A75B9A /* Mega.app */,
+				13B07F961A680F5B00A75B9A /* MegaTest.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
 		};
-		8BC270CB6A4AE9A8663BCF4E /* Pods */ = {
+		8A6DFC49C951E31632282ABE /* Pods */ = {
 			isa = PBXGroup;
 			children = (
-				9285418731D72722F3562E28 /* Pods-Mega.debug.xcconfig */,
-				E93E8227105154C88707C0B7 /* Pods-Mega.release.xcconfig */,
+				7CDF174418477E7AA4CE5601 /* Pods-MegaTest.debug.xcconfig */,
+				7E341F42BC3CF632CB0122BB /* Pods-MegaTest.release.xcconfig */,
 			);
 			name = Pods;
 			path = Pods;
-			sourceTree = "<group>";
-		};
-		9325BA56B2C9B0E58C7343C5 /* ExpoModulesProviders */ = {
-			isa = PBXGroup;
-			children = (
-				827D6443F6EAAEFD0E8632E9 /* Mega */,
-			);
-			name = ExpoModulesProviders;
 			sourceTree = "<group>";
 		};
 		BB2F792B24A3F905000567C9 /* Supporting */ = {
@@ -129,32 +129,32 @@
 				BB2F792C24A3F905000567C9 /* Expo.plist */,
 			);
 			name = Supporting;
-			path = Mega/Supporting;
+			path = MegaTest/Supporting;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		13B07F861A680F5B00A75B9A /* Mega */ = {
+		13B07F861A680F5B00A75B9A /* MegaTest */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 13B07F931A680F5B00A75B9A /* Build configuration list for PBXNativeTarget "Mega" */;
+			buildConfigurationList = 13B07F931A680F5B00A75B9A /* Build configuration list for PBXNativeTarget "MegaTest" */;
 			buildPhases = (
 				08A4A3CD28434E44B6B9DE2E /* [CP] Check Pods Manifest.lock */,
-				41AFA96C285B3FF345E4C8E0 /* [Expo] Configure project */,
+				8B1FE4BDAB283C24B2E4B5E1 /* [Expo] Configure project */,
 				13B07F871A680F5B00A75B9A /* Sources */,
 				13B07F8C1A680F5B00A75B9A /* Frameworks */,
 				13B07F8E1A680F5B00A75B9A /* Resources */,
 				00DD1BFF1BD5951E006B06BC /* Bundle React Native code and images */,
 				800E24972A6A228C8D4807E9 /* [CP] Copy Pods Resources */,
-				0B9BEC4D2E1309DC21B9AEC6 /* [CP] Embed Pods Frameworks */,
+				AD4E73F573339929015C3124 /* [CP] Embed Pods Frameworks */,
 			);
 			buildRules = (
 			);
 			dependencies = (
 			);
-			name = Mega;
-			productName = Mega;
-			productReference = 13B07F961A680F5B00A75B9A /* Mega.app */;
+			name = MegaTest;
+			productName = MegaTest;
+			productReference = 13B07F961A680F5B00A75B9A /* MegaTest.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -170,7 +170,7 @@
 					};
 				};
 			};
-			buildConfigurationList = 83CBB9FA1A601CBA00E9B192 /* Build configuration list for PBXProject "Mega" */;
+			buildConfigurationList = 83CBB9FA1A601CBA00E9B192 /* Build configuration list for PBXProject "MegaTest" */;
 			compatibilityVersion = "Xcode 3.2";
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
@@ -183,7 +183,7 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				13B07F861A680F5B00A75B9A /* Mega */,
+				13B07F861A680F5B00A75B9A /* MegaTest */,
 			);
 		};
 /* End PBXProject section */
@@ -196,7 +196,7 @@
 				BB2F792D24A3F905000567C9 /* Expo.plist in Resources */,
 				13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */,
 				3E461D99554A48A4959DE609 /* SplashScreen.storyboard in Resources */,
-				7CE359DBF20E0A1F4B72B868 /* PrivacyInfo.xcprivacy in Resources */,
+				15E50E2459A53FE9119154B8 /* PrivacyInfo.xcprivacy in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -235,58 +235,12 @@
 			outputFileListPaths = (
 			);
 			outputPaths = (
-				"$(DERIVED_FILE_DIR)/Pods-Mega-checkManifestLockResult.txt",
+				"$(DERIVED_FILE_DIR)/Pods-MegaTest-checkManifestLockResult.txt",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
 			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
 			showEnvVarsInLog = 0;
-		};
-		0B9BEC4D2E1309DC21B9AEC6 /* [CP] Embed Pods Frameworks */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-Mega/Pods-Mega-frameworks.sh",
-				"${PODS_XCFRAMEWORKS_BUILD_DIR}/React-Core-prebuilt/React.framework/React",
-				"${PODS_XCFRAMEWORKS_BUILD_DIR}/ReactNativeDependencies/ReactNativeDependencies.framework/ReactNativeDependencies",
-				"${PODS_XCFRAMEWORKS_BUILD_DIR}/hermes-engine/Pre-built/hermes.framework/hermes",
-			);
-			name = "[CP] Embed Pods Frameworks";
-			outputPaths = (
-				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/React.framework",
-				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/ReactNativeDependencies.framework",
-				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/hermes.framework",
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-Mega/Pods-Mega-frameworks.sh\"\n";
-			showEnvVarsInLog = 0;
-		};
-		41AFA96C285B3FF345E4C8E0 /* [Expo] Configure project */ = {
-			isa = PBXShellScriptBuildPhase;
-			alwaysOutOfDate = 1;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-			);
-			inputPaths = (
-				"$(SRCROOT)/.xcode.env",
-				"$(SRCROOT)/.xcode.env.local",
-				"$(SRCROOT)/Mega/Mega.entitlements",
-				"$(SRCROOT)/Pods/Target Support Files/Pods-Mega/expo-configure-project.sh",
-			);
-			name = "[Expo] Configure project";
-			outputFileListPaths = (
-			);
-			outputPaths = (
-				"$(SRCROOT)/Pods/Target Support Files/Pods-Mega/ExpoModulesProvider.swift",
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "# This script configures Expo modules and generates the modules provider file.\nbash -l -c \"./Pods/Target\\ Support\\ Files/Pods-Mega/expo-configure-project.sh\"\n";
 		};
 		800E24972A6A228C8D4807E9 /* [CP] Copy Pods Resources */ = {
 			isa = PBXShellScriptBuildPhase;
@@ -294,7 +248,7 @@
 			files = (
 			);
 			inputPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-Mega/Pods-Mega-resources.sh",
+				"${PODS_ROOT}/Target Support Files/Pods-MegaTest/Pods-MegaTest-resources.sh",
 				"${PODS_CONFIGURATION_BUILD_DIR}/EXConstants/EXConstants.bundle",
 				"${PODS_CONFIGURATION_BUILD_DIR}/EXConstants/ExpoConstants_privacy.bundle",
 				"${PODS_CONFIGURATION_BUILD_DIR}/ExpoFileSystem/ExpoFileSystem_privacy.bundle",
@@ -361,7 +315,53 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-Mega/Pods-Mega-resources.sh\"\n";
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-MegaTest/Pods-MegaTest-resources.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
+		8B1FE4BDAB283C24B2E4B5E1 /* [Expo] Configure project */ = {
+			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+				"$(SRCROOT)/.xcode.env",
+				"$(SRCROOT)/.xcode.env.local",
+				"$(SRCROOT)/MegaTest/MegaTest.entitlements",
+				"$(SRCROOT)/Pods/Target Support Files/Pods-MegaTest/expo-configure-project.sh",
+			);
+			name = "[Expo] Configure project";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+				"$(SRCROOT)/Pods/Target Support Files/Pods-MegaTest/ExpoModulesProvider.swift",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "# This script configures Expo modules and generates the modules provider file.\nbash -l -c \"./Pods/Target\\ Support\\ Files/Pods-MegaTest/expo-configure-project.sh\"\n";
+		};
+		AD4E73F573339929015C3124 /* [CP] Embed Pods Frameworks */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-MegaTest/Pods-MegaTest-frameworks.sh",
+				"${PODS_XCFRAMEWORKS_BUILD_DIR}/React-Core-prebuilt/React.framework/React",
+				"${PODS_XCFRAMEWORKS_BUILD_DIR}/ReactNativeDependencies/ReactNativeDependencies.framework/ReactNativeDependencies",
+				"${PODS_XCFRAMEWORKS_BUILD_DIR}/hermes-engine/Pre-built/hermes.framework/hermes",
+			);
+			name = "[CP] Embed Pods Frameworks";
+			outputPaths = (
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/React.framework",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/ReactNativeDependencies.framework",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/hermes.framework",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-MegaTest/Pods-MegaTest-frameworks.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
 /* End PBXShellScriptBuildPhase section */
@@ -372,7 +372,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				F11748422D0307B40044C1D9 /* AppDelegate.swift in Sources */,
-				855FC849FEF2CF64E4700D96 /* ExpoModulesProvider.swift in Sources */,
+				0972C0DB19CF0EEE1385F7D2 /* ExpoModulesProvider.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -381,18 +381,18 @@
 /* Begin XCBuildConfiguration section */
 		13B07F941A680F5B00A75B9A /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 9285418731D72722F3562E28 /* Pods-Mega.debug.xcconfig */;
+			baseConfigurationReference = 7CDF174418477E7AA4CE5601 /* Pods-MegaTest.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
-				CODE_SIGN_ENTITLEMENTS = Mega/Mega.entitlements;
+				CODE_SIGN_ENTITLEMENTS = MegaTest/MegaTest.entitlements;
 				CURRENT_PROJECT_VERSION = 1;
 				ENABLE_BITCODE = NO;
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"$(inherited)",
 					"FB_SONARKIT_ENABLED=1",
 				);
-				INFOPLIST_FILE = Mega/Info.plist;
+				INFOPLIST_FILE = MegaTest/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.1;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -406,8 +406,8 @@
 				);
 				OTHER_SWIFT_FLAGS = "$(inherited) -D EXPO_CONFIGURATION_DEBUG";
 				PRODUCT_BUNDLE_IDENTIFIER = com.megatest.edu;
-				PRODUCT_NAME = Mega;
-				SWIFT_OBJC_BRIDGING_HEADER = "Mega/Mega-Bridging-Header.h";
+				PRODUCT_NAME = "MegaTest";
+				SWIFT_OBJC_BRIDGING_HEADER = "MegaTest/MegaTest-Bridging-Header.h";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -417,13 +417,13 @@
 		};
 		13B07F951A680F5B00A75B9A /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = E93E8227105154C88707C0B7 /* Pods-Mega.release.xcconfig */;
+			baseConfigurationReference = 7E341F42BC3CF632CB0122BB /* Pods-MegaTest.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
-				CODE_SIGN_ENTITLEMENTS = Mega/Mega.entitlements;
+				CODE_SIGN_ENTITLEMENTS = MegaTest/MegaTest.entitlements;
 				CURRENT_PROJECT_VERSION = 1;
-				INFOPLIST_FILE = Mega/Info.plist;
+				INFOPLIST_FILE = MegaTest/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.1;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -437,8 +437,8 @@
 				);
 				OTHER_SWIFT_FLAGS = "$(inherited) -D EXPO_CONFIGURATION_RELEASE";
 				PRODUCT_BUNDLE_IDENTIFIER = com.megatest.edu;
-				PRODUCT_NAME = Mega;
-				SWIFT_OBJC_BRIDGING_HEADER = "Mega/Mega-Bridging-Header.h";
+				PRODUCT_NAME = "MegaTest";
+				SWIFT_OBJC_BRIDGING_HEADER = "MegaTest/MegaTest-Bridging-Header.h";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				VERSIONING_SYSTEM = "apple-generic";
@@ -566,7 +566,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		13B07F931A680F5B00A75B9A /* Build configuration list for PBXNativeTarget "Mega" */ = {
+		13B07F931A680F5B00A75B9A /* Build configuration list for PBXNativeTarget "MegaTest" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				13B07F941A680F5B00A75B9A /* Debug */,
@@ -575,7 +575,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		83CBB9FA1A601CBA00E9B192 /* Build configuration list for PBXProject "Mega" */ = {
+		83CBB9FA1A601CBA00E9B192 /* Build configuration list for PBXProject "MegaTest" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				83CBBA201A601CBA00E9B192 /* Debug */,

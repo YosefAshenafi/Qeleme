@@ -770,8 +770,6 @@ export const MCQScreenStyles = StyleSheet.create<any>({
     paddingTop: 12,
     paddingBottom: 20,
     gap: 12,
-    flexGrow: 0,
-    flexShrink: 1,
   },
   booksNationalLink: {
     flexDirection: 'row',

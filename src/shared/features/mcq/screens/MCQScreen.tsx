@@ -1864,6 +1864,7 @@ export default function MCQScreen() {
                             showsVerticalScrollIndicator={false}
                             nestedScrollEnabled
                             ref={booksListScrollRef}
+                            bounces={true}
                           >
                           <ScrollView
                             horizontal
