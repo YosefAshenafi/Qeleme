@@ -56,6 +56,11 @@ class ApiClient {
     return response.data;
   }
 
+  async getPaymentPlans() {
+    const response = await this.client.get('/api/payment-plans');
+    return response.data;
+  }
+
   async sendOTP(phoneNumber: string) {
     const response = await this.client.post('/api/auth/send-otp', { phoneNumber });
     return response.data;
@@ -66,22 +71,16 @@ class ApiClient {
     return response.data;
   }
 
-  async getPaymentPlans() {
-    const response = await this.client.get('/api/payment-plans');
-    return response.data;
-  }
-
-  async register(data: { 
-    fullName: string; 
+  async registerStudent(data: { 
+    name: string; 
     username: string; 
     password: string; 
-    phone: string; 
-    grade?: string; 
-    region?: string;
-    role?: string;
-    planId?: string;
+    phoneNumber: string; 
+    grade: string; 
+    region: string;
+    plan?: string;
   }) {
-    const response = await this.client.post('/api/auth/register', data);
+    const response = await this.client.post('/api/auth/register/student', data);
     if (response.data.data?.token) {
       localStorage.setItem('auth_token', response.data.data.token);
     }

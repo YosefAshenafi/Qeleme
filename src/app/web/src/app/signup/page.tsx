@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { api } from "@/lib/api";
 import { AUTH_DATA } from "../../data/mockData";
 
@@ -24,9 +24,16 @@ const grades = [
 
 const USERNAME_REGEX = /^[a-zA-Z0-9_]{3,20}$/;
 
+interface PaymentPlan {
+  _id: string;
+  name: string;
+  amount: number;
+  durationInMonths: number;
+  description?: string;
+}
+
 export default function SignupPage() {
   const router = useRouter();
-  const searchParams = useSearchParams();
   const [step, setStep] = useState(1);
   const [formData, setFormData] = useState({
     fullName: "",
@@ -44,10 +51,16 @@ export default function SignupPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [usernameValid, setUsernameValid] = useState<boolean | null>(null);
   const [usernameChecking, setUsernameChecking] = useState(false);
+  const [plans, setPlans] = useState<PaymentPlan[]>([]);
+  const [selectedPlan, setSelectedPlan] = useState<PaymentPlan | null>(null);
+  
   const [otp, setOtp] = useState("");
-  const [otpLoading, setOtpLoading] = useState(false);
   const [otpSent, setOtpSent] = useState(false);
   const [timeLeft, setTimeLeft] = useState(300);
+
+  useEffect(() => {
+    fetchPlans();
+  }, []);
 
   useEffect(() => {
     if (otpSent && timeLeft > 0) {
@@ -65,6 +78,16 @@ export default function SignupPage() {
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
     return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+  };
+
+  const fetchPlans = async () => {
+    try {
+      const data = await api.getPaymentPlans();
+      const paidPlans = data.filter((p: PaymentPlan) => p.durationInMonths > 0 && p.amount > 0);
+      setPlans(paidPlans.sort((a: PaymentPlan, b: PaymentPlan) => b.durationInMonths - a.durationInMonths));
+    } catch (err) {
+      console.error("Failed to fetch plans:", err);
+    }
   };
 
   const checkUsernameAvailability = async (username: string) => {
@@ -114,6 +137,23 @@ export default function SignupPage() {
     return Object.keys(newErrors).length === 0;
   };
 
+  const getFriendlyError = (err: unknown, defaultMsg: string) => {
+    const error = err as { response?: { data?: { message?: string } } };
+    const serverMessage = error.response?.data?.message;
+    
+    if (serverMessage) return serverMessage;
+    
+    const axiosError = err as { code?: string; message?: string };
+    if (axiosError.code === 'ERR_NETWORK' || axiosError.message?.includes('Network Error')) {
+      return "Unable to connect. Please check your internet connection.";
+    }
+    if (axiosError.code === 'ECONNABORTED') {
+      return "Request timed out. Please try again.";
+    }
+    
+    return defaultMsg;
+  };
+
   const handleSendOTP = async () => {
     if (!validateForm()) return;
     setLoading(true);
@@ -124,8 +164,7 @@ export default function SignupPage() {
       setOtpSent(true);
       setStep(2);
     } catch (err: unknown) {
-      const error = err as { response?: { data?: { message?: string } } };
-      setError(error.response?.data?.message || "Failed to send OTP");
+      setError(getFriendlyError(err, "OTP sending failed. Please try again."));
     } finally {
       setLoading(false);
     }
@@ -136,26 +175,16 @@ export default function SignupPage() {
       setError("Enter 6-digit OTP");
       return;
     }
-    setOtpLoading(true);
+    setLoading(true);
     setError("");
     try {
       const fullPhone = `+251${formData.phoneNumber}`;
       await api.verifyOTP(fullPhone, otp);
-      await api.register({
-        fullName: formData.fullName,
-        username: formData.username.toLowerCase(),
-        password: formData.password,
-        phone: fullPhone,
-        grade: formData.grade,
-        region: formData.region,
-        role: "student"
-      });
-      router.push("/login?registered=true");
+      setStep(3);
     } catch (err: unknown) {
-      const error = err as { response?: { data?: { message?: string } } };
-      setError(error.response?.data?.message || "Registration failed");
+      setError(getFriendlyError(err, "Invalid OTP. Please try again."));
     } finally {
-      setOtpLoading(false);
+      setLoading(false);
     }
   };
 
@@ -168,8 +197,39 @@ export default function SignupPage() {
       setTimeLeft(300);
       setOtp("");
     } catch (err: unknown) {
+      setError(getFriendlyError(err, "Failed to resend OTP. Please try again."));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleRegister = async () => {
+    if (!selectedPlan) {
+      setError("Please select a subscription plan");
+      return;
+    }
+
+    setLoading(true);
+    setError("");
+
+    try {
+      const phoneNumber = formData.phoneNumber.replace(/^0/, '0');
+      const gradeValue = formData.grade === 'KG' ? 'kg' : `grade ${formData.grade}`;
+
+      await api.registerStudent({
+        name: formData.fullName,
+        username: formData.username.toLowerCase(),
+        password: formData.password,
+        phoneNumber,
+        grade: gradeValue,
+        region: formData.region,
+        plan: selectedPlan.name
+      });
+
+      router.push("/dashboard");
+    } catch (err: unknown) {
       const error = err as { response?: { data?: { message?: string } } };
-      setError(error.response?.data?.message || "Failed to resend");
+      setError(error.response?.data?.message || "Registration failed");
     } finally {
       setLoading(false);
     }
@@ -178,19 +238,15 @@ export default function SignupPage() {
   return (
     <div className="bg-background font-body text-on-surface min-h-screen flex items-center justify-center relative overflow-hidden p-4">
       <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden">
-        {/* Tonal Layering Elements */}
         <div className="absolute -top-24 -left-24 w-96 h-96 bg-primary/5 rounded-full blur-3xl"></div>
         <div className="absolute bottom-0 right-0 w-[600px] h-[600px] bg-secondary-container/10 rounded-full blur-[120px]"></div>
-        {/* Large Artistic Background Image */}
         <div className="absolute right-0 top-0 w-1/2 h-full hidden lg:block">
           <div 
             className="w-full h-full opacity-40 mix-blend-multiply grayscale" 
             style={{ backgroundImage: `url('${AUTH_DATA.login.heroImage}')`, backgroundSize: 'cover', backgroundPosition: 'center' }}
           ></div>
-          {/* Glass Overlay for the Image */}
           <div className="absolute inset-0 bg-gradient-to-l from-transparent to-background"></div>
         </div>
-        {/* Watermark MT Motif */}
         <div className="absolute bottom-12 left-12 opacity-[0.03] select-none text-[20rem] font-headline font-black leading-none tracking-tighter">
           MT
         </div>
@@ -227,15 +283,16 @@ export default function SignupPage() {
             <div className="flex justify-between items-center mb-6">
               <div>
                 <h2 className="text-2xl font-headline font-bold text-on-surface">
-                  {step === 1 ? "Create Account" : "Verify Phone"}
+                  {step === 1 ? "Create Account" : step === 2 ? "Verify Phone" : "Choose Plan"}
                 </h2>
                 <p className="text-sm text-on-surface-variant font-medium">
-                  {step === 1 ? "Step 1 of 2" : "Step 2 of 2"}
+                  Step {step} of 3
                 </p>
               </div>
               <div className="flex gap-1">
                 <div className={`w-6 h-2 rounded-full ${step >= 1 ? 'bg-primary' : 'bg-surface-container-highest'}`}></div>
                 <div className={`w-4 h-2 rounded-full ${step >= 2 ? 'bg-primary' : 'bg-surface-container-highest'}`}></div>
+                <div className={`w-4 h-2 rounded-full ${step >= 3 ? 'bg-primary' : 'bg-surface-container-highest'}`}></div>
               </div>
             </div>
 
@@ -245,7 +302,7 @@ export default function SignupPage() {
               </div>
             )}
 
-            {step === 1 ? (
+            {step === 1 && (
               <form onSubmit={(e) => { e.preventDefault(); handleSendOTP(); }} className="space-y-5">
                 <div className="grid grid-cols-2 gap-4">
                   <div className="col-span-2">
@@ -318,13 +375,13 @@ export default function SignupPage() {
                       onChange={(e) => setFormData({ ...formData, region: e.target.value })}
                       className="w-full bg-surface-container-low rounded-lg px-4 py-3 text-base text-on-surface focus:ring-1 focus:ring-primary/20 appearance-none"
                     >
-                      <option value="Addis Ababa">Addis Ababa</option>
-                      <option value="Oromia">Oromia</option>
-                      <option value="Amhara">Amhara</option>
-                      <option value="SNNPR">SNNPR</option>
-                      <option value="Tigray">Tigray</option>
-                      <option value="Afar">Afar</option>
-                      <option value="Somali">Somali</option>
+                      <option key="addis-ababa" value="Addis Ababa">Addis Ababa</option>
+                      <option key="oromia" value="Oromia">Oromia</option>
+                      <option key="amhara" value="Amhara">Amhara</option>
+                      <option key="snnpr" value="SNNPR">SNNPR</option>
+                      <option key="tigray" value="Tigray">Tigray</option>
+                      <option key="afar" value="Afar">Afar</option>
+                      <option key="somali" value="Somali">Somali</option>
                     </select>
                   </div>
 
@@ -386,7 +443,9 @@ export default function SignupPage() {
                   Already have an account? <Link href="/login" className="text-primary font-bold">Login</Link>
                 </p>
               </form>
-            ) : (
+            )}
+
+            {step === 2 && (
               <div className="space-y-5">
                 <p className="text-base text-center text-on-surface-variant">
                   Code sent to <span className="text-primary font-bold">+251 {formData.phoneNumber}</span>
@@ -405,11 +464,11 @@ export default function SignupPage() {
 
                 <button 
                   type="button"
-                  disabled={otpLoading || otp.length !== 6}
+                  disabled={loading || otp.length !== 6}
                   onClick={handleVerifyOTP}
                   className="w-full py-3.5 bg-gradient-to-r from-primary to-primary-dim text-on-primary font-bold text-base rounded-full shadow-lg shadow-primary/20 disabled:opacity-70"
                 >
-                  {otpLoading ? "Verifying..." : "Verify & Create Account"}
+                  {loading ? "Verifying..." : "Verify & Continue"}
                 </button>
 
                 <div className="text-center">
@@ -424,6 +483,59 @@ export default function SignupPage() {
 
                 <button type="button" onClick={() => { setStep(1); setOtpSent(false); setOtp(""); }} className="w-full py-3 text-sm text-on-surface-variant hover:text-primary">
                   Back to Form
+                </button>
+              </div>
+            )}
+
+            {step === 3 && (
+              <div className="space-y-4">
+                <div className="space-y-3 max-h-[400px] overflow-y-auto">
+                  {plans.map((plan, index) => {
+                    const isSelected = selectedPlan?.name === plan.name;
+                    
+                    return (
+                      <button
+                        key={index}
+                        type="button"
+                        onClick={() => setSelectedPlan(plan)}
+                        className={`w-full p-4 rounded-xl border-2 transition-all text-left ${
+                          isSelected 
+                            ? 'border-primary bg-primary text-on-primary' 
+                            : 'border-primary/30 bg-primary/10 hover:border-primary hover:bg-primary/20'
+                        }`}
+                      >
+                        <div className="flex justify-between items-center">
+                          <div>
+                            <p className={`text-lg ${isSelected ? 'font-bold' : 'font-medium'}`}>{plan.name}</p>
+                            <p className={`text-sm ${isSelected ? 'opacity-80' : 'text-on-surface-variant'}`}>{plan.durationInMonths} months</p>
+                          </div>
+                          <div className="text-right">
+                            <p className={`text-xl ${isSelected ? 'font-bold' : 'font-semibold'}`}>ETB {plan.amount}</p>
+                            {isSelected && <span className="material-symbols-outlined text-on-primary">check_circle</span>}
+                          </div>
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
+
+                {selectedPlan && (
+                  <div className="p-4 bg-primary/10 rounded-xl border border-primary/20">
+                    <p className="text-sm text-on-surface-variant">Total: <span className="font-bold text-primary text-lg">ETB {selectedPlan.amount}</span></p>
+                  </div>
+                )}
+
+                <button 
+                  type="button"
+                  disabled={loading || !selectedPlan}
+                  onClick={handleRegister}
+                  className="w-full py-3.5 bg-gradient-to-r from-primary to-primary-dim text-on-primary font-bold text-base rounded-full shadow-lg shadow-primary/20 disabled:opacity-70"
+                >
+                  {loading ? "Creating Account..." : `Pay ETB ${selectedPlan?.amount || 0} & Register`}
+                </button>
+
+                <button type="button" onClick={() => setStep(2)} className="w-full py-3 text-sm text-on-surface-variant hover:text-primary">
+                  Back to Verification
                 </button>
               </div>
             )}
