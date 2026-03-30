@@ -1,6 +1,11 @@
 {
   "name": "megatest",
   "private": true,
+  "workspaces": [
+    "src/shared",
+    "src/app/*",
+    "backend"
+  ],
   "scripts": {
     "dev": "turbo dev",
     "build": "turbo build",

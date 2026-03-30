@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Login | M Test</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700;900&amp;family=Manrope:wght@200;300;400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "tertiary-fixed": "#fe99ed",
+              "secondary-dim": "#4042aa",
+              "secondary": "#4d4fb7",
+              "on-primary-container": "#001b60",
+              "on-tertiary-fixed-variant": "#701c6a",
+              "tertiary-fixed-dim": "#ef8cde",
+              "on-secondary-fixed-variant": "#4143ab",
+              "primary-dim": "#0041c7",
+              "outline-variant": "#abadae",
+              "surface-container-highest": "#dadddf",
+              "surface-container-lowest": "#ffffff",
+              "on-tertiary-fixed": "#450042",
+              "primary-fixed": "#809bff",
+              "error-container": "#f74b6d",
+              "on-secondary-container": "#3839a1",
+              "on-secondary": "#f4f1ff",
+              "error": "#b41340",
+              "primary-fixed-dim": "#6c8cff",
+              "on-tertiary": "#ffeef7",
+              "surface-variant": "#dadddf",
+              "surface-bright": "#f5f6f7",
+              "on-tertiary-container": "#661060",
+              "on-surface": "#2c2f30",
+              "on-surface-variant": "#595c5d",
+              "on-primary-fixed-variant": "#002376",
+              "surface-dim": "#d1d5d7",
+              "background": "#f5f6f7",
+              "on-error": "#ffefef",
+              "surface-container-low": "#eff1f2",
+              "secondary-fixed": "#cdcdff",
+              "inverse-surface": "#0c0f10",
+              "surface-tint": "#004be2",
+              "secondary-container": "#cdcdff",
+              "outline": "#757778",
+              "tertiary": "#903986",
+              "on-primary-fixed": "#000000",
+              "tertiary-dim": "#812c79",
+              "surface-container": "#e6e8ea",
+              "surface": "#f5f6f7",
+              "primary-container": "#809bff",
+              "inverse-on-surface": "#9b9d9e",
+              "surface-container-high": "#e0e3e4",
+              "on-background": "#2c2f30",
+              "error-dim": "#a70138",
+              "on-primary": "#f2f1ff",
+              "inverse-primary": "#6889ff",
+              "on-secondary-fixed": "#23228e",
+              "secondary-fixed-dim": "#bdbeff",
+              "tertiary-container": "#fe99ed",
+              "primary": "#004be2",
+              "on-error-container": "#510017"
+            },
+            fontFamily: {
+              "headline": ["Space Grotesk"],
+              "body": ["Manrope"],
+              "label": ["Manrope"]
+            },
+            borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .academic-gradient {
+            background: linear-gradient(135deg, #f5f6f7 0%, #eff1f2 100%);
+        }
+        .m-logo-mask {
+            mask-image: url('image-m-logo-vector');
+            mask-repeat: no-repeat;
+            mask-size: contain;
+        }
+    </style>
+</head>
+<body class="bg-background font-body text-on-surface min-h-screen flex items-center justify-center overflow-hidden">
+<!-- Background Decoration: Academic Vanguard Theme -->
+<div class="fixed inset-0 z-0 pointer-events-none overflow-hidden">
+<!-- Tonal Layering Elements -->
+<div class="absolute -top-24 -left-24 w-96 h-96 bg-primary/5 rounded-full blur-3xl"></div>
+<div class="absolute bottom-0 right-0 w-[600px] h-[600px] bg-secondary-container/10 rounded-full blur-[120px]"></div>
+<!-- Large Artistic Background Image -->
+<div class="absolute right-0 top-0 w-1/2 h-full hidden lg:block">
+<div class="w-full h-full opacity-40 mix-blend-multiply grayscale" data-alt="Modern architectural lines of a prestigious university library with large glass windows and soft morning light filtering through high ceilings" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuAvSz3U8fsP8nY4-AjtzgQMO3YaqaQf-VkUaFU5uvvvau-onB9wDpbNueMBYItFwYM8UsM2_VcCABiL9lJ70CbOqVHWe4PsTNL7k4cgLTywaX4grc-pGhckt6iDXi047alA1l8w_X8AJa69HU4RVb5QwhURMMzqlKuPZMds7zSmhqQws5S6n-Ty1P7Z5gQe9_uLNeMK_tInpqd_pou7a6yhJLawQ4IvaZt9XeWrOYOVezGwlueujlyHZH7YO1NYJv9ZeeFHVV_j_4vY'); background-size: cover; background-position: center;">
+</div>
+<!-- Glass Overlay for the Image -->
+<div class="absolute inset-0 bg-gradient-to-l from-transparent to-background"></div>
+</div>
+<!-- Watermark M+ Motif -->
+<div class="absolute bottom-12 left-12 opacity-[0.03] select-none">
+<span class="font-headline font-black text-[20rem] leading-none tracking-tighter">M+</span>
+</div>
+</div>
+<!-- Login Container -->
+<main class="relative z-10 w-full max-w-md px-6 py-12">
+<!-- Brand Identity -->
+<div class="flex flex-col items-center mb-12">
+<div class="mb-6 flex items-center gap-2">
+<div class="w-12 h-12 bg-primary rounded-xl flex items-center justify-center shadow-lg shadow-primary/20">
+<span class="text-white font-headline font-bold text-2xl">M</span>
+</div>
+<h1 class="text-2xl font-headline font-black tracking-tighter text-on-surface">M Test</h1>
+</div>
+<h2 class="text-3xl font-headline font-bold text-on-surface text-center mb-2 tracking-tight">The Academic Vanguard</h2>
+<p class="text-on-surface-variant text-center font-medium opacity-80">Secure access to your research laboratory</p>
+</div>
+<!-- Login Card: surface-container-lowest on surface-bright background -->
+<div class="bg-surface-container-lowest p-8 md:p-10 rounded-[2rem] shadow-[0_32px_64px_-12px_rgba(44,47,48,0.06)] border border-outline-variant/10">
+<form class="space-y-6" onsubmit="return false;">
+<!-- Email Field -->
+<div class="space-y-2">
+<label class="block text-sm font-semibold text-on-surface-variant px-1" for="identity">Email or Username</label>
+<div class="relative group">
+<input class="w-full h-14 px-4 bg-surface-container-low border-none rounded-xl focus:ring-0 focus:bg-white transition-all duration-300 placeholder:text-outline/50 font-medium" id="identity" name="identity" placeholder="researcher@mtest.edu" type="text"/>
+<!-- Bottom accent logic from design system -->
+<div class="absolute bottom-0 left-1/2 -translate-x-1/2 w-0 h-0.5 bg-primary group-focus-within:w-full transition-all duration-300 rounded-full"></div>
+</div>
+</div>
+<!-- Password Field -->
+<div class="space-y-2">
+<div class="flex justify-between items-center px-1">
+<label class="block text-sm font-semibold text-on-surface-variant" for="password">Password</label>
+<a class="text-xs font-bold text-primary hover:text-primary-dim transition-colors uppercase tracking-wider" href="#">Forgot?</a>
+</div>
+<div class="relative group">
+<input class="w-full h-14 px-4 bg-surface-container-low border-none rounded-xl focus:ring-0 focus:bg-white transition-all duration-300 placeholder:text-outline/50 font-medium" id="password" name="password" placeholder="••••••••••••" type="password"/>
+<div class="absolute bottom-0 left-1/2 -translate-x-1/2 w-0 h-0.5 bg-primary group-focus-within:w-full transition-all duration-300 rounded-full"></div>
+<button class="absolute right-4 top-1/2 -translate-y-1/2 text-outline hover:text-on-surface-variant transition-colors" type="button">
+<span class="material-symbols-outlined text-xl" data-icon="visibility">visibility</span>
+</button>
+</div>
+</div>
+<!-- Action Button -->
+<div class="pt-4">
+<button class="w-full h-14 bg-gradient-to-r from-primary to-primary-container text-on-primary font-headline font-bold text-lg rounded-full shadow-lg shadow-primary/20 hover:shadow-xl hover:shadow-primary/30 active:scale-[0.98] transition-all duration-200 flex items-center justify-center gap-2 group" type="submit">
+                        Sign In
+                        <span class="material-symbols-outlined text-xl transition-transform group-hover:translate-x-1" data-icon="arrow_forward">arrow_forward</span>
+</button>
+</div>
+</form>
+<div class="mt-10 pt-8 border-t border-outline-variant/5 text-center">
+<p class="text-on-surface-variant text-sm font-medium">
+                    New to the vanguard? 
+                    <a class="text-primary font-bold hover:underline underline-offset-4 ml-1" href="#">Create an account</a>
+</p>
+</div>
+</div>
+<!-- Footer / Credits -->
+<footer class="mt-12 text-center">
+<div class="flex items-center justify-center gap-6 mb-4">
+<a class="text-xs font-bold text-on-surface-variant/60 hover:text-primary transition-colors uppercase tracking-widest" href="#">Privacy</a>
+<a class="text-xs font-bold text-on-surface-variant/60 hover:text-primary transition-colors uppercase tracking-widest" href="#">Terms</a>
+<a class="text-xs font-bold text-on-surface-variant/60 hover:text-primary transition-colors uppercase tracking-widest" href="#">Help</a>
+</div>
+<p class="text-[10px] text-outline font-medium tracking-widest uppercase opacity-50">© 2024 M Test Systems. Built for excellence.</p>
+</footer>
+</main>
+<!-- Visual Polish: Floating Card Decoration -->
+<div class="fixed bottom-10 right-10 z-20 hidden 2xl:block">
+<div class="bg-surface-container-lowest/80 backdrop-blur-xl p-6 rounded-2xl border border-white/20 shadow-2xl flex items-center gap-4 max-w-xs">
+<div class="w-12 h-12 rounded-full bg-secondary-container flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-secondary" data-icon="auto_awesome">auto_awesome</span>
+</div>
+<div>
+<p class="text-sm font-bold text-on-surface leading-tight">Intelligent Assessment</p>
+<p class="text-xs text-on-surface-variant">Elevate your academic performance with our AI-driven insights.</p>
+</div>
+</div>
+</div>
+</body></html>

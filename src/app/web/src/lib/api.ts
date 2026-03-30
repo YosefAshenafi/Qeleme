@@ -1,6 +1,6 @@
 import axios, { AxiosInstance, InternalAxiosRequestConfig } from 'axios';
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.megatest.et/api/v1';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://www.trustechit.com';
 
 class ApiClient {
   private client: AxiosInstance;
@@ -10,6 +10,8 @@ class ApiClient {
       baseURL: API_BASE_URL,
       headers: {
         'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        'X-Requested-With': 'XMLHttpRequest',
       },
     });
 
@@ -42,15 +44,47 @@ class ApiClient {
   }
 
   async login(username: string, password: string) {
-    const response = await this.client.post('/auth/login', { username, password });
+    const response = await this.client.post('/api/auth/login', { username: username.toLowerCase(), password });
     if (response.data.data?.token) {
       localStorage.setItem('auth_token', response.data.data.token);
     }
     return response.data;
   }
 
-  async register(data: { username: string; password: string; phone: string; role?: string }) {
-    const response = await this.client.post('/auth/register', data);
+  async checkUsername(username: string) {
+    const response = await this.client.get('/api/auth/check-username', { params: { username } });
+    return response.data;
+  }
+
+  async sendOTP(phoneNumber: string) {
+    const response = await this.client.post('/api/auth/send-otp', { phoneNumber });
+    return response.data;
+  }
+
+  async verifyOTP(phoneNumber: string, otp: string) {
+    const response = await this.client.post('/api/auth/verify-otp', { phoneNumber, otp });
+    return response.data;
+  }
+
+  async getPaymentPlans() {
+    const response = await this.client.get('/api/payment-plans');
+    return response.data;
+  }
+
+  async register(data: { 
+    fullName: string; 
+    username: string; 
+    password: string; 
+    phone: string; 
+    grade?: string; 
+    region?: string;
+    role?: string;
+    planId?: string;
+  }) {
+    const response = await this.client.post('/api/auth/register', data);
+    if (response.data.data?.token) {
+      localStorage.setItem('auth_token', response.data.data.token);
+    }
     return response.data;
   }
 

@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&amp;family=Manrope:wght@300;400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "background": "#f5f6f7",
+              "tertiary-dim": "#812c79",
+              "surface-tint": "#004be2",
+              "tertiary-container": "#fe99ed",
+              "on-error-container": "#510017",
+              "on-tertiary-container": "#661060",
+              "surface-dim": "#d1d5d7",
+              "surface-bright": "#f5f6f7",
+              "secondary-fixed-dim": "#bdbeff",
+              "on-secondary-fixed-variant": "#4143ab",
+              "on-background": "#2c2f30",
+              "outline-variant": "#abadae",
+              "on-secondary-container": "#3839a1",
+              "inverse-surface": "#0c0f10",
+              "primary-container": "#809bff",
+              "on-secondary-fixed": "#23228e",
+              "on-surface": "#2c2f30",
+              "outline": "#757778",
+              "primary-fixed": "#809bff",
+              "secondary-dim": "#4042aa",
+              "on-primary-fixed": "#000000",
+              "tertiary-fixed-dim": "#ef8cde",
+              "surface-container-highest": "#dadddf",
+              "on-tertiary-fixed": "#450042",
+              "surface-container": "#e6e8ea",
+              "primary-fixed-dim": "#6c8cff",
+              "on-error": "#ffefef",
+              "primary-dim": "#0041c7",
+              "surface-variant": "#dadddf",
+              "on-surface-variant": "#595c5d",
+              "on-secondary": "#f4f1ff",
+              "error-dim": "#a70138",
+              "error": "#b41340",
+              "on-primary-container": "#001b60",
+              "inverse-primary": "#6889ff",
+              "on-tertiary": "#ffeef7",
+              "surface-container-lowest": "#ffffff",
+              "on-primary": "#f2f1ff",
+              "error-container": "#f74b6d",
+              "on-primary-fixed-variant": "#002376",
+              "secondary-fixed": "#cdcdff",
+              "tertiary": "#903986",
+              "secondary-container": "#cdcdff",
+              "secondary": "#4d4fb7",
+              "surface": "#f5f6f7",
+              "on-tertiary-fixed-variant": "#701c6a",
+              "surface-container-low": "#eff1f2",
+              "primary": "#004be2",
+              "inverse-on-surface": "#9b9d9e",
+              "tertiary-fixed": "#fe99ed",
+              "surface-container-high": "#e0e3e4"
+            },
+            fontFamily: {
+              "headline": ["Space Grotesk"],
+              "body": ["Manrope"],
+              "label": ["Manrope"]
+            },
+            borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .hero-gradient {
+            background: linear-gradient(180deg, rgba(245, 246, 247, 0) 0%, rgba(245, 246, 247, 1) 100%);
+        }
+        .text-glow {
+            text-shadow: 0 0 20px rgba(0, 75, 226, 0.1);
+        }
+    </style>
+</head>
+<body class="bg-background text-on-surface font-body selection:bg-primary/20">
+<!-- TopAppBar Navigation -->
+<nav class="fixed top-0 w-full z-50 bg-surface/80 dark:bg-slate-900/80 backdrop-blur-md">
+<div class="flex justify-between items-center px-8 py-4 max-w-7xl mx-auto">
+<div class="text-2xl font-bold tracking-tighter text-[#004be2] dark:text-[#809bff] font-headline">Mega Test</div>
+<div class="hidden md:flex items-center gap-8 font-['Space_Grotesk'] font-medium text-sm tracking-tight">
+<a class="text-[#004be2] dark:text-[#809bff] font-bold border-b-2 border-[#004be2] pb-1 hover:opacity-100 transition-all duration-300" href="#">Exams</a>
+<a class="text-[#2c2f30] dark:text-[#eff1f2] opacity-70 hover:opacity-100 hover:text-[#004be2] transition-all duration-300" href="#">Research</a>
+<a class="text-[#2c2f30] dark:text-[#eff1f2] opacity-70 hover:opacity-100 hover:text-[#004be2] transition-all duration-300" href="#">Institutions</a>
+<a class="text-[#2c2f30] dark:text-[#eff1f2] opacity-70 hover:opacity-100 hover:text-[#004be2] transition-all duration-300" href="#">About</a>
+</div>
+<div class="flex items-center gap-4">
+<button class="hidden sm:block text-[#2c2f30] dark:text-[#eff1f2] opacity-70 font-['Space_Grotesk'] text-sm hover:opacity-100 transition-all duration-300">Login</button>
+<button class="bg-primary text-on-primary px-6 py-2 rounded-full font-headline text-sm font-bold scale-95 hover:scale-100 transition-all duration-200">Get Started</button>
+</div>
+</div>
+</nav>
+<!-- Hero Section -->
+<header class="relative min-h-screen flex items-center pt-20 overflow-hidden">
+<div class="absolute inset-0 z-0">
+<img alt="Academic Interior" class="w-full h-full object-cover opacity-80" data-alt="Modern architectural university library with sweeping white curves, tall glass windows, minimalist wooden study pods, and bright natural light" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB3APx85k4Fv2Bgy8AeOlmQPjaaev8ow2eP3evfaU42oJBlvAfz2d11D4O-hlbvh1jcLpQVWM4FLXR4V8l83DnRsdeXF4qZgRWK_bahFMiicnURFAVYPN9Wmlmn7UKAH9rbA-H9J-J0h0hwRxky-A2vMtvsF-uPJ-lZFUJLFm7GyWUgfPfOuBsCuLiRPB6Jwr_LdeC3ibnwaqKMUereFcZJkM0H51H9FAPP4GzBCC-hHYVOkOGFoPSzNaau8FLGVwRyHhvIhivptJfi"/>
+<div class="hero-gradient absolute inset-0"></div>
+</div>
+<div class="container mx-auto px-8 relative z-10">
+<div class="max-w-4xl">
+<div class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 text-primary font-bold text-xs tracking-widest uppercase mb-8">
+<span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 1;">workspace_premium</span>
+                    The Vanguard of Higher Education
+                </div>
+<h1 class="font-headline text-6xl md:text-8xl font-bold tracking-tighter text-on-surface leading-[0.9] mb-8">
+                    Elevate Your <br/>
+<span class="text-primary italic">Intellectual</span> <br/>
+                    Boundaries.
+                </h1>
+<p class="text-on-surface-variant text-lg md:text-xl max-w-xl font-light leading-relaxed mb-12">
+                    Where tradition meets the future of cognition. Mega Test provides the definitive assessment framework for the world's most ambitious academic minds.
+                </p>
+<div class="flex flex-wrap gap-6">
+<button class="bg-primary hover:bg-primary-dim text-on-primary px-10 py-5 rounded-full font-headline font-bold text-lg shadow-xl shadow-primary/20 transition-all active:scale-95">
+                        Get Started
+                    </button>
+<button class="bg-surface-container-lowest text-primary px-10 py-5 rounded-full font-headline font-bold text-lg hover:bg-surface-container-low transition-all border border-primary/10 active:scale-95">
+                        Explore Curriculum
+                    </button>
+</div>
+</div>
+</div>
+<!-- Subtle M+ Watermark -->
+<div class="absolute -bottom-24 -right-24 opacity-[0.03] select-none pointer-events-none">
+<span class="font-headline text-[40rem] font-black leading-none">M+</span>
+</div>
+</header>
+<!-- Stats Section (Asymmetric Layout) -->
+<section class="py-24 bg-surface-container-low">
+<div class="container mx-auto px-8">
+<div class="grid grid-cols-1 md:grid-cols-3 gap-12 items-center">
+<div class="md:col-span-1">
+<h2 class="font-headline text-4xl font-bold tracking-tight text-on-surface leading-tight mb-4">Numbers that <br/>Define Excellence.</h2>
+<p class="text-on-surface-variant font-light">Precision analytics for global academic standards.</p>
+</div>
+<div class="md:col-span-2 grid grid-cols-2 lg:grid-cols-4 gap-8">
+<div class="bg-surface-container-lowest p-8 rounded-xl shadow-sm">
+<div class="font-headline text-4xl font-bold text-primary mb-2">99.9%</div>
+<div class="text-xs font-bold uppercase tracking-widest text-outline">Accuracy</div>
+</div>
+<div class="bg-surface-container-lowest p-8 rounded-xl shadow-sm">
+<div class="font-headline text-4xl font-bold text-primary mb-2">140+</div>
+<div class="text-xs font-bold uppercase tracking-widest text-outline">Institutions</div>
+</div>
+<div class="bg-surface-container-lowest p-8 rounded-xl shadow-sm">
+<div class="font-headline text-4xl font-bold text-primary mb-2">25M</div>
+<div class="text-xs font-bold uppercase tracking-widest text-outline">Tests Taken</div>
+</div>
+<div class="bg-surface-container-lowest p-8 rounded-xl shadow-sm">
+<div class="font-headline text-4xl font-bold text-primary mb-2">Top 5</div>
+<div class="text-xs font-bold uppercase tracking-widest text-outline">Global Ranking</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Features Bento Grid -->
+<section class="py-32 bg-background">
+<div class="container mx-auto px-8">
+<div class="flex flex-col md:flex-row justify-between items-end mb-20 gap-8">
+<div class="max-w-2xl">
+<h2 class="font-headline text-5xl font-bold tracking-tighter mb-6">Designed for the <span class="text-primary italic">Avant-Garde</span>.</h2>
+<p class="text-on-surface-variant text-lg font-light leading-relaxed">Our infrastructure is built with academic rigor at its core, combining advanced AI with traditional pedagogical values.</p>
+</div>
+<div class="h-px bg-outline-variant/30 flex-grow mx-8 hidden lg:block"></div>
+<div class="material-symbols-outlined text-6xl text-primary opacity-20">architecture</div>
+</div>
+<div class="grid grid-cols-12 gap-6 h-auto md:h-[600px]">
+<!-- Bento Item 1 -->
+<div class="col-span-12 md:col-span-8 bg-surface-container-lowest rounded-xl p-10 flex flex-col justify-between border border-outline-variant/10 group hover:border-primary/20 transition-all shadow-sm">
+<div>
+<span class="material-symbols-outlined text-4xl text-primary mb-6" style="font-variation-settings: 'FILL' 1;">analytics</span>
+<h3 class="font-headline text-3xl font-bold mb-4">Neural Assessment Engine</h3>
+<p class="text-on-surface-variant font-light max-w-md">Real-time adaptive testing that mirrors the human learning curve with unprecedented mathematical precision.</p>
+</div>
+<div class="flex justify-end mt-8">
+<img alt="Data visualization" class="w-full h-48 object-cover rounded-lg" data-alt="Sleek abstract data visualization showing clean blue line charts and translucent geometric shapes against a dark gray background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCSZrcXMQsw5GUcU--Xttmw0Ke1Sgt-REWPeMLHGs9lpAJIO5f_Sgry1vFRajF66zMCduuSJE97aqw2F_5rC7NJOc7DcEshmK8BCHJ9pcRfTeK_Bo6Z6Rb21HHgnK1oreM-raDNGf3-cM8xvwFkPkH-GjZJaWoupLxrZvoEGh5Qj2vMwFd2FtIB2z3GpUUfJfO8JYgMSrWciLgIQOVNmrE51NDIj9s8uhk7q7rwhdJM5AYulzH42gjXy9PxM5e009EfB0IXwHr-y_DB"/>
+</div>
+</div>
+<!-- Bento Item 2 -->
+<div class="col-span-12 md:col-span-4 bg-primary rounded-xl p-10 text-on-primary flex flex-col justify-between shadow-xl shadow-primary/20">
+<span class="material-symbols-outlined text-4xl" style="font-variation-settings: 'FILL' 1;">verified_user</span>
+<div>
+<h3 class="font-headline text-3xl font-bold mb-4 leading-tight">Institutional Integrity</h3>
+<p class="opacity-80 font-light text-sm mb-6">Blockchain-verified credentials and state-of-the-art proctoring systems to ensure absolute academic honesty.</p>
+<a class="inline-flex items-center gap-2 font-bold text-sm tracking-widest uppercase group" href="#">
+                            Learn More 
+                            <span class="material-symbols-outlined group-hover:translate-x-1 transition-transform">arrow_forward</span>
+</a>
+</div>
+</div>
+<!-- Bento Item 3 -->
+<div class="col-span-12 md:col-span-4 bg-surface-container-high rounded-xl p-10 flex flex-col justify-between group hover:bg-surface-container-highest transition-all shadow-sm">
+<span class="material-symbols-outlined text-4xl text-primary mb-6">public</span>
+<h3 class="font-headline text-2xl font-bold mb-2">Global Access</h3>
+<p class="text-on-surface-variant text-sm font-light">Localized for 45 languages and 120 regional education systems.</p>
+</div>
+<!-- Bento Item 4 -->
+<div class="col-span-12 md:col-span-8 bg-surface-container-lowest rounded-xl p-10 flex flex-col md:flex-row items-center gap-8 border border-outline-variant/10 shadow-sm">
+<div class="flex-1">
+<h3 class="font-headline text-2xl font-bold mb-4">Collaborative Research</h3>
+<p class="text-on-surface-variant text-sm font-light">Connect with researchers globally to benchmark institutional performance and share pedagogical breakthroughs.</p>
+</div>
+<div class="flex-1 w-full h-40 bg-surface-container-low rounded-lg overflow-hidden">
+<img alt="Collaboration" class="w-full h-full object-cover grayscale opacity-40 group-hover:grayscale-0 transition-all" data-alt="A group of diverse scholars in a modern glass-walled university meeting room, focused on digital screens and collaborative research" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCyXHlHS53TEb5sW8xmpJVJbLRc9P9ZXzWKZ19lWfETL95DHHG_JX4rzYGdnqDum03su7hlFQpQO0Oavo_OFAfrgN5GcKJhqCQlMwjSZXrCGIPsIKQF5CF3Vwe8HaiIxVfQUrN5Hf2lrwVOZzG4x96Vh39M96dC4jMHR8eEzw-U-gx-_U1zNISGA-yLbF58lffhRfdp2yHh7W4IK5T0FKFzTkdCxN_CcSDOvZ0Pt957tD6MJ6MpkTdKzgRoB8D14NaHqAu_kPEEi05E"/>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Investment in Knowledge (Pricing) -->
+<section class="py-32 bg-surface">
+<div class="container mx-auto px-8">
+<div class="text-center mb-20">
+<h2 class="font-headline text-5xl font-bold tracking-tighter mb-4">Investment in Knowledge</h2>
+<div class="w-24 h-1 bg-primary mx-auto rounded-full"></div>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+<!-- Scholar Tier -->
+<div class="bg-surface-container-lowest rounded-2xl p-10 border border-outline-variant/10 hover:shadow-2xl transition-all flex flex-col">
+<div class="mb-8">
+<h3 class="font-headline text-xl font-bold mb-2 uppercase tracking-widest text-outline">Scholar</h3>
+<div class="flex items-baseline gap-1">
+<span class="text-4xl font-headline font-bold">$0</span>
+<span class="text-on-surface-variant font-light">/mo</span>
+</div>
+</div>
+<ul class="space-y-4 mb-10 flex-grow text-on-surface-variant font-light">
+<li class="flex items-center gap-3"><span class="material-symbols-outlined text-primary text-sm">check_circle</span> 5 Monthly Assessments</li>
+<li class="flex items-center gap-3"><span class="material-symbols-outlined text-primary text-sm">check_circle</span> Basic Analytics</li>
+<li class="flex items-center gap-3"><span class="material-symbols-outlined text-primary text-sm">check_circle</span> Digital Credential</li>
+</ul>
+<button class="w-full py-4 rounded-full border border-primary/20 font-bold text-primary hover:bg-primary/5 transition-all">Begin Journey</button>
+</div>
+<!-- Academic Tier (Featured) -->
+<div class="bg-surface-container-lowest rounded-2xl p-10 border-2 border-primary ring-4 ring-primary/5 relative scale-105 shadow-2xl z-10 flex flex-col">
+<div class="absolute -top-4 left-1/2 -translate-x-1/2 bg-primary text-on-primary px-4 py-1 rounded-full text-[10px] font-black uppercase tracking-tighter">Most Recommended</div>
+<div class="mb-8">
+<h3 class="font-headline text-xl font-bold mb-2 uppercase tracking-widest text-primary">Academic</h3>
+<div class="flex items-baseline gap-1">
+<span class="text-4xl font-headline font-bold">$49</span>
+<span class="text-on-surface-variant font-light">/mo</span>
+</div>
+</div>
+<ul class="space-y-4 mb-10 flex-grow font-medium">
+<li class="flex items-center gap-3"><span class="material-symbols-outlined text-primary text-sm">check_circle</span> Unlimited Assessments</li>
+<li class="flex items-center gap-3"><span class="material-symbols-outlined text-primary text-sm">check_circle</span> Advanced AI Insights</li>
+<li class="flex items-center gap-3"><span class="material-symbols-outlined text-primary text-sm">check_circle</span> Institutional Benchmarking</li>
+<li class="flex items-center gap-3"><span class="material-symbols-outlined text-primary text-sm">check_circle</span> Priority Support</li>
+</ul>
+<button class="w-full py-4 rounded-full bg-primary text-on-primary font-bold shadow-lg shadow-primary/20 hover:scale-[1.02] transition-all">Secure Access</button>
+</div>
+<!-- Institutional Tier -->
+<div class="bg-surface-container-lowest rounded-2xl p-10 border border-outline-variant/10 hover:shadow-2xl transition-all flex flex-col">
+<div class="mb-8">
+<h3 class="font-headline text-xl font-bold mb-2 uppercase tracking-widest text-outline">Institution</h3>
+<div class="flex items-baseline gap-1">
+<span class="text-4xl font-headline font-bold">Custom</span>
+</div>
+</div>
+<ul class="space-y-4 mb-10 flex-grow text-on-surface-variant font-light">
+<li class="flex items-center gap-3"><span class="material-symbols-outlined text-primary text-sm">check_circle</span> White-Label API</li>
+<li class="flex items-center gap-3"><span class="material-symbols-outlined text-primary text-sm">check_circle</span> Dedicated Success Lead</li>
+<li class="flex items-center gap-3"><span class="material-symbols-outlined text-primary text-sm">check_circle</span> Custom Data Governance</li>
+<li class="flex items-center gap-3"><span class="material-symbols-outlined text-primary text-sm">check_circle</span> On-Premise Support</li>
+</ul>
+<button class="w-full py-4 rounded-full border border-primary/20 font-bold text-primary hover:bg-primary/5 transition-all">Contact Sales</button>
+</div>
+</div>
+</div>
+</section>
+<!-- Final CTA -->
+<section class="py-40 relative bg-on-surface overflow-hidden">
+<div class="absolute inset-0 z-0">
+<img alt="Final CTA Background" class="w-full h-full object-cover opacity-10 mix-blend-overlay" data-alt="Abstract minimalist architecture with sharp angles, deep shadows, and stark highlights in monochrome gray and black" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDfCxOKFQaFkIFuxMioOt9LnBmWSixA56gsU9lf-ofImJfonc0QnrKLlm9QbpD8REokOD1zW8ACnXBuh2bH1qmMKOT4-iQkg-BdlvSRKGzfpwbHW6NOU0EMzG_iZFOyybR7-FXT43Uid-znRBdY6AZefSj96pezjtCXT9pcZu1CjPpggp0bUspD4UfG_1bQqxLefxSmQEtosCC7uXrQNczieE1p2Eh8DxXNtRYkDKAtzGgo7O2OAFyU9hNdcBzCm7PUU_a7Ee2wPb9_"/>
+</div>
+<div class="container mx-auto px-8 relative z-10 text-center">
+<h2 class="font-headline text-5xl md:text-7xl font-bold tracking-tighter text-on-primary mb-8">Ready to Lead <br/>the Vanguard?</h2>
+<p class="text-outline-variant max-w-2xl mx-auto text-xl font-light mb-16 leading-relaxed">
+                Join thousands of leading scholars and institutions redefining the boundaries of academic excellence. The future of assessment is here.
+            </p>
+<button class="bg-primary text-on-primary px-12 py-6 rounded-full font-headline font-bold text-xl hover:scale-105 active:scale-95 transition-all shadow-2xl shadow-primary/40">
+                Join Mega Test Today
+            </button>
+</div>
+</section>
+<!-- Footer -->
+<footer class="bg-[#eff1f2] dark:bg-slate-950 w-full rounded-t-none">
+<div class="flex flex-col md:flex-row justify-between items-center px-12 py-10 w-full mt-auto">
+<div class="text-lg font-black text-[#2c2f30] dark:text-white mb-6 md:mb-0">Mega Test</div>
+<div class="flex flex-wrap justify-center gap-8 mb-6 md:mb-0">
+<a class="font-['Manrope'] text-xs uppercase tracking-widest text-[#2c2f30] dark:text-slate-400 hover:text-[#004be2] dark:hover:text-white transition-colors" href="#">Privacy Policy</a>
+<a class="font-['Manrope'] text-xs uppercase tracking-widest text-[#2c2f30] dark:text-slate-400 hover:text-[#004be2] dark:hover:text-white transition-colors" href="#">Terms of Service</a>
+<a class="font-['Manrope'] text-xs uppercase tracking-widest text-[#2c2f30] dark:text-slate-400 hover:text-[#004be2] dark:hover:text-white transition-colors" href="#">Accessibility</a>
+<a class="font-['Manrope'] text-xs uppercase tracking-widest text-[#2c2f30] dark:text-slate-400 hover:text-[#004be2] dark:hover:text-white transition-colors" href="#">Contact Support</a>
+</div>
+<div class="font-['Manrope'] text-xs uppercase tracking-widest text-[#2c2f30] dark:text-slate-400 opacity-80">
+                © 2024 Mega Test Academic Vanguard. All rights reserved.
+            </div>
+</div>
+</footer>
+</body></html>
