@@ -14,6 +14,8 @@ export default {
       title: 'Welcome to Grade {{grade}}',
       titleKg: 'Welcome to {{grade}}',
       subtitle: 'Your learning journey continues. Stay focused!',
+      helloTitle: 'Hello, {{name}}!',
+      helloSubtitle: "Let's continue learning!",
     },
     header: {
       searchAccessibility: 'Search and practice',

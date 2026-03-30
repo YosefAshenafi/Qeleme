@@ -26,11 +26,14 @@ export const HomeScreenStyles = StyleSheet.create({
   },
   welcomeCard: {
     borderRadius: 20,
-    padding: 22,
+    paddingLeft: 0,
+    paddingRight: 16,
+    paddingTop: 20,
+    paddingBottom: 20,
     marginBottom: 22,
   },
   welcomeTitle: {
-    fontSize: 22,
+    fontSize: 32,
     fontWeight: '800',
     marginBottom: 8,
     letterSpacing: -0.3,

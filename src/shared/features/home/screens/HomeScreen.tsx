@@ -577,14 +577,18 @@ export default function HomeScreen() {
         }
       >
         <ThemedView style={[styles.container, { backgroundColor: canvasBg }]}>
-          <View style={[styles.welcomeCard, { backgroundColor: welcomeCardBg }]}>
-            <ThemedText style={[styles.welcomeTitle, { color: welcomeTitleColor }]}>
+          <View style={[styles.welcomeCard, { backgroundColor: 'transparent' }]}>
+            <ThemedText style={[styles.welcomeTitle, { color: welcomeTitleColor, fontSize: 36, fontWeight: '700', lineHeight: 44 }]}>
               {isKGStudent
                 ? t('home.welcomeCard.titleKg', { grade: t('common.kindergarten') })
-                : t('home.welcomeCard.title', { grade: gradeDigit })}
+                : user?.fullName
+                  ? t('home.welcomeCard.helloTitle', { name: user.fullName.split(' ')[0] })
+                  : t('home.welcomeCard.title', { grade: gradeDigit })}
             </ThemedText>
-            <ThemedText style={[styles.welcomeSubtitle, { color: welcomeSubtitleColor }]}>
-              {t('home.welcomeCard.subtitle')}
+            <ThemedText style={[styles.welcomeSubtitle, { color: welcomeSubtitleColor, fontSize: 16, lineHeight: 22 }]}>
+              {isKGStudent
+                ? t('home.welcomeCard.subtitle')
+                : t('home.welcomeCard.helloSubtitle')}
             </ThemedText>
           </View>
 
@@ -600,7 +604,7 @@ export default function HomeScreen() {
                   activeOpacity={0.88}
                 >
                   <View style={[styles.quickAccessIconCircle, { backgroundColor: isDarkMode ? '#1E3A5F' : '#E3F2FD' }]}>
-                    <IconSymbol name="questionmark.circle.fill" size={26} color="#0F4BD7" />
+                    <IconSymbol name="book.fill" size={26} color="#0F4BD7" />
                   </View>
                   <ThemedText style={[styles.quickAccessLabel, { color: sectionHeading }]}>
                     {t('home.quickAccess.practiceLabel')}

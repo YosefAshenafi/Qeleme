@@ -14,6 +14,8 @@ export default {
       title: 'ወደ {{grade}} ክፍል እንኳን ደህና መጡ',
       titleKg: 'እንኳን ደህና መጡ {{grade}}',
       subtitle: 'የመማሪያ ጉዞዎ ይቀጥላል። ትኩረት ይስቡ!',
+      helloTitle: 'ሰላም {{name}}!',
+      helloSubtitle: 'እንቀጥል እንማር!',
     },
     header: {
       searchAccessibility: 'ፈልግ እና ልምምድ',
