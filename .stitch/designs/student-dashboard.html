@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Mega Test | Dashboard</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&amp;family=Manrope:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "secondary-container": "#cdcdff",
+              "on-tertiary-fixed-variant": "#701c6a",
+              "on-primary-fixed": "#000000",
+              "tertiary-container": "#fe99ed",
+              "on-secondary-fixed-variant": "#4143ab",
+              "primary-fixed-dim": "#6c8cff",
+              "surface-container-high": "#e0e3e4",
+              "tertiary-dim": "#812c79",
+              "inverse-surface": "#0c0f10",
+              "on-secondary": "#f4f1ff",
+              "on-secondary-fixed": "#23228e",
+              "error": "#b41340",
+              "surface-tint": "#004be2",
+              "inverse-primary": "#6889ff",
+              "surface": "#f5f6f7",
+              "primary": "#004be2",
+              "on-surface-variant": "#595c5d",
+              "surface-container-highest": "#dadddf",
+              "on-surface": "#2c2f30",
+              "surface-variant": "#dadddf",
+              "secondary-fixed": "#cdcdff",
+              "on-secondary-container": "#3839a1",
+              "tertiary-fixed-dim": "#ef8cde",
+              "background": "#f5f6f7",
+              "on-primary": "#f2f1ff",
+              "primary-dim": "#0041c7",
+              "tertiary-fixed": "#fe99ed",
+              "error-dim": "#a70138",
+              "outline": "#757778",
+              "on-tertiary": "#ffeef7",
+              "surface-container-lowest": "#ffffff",
+              "secondary-fixed-dim": "#bdbeff",
+              "primary-fixed": "#809bff",
+              "on-background": "#2c2f30",
+              "tertiary": "#903986",
+              "surface-container-low": "#eff1f2",
+              "secondary": "#4d4fb7",
+              "error-container": "#f74b6d",
+              "on-error-container": "#510017",
+              "on-primary-container": "#001b60",
+              "on-tertiary-container": "#661060",
+              "surface-container": "#e6e8ea",
+              "primary-container": "#809bff",
+              "secondary-dim": "#4042aa",
+              "outline-variant": "#abadae",
+              "on-primary-fixed-variant": "#002376",
+              "surface-bright": "#f5f6f7",
+              "on-error": "#ffefef",
+              "on-tertiary-fixed": "#450042",
+              "inverse-on-surface": "#9b9d9e",
+              "surface-dim": "#d1d5d7"
+            },
+            fontFamily: {
+              "headline": ["Space Grotesk"],
+              "body": ["Manrope"],
+              "label": ["Manrope"]
+            },
+            borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .m-plus-motif {
+            background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M15 15h30v30H15z' fill='none' stroke='%23004be2' stroke-opacity='0.03' stroke-width='2'/%3E%3Cpath d='M30 15v30M15 30h30' stroke='%23004be2' stroke-opacity='0.03' stroke-width='2'/%3E%3C/svg%3E");
+        }
+    </style>
+</head>
+<body class="bg-surface font-body text-on-surface antialiased m-plus-motif">
+<!-- TopNavBar -->
+<header class="fixed top-0 w-full z-50 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md shadow-sm dark:shadow-none">
+<div class="flex justify-between items-center h-16 px-6 md:px-12 w-full max-w-screen-2xl mx-auto">
+<div class="flex items-center gap-8">
+<span class="text-2xl font-bold tracking-tighter text-blue-700 dark:text-blue-400 font-headline">Mega Test</span>
+<nav class="hidden md:flex items-center gap-6 font-['Space_Grotesk'] font-medium text-sm tracking-tight">
+<a class="text-blue-700 dark:text-blue-400 border-b-2 border-blue-700 dark:border-blue-400 pb-1 font-bold" href="#">Dashboard</a>
+<a class="text-slate-600 dark:text-slate-400 hover:text-blue-600 transition-colors" href="#">Practice</a>
+<a class="text-slate-600 dark:text-slate-400 hover:text-blue-600 transition-colors" href="#">Resources</a>
+<a class="text-slate-600 dark:text-slate-400 hover:text-blue-600 transition-colors" href="#">Progress</a>
+</nav>
+</div>
+<div class="flex items-center gap-4">
+<div class="relative hidden lg:block">
+<input class="bg-surface-container-low border-none rounded-full py-2 pl-4 pr-10 text-sm focus:ring-2 focus:ring-primary w-64" placeholder="Search resources..." type="text"/>
+<span class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-outline text-xl">search</span>
+</div>
+<button class="material-symbols-outlined text-outline hover:text-primary transition-all p-2 rounded-lg hover:bg-slate-50">notifications</button>
+<button class="material-symbols-outlined text-outline hover:text-primary transition-all p-2 rounded-lg hover:bg-slate-50">settings</button>
+<div class="h-8 w-px bg-outline-variant/30 mx-2"></div>
+<img alt="User profile avatar" class="h-10 w-10 rounded-full border-2 border-white shadow-sm" data-alt="professional portrait of a young male student smiling softly with warm lighting and a blurred library background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB-AcizVIXNyMTUkVvs3aRVTacPstBbkhatIbpzs8cfWsZ5zWBzAViIuWeZcsTp5mXKRqJKAUzf7k5iT7T7i4vZdarG_dCA3ab1I2uD7TUztIf12Rv-UVPoIJiJavw71ze8zKuVNKBPEV4JFXSFYwv6AqHw4lpLvyOaAPHpNrVvxahyG43hF19UemXSmnjXjPVdTpnojZ9zLVChY-ybax0LAz1PgXK2L3h-h1QxznWbSnHlNvi2QqIOA_ob2tRGxgtTF9GdOI8Vm3T4"/>
+</div>
+</div>
+<div class="bg-slate-100 dark:bg-slate-800 h-[1px] w-full absolute bottom-0 opacity-50"></div>
+</header>
+<!-- Main Content Area -->
+<main class="pt-24 pb-12 px-6 md:px-12 w-full max-w-screen-2xl mx-auto flex flex-col lg:flex-row gap-8">
+<!-- Left Column: Main Dashboard -->
+<div class="flex-1 space-y-8">
+<!-- Hero Section: Academic Progress -->
+<section class="bg-surface-container-lowest rounded-xl p-8 shadow-sm relative overflow-hidden">
+<div class="relative z-10 flex flex-col md:flex-row justify-between items-end gap-6">
+<div class="w-full md:w-1/2">
+<span class="text-primary font-bold tracking-widest text-xs uppercase mb-2 block">Weekly Performance</span>
+<h1 class="font-headline text-4xl font-bold text-on-surface mb-4 tracking-tight">Academic Progress</h1>
+<p class="text-on-surface-variant max-w-sm mb-6 leading-relaxed">You've completed 85% of your Grade 12 Advanced Mathematics curriculum. Keep pushing toward the finals!</p>
+<div class="flex gap-4">
+<div class="flex-1 bg-surface-container-low p-4 rounded-lg border-l-4 border-primary">
+<span class="text-xs text-outline font-bold uppercase tracking-wider block mb-1">Learning Mastery</span>
+<div class="flex items-baseline gap-1">
+<span class="text-2xl font-headline font-bold text-primary">78%</span>
+</div>
+<p class="text-[10px] text-on-surface-variant leading-tight mt-1">Based on recent performance across all Grade Books</p>
+</div>
+<div class="flex-1 bg-surface-container-low p-4 rounded-lg">
+<span class="text-xs text-outline block mb-1">Tasks Completed</span>
+<span class="text-2xl font-headline font-bold text-on-surface">124</span>
+</div>
+</div>
+</div>
+<div class="w-full md:w-1/2 flex items-end justify-center h-48 gap-3 px-4">
+<div class="w-8 bg-primary-fixed rounded-t-lg transition-all hover:bg-primary" style="height: 40%"></div>
+<div class="w-8 bg-primary-fixed rounded-t-lg transition-all hover:bg-primary" style="height: 60%"></div>
+<div class="w-8 bg-primary-fixed rounded-t-lg transition-all hover:bg-primary" style="height: 55%"></div>
+<div class="w-8 bg-primary-fixed rounded-t-lg transition-all hover:bg-primary" style="height: 85%"></div>
+<div class="w-8 bg-primary rounded-t-lg shadow-lg" style="height: 95%"></div>
+<div class="w-8 bg-primary-fixed rounded-t-lg transition-all hover:bg-primary" style="height: 70%"></div>
+<div class="w-8 bg-primary-fixed rounded-t-lg transition-all hover:bg-primary" style="height: 65%"></div>
+</div>
+</div>
+<!-- Background Motif -->
+<div class="absolute -right-16 -top-16 opacity-[0.03] pointer-events-none">
+<span class="material-symbols-outlined text-[20rem]">school</span>
+</div>
+</section>
+<!-- Quick Access Bento Grid -->
+<section class="grid grid-cols-1 md:grid-cols-3 gap-6">
+<div class="bg-primary text-on-primary p-6 rounded-xl hover:shadow-xl transition-all cursor-pointer group flex flex-col justify-between h-48">
+<span class="material-symbols-outlined text-3xl group-hover:scale-110 transition-transform">quiz</span>
+<div>
+<h3 class="font-headline text-xl font-bold mb-1">QA Practice</h3>
+<p class="text-on-primary/80 text-sm">Adaptive testing modules for all subjects.</p>
+</div>
+</div>
+<div class="bg-surface-container-lowest p-6 rounded-xl border-b-4 border-secondary hover:shadow-lg transition-all cursor-pointer group flex flex-col justify-between h-48">
+<span class="material-symbols-outlined text-secondary text-3xl group-hover:scale-110 transition-transform">style</span>
+<div>
+<h3 class="font-headline text-xl font-bold mb-1 text-on-surface">Flashcards</h3>
+<p class="text-on-surface-variant text-sm">Spaced repetition for long-term memory.</p>
+</div>
+</div>
+<div class="bg-surface-container-lowest p-6 rounded-xl border-b-4 border-tertiary-container hover:shadow-lg transition-all cursor-pointer group flex flex-col justify-between h-48">
+<span class="material-symbols-outlined text-tertiary text-3xl group-hover:scale-110 transition-transform">analytics</span>
+<div>
+<h3 class="font-headline text-xl font-bold mb-1 text-on-surface">Reports</h3>
+<p class="text-on-surface-variant text-sm">Detailed breakdown of your performance.</p>
+</div>
+</div>
+</section>
+<!-- Your Library -->
+<section>
+<div class="flex justify-between items-center mb-6">
+<h2 class="font-headline text-2xl font-bold text-on-surface">Your Library</h2>
+<button class="text-primary font-bold text-sm flex items-center gap-2 hover:underline">
+                    View All <span class="material-symbols-outlined text-sm">arrow_forward</span>
+</button>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+<!-- Book Card 1 -->
+<div class="flex bg-surface-container-lowest rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-all">
+<div class="w-1/3 h-48 relative">
+<img alt="Advanced Physics Textbook" class="w-full h-full object-cover" data-alt="conceptual image of advanced physics showing glowing particle paths and abstract dark blue chalkboard backgrounds" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCTHXCp7uyn1A4yWHZCsuBgGXSPLTddWpgR0RAL7BY6Uu82LMxyv-cc6Jr_f22kTuys2tSd3W9tsL0uCSXDVE7svWVrQPteagevP9WnLgIMdrw_Dl3i82ic4FZHHJsKaKlq5j9ILhsPPcEbvsdXtQfrZqXCM751sm3zG1gGaLL79oT8eWoH_AXAuCRpXHQUDvipPMr2X6MeBjljLF-vNd1QtX8fvIKY7Mlp-fUOBBkSAOsM2cUBlkm5Zl79BF5plkluXxklegklkPxh"/>
+<div class="absolute inset-0 bg-primary/10"></div>
+</div>
+<div class="flex-1 p-5 flex flex-col justify-between">
+<div>
+<span class="text-[10px] font-bold text-secondary uppercase tracking-widest bg-secondary-container/30 px-2 py-1 rounded-md">Grade 12</span>
+<h4 class="font-headline font-bold text-lg mt-2 mb-1">Advanced Physics</h4>
+<p class="text-on-surface-variant text-xs mb-3">Thermodynamics &amp; Quantum Mechanics</p>
+</div>
+<div class="flex gap-2">
+<button class="flex-1 bg-primary text-on-primary py-2 rounded-lg text-xs font-bold font-headline transition-all hover:bg-primary-dim">Practice</button>
+<button class="flex-1 bg-surface-container-high text-on-surface py-2 rounded-lg text-xs font-bold font-headline transition-all hover:bg-surface-variant">Flashcards</button>
+</div>
+</div>
+</div>
+<!-- Book Card 2 -->
+<div class="flex bg-surface-container-lowest rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-all">
+<div class="w-1/3 h-48 relative">
+<img alt="World History Textbook" class="w-full h-full object-cover" data-alt="vibrant educational image featuring historical artifacts like a golden compass and aged paper maps under cinematic lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBESWDmXlmJpDQJxe92T88ostIJqiKFsLhfwzJusKuUHp-nlF_tpav8n3zZzMO9y990LnbyD-8npyNeBjCclkz50WTq4IS1XGERMku5XiX1ZGpIPWzySpF7zYcut7szym5Py1ONFgzwn3zrh_fGjlTxfsXYKfGuN_riVjp-oF1g--cpcfHyTzrvxyT3xl6axfBTGLmcNB7BmQjRAVqxERKJZt4am18eECoBNaVR1Nx83VeCNEIxraW1Hvu4iJIwq0X8rVZRVrnNu9nw"/>
+<div class="absolute inset-0 bg-primary/10"></div>
+</div>
+<div class="flex-1 p-5 flex flex-col justify-between">
+<div>
+<span class="text-[10px] font-bold text-secondary uppercase tracking-widest bg-secondary-container/30 px-2 py-1 rounded-md">Grade 12</span>
+<h4 class="font-headline font-bold text-lg mt-2 mb-1">Modern History</h4>
+<p class="text-on-surface-variant text-xs mb-3">Global conflicts and geopolitical shifts</p>
+</div>
+<div class="flex gap-2">
+<button class="flex-1 bg-primary text-on-primary py-2 rounded-lg text-xs font-bold font-headline transition-all hover:bg-primary-dim">Practice</button>
+<button class="flex-1 bg-surface-container-high text-on-surface py-2 rounded-lg text-xs font-bold font-headline transition-all hover:bg-surface-variant">Flashcards</button>
+</div>
+</div>
+</div>
+</div>
+</section>
+</div>
+<!-- Right Column: Sidebar -->
+<aside class="w-full lg:w-80 space-y-8">
+<!-- Profile Summary / Streak -->
+<div class="bg-surface-container-low p-6 rounded-xl text-center">
+<div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-white shadow-sm mb-4">
+<span class="material-symbols-outlined text-primary text-3xl" style="font-variation-settings: 'FILL' 1;">local_fire_department</span>
+</div>
+<h3 class="font-headline font-bold text-xl mb-1">12 Day Streak</h3>
+<p class="text-on-surface-variant text-sm mb-4">You're in the top 5% of learners this month!</p>
+<div class="w-full bg-surface-container-highest h-2 rounded-full overflow-hidden">
+<div class="bg-primary h-full w-[80%] rounded-full"></div>
+</div>
+<div class="flex justify-between mt-2 text-[10px] font-bold text-outline">
+<span>LEVEL 24</span>
+<span>1,250 / 1,500 XP</span>
+</div>
+</div>
+<!-- Recent Activity -->
+<div class="space-y-4">
+<h3 class="font-headline font-bold text-lg flex items-center gap-2">
+<span class="material-symbols-outlined text-primary">history</span>
+                Recent Activity
+            </h3>
+<div class="space-y-3">
+<div class="bg-surface-container-lowest p-3 rounded-xl flex items-center gap-3 border border-surface-container">
+<div class="w-10 h-10 rounded-lg overflow-hidden flex-shrink-0">
+<img alt="Physics thumbnail" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCTHXCp7uyn1A4yWHZCsuBgGXSPLTddWpgR0RAL7BY6Uu82LMxyv-cc6Jr_f22kTuys2tSd3W9tsL0uCSXDVE7svWVrQPteagevP9WnLgIMdrw_Dl3i82ic4FZHHJsKaKlq5j9ILhsPPcEbvsdXtQfrZqXCM751sm3zG1gGaLL79oT8eWoH_AXAuCRpXHQUDvipPMr2X6MeBjljLF-vNd1QtX8fvIKY7Mlp-fUOBBkSAOsM2cUBlkm5Zl79BF5plkluXxklegklkPxh"/>
+</div>
+<div class="flex-1 overflow-hidden">
+<h4 class="font-bold text-xs truncate">Advanced Physics</h4>
+<p class="text-[10px] text-on-surface-variant">Practiced 2h ago</p>
+</div>
+<span class="material-symbols-outlined text-primary text-sm">play_circle</span>
+</div>
+<div class="bg-surface-container-lowest p-3 rounded-xl flex items-center gap-3 border border-surface-container">
+<div class="w-10 h-10 rounded-lg overflow-hidden flex-shrink-0">
+<img alt="History thumbnail" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBESWDmXlmJpDQJxe92T88ostIJqiKFsLhfwzJusKuUHp-nlF_tpav8n3zZzMO9y990LnbyD-8npyNeBjCclkz50WTq4IS1XGERMku5XiX1ZGpIPWzySpF7zYcut7szym5Py1ONFgzwn3zrh_fGjlTxfsXYKfGuN_riVjp-oF1g--cpcfHyTzrvxyT3xl6axfBTGLmcNB7BmQjRAVqxERKJZt4am18eECoBNaVR1Nx83VeCNEIxraW1Hvu4iJIwq0X8rVZRVrnNu9nw"/>
+</div>
+<div class="flex-1 overflow-hidden">
+<h4 class="font-bold text-xs truncate">Modern History</h4>
+<p class="text-[10px] text-on-surface-variant">Flashcards 5h ago</p>
+</div>
+<span class="material-symbols-outlined text-primary text-sm">play_circle</span>
+</div>
+</div>
+</div>
+<!-- Mastery Milestones -->
+<div class="bg-surface-container-high p-6 rounded-xl">
+<h3 class="font-headline font-bold text-lg mb-4 flex items-center gap-2">
+<span class="material-symbols-outlined text-primary">emoji_events</span>
+                Mastery Milestones
+            </h3>
+<div class="space-y-5">
+<div>
+<div class="flex justify-between items-end mb-2">
+<span class="text-xs font-bold">Advanced Physics</span>
+<span class="text-[10px] text-primary font-bold">64%</span>
+</div>
+<div class="w-full bg-white/50 h-1.5 rounded-full overflow-hidden">
+<div class="bg-primary h-full w-[64%] rounded-full"></div>
+</div>
+</div>
+<div>
+<div class="flex justify-between items-end mb-2">
+<span class="text-xs font-bold">Modern History</span>
+<span class="text-[10px] text-secondary font-bold">42%</span>
+</div>
+<div class="w-full bg-white/50 h-1.5 rounded-full overflow-hidden">
+<div class="bg-secondary h-full w-[42%] rounded-full"></div>
+</div>
+</div>
+<div>
+<div class="flex justify-between items-end mb-2">
+<span class="text-xs font-bold">Calculus II</span>
+<span class="text-[10px] text-tertiary font-bold">88%</span>
+</div>
+<div class="w-full bg-white/50 h-1.5 rounded-full overflow-hidden">
+<div class="bg-tertiary h-full w-[88%] rounded-full"></div>
+</div>
+</div>
+</div>
+<button class="w-full mt-6 py-2 border-2 border-dashed border-outline-variant text-outline-variant rounded-lg text-xs font-bold hover:bg-white/50 transition-all">+ Set New Goal</button>
+</div>
+</aside>
+</main>
+<!-- Footer -->
+<footer class="w-full border-t border-slate-200/50 dark:border-slate-800/50 bg-slate-50 dark:bg-slate-950">
+<div class="flex flex-col md:flex-row justify-between items-center py-8 px-12 gap-4 max-w-screen-2xl mx-auto">
+<div class="flex flex-col items-center md:items-start gap-2">
+<span class="text-lg font-bold text-slate-900 dark:text-slate-100 font-headline">Mega Test</span>
+<span class="font-['Manrope'] text-xs text-slate-500 dark:text-slate-400">© 2024 Mega Test. An Academic Vanguard Initiative.</span>
+</div>
+<div class="flex gap-6">
+<a class="font-['Manrope'] text-xs text-slate-500 dark:text-slate-400 hover:text-blue-600 transition-colors" href="#">Privacy Policy</a>
+<a class="font-['Manrope'] text-xs text-slate-500 dark:text-slate-400 hover:text-blue-600 transition-colors" href="#">Terms of Service</a>
+<a class="font-['Manrope'] text-xs text-slate-500 dark:text-slate-400 hover:text-blue-600 transition-colors" href="#">Help Center</a>
+<a class="font-['Manrope'] text-xs text-slate-500 dark:text-slate-400 hover:text-blue-600 transition-colors" href="#">Contact</a>
+</div>
+</div>
+</footer>
+</body></html>

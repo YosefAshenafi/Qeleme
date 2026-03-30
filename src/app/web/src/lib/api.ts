@@ -34,6 +34,9 @@ class ApiClient {
             window.location.href = '/login';
           }
         }
+        if (error.code === 'ERR_NETWORK' || error.message?.includes('Network Error')) {
+          console.warn('Network error - server may be unavailable');
+        }
         return Promise.reject(error);
       }
     );
@@ -88,12 +91,27 @@ class ApiClient {
   }
 
   async getUser() {
-    const response = await this.client.get('/user/me');
+    const response = await this.client.get('/api/auth/student/profile');
+    return response.data;
+  }
+
+  async getUserStats() {
+    const response = await this.client.get('/api/auth/student/stats');
     return response.data;
   }
 
   async getMCQData() {
-    const response = await this.client.get('/mcq/data');
+    const response = await this.client.get('/api/mcq/data');
+    return response.data;
+  }
+
+  async getGrades() {
+    const response = await this.client.get('/api/grades');
+    return response.data;
+  }
+
+  async getSubjects(gradeId: string) {
+    const response = await this.client.get(`/api/grades/${gradeId}/subjects`);
     return response.data;
   }
 
@@ -101,7 +119,7 @@ class ApiClient {
     const params = new URLSearchParams();
     params.append('grade', gradeId);
     if (subjectId) params.append('subject', subjectId);
-    const response = await this.client.get(`/flashcards?${params}`);
+    const response = await this.client.get(`/api/flashcards?${params}`);
     return response.data;
   }
 }

@@ -31,8 +31,18 @@ export default function LoginPage() {
       await api.login(username, password);
       router.push("/dashboard");
     } catch (err: unknown) {
-      const error = err as { response?: { data?: { message?: string } } };
-      setError(error.response?.data?.message || "Login failed. Please try again.");
+      const axiosError = err as { response?: { data?: { message?: string } }; code?: string; message?: string };
+      const serverMessage = axiosError.response?.data?.message;
+      
+      if (serverMessage) {
+        setError(serverMessage);
+      } else if (axiosError.code === 'ERR_NETWORK' || axiosError.message?.includes('Network Error')) {
+        setError("Unable to connect. Please check your internet connection.");
+      } else if (axiosError.code === 'ECONNABORTED') {
+        setError("Request timed out. Please try again.");
+      } else {
+        setError("Login failed. Please try again.");
+      }
     } finally {
       setLoading(false);
     }

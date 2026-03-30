@@ -54,3 +54,5 @@ bun.lockb
 *.tsbuildinfo
 
 app-example
+
+src/app/web/.next

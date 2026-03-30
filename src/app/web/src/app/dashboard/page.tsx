@@ -1,130 +1,188 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import Link from "next/link";
 import { api } from "@/lib/api";
-
-const BRAND_BLUE = "#0F4BD7";
+import { TopNav } from "@/components/dashboard/TopNav";
+import { HeroSection } from "@/components/dashboard/HeroSection";
+import { QuickAccessGrid } from "@/components/dashboard/QuickAccessGrid";
+import { LibrarySection } from "@/components/dashboard/LibrarySection";
+import { Sidebar } from "@/components/dashboard/Sidebar";
+import { Footer } from "@/components/dashboard/Footer";
 
 interface User {
-  username: string;
+  fullName?: string;
+  username?: string;
+  email?: string;
   phone?: string;
   grade?: string;
+  region?: string;
+  progress?: number;
+  mastery?: number;
+  streak?: number;
+  tasksCompleted?: number;
+  completedTasks?: number;
+  gradeProgress?: number;
+}
+
+interface UserStats {
+  progress?: number;
+  mastery?: number;
+  tasksCompleted?: number;
+  currentStreak?: number;
+  performanceHistory?: number[];
+  totalTasksCompleted?: number;
+  completedTasks?: number;
+  gradeProgress?: number;
+}
+
+interface Subject {
+  id: string;
+  name: string;
+  gradeId?: string;
+}
+
+interface Book {
+  id: string;
+  title: string;
+  subject?: string;
+  grade?: string;
+  image?: string;
 }
 
 export default function DashboardPage() {
   const [user, setUser] = useState<User | null>(null);
+  const [stats, setStats] = useState<UserStats | null>(null);
+  const [subjects, setSubjects] = useState<Subject[]>([]);
+  const [books, setBooks] = useState<Book[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchUser = async () => {
+    const fetchDashboardData = async () => {
       try {
-        const data = await api.getUser();
-        setUser(data.data);
+        const [userData, mcqData] = await Promise.all([
+          api.getUser().catch(() => null),
+          api.getMCQData().catch(() => null)
+        ]);
+
+        const user = userData?.data || userData;
+        if (user) {
+          setUser(user);
+          
+          // Try to get stats if available
+          try {
+            const statsData = await api.getUserStats();
+            if (statsData?.data) {
+              setStats(statsData.data);
+            } else if (statsData) {
+              setStats(statsData);
+            }
+          } catch {
+            // Stats not available, use defaults
+          }
+          
+          // Also try to extract stats from user object if available
+          if (user.progress !== undefined || user.mastery !== undefined) {
+            setStats(prev => ({
+              ...prev,
+              progress: user.progress,
+              mastery: user.mastery,
+              currentStreak: user.streak,
+              tasksCompleted: user.tasksCompleted,
+              completedTasks: user.completedTasks,
+              gradeProgress: user.gradeProgress
+            }));
+          }
+        }
+
+        // Process MCQ data to get subjects and books
+        if (mcqData?.grades) {
+          const allSubjects: Subject[] = [];
+          const allBooks: Book[] = [];
+          
+          mcqData.grades.forEach((grade: { id: string; name: string; subjects?: Subject[] }) => {
+            if (grade.subjects) {
+              grade.subjects.forEach((subject: Subject) => {
+                allSubjects.push({
+                  ...subject,
+                  gradeId: grade.id
+                });
+                allBooks.push({
+                  id: subject.id,
+                  title: subject.name,
+                  subject: subject.name,
+                  grade: grade.name,
+                  image: getBookImage(subject.name)
+                });
+              });
+            }
+          });
+          
+          setSubjects(allSubjects);
+          setBooks(allBooks.slice(0, 4));
+        }
       } catch (error) {
-        console.error("Failed to fetch user:", error);
+        console.error("Failed to fetch dashboard data:", error);
       } finally {
         setLoading(false);
       }
     };
-    fetchUser();
+
+    fetchDashboardData();
   }, []);
 
-  const handleLogout = () => {
-    localStorage.removeItem("auth_token");
-    window.location.href = "/";
+  const getBookImage = (subjectName: string): string => {
+    const images: Record<string, string> = {
+      'Mathematics': 'https://images.unsplash.com/photo-1635070041078-e363dbe005cb?w=400&h=600&fit=crop',
+      'Physics': 'https://images.unsplash.com/photo-1636466497217-26a8cbeaf0aa?w=400&h=600&fit=crop',
+      'Chemistry': 'https://images.unsplash.com/photo-1603126857599-f6e157fa2fe6?w=400&h=600&fit=crop',
+      'Biology': 'https://images.unsplash.com/photo-1530026405186-ed1f139313f8?w=400&h=600&fit=crop',
+      'English': 'https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?w=400&h=600&fit=crop',
+      'History': 'https://images.unsplash.com/photo-1461360370896-922624d12a74?w=400&h=600&fit=crop',
+      'Geography': 'https://images.unsplash.com/photo-1524661135-423995f22d0b?w=400&h=600&fit=crop',
+    };
+    
+    const key = Object.keys(images).find(k => subjectName.toLowerCase().includes(k.toLowerCase()));
+    return images[key || 'Mathematics'] || images['Mathematics'];
   };
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin" />
+      <div className="min-h-screen flex items-center justify-center bg-surface">
+        <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin" />
       </div>
     );
   }
 
+  const userName = user?.fullName || user?.username || 'Student';
+  const userGrade = user?.grade ? `Grade ${user.grade}` : 'Grade 12';
+
   return (
-    <div className="min-h-screen" style={{ backgroundColor: "#F3F4F6" }}>
-      {/* Header */}
-      <header className="bg-white shadow-sm border-b">
-        <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <div className="w-10 h-10 rounded-lg flex items-center justify-center" style={{ backgroundColor: BRAND_BLUE }}>
-              <span className="text-xl font-bold text-white">M</span>
-            </div>
-            <span className="text-xl font-bold" style={{ color: BRAND_BLUE }}>Megatest</span>
-          </div>
-          <button
-            onClick={handleLogout}
-            className="px-4 py-2 rounded-lg text-gray-600 hover:bg-gray-100"
-          >
-            Logout
-          </button>
-        </div>
-      </header>
-
-      <main className="max-w-7xl mx-auto px-4 py-8">
-        <h1 className="text-2xl font-bold text-gray-900 mb-2">
-          Welcome{user?.username ? `, ${user.username}` : ""}!
-        </h1>
-        <p className="text-gray-600 mb-8">What would you like to practice today?</p>
-
-        {/* Quick Actions */}
-        <div className="grid md:grid-cols-3 gap-6 mb-8">
-          {[
-            {
-              title: "Practice Questions",
-              desc: "MCQ practice with instant feedback",
-              icon: "📝",
-              href: "/mcq",
-              color: "#0F4BD7"
-            },
-            {
-              title: "Flashcards",
-              desc: "Review key concepts with flashcards",
-              icon: "🗂️",
-              href: "/flashcards",
-              color: "#7C3AED"
-            },
-            {
-              title: "Reports",
-              desc: "View your progress and statistics",
-              icon: "📊",
-              href: "/reports",
-              color: "#059669"
-            }
-          ].map((item, index) => (
-            <Link
-              key={index}
-              href={item.href}
-              className="bg-white rounded-2xl p-6 shadow-sm hover:shadow-md transition-shadow border"
-            >
-              <div className="text-4xl mb-4">{item.icon}</div>
-              <h3 className="text-lg font-bold text-gray-900 mb-2">{item.title}</h3>
-              <p className="text-gray-500">{item.desc}</p>
-            </Link>
-          ))}
+    <div className="min-h-screen bg-surface font-body text-on-surface antialiased m-plus-motif relative">
+      <TopNav user={user} />
+      
+      <main className="pt-24 pb-12 px-6 md:px-12 w-full max-w-screen-2xl mx-auto flex flex-col lg:flex-row gap-8 relative z-10">
+        {/* Left Column: Main Dashboard */}
+        <div className="flex-1 space-y-8">
+          <HeroSection 
+            userName={userName}
+            grade={userGrade}
+            stats={stats || undefined}
+          />
+          <QuickAccessGrid />
+          <LibrarySection books={books} userGrade={userGrade} loading={false} />
         </div>
 
-        {/* Stats Overview */}
-        <div className="bg-white rounded-2xl p-6 shadow-sm border">
-          <h2 className="text-lg font-bold text-gray-900 mb-4">Quick Stats</h2>
-          <div className="grid grid-cols-3 gap-4">
-            <div className="text-center p-4 rounded-xl bg-blue-50">
-              <div className="text-2xl font-bold" style={{ color: BRAND_BLUE }}>--</div>
-              <div className="text-sm text-gray-600">Questions</div>
-            </div>
-            <div className="text-center p-4 rounded-xl bg-purple-50">
-              <div className="text-2xl font-bold text-purple-600">--</div>
-              <div className="text-sm text-gray-600">Flashcards</div>
-            </div>
-            <div className="text-center p-4 rounded-xl bg-green-50">
-              <div className="text-2xl font-bold text-green-600">--</div>
-              <div className="text-sm text-gray-600">Study Time</div>
-            </div>
-          </div>
-        </div>
+        {/* Right Column: Sidebar */}
+        <Sidebar stats={stats || undefined} />
       </main>
+
+      <Footer />
+      
+      {/* Background motif for whole page */}
+      <div className="fixed inset-0 pointer-events-none z-0 opacity-20">
+        <div className="absolute top-0 right-0 w-1/2 h-1/2 bg-primary/5 blur-3xl rounded-full -translate-y-1/2 translate-x-1/4"></div>
+        <div className="absolute bottom-0 left-0 w-1/3 h-1/3 bg-tertiary/5 blur-3xl rounded-full translate-y-1/4 -translate-x-1/4"></div>
+      </div>
     </div>
   );
 }

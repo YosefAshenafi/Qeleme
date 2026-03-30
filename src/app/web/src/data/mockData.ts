@@ -73,3 +73,47 @@ export const AUTH_DATA = {
     }
   }
 };
+export const STUDENT_DASHBOARD_DATA = {
+  user: {
+    name: "Alex",
+    avatar: "https://lh3.googleusercontent.com/aida-public/AB6AXuB-AcizVIXNyMTUkVvs3aRVTacPstBbkhatIbpzs8cfWsZ5zWBzAViIuWeZcsTp5mXKRqJKAUzf7k5iT7T7i4vZdarG_dCA3ab1I2uD7TUztIf12Rv-UVPoIJiJavw71ze8zKuVNKBPEV4JFXSFYwv6AqHw4lpLvyOaAPHpNrVvxahyG43hF19UemXSmnjXjPVdTpnojZ9zLVChY-ybax0LAz1PgXK2L3h-h1QxznWbSnHlNvi2QqIOA_ob2tRGxgtTF9GdOI8Vm3T4",
+    streak: 12,
+    level: 24,
+    xp: 1250,
+    maxXp: 1500
+  },
+  stats: {
+    progress: "85%",
+    mastery: "78%",
+    tasksCompleted: 124,
+    performanceHistory: [40, 60, 55, 85, 95, 70, 65]
+  },
+  quickAccess: [
+    { title: "QA Practice", description: "Adaptive testing modules for all subjects.", icon: "quiz", color: "primary" },
+    { title: "Flashcards", description: "Spaced repetition for long-term memory.", icon: "style", color: "secondary" },
+    { title: "Reports", description: "Detailed breakdown of your performance.", icon: "analytics", color: "tertiary" }
+  ],
+  library: [
+    {
+      title: "Advanced Physics",
+      subject: "Thermodynamics & Quantum Mechanics",
+      grade: "Grade 12",
+      image: "https://lh3.googleusercontent.com/aida-public/AB6AXuCTHXCp7uyn1A4yWHZCsuBgGXSPLTddWpgR0RAL7BY6Uu82LMxyv-cc6Jr_f22kTuys2tSd3W9tsL0uCSXDVE7svWVrQPteagevP9WnLgIMdrw_Dl3i82ic4FZHHJsKaKlq5j9ILhsPPcEbvsdXtQfrZqXCM751sm3zG1gGaLL79oT8eWoH_AXAuCRpXHQUDvipPMr2X6MeBjljLF-vNd1QtX8fvIKY7Mlp-fUOBBkSAOsM2cUBlkm5Zl79BF5plkluXxklegklkPxh"
+    },
+    {
+      title: "Modern History",
+      subject: "Global conflicts and geopolitical shifts",
+      grade: "Grade 12",
+      image: "https://lh3.googleusercontent.com/aida-public/AB6AXuBESWDmXlmJpDQJxe92T88ostIJqiKFsLhfwzJusKuUHp-nlF_tpav8n3zZzMO9y990LnbyD-8npyNeBjCclkz50WTq4IS1XGERMku5XiX1ZGpIPWzySpF7zYcut7szym5Py1ONFgzwn3zrh_fGjlTxfsXYKfGuN_riVjp-oF1g--cpcfHyTzrvxyT3xl6axfBTGLmcNB7BmQjRAVqxERKJZt4am18eECoBNaVR1Nx83VeCNEIxraW1Hvu4iJIwq0X8rVZRVrnNu9nw"
+    }
+  ],
+  recentActivity: [
+    { title: "Advanced Physics", time: "2h ago", icon: "play_circle", image: "https://lh3.googleusercontent.com/aida-public/AB6AXuCTHXCp7uyn1A4yWHZCsuBgGXSPLTddWpgR0RAL7BY6Uu82LMxyv-cc6Jr_f22kTuys2tSd3W9tsL0uCSXDVE7svWVrQPteagevP9WnLgIMdrw_Dl3i82ic4FZHHJsKaKlq5j9ILhsPPcEbvsdXtQfrZqXCM751sm3zG1gGaLL79oT8eWoH_AXAuCRpXHQUDvipPMr2X6MeBjljLF-vNd1QtX8fvIKY7Mlp-fUOBBkSAOsM2cUBlkm5Zl79BF5plkluXxklegklkPxh" },
+    { title: "Modern History", time: "5h ago", icon: "play_circle", image: "https://lh3.googleusercontent.com/aida-public/AB6AXuBESWDmXlmJpDQJxe92T88ostIJqiKFsLhfwzJusKuUHp-nlF_tpav8n3zZzMO9y990LnbyD-8npyNeBjCclkz50WTq4IS1XGERMku5XiX1ZGpIPWzySpF7zYcut7szym5Py1ONFgzwn3zrh_fGjlTxfsXYKfGuN_riVjp-oF1g--cpcfHyTzrvxyT3xl6axfBTGLmcNB7BmQjRAVqxERKJZt4am18eECoBNaVR1Nx83VeCNEIxraW1Hvu4iJIwq0X8rVZRVrnNu9nw" }
+  ],
+  milestones: [
+    { title: "Advanced Physics", progress: 64, color: "primary" },
+    { title: "Modern History", progress: 42, color: "secondary" },
+    { title: "Calculus II", progress: 88, color: "tertiary" }
+  ]
+};
