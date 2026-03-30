@@ -1,7 +1,7 @@
-import { ThemedText } from '@/shared/components/ThemedText';
-import { ThemedView } from '@/shared/components/ThemedView';
+import { ThemedText } from '@/components/ThemedText';
+import { ThemedView } from '@/components/ThemedView';
 import { useTheme } from '@/core/providers/ThemeProvider';
-import { getColors } from '@/shared/constants/Colors';
+import { getColors } from '@/constants/Colors';
 import { HeaderStyles as styles } from './Header.styles';
 
 type HeaderProps = {

@@ -2,8 +2,8 @@ import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useTheme } from '@/core/providers/ThemeProvider';
-import { getColors } from '@/shared/constants/Colors';
-import { grades } from '@/shared/constants/Grades';
+import { getColors } from '@/constants/Colors';
+import { grades } from '@/constants/Grades';
 
 interface GradeBadgeProps {
   grade?: string;

@@ -1,5 +1,5 @@
 // utils/otpService.ts
-import { OTP_BASE_URL } from '@/shared/config/constants';
+import { OTP_BASE_URL } from '@/config/constants';
 import { OTPResponse, SendSMSResponse } from '../types/otp';
 import { storeOTP, getStoredOTP, clearStoredOTP, isOTPValid } from '@/features/auth/utils/authStorage';
 

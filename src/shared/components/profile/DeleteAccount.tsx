@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, TextInput, Modal, Alert, ActivityIndicator } from 'react-native';
-import { getColors } from '@/shared/constants/Colors';
+import { getColors } from '@/constants/Colors';
 import { useTheme } from '@/core/providers/ThemeProvider';
 import { useAuth } from '@/core/providers/AuthProvider';
 import { useTranslation } from 'react-i18next';
-import { sendOTP, verifyOTP } from '@/shared/utils/otpService';
-import { IconSymbol } from '@/shared/components/ui/IconSymbol';
-import { PasswordInput } from '@/shared/components/ui/PasswordInput';
+import { sendOTP, verifyOTP } from '@/utils/otpService';
+import { IconSymbol } from '@/components/ui/IconSymbol';
+import { PasswordInput } from '@/components/ui/PasswordInput';
 import { DeleteAccountStyles as styles } from './DeleteAccount.styles';
 
 interface DeleteAccountProps {

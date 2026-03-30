@@ -2,8 +2,8 @@ import React from 'react';
 import { StyleSheet, ImageStyle } from 'react-native';
 import { RemoteImage } from './RemoteImage';
 import { useTheme } from '@/core/providers/ThemeProvider';
-import { getColors } from '@/shared/constants/Colors';
-import { getOptimizedImageUrl } from '@/shared/utils/imageOptimizer';
+import { getColors } from '@/constants/Colors';
+import { getOptimizedImageUrl } from '@/utils/imageOptimizer';
 
 interface CategoryImageProps {
   imageUrl?: string | null;

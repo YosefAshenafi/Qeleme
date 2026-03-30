@@ -106,7 +106,7 @@ export default function CustomSplashScreen() {
           }}
         >
           <Image
-            source={require('../../../assets/images/logo.png')}
+            source={require('@/assets/images/logo.png')}
             style={{ width: 90, height: 90 }}
             resizeMode="contain"
           />

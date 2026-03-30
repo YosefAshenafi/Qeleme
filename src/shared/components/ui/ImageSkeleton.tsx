@@ -2,7 +2,7 @@ import React, { useEffect, useRef } from 'react';
 import { View, StyleSheet, Animated, ViewStyle, DimensionValue } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useTheme } from '@/core/providers/ThemeProvider';
-import { getColors } from '@/shared/constants/Colors';
+import { getColors } from '@/constants/Colors';
 
 interface ImageSkeletonProps {
   width?: DimensionValue;

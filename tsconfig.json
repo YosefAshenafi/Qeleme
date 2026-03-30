@@ -18,11 +18,14 @@
     "**/*.ts",
     "**/*.tsx",
     ".expo/types/**/*.ts",
-    "expo-env.d.ts"
+    "expo-env.d.ts",
+    "app/native/**/*.ts",
+    "app/native/**/*.tsx"
   ],
   "exclude": [
     "node_modules",
     ".expo",
-    "dist"
+    "dist",
+    "app/web"
   ]
 }

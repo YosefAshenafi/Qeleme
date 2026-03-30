@@ -2,8 +2,8 @@ import React, { useState } from 'react';
 import { StyleProp, StyleSheet, TextInput, TouchableOpacity, View, TextInputProps, ViewStyle } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '@/core/providers/ThemeProvider';
-import { ThemedText } from '@/shared/components/ThemedText';
-import { getColors } from '@/shared/constants/Colors';
+import { ThemedText } from '@/components/ThemedText';
+import { getColors } from '@/constants/Colors';
 
 interface PasswordInputProps {
   value: string;

@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, TextInput } from 'react-native';
-import { getColors } from '@/shared/constants/Colors';
+import { getColors } from '@/constants/Colors';
 import { useTheme } from '@/core/providers/ThemeProvider';
 import { useAuth } from '@/core/providers/AuthProvider';
 import { useTranslation } from 'react-i18next';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { BASE_URL } from '@/shared/config/constants';
+import { BASE_URL } from '@/config/constants';
 import { AccountSettingsStyles as styles } from './AccountSettings.styles';
 
 interface AccountSettingsProps {

@@ -17,6 +17,9 @@ expo-env.d.ts
 *.key
 *.mobileprovision
 *.keystore
+android/.gradle/
+android/app/build/
+ios/build/
 
 # iOS
 ios/Pods/
@@ -33,6 +36,9 @@ android/app/*.keystore
 npm-debug.*
 yarn-debug.*
 yarn-error.*
+
+# Bun
+bun.lockb
 
 # macOS
 .DS_Store

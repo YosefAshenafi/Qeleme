@@ -1,5 +1,5 @@
 import { getAuthToken } from '@/features/auth/utils/authStorage';
-import { BASE_URL as BASE_URL_CONSTANT } from '@/shared/config/constants';
+import { BASE_URL as BASE_URL_CONSTANT } from '@/config/constants';
 
 const BASE_URL = `${BASE_URL_CONSTANT}/api`;
 

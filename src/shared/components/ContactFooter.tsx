@@ -2,7 +2,7 @@ import React from 'react';
 import { View, Text, TouchableOpacity, Linking } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '@/core/providers/ThemeProvider';
-import { getColors } from '@/shared/constants/Colors';
+import { getColors } from '@/constants/Colors';
 import { ContactFooterStyles as styles } from './ContactFooter.styles';
 
 export function ContactFooter() {

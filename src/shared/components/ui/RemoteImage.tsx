@@ -12,7 +12,7 @@ import {
 import { LinearGradient } from 'expo-linear-gradient';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useTheme } from '@/core/providers/ThemeProvider';
-import { getColors } from '@/shared/constants/Colors';
+import { getColors } from '@/constants/Colors';
 import { ImageSkeleton } from './ImageSkeleton';
 
 interface RemoteImageProps extends Omit<ImageProps, 'source'> {
