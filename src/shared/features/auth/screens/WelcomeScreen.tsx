@@ -79,12 +79,14 @@ export default function WelcomeScreen() {
               <ThemedText style={[styles.secondaryButtonText, { color: isDarkMode ? '#FFFFFF' : '#003EC8' }]}>{t('welcome.signIn')}</ThemedText>
             </TouchableOpacity>
 
+            {/* Guest user option disabled
             <TouchableOpacity style={styles.guestAction} onPress={handleBrowseAsGuest} activeOpacity={0.7}>
               <ThemedText style={[styles.guestActionText, { color: isDarkMode ? '#E2E8F0' : '#434656' }]}>
                 {t('welcome.browseAsGuest')}
               </ThemedText>
               <Ionicons name="arrow-forward" size={18} color={isDarkMode ? '#E2E8F0' : '#434656'} />
             </TouchableOpacity>
+            */}
           </View>
         </View>
       </View>
