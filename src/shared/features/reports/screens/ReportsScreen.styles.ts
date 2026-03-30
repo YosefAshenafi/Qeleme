@@ -43,7 +43,8 @@ export const ReportsScreenStyles = StyleSheet.create({
   creditsCard: {
     borderRadius: 16,
     padding: 14,
-    minHeight: 120,
+    paddingBottom: 34,
+    minHeight: 140,
     justifyContent: 'space-between',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
@@ -106,6 +107,11 @@ export const ReportsScreenStyles = StyleSheet.create({
     fontSize: 26,
     fontWeight: '800',
     marginTop: 6,
+  },
+  /** HH:MM:SS — extra line height so digits are not clipped */
+  kpiValueStudyTime: {
+    lineHeight: 36,
+    paddingVertical: 4,
   },
   kpiDelta: {
     fontSize: 12,

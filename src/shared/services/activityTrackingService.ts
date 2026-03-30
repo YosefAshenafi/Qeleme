@@ -59,6 +59,15 @@ export interface PictureMCQActivity extends BaseActivity {
 export type Activity = MCQActivity | FlashcardActivity | KGQuestionActivity | PictureMCQActivity;
 type NewActivity = Omit<BaseActivity, 'id' | 'timestamp' | 'username'> & Record<string, unknown>;
 
+/** Prefer precise `timeSpent` (seconds); fall back to duration (minutes) from storage. */
+function getActivityDurationSeconds(activity: Activity): number {
+  const withTime = activity as { timeSpent?: number };
+  if (typeof withTime.timeSpent === 'number' && withTime.timeSpent >= 0) {
+    return withTime.timeSpent;
+  }
+  return (activity.duration ?? 0) * 60;
+}
+
 // User statistics interface
 export interface UserStats {
   totalActivities: number;
@@ -286,8 +295,11 @@ class ActivityTrackingService {
       // Process each completed activity
       
       completedActivities.forEach(activity => {
-        // Basic stats
-        stats.totalStudyTime += activity.duration || 0;
+        const durationSec = getActivityDurationSeconds(activity);
+        const durationMin = durationSec / 60;
+
+        // Basic stats (totalStudyTime = fractional minutes for display)
+        stats.totalStudyTime += durationMin;
         stats.lastActivityDate = Math.max(stats.lastActivityDate, activity.timestamp);
 
         // Subject breakdown
@@ -303,7 +315,7 @@ class ActivityTrackingService {
 
         const subjectStats = stats.subjectBreakdown[activity.subject];
         subjectStats.activities++;
-        subjectStats.timeSpent += activity.duration || 0;
+        subjectStats.timeSpent += durationMin;
 
         // Grade breakdown
         if (!stats.gradeBreakdown[activity.grade]) {
@@ -317,13 +329,13 @@ class ActivityTrackingService {
 
         const gradeStats = stats.gradeBreakdown[activity.grade];
         gradeStats.activities++;
-        gradeStats.timeSpent += activity.duration || 0;
+        gradeStats.timeSpent += durationMin;
 
         // Activity type breakdown
         const typeStats = stats.activityTypeBreakdown[activity.type];
         if (typeStats) {
           typeStats.count++;
-          typeStats.timeSpent += activity.duration || 0;
+          typeStats.timeSpent += durationMin;
           typeStats.lastActivity = Math.max(typeStats.lastActivity, activity.timestamp);
         } else {
           // Handle unknown activity types gracefully

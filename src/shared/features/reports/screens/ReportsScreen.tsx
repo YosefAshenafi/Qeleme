@@ -1,13 +1,13 @@
-import { ScrollView, View, Dimensions, RefreshControl, TouchableOpacity } from 'react-native';
+import { ScrollView, View, Dimensions, RefreshControl, TouchableOpacity, AppState, AppStateStatus } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { IconSymbol } from '@/components/ui/IconSymbol';
 import { useTheme } from '@/core/providers/ThemeProvider';
 import { getColors } from '@/constants/Colors';
-import { useMemo, useRef, useState } from 'react';
+import { useCallback, useMemo, useRef, useState } from 'react';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '@/core/providers/AuthProvider';
-import { useFocusEffect } from '@react-navigation/native';
+import { useFocusEffect } from 'expo-router';
 import ActivityTrackingService, { UserStats } from '@/services/activityTrackingService';
 import { VictoryAxis, VictoryChart, VictoryLine } from 'victory-native';
 
@@ -47,36 +47,42 @@ export default function ReportsScreen() {
   const [scoreSectionY, setScoreSectionY] = useState(0);
   const [topSubjectsSectionY, setTopSubjectsSectionY] = useState(0);
 
-  // Initialize tracking service when user changes
-  React.useEffect(() => {
-    const initializeTracking = async () => {
-      try {
-        if (!user?.username) {
-          setUserStats(null);
-          setLoading(false);
-          return;
-        }
-        
-        const trackingService = ActivityTrackingService.getInstance();
-        await trackingService.initialize(user.username);
-        const stats = trackingService.getStats();
-        setUserStats(stats);
+  const loadReportData = useCallback(async () => {
+    try {
+      if (!user?.username) {
+        setUserStats(null);
         setLoading(false);
-      } catch (error) {
-        console.error('Failed to initialize tracking service:', error);
-        setLoading(false);
+        return;
       }
-    };
 
-    initializeTracking();
+      const trackingService = ActivityTrackingService.getInstance();
+      await trackingService.initialize(user.username);
+      const stats = trackingService.getStats();
+      setUserStats(stats);
+      setLoading(false);
+    } catch (error) {
+      console.error('Failed to load report data:', error);
+      setLoading(false);
+    }
   }, [user?.username]);
 
-  // Auto-refresh data when tab is focused
+  // Reload from AsyncStorage when Stats tab is focused (expo-router waits for nav state)
   useFocusEffect(
-    React.useCallback(() => {
-      loadReportData();
-    }, [user?.username])
+    useCallback(() => {
+      void loadReportData();
+    }, [loadReportData])
   );
+
+  // Refresh when returning to the app (covers edge cases where tab focus does not refire)
+  React.useEffect(() => {
+    const onChange = (state: AppStateStatus) => {
+      if (state === 'active' && user?.username) {
+        void loadReportData();
+      }
+    };
+    const sub = AppState.addEventListener('change', onChange);
+    return () => sub.remove();
+  }, [loadReportData, user?.username]);
 
   React.useEffect(() => {
     if (!userStats) return;
@@ -193,29 +199,11 @@ export default function ReportsScreen() {
     ]);
   }, [i18n.language, isDarkMode, userStats]);
 
-  const loadReportData = async () => {
-    try {
-      if (!user?.username) {
-        console.warn('Cannot load report data: no user logged in');
-        setUserStats(null);
-        return;
-      }
-      
-      const trackingService = ActivityTrackingService.getInstance();
-      await trackingService.initialize(user.username);
-      const stats = trackingService.getStats();
-      setUserStats(stats);
-      setLoading(false);
-    } catch (error) {
-      console.error('Failed to load report data:', error);
-    }
-  };
-
-  const onRefresh = React.useCallback(async () => {
+  const onRefresh = useCallback(async () => {
     setRefreshing(true);
     await loadReportData();
     setRefreshing(false);
-  }, []);
+  }, [loadReportData]);
 
   const avgChipText = useMemo(() => {
     const val = userStats?.averageScore ?? 0;
@@ -326,7 +314,9 @@ export default function ReportsScreen() {
                     </View>
                     <ThemedText style={[styles.kpiTitle, { color: colors.text + '80' }]}>{kpiCards[2].title}</ThemedText>
                   </View>
-                  <ThemedText style={[styles.kpiValue, { color: colors.text }]}>{kpiCards[2].value}</ThemedText>
+                  <ThemedText style={[styles.kpiValue, styles.kpiValueStudyTime, { color: colors.text }]}>
+                    {kpiCards[2].value}
+                  </ThemedText>
                   {!!kpiCards[2].deltaText && (
                     <ThemedText style={[styles.kpiDelta, { color: '#22C55E' }]}>{kpiCards[2].deltaText}</ThemedText>
                   )}

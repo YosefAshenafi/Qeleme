@@ -85,6 +85,17 @@ export default function FlashcardsScreen() {
   const preSelectionAttempted = useRef(false);
   /** Ensures Subjects tab → Flashcards deep-link only auto-starts once per navigation. */
   const flashcardsAutoStartConsumedRef = useRef(false);
+  /** One tracking record per completed session (Got it / Still learning on last card). */
+  const flashcardSessionTrackedRef = useRef(false);
+  /**
+   * Set when a session starts (picker or deep-link). Deep-link flows often never set
+   * selectedSubject/selectedSubjectData, so tracking must not rely on that state alone.
+   */
+  const sessionTrackMetaRef = useRef<{
+    subjectName: string;
+    chapterName?: string;
+    gradeName: string;
+  } | null>(null);
 
   const revealAnimation = useSharedValue(0);
   const progressAnimation = useSharedValue(0);
@@ -358,68 +369,79 @@ export default function FlashcardsScreen() {
     });
   };
 
+  const resolveDeepLinkSessionMeta = (
+    data: Grade[],
+    gradeId: string,
+    subjectSlug: string,
+    chapterName: string
+  ): { subjectName: string; chapterName: string; gradeName: string } => {
+    if (!data.length) {
+      return {
+        subjectName: subjectSlug.replace(/-/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase()),
+        chapterName,
+        gradeName: '',
+      };
+    }
+    const grade = data.find((g) => g.id === gradeId) ?? data[0];
+    const gradeName = grade?.name || '';
+    const subject = grade?.subjects?.find((s) => s.slug === subjectSlug);
+    const subjectName =
+      subject?.name?.trim() ||
+      subjectSlug.replace(/-/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
+    const chapter = subject?.chapters?.find(
+      (c) => c.name.trim().toLowerCase() === chapterName.trim().toLowerCase()
+    );
+    return {
+      subjectName,
+      chapterName: chapter?.name || chapterName,
+      gradeName: gradeName || '',
+    };
+  };
+
+  const trackFlashcardSessionEnd = async (cardsSnapshot: Flashcard[]) => {
+    if (flashcardSessionTrackedRef.current) return;
+    if (!user?.username || cardsSnapshot.length === 0) return;
+
+    const meta = sessionTrackMetaRef.current;
+    const subjectName = (meta?.subjectName || selectedSubjectData?.name || '').trim();
+    if (!subjectName) {
+      console.warn('[Flashcards] Activity not tracked: missing subject name (session meta).');
+      return;
+    }
+
+    flashcardSessionTrackedRef.current = true;
+
+    try {
+      const trackingService = ActivityTrackingService.getInstance();
+      await trackingService.initialize(user.username);
+
+      const cardsReviewed = cardsSnapshot.length;
+      const cardsMastered = cardsSnapshot.filter((card) => card.isChecked).length;
+      const start = sessionStartTime;
+      const timeSpentSec =
+        start != null ? Math.max(0, Math.round((Date.now() - start) / 1000)) : 0;
+
+      const gradeName =
+        meta?.gradeName || selectedGradeData?.name || selectedGrade || user?.grade || 'unknown';
+
+      await trackingService.trackFlashcardActivity({
+        grade: gradeName,
+        subject: subjectName,
+        chapter: meta?.chapterName || selectedChapterData?.name || undefined,
+        cardsReviewed,
+        cardsMastered,
+        timeSpent: timeSpentSec,
+      });
+    } catch (error) {
+      console.error('Failed to track flashcard activity:', error);
+      flashcardSessionTrackedRef.current = false;
+    }
+  };
+
   const handleNext = () => {
     if (currentFlashcards.length > 0 && currentIndex < currentFlashcards.length - 1) {
       setCurrentIndex(prev => prev + 1);
-      // The useEffect will handle setting the correct reveal state based on Amharic detection
       progressAnimation.value = withTiming(((currentIndex + 2) / currentFlashcards.length) * 100);
-      
-      // Track activity when reaching the end
-      if (currentIndex + 1 === currentFlashcards.length - 1) {
-        const trackActivity = async () => {
-          try {
-            if (!user?.username) {
-              console.warn('Cannot track flashcard activity: no user logged in');
-              return;
-            }
-            
-            const trackingService = ActivityTrackingService.getInstance();
-            await trackingService.initialize(user.username);
-            
-            const cardsReviewed = currentIndex + 1;
-            const cardsMastered = currentFlashcards.filter(card => card.isChecked).length;
-            const timeSpent = Date.now() - (sessionStartTime || Date.now()); // Approximate time spent
-            
-            // Get proper names for tracking
-            const gradeName = selectedGradeData?.name || selectedGrade || '';
-            const subjectName = selectedSubjectData?.name || '';
-            const chapterName = selectedChapterData?.name || '';
-
-            if (!subjectName) {
-              // Don’t record incomplete/unknown activities
-              return;
-            }
-            
-            console.log('Tracking flashcard activity:', {
-              grade: gradeName,
-              subject: subjectName,
-              chapter: chapterName,
-              cardsReviewed,
-              cardsMastered,
-              selectedGrade,
-              selectedSubject,
-              selectedChapter,
-              selectedGradeData: selectedGradeData?.name,
-              selectedSubjectData: selectedSubjectData?.name,
-              selectedChapterData: selectedChapterData?.name
-            });
-            
-            await trackingService.trackFlashcardActivity({
-              grade: gradeName || user?.grade || 'unknown',
-              subject: subjectName,
-              chapter: chapterName || undefined,
-              cardsReviewed: cardsReviewed,
-              cardsMastered: cardsMastered,
-              timeSpent: Math.round(timeSpent / 1000), // Convert to seconds
-            });
-          } catch (error) {
-            console.error('Failed to track flashcard activity:', error);
-            // Silently fail - activity tracking is not critical
-          }
-        };
-        
-        trackActivity();
-      }
     }
   };
 
@@ -473,6 +495,12 @@ export default function FlashcardsScreen() {
       
       // Set the current flashcards directly for immediate use
       setCurrentFlashcards(flashcards.map((c) => ({ ...c, isChecked: false })));
+      flashcardSessionTrackedRef.current = false;
+      sessionTrackMetaRef.current = {
+        subjectName: selectedSubjectData?.name?.trim() || '',
+        chapterName: selectedChapterData?.name,
+        gradeName: selectedGradeData?.name || selectedGrade || user?.grade || 'unknown',
+      };
       setSessionStartTime(Date.now()); // Start tracking session time
       
       // Update the state with the flashcards
@@ -546,6 +574,13 @@ export default function FlashcardsScreen() {
             return;
           }
           setCurrentFlashcards(flashcards.map((c) => ({ ...c, isChecked: false })));
+          flashcardSessionTrackedRef.current = false;
+          sessionTrackMetaRef.current = resolveDeepLinkSessionMeta(
+            flashcardsData,
+            gradeToUse,
+            deepLinkSubjectSlug,
+            deepLinkChapterName
+          );
           setSessionStartTime(Date.now());
           setShowFlashcards(true);
           setCurrentIndex(0);
@@ -723,6 +758,14 @@ export default function FlashcardsScreen() {
                   setShowFlashcards(true);
                   setCurrentIndex(0);
                   setIsRevealed(false);
+                  flashcardSessionTrackedRef.current = false;
+                  if (selectedSubjectData?.name?.trim()) {
+                    sessionTrackMetaRef.current = {
+                      subjectName: selectedSubjectData.name.trim(),
+                      chapterName: selectedChapterData?.name,
+                      gradeName: selectedGradeData?.name || selectedGrade || user?.grade || 'unknown',
+                    };
+                  }
                   setSessionStartTime(Date.now());
                   setCurrentFlashcards((prev) => prev.map((c) => ({ ...c, isChecked: false })));
                   revealAnimation.value = withSpring(0, { damping: 12, stiffness: 80, mass: 0.8 });
@@ -1097,14 +1140,21 @@ export default function FlashcardsScreen() {
             accessibilityLabel="Still learning"
             onPress={() => {
               const isLastCard = currentFlashcards.length > 0 && currentIndex === currentFlashcards.length - 1;
-              setCurrentFlashcards((prev) => {
-                const next = [...prev];
-                if (next[currentIndex]) next[currentIndex] = { ...next[currentIndex], isChecked: false };
-                return next;
-              });
-              if (currentFlashcards.length > 0 && currentIndex === currentFlashcards.length - 1) {
-                setFlashPendingFinish(true);
+              if (isLastCard) {
+                const nextCards = currentFlashcards.map((c, i) =>
+                  i === currentIndex ? { ...c, isChecked: false } : c
+                );
+                setCurrentFlashcards(nextCards);
+                void (async () => {
+                  await trackFlashcardSessionEnd(nextCards);
+                  setFlashPendingFinish(true);
+                })();
               } else {
+                setCurrentFlashcards((prev) => {
+                  const next = [...prev];
+                  if (next[currentIndex]) next[currentIndex] = { ...next[currentIndex], isChecked: false };
+                  return next;
+                });
                 handleNext();
               }
             }}
@@ -1123,15 +1173,21 @@ export default function FlashcardsScreen() {
             accessibilityLabel="Got it"
             onPress={() => {
               const isLastCard = currentFlashcards.length > 0 && currentIndex === currentFlashcards.length - 1;
-              setCurrentFlashcards((prev) => {
-                const next = [...prev];
-                if (next[currentIndex]) next[currentIndex] = { ...next[currentIndex], isChecked: true };
-                return next;
-              });
-
               if (isLastCard) {
-                setFlashPendingFinish(true);
+                const nextCards = currentFlashcards.map((c, i) =>
+                  i === currentIndex ? { ...c, isChecked: true } : c
+                );
+                setCurrentFlashcards(nextCards);
+                void (async () => {
+                  await trackFlashcardSessionEnd(nextCards);
+                  setFlashPendingFinish(true);
+                })();
               } else {
+                setCurrentFlashcards((prev) => {
+                  const next = [...prev];
+                  if (next[currentIndex]) next[currentIndex] = { ...next[currentIndex], isChecked: true };
+                  return next;
+                });
                 handleNext();
               }
             }}
