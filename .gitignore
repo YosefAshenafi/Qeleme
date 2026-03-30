@@ -55,4 +55,6 @@ bun.lockb
 
 app-example
 
-src/app/web/.next
+# Next.js
+.next/
+src/app/web/.next/
