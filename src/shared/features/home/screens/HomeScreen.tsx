@@ -612,7 +612,7 @@ export default function HomeScreen() {
                 </TouchableOpacity>
                 <TouchableOpacity
                   style={[styles.quickAccessCard, { backgroundColor: quickCardBg, borderColor: quickCardBorder }]}
-                  onPress={() => router.push('/(tabs)/flashcards')}
+                  onPress={() => router.push('/(tabs)/mcq')}
                   activeOpacity={0.88}
                 >
                   <View style={[styles.quickAccessIconCircle, { backgroundColor: isDarkMode ? '#1B3328' : '#E8F5E9' }]}>
