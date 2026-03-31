@@ -282,7 +282,7 @@ export const SignupScreenStyles = StyleSheet.create({
     top: 0,
     left: 0,
     padding: 12,
-    zIndex: 1,
+    zIndex: 10,
   },
   errorContainer: {
     backgroundColor: '#FEE2E2',
