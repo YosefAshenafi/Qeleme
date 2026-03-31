@@ -2257,16 +2257,6 @@ export default function MCQScreen() {
                           }}
                           activeOpacity={0.85}
                         >
-                          {(() => {
-                            const chapterLabel =
-                              (chapter as any)?.name ||
-                              (chapter as any)?.title ||
-                              (chapter as any)?.chapter ||
-                              '';
-                            const safeLabel = String(chapterLabel || '').trim();
-                            const isDuplicateNumber =
-                              /^\d+$/.test(safeLabel) && Number(safeLabel) === idx + 1;
-                            return (
                           <View
                             style={[
                               styles.booksChapterTile,
@@ -2276,30 +2266,10 @@ export default function MCQScreen() {
                               },
                             ]}
                           >
-                            <View
-                              style={[
-                                styles.booksChapterGridCellIndex,
-                                { backgroundColor: isDarkMode ? 'rgba(255,255,255,0.08)' : 'rgba(2,6,23,0.06)' },
-                              ]}
-                            >
-                              <ThemedText style={[styles.booksChapterGridCellIndexText, { color: BRAND_BLUE }]}>
-                                {idx + 1}
-                              </ThemedText>
-                            </View>
-                            {!!safeLabel && !isDuplicateNumber && (
-                              <ThemedText
-                                numberOfLines={2}
-                                style={[
-                                  styles.booksChapterTileLabel,
-                                  { color: isDarkMode ? 'rgba(243,244,246,0.90)' : 'rgba(15,23,42,0.85)' },
-                                ]}
-                              >
-                                {safeLabel}
-                              </ThemedText>
-                            )}
+                            <ThemedText style={[styles.booksChapterGridCellIndexText, { color: BRAND_BLUE }]}>
+                              {idx + 1}
+                            </ThemedText>
                           </View>
-                            );
-                          })()}
                         </TouchableOpacity>
                       ))
                     )}
