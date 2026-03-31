@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { TouchableOpacity, ScrollView, View, Text, ActivityIndicator, Image } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -117,7 +117,6 @@ export default function PictureMCQScreen({ onBackToInstructions }: PictureMCQScr
   const [showExplanation, setShowExplanation] = useState(false);
   const [score, setScore] = useState(0);
   const [isAuthorized, setIsAuthorized] = useState(false);
-  const [dropZones, setDropZones] = useState<{ [key: string]: { x: number; y: number; width: number; height: number } }>({});
   const [hoveredOption, setHoveredOption] = useState<string | null>(null);
   const [droppedOption, setDroppedOption] = useState<string | null>(null);
   const [showResult, setShowResult] = useState(false);
@@ -125,6 +124,22 @@ export default function PictureMCQScreen({ onBackToInstructions }: PictureMCQScr
   const [showCorrectVideo, setShowCorrectVideo] = useState(false);
   const [showIncorrectVideo, setShowIncorrectVideo] = useState(false);
   const [sessionStartTime, setSessionStartTime] = useState<number | null>(null);
+  const [dropZones, setDropZones] = useState<{ [key: string]: { x: number; y: number; width: number; height: number } }>({});
+
+  const dropZonesRef = useRef(dropZones);
+  dropZonesRef.current = dropZones;
+
+  const updateDropZone = useCallback((optionId: string, zone: { x: number; y: number; width: number; height: number }) => {
+    setDropZones(prev => {
+      const updated = { ...prev, [optionId]: zone };
+      dropZonesRef.current = updated;
+      return updated;
+    });
+  }, []);
+
+  useEffect(() => {
+    setDropZones({});
+  }, [currentQuestionIndex]);
 
   const imagePosition = useSharedValue({ x: 0, y: 0 });
   const imageScale = useSharedValue(1);
@@ -189,7 +204,15 @@ export default function PictureMCQScreen({ onBackToInstructions }: PictureMCQScr
       const imageCenterY = event.absoluteY;
       let closestOption: string | null = null;
       let minDistance = Infinity;
-      Object.entries(dropZones).forEach(([optionId, zone]) => {
+      const zones = dropZonesRef.current;
+      console.log('onUpdate zones:', zones);
+      const zoneKeys = Object.keys(zones);
+      if (zoneKeys.length === 0) {
+        console.log('No drop zones available yet');
+        return;
+      }
+      zoneKeys.forEach((optionId) => {
+        const zone = zones[optionId];
         const zoneCenterX = zone.x + zone.width / 2;
         const zoneCenterY = zone.y + zone.height / 2;
         const distance = Math.sqrt(Math.pow(imageCenterX - zoneCenterX, 2) + Math.pow(imageCenterY - zoneCenterY, 2));
@@ -209,6 +232,7 @@ export default function PictureMCQScreen({ onBackToInstructions }: PictureMCQScr
       imagePosition.value = withSpring({ x: 0, y: 0 });
       runOnJS(updateHoveredOption)(null);
       const currentHoveredOption = hoveredOptionShared.value;
+      console.log('onEnd currentHoveredOption:', currentHoveredOption);
       if (currentHoveredOption) {
         runOnJS(handleAnswerSelection)(currentHoveredOption);
       }
@@ -224,6 +248,10 @@ export default function PictureMCQScreen({ onBackToInstructions }: PictureMCQScr
     checkAuth();
     setSessionStartTime(Date.now());
   }, [user]);
+
+  useEffect(() => {
+    setDropZones({});
+  }, [currentQuestionIndex]);
 
   const handleNextQuestion = useCallback(() => {
     if (!currentQuestion) return;
@@ -482,10 +510,7 @@ export default function PictureMCQScreen({ onBackToInstructions }: PictureMCQScr
                         onLayout={(event) => {
                           const { x, y, width, height } = event.nativeEvent.layout;
                           event.target.measureInWindow((pageX, pageY, measuredWidth, measuredHeight) => {
-                            setDropZones(prev => ({
-                              ...prev,
-                              [option.id]: { x: pageX, y: pageY, width: measuredWidth || width, height: measuredHeight || height }
-                            }));
+                            updateDropZone(option.id, { x: pageX, y: pageY, width: measuredWidth || width, height: measuredHeight || height });
                           });
                         }}
                       >
