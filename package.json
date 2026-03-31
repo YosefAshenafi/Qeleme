@@ -1,5 +1,6 @@
 {
   "name": "megatest",
+  "main": "expo-router/entry",
   "private": true,
   "workspaces": [
     "src/shared",
