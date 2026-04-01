@@ -717,7 +717,14 @@ export default function HomeScreen() {
                             coverGradient={coverData.coverGradient}
                             icon={coverData.icon as any}
                             imageUrl=""
-                            onPress={() => handleNationalExamYearPress()}
+                            onPress={() => router.push({
+                              pathname: '/(tabs)/mcq',
+                              params: {
+                                preSelectedExamType: 'national',
+                                preSelectedYear: year.toString(),
+                                booksCategory: 'national'
+                              }
+                            })}
                             questionCount={Math.floor(Math.random() * 100) + 50}
                           />
                         );

@@ -12,17 +12,7 @@
     "splash": {
       "image": "./assets/images/logo.png",
       "resizeMode": "contain",
-      "backgroundColor": "#2563EB"
-    },
-    "sdkVersion": "54.0.0",
-    "extra": {
-      "apiUrl": "https://api.megatest.app",
-      "router": {
-        "origin": false
-      },
-      "eas": {
-        "projectId": "7fb4acbe-6a5a-4e12-aaed-d221156f0fdc"
-      }
+      "backgroundColor": "#00000000"
     },
     "ios": {
       "supportsTablet": true,
@@ -41,18 +31,28 @@
       "splash": {
         "image": "./assets/images/logo.png",
         "resizeMode": "contain",
-        "backgroundColor": "#2563EB"
+        "backgroundColor": "#00000000"
+      }
+    },
+    "sdkVersion": "54.0.0",
+    "extra": {
+      "apiUrl": "https://api.megatest.app",
+      "router": {
+        "origin": false
+      },
+      "eas": {
+        "projectId": "7fb4acbe-6a5a-4e12-aaed-d221156f0fdc"
       }
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/logo.png",
-        "backgroundColor": "#2563EB"
+        "backgroundColor": "#00000000"
       },
       "splash": {
         "image": "./assets/images/logo.png",
         "resizeMode": "contain",
-        "backgroundColor": "#2563EB"
+        "backgroundColor": "#00000000"
       },
       "package": "com.megatest.edu",
       "versionCode": 15,
@@ -76,7 +76,7 @@
           "image": "./assets/images/logo.png",
           "imageWidth": 150,
           "resizeMode": "contain",
-          "backgroundColor": "#2563EB"
+          "backgroundColor": "#00000000"
         }
       ],
       "expo-secure-store",

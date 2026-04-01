@@ -433,7 +433,7 @@ export default function MCQScreen() {
   useEffect(() => {
     if (selectedExamType !== 'mcq') return;
     if (!selectedSubject) return;
-    if (!filteredBooksSubjects.some((s) => s.id === selectedSubject)) return;
+    if (!displaySubjects.some((s) => s.id === selectedSubject)) return;
 
     const scrollToSelected = () => {
       const scrollNode = booksListScrollRef.current;
@@ -445,14 +445,15 @@ export default function MCQScreen() {
 
     const tmr = setTimeout(scrollToSelected, 250);
     return () => clearTimeout(tmr);
-  }, [selectedExamType, selectedSubject, filteredBooksSubjects]);
+  }, [selectedExamType, selectedSubject, displaySubjects]);
 
   // Handle pre-selected national exam from URL parameters
   useEffect(() => {
     if (params.preSelectedExamType === 'national' && params.preSelectedYear && mcqData) {
       console.log('🎯 Pre-selected national exam detected:', {
         examType: params.preSelectedExamType,
-        year: params.preSelectedYear
+        year: params.preSelectedYear,
+        booksCategory: params.booksCategory
       });
       
       // Reset any active MCQ session when navigating from home page
@@ -472,21 +473,28 @@ export default function MCQScreen() {
       setSelectedChapter('');
       setSelectedChapterName('');
       
-      // Set the exam type to 'national' and pre-select year
-      setSelectedExamType('national');
-      setSelectedYear(params.preSelectedYear as string);
+      // If booksCategory is 'national', stay in 'mcq' (hub) view but select the 'national' category
+      if (params.booksCategory === 'national') {
+        setSelectedExamType('mcq');
+        setBooksCategory('national');
+        setSelectedSubject(`national-${params.preSelectedYear}`);
+      } else {
+        // Default to the dedicated form view
+        setSelectedExamType('national');
+        setSelectedYear(params.preSelectedYear as string);
+      }
+      
       setIsPreSelected(true); // Mark as pre-selected
       
       // Fetch available subjects and years for national exams
       fetchNationalExamAvailable();
       
       console.log('✅ Pre-selected national exam set:', {
-        examType: 'national',
+        examType: params.booksCategory === 'national' ? 'hub-national' : 'form-national',
         year: params.preSelectedYear
       });
-      console.log('✅ Active MCQ session reset');
     }
-  }, [params.preSelectedExamType, params.preSelectedYear, mcqData]);
+  }, [params.preSelectedExamType, params.preSelectedYear, params.booksCategory, mcqData]);
 
   // Clear pre-selected flag when user manually changes subject or year
   useEffect(() => {
