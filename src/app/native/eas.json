@@ -6,26 +6,39 @@
   "build": {
     "development": {
       "developmentClient": true,
-      "distribution": "internal"
+      "distribution": "internal",
+      "ios": {
+        "buildConfiguration": "Debug"
+      }
     },
     "preview": {
-      "distribution": "internal"
+      "distribution": "internal",
+      "ios": {
+        "simulator": true
+      }
+    },
+    "testflight": {
+      "distribution": "store",
+      "ios": {
+        "buildConfiguration": "Release"
+      },
+      "env": {
+        "NPM_CONFIG_LEGACY_PEER_DEPS": "true",
+        "EXPO_NO_TYPESCRIPT_CHECK": "1",
+        "SKIP_TYPESCRIPT_CHECK": "1"
+      }
     },
     "production": {
       "releaseChannel": "production",
       "distribution": "store",
       "autoIncrement": true,
-      "node": "22.11.0",
+      "ios": {
+        "buildConfiguration": "Release"
+      },
       "env": {
         "NPM_CONFIG_LEGACY_PEER_DEPS": "true",
         "EXPO_NO_TYPESCRIPT_CHECK": "1",
         "SKIP_TYPESCRIPT_CHECK": "1"
-      },
-      "ios": {
-        "cache": {
-          "paths": ["node_modules"]
-        },
-        "buildConfiguration": "Release"
       }
     }
   },
@@ -33,6 +46,12 @@
     "production": {
       "ios": {
         "bundleIdentifier": "com.megatest.edu"
+      }
+    },
+    "testflight": {
+      "ios": {
+        "bundleIdentifier": "com.megatest.edu",
+        "ascAppId": "6761431135"
       }
     }
   }
