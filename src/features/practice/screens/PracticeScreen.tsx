@@ -19,8 +19,8 @@ import { IconSymbol } from '@/components/ui/IconSymbol';
 import RichText from '@/components/ui/RichText';
 import { getBookCover } from '@/services/bookCoverService';
 import {
-  getMCQData,
-  type MCQData,
+  getPracticeData,
+  type PracticeData,
   type Grade,
   type Subject,
   type Chapter,
@@ -30,15 +30,15 @@ import {
   getNationalExamQuestions,
   getNationalExamAvailable,
   type NationalExamAPIResponse,
-  getRegularMCQQuestions,
-} from '@/services/mcqService';
+  getRegularPracticeQuestions,
+} from '@/services/practiceService';
 import { getFlashcardStructure, getFlashcardsForChapter, type Flashcard } from '@/services/flashcardService';
 import { getAuthToken } from '@/features/auth/utils/authStorage';
 import { BASE_URL } from '@/config/constants';
 // Flashcards now open in the Flashcards tab screen (not a full-screen modal)
 import ActivityTrackingService from '@/services/activityTrackingService';
 import Svg, { Circle } from 'react-native-svg';
-import { MCQScreenStyles as styles } from './MCQScreen.styles';
+import { PracticeScreenStyles as styles } from './PracticeScreen.styles';
 
 const BRAND_BLUE = '#0F4BD7';
 const BOOK_CTA_ON = '#FFFFFF';
@@ -53,7 +53,7 @@ const BOOK_CARD_IMAGE_HEIGHT = Math.min(
 type BooksCategoryFilter = 'all' | 'science' | 'languages' | 'mathematics' | 'humanities';
 
 /** Subjects hub → chapter step: which experience to open after a chapter is chosen. */
-type BooksChapterIntent = 'mcq' | 'flashcards' | 'either' | null;
+type BooksChapterIntent = 'practice' | 'flashcards' | 'either' | null;
 
 function getSubjectBooksCategory(name: string): BooksCategoryFilter | 'other' {
   const n = name.toLowerCase();
@@ -73,7 +73,7 @@ interface RecentActivity {
   details: string;
 }
 
-export default function MCQScreen() {
+export default function PracticeScreen() {
   const { isDarkMode } = useTheme();
   const { user } = useAuth();
   const colors = getColors(isDarkMode);
@@ -83,10 +83,10 @@ export default function MCQScreen() {
   const navigation = useNavigation();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [mcqData, setMcqData] = useState<MCQData | null>(null);
+  const [practiceData, setPracticeData] = useState<PracticeData | null>(null);
   const [selectedGrade, setSelectedGrade] = useState<Grade | null>(null);
-  /** Default `mcq` so the Subjects tab opens the hub immediately (no exam-type gate). */
-  const [selectedExamType, setSelectedExamType] = useState<string | null>('mcq');
+  /** Default `practice` so the Subjects tab opens the hub immediately (no exam-type gate). */
+  const [selectedExamType, setSelectedExamType] = useState<string | null>('practice');
   const [selectedSubject, setSelectedSubject] = useState('');
   const [selectedChapter, setSelectedChapter] = useState('');
   const [selectedChapterName, setSelectedChapterName] = useState('');
@@ -122,7 +122,7 @@ export default function MCQScreen() {
   const [subjectLoading, setSubjectLoading] = useState(false);
 
   const booksChapterModeLabel =
-    booksChapterIntent === 'mcq'
+    booksChapterIntent === 'practice'
       ? 'Multiple Questions'
       : booksChapterIntent === 'flashcards'
         ? 'Flashcards'
@@ -148,10 +148,10 @@ export default function MCQScreen() {
   }))).current;
 
   // Derived state based on selections
-  const selectedGradeData = mcqData?.grades.find((grade: Grade) => grade.id === selectedGrade?.id);
+  const selectedGradeData = practiceData?.grades.find((grade: Grade) => grade.id === selectedGrade?.id);
   const selectedSubjectData = selectedGradeData?.subjects.find((subject: Subject) => subject.id === selectedSubject);
   const selectedChapterData = selectedSubjectData?.chapters.find((chapter: Chapter) => chapter.id === selectedChapter);
-  const mcqSubjectsSorted = useMemo(() => {
+  const practiceSubjectsSorted = useMemo(() => {
     if (!selectedGradeData?.subjects) return [];
     return [...selectedGradeData.subjects].sort((a, b) => {
       const getSubjectNumber = (name: string) => {
@@ -163,7 +163,7 @@ export default function MCQScreen() {
   }, [selectedGradeData]);
 
   const filteredBooksSubjects = useMemo(() => {
-    let list = mcqSubjectsSorted;
+    let list = practiceSubjectsSorted;
     const q = booksSearchQuery.trim().toLowerCase();
     if (q) list = list.filter((s) => s.name.toLowerCase().includes(q));
     
@@ -173,7 +173,7 @@ export default function MCQScreen() {
     }
     
     return list;
-  }, [mcqSubjectsSorted, booksSearchQuery, booksCategory]);
+  }, [practiceSubjectsSorted, booksSearchQuery, booksCategory]);
 
   // Separate national exam years
   const nationalExamYears = useMemo(() => {
@@ -314,7 +314,7 @@ export default function MCQScreen() {
   };
 
   // Fetch MCQ data from API
-  const fetchMCQData = async () => {
+  const fetchPracticeData = async () => {
     setLoading(true);
     setError(null);
     
@@ -333,7 +333,7 @@ export default function MCQScreen() {
     console.log('🔧 Final Grade to Fetch:', gradeToFetch);
     
 
-    getMCQData(gradeToFetch).then(data => {
+    getPracticeData(gradeToFetch).then(data => {
       console.log('DATA:', data);
 
       // Set the grade if not already set
@@ -341,7 +341,7 @@ export default function MCQScreen() {
         setSelectedGrade(data.grades[0]);
       }
       
-      setMcqData(data);
+      setPracticeData(data);
 
       setSelectedExamType((prev) => {
         if (params.preSelectedExamType === 'national' && params.preSelectedYear) {
@@ -350,11 +350,11 @@ export default function MCQScreen() {
         if (prev === 'national') {
           return prev;
         }
-        return 'mcq';
+        return 'practice';
       });
     }).catch(error => {
       console.log('ERROR:', error);
-      setError(error instanceof Error ? error.message : 'Failed to load MCQ data');
+      setError(error instanceof Error ? error.message : 'Failed to load practice data');
     }).finally(() => {
       setLoading(false);
     });
@@ -362,19 +362,19 @@ export default function MCQScreen() {
 
   // Add useEffect to handle initial data loading and grade changes
   useEffect(() => {
-    fetchMCQData();
+    fetchPracticeData();
   }, []);
 
   // Add useEffect to handle exam type selection based on grade
   useEffect(() => {
     if (selectedGrade && !needsExamTypeSelection(selectedGrade)) {
-      setSelectedExamType('mcq');
+      setSelectedExamType('practice');
     }
   }, [selectedGrade]);
 
   // Handle pre-selected subject from URL parameters
   useEffect(() => {
-    if (params.preSelectedSubject && params.preSelectedSubjectId && mcqData) {
+    if (params.preSelectedSubject && params.preSelectedSubjectId && practiceData) {
       console.log('🎯 Pre-selected subject detected:', {
         subject: params.preSelectedSubject,
         subjectId: params.preSelectedSubjectId
@@ -398,7 +398,7 @@ export default function MCQScreen() {
       setSelectedYear(null);
       
       // Set the exam type to 'mcq' for regular MCQ
-      setSelectedExamType('mcq');
+      setSelectedExamType('practice');
       
       // Find and set the pre-selected subject
       const subjectId = params.preSelectedSubjectId as string;
@@ -408,7 +408,7 @@ export default function MCQScreen() {
       console.log('✅ Pre-selected subject set:', subjectId);
       console.log('✅ Active MCQ session reset');
     }
-  }, [params.preSelectedSubject, params.preSelectedSubjectId, mcqData]);
+  }, [params.preSelectedSubject, params.preSelectedSubjectId, practiceData]);
 
   // Auto-scroll to national exam subjects when they become available
   useEffect(() => {
@@ -431,7 +431,7 @@ export default function MCQScreen() {
 
   // Auto-scroll Subjects hub list to the pre-selected subject card
   useEffect(() => {
-    if (selectedExamType !== 'mcq') return;
+    if (selectedExamType !== 'practice') return;
     if (!selectedSubject) return;
     if (!displaySubjects.some((s) => s.id === selectedSubject)) return;
 
@@ -449,7 +449,7 @@ export default function MCQScreen() {
 
   // Handle pre-selected national exam from URL parameters
   useEffect(() => {
-    if (params.preSelectedExamType === 'national' && params.preSelectedYear && mcqData) {
+    if (params.preSelectedExamType === 'national' && params.preSelectedYear && practiceData) {
       console.log('🎯 Pre-selected national exam detected:', {
         examType: params.preSelectedExamType,
         year: params.preSelectedYear,
@@ -475,7 +475,7 @@ export default function MCQScreen() {
       
       // If booksCategory is 'national', stay in 'mcq' (hub) view but select the 'national' category
       if (params.booksCategory === 'national') {
-        setSelectedExamType('mcq');
+        setSelectedExamType('practice');
         setBooksCategory('national');
         setSelectedSubject(`national-${params.preSelectedYear}`);
       } else {
@@ -494,7 +494,7 @@ export default function MCQScreen() {
         year: params.preSelectedYear
       });
     }
-  }, [params.preSelectedExamType, params.preSelectedYear, params.booksCategory, mcqData]);
+  }, [params.preSelectedExamType, params.preSelectedYear, params.booksCategory, practiceData]);
 
   // Clear pre-selected flag when user manually changes subject or year
   useEffect(() => {
@@ -662,7 +662,7 @@ export default function MCQScreen() {
   useFocusEffect(
     React.useCallback(() => {
       // Fetch data and reset states when tab is focused
-      fetchMCQData();
+      fetchPracticeData();
       
       return () => {
         if (timerRef.current) {
@@ -706,7 +706,7 @@ export default function MCQScreen() {
             setCurrentQuestionIndex(0);
             setAnsweredQuestions({});
             setSelectedAnswer(null);
-            setSelectedExamType('mcq');
+            setSelectedExamType('practice');
           }} 
           style={{ padding: 8 }}
         >
@@ -737,7 +737,7 @@ export default function MCQScreen() {
     // Handle reset parameters
     if (params.reset === 'true') {
       setSelectedGrade(null);
-      setSelectedExamType('mcq');
+      setSelectedExamType('practice');
       setSelectedSubject('');
       setSelectedChapter('');
       setSelectedChapterName('');
@@ -960,7 +960,7 @@ export default function MCQScreen() {
         }
         
         // Show the chapter chooser modal with the new selection
-        setBooksChapterIntent('mcq');
+        setBooksChapterIntent('practice');
         setBooksChapterModalStep('grid');
         setShowChapterChooser(true);
       }
@@ -1001,7 +1001,7 @@ export default function MCQScreen() {
           }
           
           const gradeNumber = getGradeNumber(user?.grade);
-          const questions = await getRegularMCQQuestions(
+          const questions = await getRegularPracticeQuestions(
             gradeNumber,
             selectedSubject,
             selectedChapter
@@ -1047,50 +1047,29 @@ export default function MCQScreen() {
   };
 
   const handleStartTest = async () => {
-    console.log('=== START QUIZ DEBUG ===');
-    console.log('Selected Grade:', selectedGrade);
-    console.log('Selected Subject:', selectedSubject);
-    console.log('Selected Chapter:', selectedChapter);
-    console.log('Selected Exam Type:', selectedExamType);
-    console.log('Selected Year:', selectedYear);
-    console.log('User Grade:', user?.grade);
-    
     if (!selectedGrade || !selectedSubject) {
-      console.log('❌ Missing grade or subject selection');
       return;
     }
 
     if (selectedExamType === 'national') {
-      console.log('🔄 Starting National Exam...');
       if (!selectedYear) {
-        console.log('❌ Missing year selection for national exam');
         return;
       }
 
       try {
-        // Use the user's grade number directly since we've already validated it
         const gradeNumber = getGradeNumber(user?.grade);
-        console.log('📊 National Exam Parameters:', {
-          gradeNumber,
-          year: selectedYear,
-          subject: selectedSubject
-        });
-        
+
         const questions = await getNationalExamQuestions(
           gradeNumber,
           parseInt(selectedYear),
           selectedSubject
         );
 
-        console.log('✅ National Exam Questions Received:', questions?.length || 0);
-
-        // Filter out questions containing unwanted text
         const filteredQuestions = questions?.filter(q => 
           !q.question?.toLowerCase().includes('valuing our elders')
         ) || [];
 
         if (!filteredQuestions || filteredQuestions.length === 0) {
-          console.log('❌ No national exam questions found');
           setError('No questions found for this exam. Please try another year or subject.');
           return;
         }
@@ -1109,52 +1088,28 @@ export default function MCQScreen() {
         setAnsweredQuestions({});
         setTime(0);
         startTimer();
-        console.log('✅ National Exam Started Successfully');
       } catch (error) {
         setError('Failed to load national exam questions. Please try again.');
       }
     } else {
-      console.log('🔄 Starting Regular MCQ...');
-      // Regular MCQ logic
       if (!selectedChapter) {
-        console.log('❌ Missing chapter selection for regular MCQ');
         return;
       }
 
       try {
-        // Use the user's grade number directly
         const gradeNumber = getGradeNumber(user?.grade);
-        
-        // Get the subject ID from the selected subject
         const subjectId = selectedSubject;
-        
-        // Get the chapter ID from the selected chapter
         const chapterId = selectedChapter;
-        
-        console.log('📊 Regular MCQ Parameters:', {
-          gradeNumber,
-          subjectId,
-          chapterId
-        });
-        
-        const questions = await getRegularMCQQuestions(
-          gradeNumber,
-          subjectId,
-          chapterId
-        );
 
-        console.log('✅ Regular MCQ Questions Received:', questions?.length || 0);
+        const questions = await getRegularPracticeQuestions(gradeNumber, subjectId, chapterId);
 
         if (!questions || questions.length === 0) {
-          console.log('❌ No regular MCQ questions found');
           setError('No questions found for this chapter. Please try another chapter or contact support.');
           return;
         }
 
-        // Store the questions in state for regular MCQ
-        setNationalExamQuestions(questions); // Reuse this state for regular MCQ questions
+        setNationalExamQuestions(questions);
 
-        // Start the test
         setShowTest(true);
         setCurrentQuestionIndex(0);
         setSelectedAnswer(null);
@@ -1165,13 +1120,10 @@ export default function MCQScreen() {
         setAnsweredQuestions({});
         setTime(0);
         startTimer();
-        console.log('✅ Regular MCQ Started Successfully');
       } catch (error) {
-        console.error('❌ Regular MCQ Error:', error);
-        setError('Failed to load MCQ questions. Please try again.');
+        setError('Failed to load practice questions. Please try again.');
       }
     }
-    console.log('=== END START QUIZ DEBUG ===');
   };
 
   const dismissBooksChapterModal = () => {
@@ -1182,7 +1134,7 @@ export default function MCQScreen() {
     setSelectedSubject('');
     setSelectedChapter('');
     setSelectedChapterName('');
-    setSelectedExamType('mcq');
+    setSelectedExamType('practice');
     setShowSubjectDropdown(false);
     setShowChapterDropdown(false);
     setShowYearDropdown(false);
@@ -1190,7 +1142,7 @@ export default function MCQScreen() {
 
   const applyBooksChapterAndStartMcq = async (chapter: Chapter, subjectId: string) => {
     if (!subjectId.trim()) return;
-    if (!mcqData?.grades?.length) {
+    if (!practiceData?.grades?.length) {
       setError('Curriculum is still loading. Please try again.');
       return;
     }
@@ -1198,8 +1150,8 @@ export default function MCQScreen() {
     const userGradeId = `grade-${normalizeGrade(user?.grade)}`;
     const grade =
       selectedGrade ||
-      mcqData.grades.find((g) => g.id === userGradeId) ||
-      mcqData.grades[0];
+      practiceData.grades.find((g) => g.id === userGradeId) ||
+      practiceData.grades[0];
 
     if (!grade) {
       setError('No grade data available.');
@@ -1213,7 +1165,7 @@ export default function MCQScreen() {
     setSelectedSubject(subjectId);
     setSelectedChapter(chapter.id);
     setSelectedChapterName(chapter.name);
-    setSelectedExamType('mcq');
+    setSelectedExamType('practice');
     setShowChapterChooser(false);
     setBooksChapterIntent(null);
     setBooksChapterModalStep('grid');
@@ -1221,7 +1173,7 @@ export default function MCQScreen() {
 
     try {
       const gradeNumber = getGradeNumber(user?.grade);
-      const questions = await getRegularMCQQuestions(gradeNumber, subjectId, chapter.id);
+      const questions = await getRegularPracticeQuestions(gradeNumber, subjectId, chapter.id);
 
       if (!questions || questions.length === 0) {
         setError('No questions found for this chapter. Please try another chapter or contact support.');
@@ -1240,8 +1192,8 @@ export default function MCQScreen() {
       setTime(0);
       startTimer();
     } catch (e) {
-      console.error('Subjects hub MCQ start:', e);
-      setError('Failed to load MCQ questions. Please try again.');
+      console.error('Subjects hub practice start:', e);
+      setError('Failed to load practice questions. Please try again.');
     } finally {
       setBooksHubActionLoading(false);
     }
@@ -1377,7 +1329,7 @@ export default function MCQScreen() {
             </ThemedText>
             <TouchableOpacity 
               style={[styles.retryButton, { backgroundColor: colors.tint, marginTop: 20 }]}
-              onPress={fetchMCQData}
+              onPress={fetchPracticeData}
             >
               <ThemedText style={[styles.retryButtonText, { color: '#FFFFFF' }]}>
                 {t('common.tryAgain')}
@@ -1390,7 +1342,7 @@ export default function MCQScreen() {
   }
   
   // Debug state for empty subjects
-  if (mcqData && mcqData.grades.length > 0 && (!selectedGradeData?.subjects || (selectedGradeData?.subjects?.length || 0) === 0)) {
+  if (practiceData && practiceData.grades.length > 0 && (!selectedGradeData?.subjects || (selectedGradeData?.subjects?.length || 0) === 0)) {
     return (
       <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]}>
         <ScrollView style={{ flex: 1, padding: 20 }}>
@@ -1423,7 +1375,7 @@ export default function MCQScreen() {
           <View style={{ marginTop: 20 }}>
             <TouchableOpacity 
               style={[styles.button, { backgroundColor: colors.tint, marginBottom: 15 }]}
-              onPress={fetchMCQData}
+              onPress={fetchPracticeData}
             >
               <Ionicons name="refresh" size={20} color="#FFFFFF" />
               <ThemedText style={{ color: '#FFFFFF', fontWeight: 'bold', marginLeft: 10 }}>
@@ -1487,10 +1439,10 @@ export default function MCQScreen() {
       if (selectedExamType === 'national') {
         setSelectedExamType('national');
       } else {
-        setSelectedExamType('mcq');
+        setSelectedExamType('practice');
       }
 
-      fetchMCQData();
+      fetchPracticeData();
     };
 
     return (
@@ -1626,10 +1578,10 @@ export default function MCQScreen() {
         style={[
           styles.safeArea,
           {
-            backgroundColor: selectedExamType === 'mcq' ? booksCanvasBg : colors.background,
+            backgroundColor: selectedExamType === 'practice' ? booksCanvasBg : colors.background,
           },
         ]}
-        edges={selectedExamType === 'mcq' ? ['bottom', 'left', 'right'] : undefined}
+        edges={selectedExamType === 'practice' ? ['bottom', 'left', 'right'] : undefined}
       >
         {/* National exam browse: local header; Subjects hub uses tab MegaTest only */}
         {selectedExamType === 'national' && (
@@ -1637,7 +1589,7 @@ export default function MCQScreen() {
               <TouchableOpacity
                 style={styles.backButton}
                 onPress={() => {
-                  setSelectedExamType('mcq');
+                  setSelectedExamType('practice');
                   setSelectedSubject('');
                   setSelectedChapter('');
                   setSelectedChapterName('');
@@ -1654,23 +1606,23 @@ export default function MCQScreen() {
         <ThemedView
           style={[
             styles.container,
-            selectedExamType === 'mcq' && styles.containerBooks,
-            { backgroundColor: selectedExamType === 'mcq' ? booksCanvasBg : colors.background },
+            selectedExamType === 'practice' && styles.containerBooks,
+            { backgroundColor: selectedExamType === 'practice' ? booksCanvasBg : colors.background },
           ]}
         >
           <ThemedView
             style={[
-              selectedExamType === 'mcq' ? styles.formContainerBooks : styles.formContainer,
+              selectedExamType === 'practice' ? styles.formContainerBooks : styles.formContainer,
               {
-                backgroundColor: selectedExamType === 'mcq' ? booksCanvasBg : colors.background,
+                backgroundColor: selectedExamType === 'practice' ? booksCanvasBg : colors.background,
               },
             ]}
           >
             <ThemedView
               style={[
                 styles.formContent,
-                selectedExamType === 'mcq' && { flex: 1 },
-                { backgroundColor: selectedExamType === 'mcq' ? booksCanvasBg : colors.background },
+                selectedExamType === 'practice' && { flex: 1 },
+                { backgroundColor: selectedExamType === 'practice' ? booksCanvasBg : colors.background },
               ]}
             >
               {/* Subject and Chapter Selection - Only show after exam type is selected */}
@@ -1817,7 +1769,7 @@ export default function MCQScreen() {
                   )}
 
                   {/* Subjects hub (chapter MCQ): fixed search row + scrollable filters and cards */}
-                  {selectedExamType === 'mcq' && (
+                  {selectedExamType === 'practice' && (
                     <>
                       {loading ? (
                         <View style={styles.booksHubScroll}>
@@ -2048,7 +2000,7 @@ export default function MCQScreen() {
                                         setSelectedChapter('');
                                         setSelectedChapterName('');
                                         setIsPreSelected(false);
-                                        setBooksChapterIntent('mcq');
+                                        setBooksChapterIntent('practice');
                                         setBooksChapterModalStep('grid');
                                         setShowChapterChooser(true);
                                       }
@@ -2112,7 +2064,7 @@ export default function MCQScreen() {
           visible={
             showChapterChooser &&
             !!selectedSubjectData &&
-            selectedExamType === 'mcq'
+            selectedExamType === 'practice'
           }
           transparent
           animationType="fade"
@@ -2436,7 +2388,7 @@ export default function MCQScreen() {
         style={[
           styles.container,
           { backgroundColor: colors.background },
-          !showResult ? styles.mcqQuestionContainer : null,
+          !showResult ? styles.practiceQuestionContainer : null,
         ]}
       >
         <ThemedView
@@ -2726,10 +2678,10 @@ export default function MCQScreen() {
                     if (selectedExamType === 'national') {
                       setSelectedExamType('national');
                     } else {
-                      setSelectedExamType('mcq');
+                      setSelectedExamType('practice');
                     }
 
-                    fetchMCQData();
+                    fetchPracticeData();
                   }}
                 >
                   <ThemedText style={[styles.homeButtonText, { color: colors.text }]}>

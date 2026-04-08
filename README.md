@@ -7,7 +7,7 @@ MegaTest does **not** include AI-generated tutoring, chatbots, or similar featur
 ## What the app does
 
 - **Authentication** — login, student registration, OTP verification, password reset, plan selection, onboarding  
-- **MCQs** — curriculum questions by grade, subject, and chapter; national exam sets for supported grades  
+- **School practice** — curriculum questions by grade, subject, and chapter; national exam sets for supported grades  
 - **Flashcards** — grade- and chapter-scoped decks  
 - **Profile & reports** — student profile, stats, account settings  
 - **Payments** — plan selection and checkout (return URL uses the `megatest://` app scheme)  
@@ -36,9 +36,9 @@ MegaTest does **not** include AI-generated tutoring, chatbots, or similar featur
 
 | Area | Typical location |
 |------|------------------|
-| **Feature screens** | `src/features/<domain>/screens/` (e.g. `auth`, `home`, `mcq`, `flashcards`, `profile`, `reports`, `kg`, `root`) |
+| **Feature screens** | `src/features/<domain>/screens/` (e.g. `auth`, `home`, `practice`, `flashcards`, `profile`, `reports`, `kg`, `root`) |
 | **Cross-feature UI** | `src/components/` |
-| **HTTP / API** | `src/services/` (e.g. `mcqService`, `flashcardService`, `kgService`), plus `src/features/auth/services/` for account and payment helpers |
+| **HTTP / API** | `src/services/` (e.g. `practiceService`, `flashcardService`, `kgService`), plus `src/features/auth/services/` for account and payment helpers |
 | **App shell** | `src/core/providers/` (`AppProviders`, `AuthProvider`, `ThemeProvider`, `LanguageProvider`), `src/core/theme/`, `src/core/i18n/` |
 | **Config** | `src/config/constants.ts` (e.g. `BASE_URL`, payment-related hosts) |
 
@@ -51,7 +51,7 @@ MegaTest does **not** include AI-generated tutoring, chatbots, or similar featur
 
 - **`app/index.tsx`** → `IndexScreen`: redirects by auth and grade (e.g. kindergarten → KG stack, signed-in → tabs, else → welcome).  
 - **`(auth)`** — welcome, login, signup, forgot/reset password, OTP, plan selection, payment, onboarding, etc. (student accounts only).  
-- **`(tabs)`** — home, MCQ, flashcards, reports, profile; KG users are redirected to the KG flow.  
+- **`(tabs)`** — home, practice, flashcards, reports, profile; KG users are redirected to the KG flow.  
 - **`(kg)`** — kindergarten dashboard and related screens.
 
 ## API configuration
@@ -91,10 +91,10 @@ The mobile client calls REST endpoints under `{BASE_URL}/api/...`. Examples:
 
 ### Learning content
 
-- **MCQ tree** — `GET /api/mcq?gradeLevelId={gradeNumber}`  
+- **Practice tree (curriculum)** — `GET /api/mcq?gradeLevelId={gradeNumber}`  
 - **National exams (grouped)** — `GET /api/questions/grouped?gradeLevelId={id}&yearId={id}&subject={name}`  
 - **Available national exams** — `GET /api/national-exams/available/{gradeNumber}`  
-- **Chapter MCQs** — `GET /api/mcq/questions?gradeLevelId={id}&subjectId={id}&chapterId={id}`  
+- **Chapter questions** — `GET /api/mcq/questions?gradeLevelId={id}&subjectId={id}&chapterId={id}`  
 - **Flashcards** — `GET /api/flashcards?...` (see `src/services/flashcardService.ts`)
 
 Responses follow the shapes used in the app (grades → subjects → chapters → questions with options and explanations).

@@ -37,26 +37,11 @@ export interface Grade {
   isNationalExam?: boolean;
 }
 
-export type ExamType = 'national' | 'mcq';
+/** Curriculum practice (chapter questions) vs national exam mode. */
+export type ExamType = 'national' | 'practice';
 
-export interface MCQData {
+export interface PracticeData {
   grades: Grade[];
-}
-
-// Interface that matches the exact API response format
-interface MCQAPIResponse {
-  id: number;
-  question: string;
-  options: {
-    id: number;
-    text: string;
-    isCorrect: boolean;
-  }[];
-  explanation: string;
-  image_url?: string; // Added to support images in questions
-  subjectId: number;
-  chapterId: number;
-  gradeLevelId: number;
 }
 
 // Interface for National Exam API response
@@ -84,7 +69,7 @@ interface NationalExamAvailableResponse {
   success: boolean;
 }
 
-export const getMCQData = async (gradeId: string): Promise<MCQData> => {
+export const getPracticeData = async (gradeId: string): Promise<PracticeData> => {
   try {
     // Format the grade ID to match API expectations (e.g., "grade 6" -> "grade-6")
     const formattedGradeId = gradeId.toLowerCase().replace(/\s+/g, '-');
@@ -140,10 +125,10 @@ export const getMCQData = async (gradeId: string): Promise<MCQData> => {
 
     if (!response.ok) {
       if (response.status === 404) {
-        throw new Error(`No MCQ data found for grade ${formattedGradeId}.`);
+        throw new Error(`No practice content found for grade ${formattedGradeId}.`);
       }
       // Use the already-read rawData for error message
-      const errorMsg = rawData?.message || rawData?.error || `Failed to fetch MCQ data. Status: ${response.status}`;
+      const errorMsg = rawData?.message || rawData?.error || `Failed to fetch practice data. Status: ${response.status}`;
       throw new Error(errorMsg);
     }
 
@@ -153,13 +138,12 @@ export const getMCQData = async (gradeId: string): Promise<MCQData> => {
     }
 
     // The server returns an array with a single object containing the grades
-    const mcqData = rawData[0];
-    if (!mcqData.grades) {
+    const payload = rawData[0];
+    if (!payload.grades) {
       throw new Error('Server response missing grades data. Please try again later.');
     }
 
-    // The server response matches our MCQData format, so we can return it directly
-    return mcqData as MCQData;
+    return payload as PracticeData;
   } catch (error) {
     throw error;
   }
@@ -310,112 +294,65 @@ export const getNationalExamAvailable = async (gradeNumber: number): Promise<Nat
   }
 };
 
-// Function to fetch regular MCQ questions
-export const getRegularMCQQuestions = async (
+/** Chapter / curriculum practice questions (same API as before; name reflects app terminology). */
+export const getRegularPracticeQuestions = async (
   gradeLevelId: number,
   subjectId: string,
   chapterId: string
 ): Promise<NationalExamAPIResponse[]> => {
-  console.log('=== getRegularMCQQuestions DEBUG ===');
-  console.log('📊 Input Parameters:', { gradeLevelId, subjectId, chapterId });
-  
-  try {
-    const token = await getAuthToken();
-    console.log('🔑 Token Status:', token ? '✅ Token found' : '❌ No token found');
-    console.log('🔑 Token Preview:', token ? `${token.substring(0, 20)}...` : 'No token');
-    
-    if (!token) {
-      console.log('❌ Authentication failed - no token');
-      throw new Error('No authentication token found. Please login again.');
-    }
-
-    const url = `${BASE_URL}/questions/grouped?gradeLevelId=${gradeLevelId}&subjectId=${encodeURIComponent(subjectId)}&chapterId=${encodeURIComponent(chapterId)}`;
-    console.log('🌐 API URL:', url);
-    console.log('📤 Request Headers:', {
-      'Authorization': `Bearer ${token.substring(0, 20)}...`,
-      'Accept': 'application/json',
-      'Content-Type': 'application/json'
-    });
-
-    const response = await fetch(url, {
-      method: 'GET',
-      headers: {
-        'Authorization': `Bearer ${token}`,
-        'Accept': 'application/json',
-        'Content-Type': 'application/json',
-      },
-    });
-    
-    console.log('📥 Response Status:', response.status);
-    console.log('📥 Response OK:', response.ok);
-    console.log('📥 Response Headers:', Object.fromEntries(response.headers.entries()));
-    
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => null);
-      console.log('❌ API Error Response:', errorData);
-      throw new Error(errorData?.message || 'Failed to fetch MCQ questions');
-    }
-    
-    const data = await response.json();
-    console.log('📥 Raw API Response:', JSON.stringify(data, null, 2));
-    
-    // Handle the actual API response structure
-    if (!data.subjects || typeof data.subjects !== 'object') {
-      console.log('❌ No subjects object in response');
-      throw new Error('No questions found for this exam');
-    }
-
-    // Find the subject data
-    const subjectKey = Object.keys(data.subjects)[0];
-    if (!subjectKey) {
-      console.log('❌ No subject found in response');
-      throw new Error('No questions found for this exam');
-    }
-
-    const subjectData = data.subjects[subjectKey];
-    console.log('📊 Subject Data:', subjectData);
-    
-    if (!subjectData.questions || !Array.isArray(subjectData.questions)) {
-      console.log('❌ No questions array in subject data');
-      throw new Error('Invalid questions format in response');
-    }
-
-    console.log('📊 Questions Count:', subjectData.questions.length);
-
-    // Transform the questions to match the expected format
-    const transformedQuestions = subjectData.questions.map((q: any, index: number) => {
-      console.log(`📝 Question ${index + 1}:`, {
-        id: q.id,
-        question: q.question?.substring(0, 50) + '...',
-        optionsCount: q.options?.length || 0,
-        correctAnswer: q.correctAnswer
-      });
-      
-      // Transform options to include isCorrect property
-      const options = q.options.map((opt: string, optIndex: number) => ({
-        id: String.fromCharCode(65 + optIndex), // A, B, C, D...
-        text: opt,
-        isCorrect: q.correctAnswer === String.fromCharCode(65 + optIndex)
-      }));
-      
-      return {
-        id: q.id,
-        question: q.question,
-        options: options,
-        explanation: q.explanation || q.explanations || '',
-        image_url: q.image_url || undefined,
-        subjectId: subjectKey,
-        gradeLevelId: gradeLevelId,
-        chapterId: chapterId
-      };
-    });
-
-    console.log('✅ Transformed Questions Count:', transformedQuestions.length);
-    console.log('=== END getRegularMCQQuestions DEBUG ===');
-    return transformedQuestions;
-  } catch (error) {
-    console.error('❌ getRegularMCQQuestions Error:', error);
-    console.log('=== END getRegularMCQQuestions DEBUG (ERROR) ===');
-    throw error;
+  const token = await getAuthToken();
+  if (!token) {
+    throw new Error('No authentication token found. Please login again.');
   }
+
+  const url = `${BASE_URL}/questions/grouped?gradeLevelId=${gradeLevelId}&subjectId=${encodeURIComponent(subjectId)}&chapterId=${encodeURIComponent(chapterId)}`;
+  const response = await fetch(url, {
+    method: 'GET',
+    headers: {
+      Authorization: `Bearer ${token}`,
+      Accept: 'application/json',
+      'Content-Type': 'application/json',
+    },
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => null);
+    throw new Error(errorData?.message || 'Failed to fetch practice questions');
+  }
+
+  const data = await response.json();
+
+  if (!data.subjects || typeof data.subjects !== 'object') {
+    throw new Error('No questions found for this exam');
+  }
+
+  const subjectKey = Object.keys(data.subjects)[0];
+  if (!subjectKey) {
+    throw new Error('No questions found for this exam');
+  }
+
+  const subjectData = data.subjects[subjectKey];
+
+  if (!subjectData.questions || !Array.isArray(subjectData.questions)) {
+    throw new Error('Invalid questions format in response');
+  }
+
+  return subjectData.questions.map((q: any) => {
+    const options = q.options.map((opt: string, optIndex: number) => ({
+      id: String.fromCharCode(65 + optIndex),
+      text: opt,
+      isCorrect: q.correctAnswer === String.fromCharCode(65 + optIndex),
+    }));
+
+    return {
+      id: q.id,
+      question: q.question,
+      options,
+      explanation: q.explanation || q.explanations || '',
+      image_url: q.image_url || undefined,
+      subjectId: subjectKey,
+      gradeLevelId,
+      chapterId,
+    };
+  });
 }; 

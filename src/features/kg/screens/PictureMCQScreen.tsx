@@ -312,7 +312,7 @@ export default function PictureMCQScreen({ onBackToInstructions }: PictureMCQScr
             <ThemedText style={[styles.unauthorizedText, { color: isDarkMode ? '#A0A0A5' : '#6B54AE' }]}>
               {t('mcq.pictureQuiz.unauthorizedText')}
             </ThemedText>
-            <TouchableOpacity style={[styles.pictureButton, styles.pictureHomeButton]} onPress={() => router.push('/mcq')}>
+            <TouchableOpacity style={[styles.pictureButton, styles.pictureHomeButton]} onPress={() => router.push('/(tabs)/practice')}>
               <ThemedText style={styles.pictureHomeButtonText}>{t('mcq.pictureQuiz.goToRegularQuestions')}</ThemedText>
               <IconSymbol name="house.fill" size={24} color="#4CAF50" />
             </TouchableOpacity>
@@ -367,7 +367,7 @@ export default function PictureMCQScreen({ onBackToInstructions }: PictureMCQScr
           <ThemedView style={[styles.container, { backgroundColor: colors.background }]}>
             <ThemedView style={[styles.formContainer, { backgroundColor: colors.background }]}>
               <ThemedText style={[styles.formTitle, { color: colors.tint }]}>{t('mcq.pictureQuiz.noQuestionsAvailable')}</ThemedText>
-              <TouchableOpacity style={[styles.pictureButton, styles.pictureHomeButton]} onPress={() => router.push('/mcq')}>
+              <TouchableOpacity style={[styles.pictureButton, styles.pictureHomeButton]} onPress={() => router.push('/(tabs)/practice')}>
                 <ThemedText style={styles.pictureHomeButtonText}>{t('mcq.pictureQuiz.goToRegularQuestions')}</ThemedText>
                 <IconSymbol name="house.fill" size={24} color="#4CAF50" />
               </TouchableOpacity>

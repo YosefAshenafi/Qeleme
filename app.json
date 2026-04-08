@@ -8,7 +8,7 @@
     "scheme": "megatest",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
-    "description": "MegaTest — high school study app: MCQs, flashcards, and national exam practice.",
+    "description": "MegaTest — high school study app: school practice, flashcards, and national exam prep.",
     "splash": {
       "image": "./assets/images/logo.png",
       "resizeMode": "contain",

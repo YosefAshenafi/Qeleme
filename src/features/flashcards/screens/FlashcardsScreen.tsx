@@ -787,7 +787,7 @@ export default function FlashcardsScreen() {
                   setSessionStartTime(null);
                   revealAnimation.value = withSpring(0, { damping: 12, stiffness: 80, mass: 0.8 });
                   progressAnimation.value = withTiming(0);
-                  router.replace('/(tabs)/mcq');
+                  router.replace('/(tabs)/practice');
                 }}
               >
                 <ThemedText style={styles.flashDoneText}>{t('flashcards.done', { defaultValue: 'Done' })}</ThemedText>

@@ -266,6 +266,7 @@ export default {
     tabs: {
       home: 'Home',
       subjects: 'Subjects',
+      practice: 'Practice',
       stats: 'Stats',
       mcq: 'MCQ',
       flashcards: 'Flashcards',

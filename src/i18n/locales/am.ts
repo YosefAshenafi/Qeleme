@@ -680,6 +680,7 @@ export default {
     tabs: {
       home: 'ዋና ገጽ',
       subjects: 'ትምህርቶች',
+      practice: 'ልምምድ',
       stats: 'ስታትስቲክስ',
       mcq: 'ምርጫ',
       flashcards: 'ፍላሽ ካርዶች',

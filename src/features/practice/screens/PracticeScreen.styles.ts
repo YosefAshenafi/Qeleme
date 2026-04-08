@@ -3,7 +3,7 @@ import { StyleSheet, Platform, Dimensions } from 'react-native';
 const BRAND_BLUE = '#0F4BD7';
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 
-export const MCQScreenStyles = StyleSheet.create<any>({
+export const PracticeScreenStyles = StyleSheet.create<any>({
   safeArea: {
     flex: 1,
   },
@@ -1116,7 +1116,7 @@ export const MCQScreenStyles = StyleSheet.create<any>({
     paddingHorizontal: 0,
     paddingBottom: 0,
   },
-  mcqQuestionContainer: {
+  practiceQuestionContainer: {
     paddingTop: 20,
     paddingHorizontal: 0,
     paddingBottom: 0,

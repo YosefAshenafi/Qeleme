@@ -17,7 +17,7 @@ import { useTheme } from '@/core/providers/ThemeProvider';
 import { getColors } from '@/constants/Colors';
 import { BookCover } from '@/components/ui/BookCover';
 import { getBookCover } from '@/services/bookCoverService';
-import { getMCQData, getNationalExamAvailable } from '@/services/mcqService';
+import { getPracticeData, getNationalExamAvailable } from '@/services/practiceService';
 import { BASE_URL } from '@/config/constants';
 import { HomeScreenStyles as styles } from './HomeScreen.styles';
 
@@ -117,7 +117,7 @@ export default function HomeScreen() {
   const scrollViewRef = useRef<ScrollView>(null);
   const [reportCards, setReportCards] = useState<ReportCard[]>([]);
   const [homeMcqSubjects, setHomeMcqSubjects] = useState<BookItem[]>([]);
-  const [isMCQLoading, setIsMCQLoading] = useState(false);
+  const [isPracticeLoading, setIsPracticeLoading] = useState(false);
   const [nationalExamYears, setNationalExamYears] = useState<number[]>([]);
   const [isNationalExamLoading, setIsNationalExamLoading] = useState(false);
   const [showNationalExamYearChooser, setShowNationalExamYearChooser] = useState(false);
@@ -152,14 +152,14 @@ export default function HomeScreen() {
   };
 
   const fetchHomeMcqSubjects = async () => {
-    setIsMCQLoading(true);
+    setIsPracticeLoading(true);
     try {
       const gradeNumber = user?.grade?.replace(/[^0-9]/g, '') || '6';
-      const mcqData = await getMCQData(`grade-${gradeNumber}`);
-      if (mcqData.grades && mcqData.grades.length > 0) {
-        const grade = mcqData.grades[0];
+      const practiceData = await getPracticeData(`grade-${gradeNumber}`);
+      if (practiceData.grades && practiceData.grades.length > 0) {
+        const grade = practiceData.grades[0];
         const tiles: BookItem[] = grade.subjects.map((subject: any) => ({
-          id: `mcq-${subject.id}`,
+          id: `practice-${subject.id}`,
           title: subject.name,
           subtitle: `Grade ${gradeNumber}`,
           image_url: subject.image_url || '',
@@ -171,7 +171,7 @@ export default function HomeScreen() {
         setHomeMcqSubjects(tiles);
       }
     } catch (error) {
-      console.log('Failed to fetch MCQ subjects from API:', error);
+      console.log('Failed to fetch practice subjects from API:', error);
       const gradeNumber = user?.grade?.replace(/[^0-9]/g, '') || '6';
       const fallbackSubjects = [
         'Mathematics',
@@ -185,7 +185,7 @@ export default function HomeScreen() {
       ];
       setHomeMcqSubjects(
         fallbackSubjects.map((subject, index) => ({
-          id: `mcq-${index}`,
+          id: `practice-${index}`,
           title: subject,
           subtitle: `Grade ${gradeNumber}`,
           image_url: '',
@@ -196,7 +196,7 @@ export default function HomeScreen() {
         }))
       );
     } finally {
-      setIsMCQLoading(false);
+      setIsPracticeLoading(false);
     }
   };
 
@@ -383,10 +383,10 @@ export default function HomeScreen() {
     const userActivities = activities.filter((activity: any) => activity.username === user?.username);
     
     // Calculate performance metrics
-    const mcqActivities = userActivities.filter((activity: any) => activity.type === 'mcq');
-    const totalMCQs = mcqActivities.length;
-    const completedMCQs = mcqActivities.filter((activity: any) => activity.status === 'Completed').length;
-    const performancePercentage = totalMCQs > 0 ? Math.round((completedMCQs / totalMCQs) * 100) : 0;
+    const practiceActivities = userActivities.filter((activity: any) => activity.type === 'mcq');
+    const totalPracticeSessions = practiceActivities.length;
+    const completedPracticeSessions = practiceActivities.filter((activity: any) => activity.status === 'Completed').length;
+    const performancePercentage = totalPracticeSessions > 0 ? Math.round((completedPracticeSessions / totalPracticeSessions) * 100) : 0;
     
     // Calculate study hours
     const studyActivities = userActivities.filter((activity: any) => activity.type === 'study');
@@ -421,7 +421,7 @@ export default function HomeScreen() {
         gradient: 'purple',
         icon: 'chart.bar',
         stats: [
-          { label: t('home.reportCards.performance.stats.quizzesTaken'), value: totalMCQs.toString() },
+          { label: t('home.reportCards.performance.stats.quizzesTaken'), value: totalPracticeSessions.toString() },
           { label: t('home.reportCards.performance.stats.successRate'), value: `${performancePercentage}%` }
         ]
       },
@@ -467,16 +467,15 @@ export default function HomeScreen() {
     setActiveIndex(index);
   };
 
-  const handleBookPress = (type: 'mcq' | 'flashcard', book: BookItem) => {
+  const handleBookPress = (type: 'practice' | 'flashcard', book: BookItem) => {
     console.log('Book pressed:', { type, book });
-    if (type === 'mcq') {
-      // Pass the subject information to the MCQ screen
+    if (type === 'practice') {
       router.push({
-        pathname: '/(tabs)/mcq',
+        pathname: '/(tabs)/practice',
         params: {
           preSelectedSubject: book.subject,
-          preSelectedSubjectId: book.id.replace('mcq-', '') // Extract the subject ID
-        }
+          preSelectedSubjectId: book.id.replace(/^practice-/, ''),
+        },
       });
     } else {
       // Pass the subject information to the Flashcards screen
@@ -498,9 +497,9 @@ export default function HomeScreen() {
 
   const handleYearSelect = (year: number) => {
     console.log('Year selected:', year);
-    // Navigate to MCQ screen with national exam type and pre-selected year
+    // Navigate to practice tab with national exam type and pre-selected year
     router.push({
-      pathname: '/(tabs)/mcq',
+      pathname: '/(tabs)/practice',
       params: {
         preSelectedExamType: 'national',
         preSelectedYear: year.toString()
@@ -544,7 +543,7 @@ export default function HomeScreen() {
               coverGradient={coverData.coverGradient}
               icon={coverData.icon as IconSymbolName}
               imageUrl={book.image_url}
-              onPress={() => handleBookPress('mcq', book)}
+              onPress={() => handleBookPress('practice', book)}
               coverWidth={SUBJECT_COVER_INNER_WIDTH}
               coverHeight={SUBJECT_COVER_INNER_HEIGHT}
               compact
@@ -600,7 +599,7 @@ export default function HomeScreen() {
               <View style={styles.quickAccessRow}>
                 <TouchableOpacity
                   style={[styles.quickAccessCard, { backgroundColor: quickCardBg, borderColor: quickCardBorder }]}
-                  onPress={() => router.push('/(tabs)/mcq')}
+                  onPress={() => router.push('/(tabs)/practice')}
                   activeOpacity={0.88}
                 >
                   <View style={[styles.quickAccessIconCircle, { backgroundColor: isDarkMode ? '#1E3A5F' : '#E3F2FD' }]}>
@@ -612,7 +611,7 @@ export default function HomeScreen() {
                 </TouchableOpacity>
                 <TouchableOpacity
                   style={[styles.quickAccessCard, { backgroundColor: quickCardBg, borderColor: quickCardBorder }]}
-                  onPress={() => router.push('/(tabs)/mcq')}
+                  onPress={() => router.push('/(tabs)/practice')}
                   activeOpacity={0.88}
                 >
                   <View style={[styles.quickAccessIconCircle, { backgroundColor: isDarkMode ? '#1B3328' : '#E8F5E9' }]}>
@@ -640,12 +639,12 @@ export default function HomeScreen() {
                 <ThemedText style={[styles.subjectsSectionTitle, { color: sectionHeading }]}>
                   {t('home.gradeSubjects.title', { grade: gradeDigit })}
                 </ThemedText>
-                <TouchableOpacity onPress={() => router.push('/(tabs)/mcq')} hitSlop={12}>
+                <TouchableOpacity onPress={() => router.push('/(tabs)/practice')} hitSlop={12}>
                   <ThemedText style={styles.viewAllLink}>{t('home.viewAll')}</ThemedText>
                 </TouchableOpacity>
               </View>
 
-              {isMCQLoading ? (
+              {isPracticeLoading ? (
                 <View style={styles.subjectGrid}>
                   {[0, 1, 2, 3].map((i) => (
                     <View
@@ -684,7 +683,7 @@ export default function HomeScreen() {
                     <ThemedText style={[styles.bookCarouselTitle, { color: sectionHeading }]}>
                       {t('home.quickActions.nationalExams.title')}
                     </ThemedText>
-                    <TouchableOpacity onPress={() => router.push('/(tabs)/mcq')}>
+                    <TouchableOpacity onPress={() => router.push('/(tabs)/practice')}>
                       <ThemedText style={styles.viewAllLink}>{t('home.viewAll')}</ThemedText>
                     </TouchableOpacity>
                   </View>
@@ -718,7 +717,7 @@ export default function HomeScreen() {
                             icon={coverData.icon as any}
                             imageUrl=""
                             onPress={() => router.push({
-                              pathname: '/(tabs)/mcq',
+                              pathname: '/(tabs)/practice',
                               params: {
                                 preSelectedExamType: 'national',
                                 preSelectedYear: year.toString(),
