@@ -80,9 +80,12 @@ export function useSignupValidation(usernameValid: boolean | null, acceptTerms: 
     return '';
   }, [t]);
 
-  const validateGrade = useCallback((grd: Grade | ''): string => {
-    if (!grd) {
+  const validateGrade = useCallback((grd: Grade | '', rawInput: string): string => {
+    if (!rawInput.trim()) {
       return t('signup.errors.gradeRequired');
+    }
+    if (!grd) {
+      return t('signup.errors.gradeInvalid');
     }
     return '';
   }, [t]);
@@ -95,6 +98,7 @@ export function useSignupValidation(usernameValid: boolean | null, acceptTerms: 
       password: string,
       confirmPassword: string,
       grade: Grade | '',
+      gradeInput: string,
     ): { isValid: boolean; errors: ValidationErrors } => {
       const errors: ValidationErrors = {};
 
@@ -113,7 +117,7 @@ export function useSignupValidation(usernameValid: boolean | null, acceptTerms: 
       const confirmPasswordError = validatePasswordConfirmation(password, confirmPassword);
       if (confirmPasswordError) errors.confirmPassword = confirmPasswordError;
 
-      const gradeError = validateGrade(grade);
+      const gradeError = validateGrade(grade, gradeInput);
       if (gradeError) errors.grade = gradeError;
 
       if (!acceptTerms) {

@@ -815,7 +815,9 @@ export default {
     confirmPassword: 'Confirm Password',
     grade: {
       label: 'Select your grade',
-      title: 'Select Grade'
+      title: 'Select Grade',
+      placeholder: 'Enter your grade number',
+      accessibilityLabel: 'Grade number',
     },
     region: {
       label: 'Select your region (optional)',
@@ -849,7 +851,8 @@ export default {
       usernameInvalid: 'Username can only contain letters, numbers, underscore, and hyphen',
       usernameTaken: 'Username is already taken',
       acceptTerms: 'Please accept the terms and conditions',
-      gradeRequired: 'Please select your grade',
+      gradeRequired: 'Please enter your grade number',
+      gradeInvalid: 'Please enter a valid grade number',
       regionRequired: 'Please select your region',
       incompleteChildrenData: 'Please complete all children information',
       generic: 'An error occurred during signup',

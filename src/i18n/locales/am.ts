@@ -286,7 +286,9 @@ export default {
     confirmPassword: 'የይለፍ ቃል ያረጋግጡ',
     grade: {
       label: 'ክፍልዎን ይምረጡ',
-      title: 'ክፍል ይምረጡ'
+      title: 'ክፍል ይምረጡ',
+      placeholder: 'የክፍል ቁጥርዎን ያስገቡ',
+      accessibilityLabel: 'የክፍል ቁጥር',
     },
     region: {
       label: 'ክልልዎን ይምረጡ (ግዴታ አይደለም)',
@@ -320,7 +322,8 @@ export default {
       usernameInvalid: 'የተጠቃሚ ስም ፊደላት፣ ቁጥሮች፣ የታች መስመር፣ እና ሰረዝ ብቻ ሊይዝ ይችላል',
       usernameTaken: 'የተጠቃሚ ስም አስቀድሞ ተይዟል',
       acceptTerms: 'እባክዎ ውሎችን እና ሁኔታዎችን ይቀበሉ',
-      gradeRequired: 'እባክዎ ክፍልዎን ይምረጡ',
+      gradeRequired: 'እባክዎ የክፍል ቁጥርዎን ያስገቡ',
+      gradeInvalid: 'እባክዎ ትክክለኛ የክፍል ቁጥር ያስገቡ',
       regionRequired: 'እባክዎ ክልልዎን ይምረጡ',
       incompleteChildrenData: 'እባክዎ የልጆች መረጃ ሁሉን ይጨምሩ',
       generic: 'በተመዝገበ ጊዜ ስህተት ተከስቷል',

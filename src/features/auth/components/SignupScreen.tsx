@@ -11,14 +11,12 @@ import { useTranslation } from 'react-i18next';
 import { useSignupForm } from '../hooks/useSignupForm';
 import { useSignupValidation } from '../hooks/useSignupValidation';
 import { useRegions } from '../hooks/useRegions';
-import { GradePickerModal } from './GradePickerModal';
 import { RegionPickerModal } from './RegionPickerModal';
 import { TermsModal } from './TermsModal';
 import { ThemedText } from '@/features/common/components/ThemedText';
 import { LanguageToggle } from '@/features/common/components/ui/LanguageToggle';
 import { PasswordInput } from '@/features/common/components/ui/PasswordInput';
 import { SignupScreenStyles as styles } from './SignupScreen.styles';
-import { grades } from '@/features/common/constants/Grades';
 
 export default function SignupScreen() {
   const { t } = useTranslation();
@@ -39,6 +37,7 @@ export default function SignupScreen() {
       formState.password,
       formState.confirmPassword,
       formState.grade,
+      formState.gradeInput,
     );
 
     if (!validation.isValid) {
@@ -203,14 +202,17 @@ export default function SignupScreen() {
                   ]}
                 >
                   <Ionicons name="school-outline" size={20} color={isDarkMode ? '#A0A0A5' : '#6B7280'} style={styles.inputIcon} />
-                  <TouchableOpacity style={styles.dropdownButton} onPress={() => handlers.openGradeModal()}>
-                    <ThemedText
-                      style={[styles.input, { color: formState.grade ? colors.text : isDarkMode ? '#A0A0A5' : '#9CA3AF' }]}
-                    >
-                      {formState.grade ? grades.find((g) => g.value === formState.grade)?.label || t('signup.grade.label') : t('signup.grade.label')}
-                    </ThemedText>
-                    <Ionicons name="chevron-down" size={20} color={isDarkMode ? '#A0A0A5' : '#6B7280'} />
-                  </TouchableOpacity>
+                  <TextInput
+                    style={[styles.input, { color: colors.text }]}
+                    placeholder={t('signup.grade.placeholder')}
+                    placeholderTextColor={isDarkMode ? '#A0A0A5' : '#9CA3AF'}
+                    value={formState.gradeInput}
+                    onChangeText={handlers.handleGradeNumberChange}
+                    keyboardType="number-pad"
+                    maxLength={2}
+                    keyboardAppearance={isDarkMode ? 'dark' : 'light'}
+                    accessibilityLabel={t('signup.grade.accessibilityLabel')}
+                  />
                 </View>
                 {validationErrors.grade ? (
                   <ThemedText style={[styles.errorText, { color: '#F44336' }]}>{validationErrors.grade}</ThemedText>
@@ -287,14 +289,6 @@ export default function SignupScreen() {
           </View>
         </ScrollView>
       </KeyboardAvoidingView>
-
-      <GradePickerModal
-        visible={formState.showGradeModal}
-        onClose={() => formState.setShowGradeModal(false)}
-        onSelect={handlers.handleGradeSelect}
-        selectedChildIndex={null}
-        selectedGrade={formState.grade}
-      />
 
       <RegionPickerModal
         visible={formState.showRegionModal}

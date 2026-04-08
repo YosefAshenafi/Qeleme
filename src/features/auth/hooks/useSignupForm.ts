@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { Grade } from '@/features/common/constants/Grades';
 import { BASE_URL } from '@/config/constants';
 import { sendOTP } from '@/features/common/utils/otpService';
+import { gradeToSignupClassInput, parseSignupClassInputToGrade } from '@/features/auth/utils/signupGradeInput';
 
 export interface SignupFormState {
   fullName: string;
@@ -12,9 +13,9 @@ export interface SignupFormState {
   password: string;
   confirmPassword: string;
   grade: Grade | '';
+  gradeInput: string;
   region: string;
   acceptTerms: boolean;
-  showGradeModal: boolean;
   showRegionModal: boolean;
   showTermsModal: boolean;
   usernameValid: boolean | null;
@@ -33,10 +34,10 @@ export function useSignupForm() {
   const [phoneNumber, setPhoneNumber] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [grade, setGrade] = useState<Grade | ''>('KG');
+  const [grade, setGrade] = useState<Grade | ''>('');
+  const [gradeInput, setGradeInput] = useState('');
   const [region, setRegion] = useState('');
   const [acceptTerms, setAcceptTerms] = useState(false);
-  const [showGradeModal, setShowGradeModal] = useState(false);
   const [showRegionModal, setShowRegionModal] = useState(false);
   const [showTermsModal, setShowTermsModal] = useState(false);
   const [usernameValid, setUsernameValid] = useState<boolean | null>(null);
@@ -53,7 +54,9 @@ export function useSignupForm() {
         setUsername(prefillData.username || '');
         setPassword(prefillData.password || '');
         setConfirmPassword(prefillData.password || '');
-        setGrade(prefillData.grade || '');
+        const g = prefillData.grade || '';
+        setGrade(g ? (g as Grade) : '');
+        setGradeInput(g ? gradeToSignupClassInput(g) : '');
         setRegion(prefillData.region || '');
         const phone = prefillData.phoneNumber || '';
         const cleanPhone = phone.replace(/^\+251/, '');
@@ -63,18 +66,15 @@ export function useSignupForm() {
     }
   }, [params.prefillData]);
 
-  const handleGradeSelect = useCallback((value: string) => {
-    setGrade(value as Grade);
-    setShowGradeModal(false);
+  const handleGradeNumberChange = useCallback((text: string) => {
+    const digits = text.replace(/[^0-9]/g, '').slice(0, 2);
+    setGradeInput(digits);
+    setGrade(parseSignupClassInputToGrade(digits));
   }, []);
 
   const handleRegionSelect = useCallback((value: string) => {
     setRegion(value);
     setShowRegionModal(false);
-  }, []);
-
-  const openGradeModal = useCallback(() => {
-    setShowGradeModal(true);
   }, []);
 
   const openRegionModal = useCallback(() => {
@@ -167,12 +167,11 @@ export function useSignupForm() {
       setConfirmPassword,
       grade,
       setGrade,
+      gradeInput,
       region,
       setRegion,
       acceptTerms,
       setAcceptTerms,
-      showGradeModal,
-      setShowGradeModal,
       showRegionModal,
       setShowRegionModal,
       showTermsModal,
@@ -185,9 +184,8 @@ export function useSignupForm() {
       isSubmitting,
     },
     handlers: {
-      handleGradeSelect,
+      handleGradeNumberChange,
       handleRegionSelect,
-      openGradeModal,
       openRegionModal,
       handleUsernameChange,
       handlePhoneChange,
