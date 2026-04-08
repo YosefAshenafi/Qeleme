@@ -16,21 +16,47 @@ MegaTest does **not** include AI-generated tutoring, chatbots, or similar featur
 ## Tech stack
 
 - **Expo SDK 54** · **React Native** · **expo-router** (file-based routes)  
-- **Redux Toolkit** for app state  
-- **i18next** for localization  
-- **@megatest/source** — application source: UI, features, services, and types (`src/`)
+- **React 19** with **React Context** for global UI and session state (auth, theme, language) via `src/core/providers/`  
+- **i18next** for localization (`src/core/i18n`, `src/i18n/locales/`)  
+- **expo-secure-store** / AsyncStorage for tokens and user payload via `src/features/auth/utils/authStorage.ts`  
+- **Workspace packages** — root app **`@megatest/native`** depends on **`@megatest/source`** (`file:src`), the TypeScript source tree under `src/`
 
-## Repository layout
+## Project hierarchy
 
-| Path | Purpose |
-|------|---------|
-| `app/` | Expo Router screens: auth, main tabs (home, MCQ, flashcards, profile, reports), kindergarten (`kg`) flows |
-| `src/` | Application source: screens, services (`flashcardService`, `kgService`, …), config, components |
-| `assets/` | Images, fonts, and other static assets |
+### How the repo is split
+
+| Layer | Path | Role |
+|--------|------|------|
+| **Routes** | `app/` | Expo Router only: URL groups `(auth)`, `(tabs)`, `(kg)`, and the entry `index`. Files are thin re-exports such as `export { default } from '@/features/.../Screen'`. |
+| **Source** | `src/` | All product code: screens, API services, shared UI, providers, theme, i18n, config, and types. |
+| **Assets** | `assets/` | Images, fonts, Lottie; referenced by the `@/assets/*` alias. |
+| **Native** | `ios/`, `android/` | Generated native projects for dev builds (`expo run:ios` / `expo run:android`). |
+
+### Inside `src/`
+
+| Area | Typical location |
+|------|------------------|
+| **Feature screens** | `src/features/<domain>/screens/` (e.g. `auth`, `home`, `mcq`, `flashcards`, `profile`, `reports`, `kg`, `root`) |
+| **Cross-feature UI** | `src/components/` |
+| **HTTP / API** | `src/services/` (e.g. `mcqService`, `flashcardService`, `kgService`), plus `src/features/auth/services/` for account and payment helpers |
+| **App shell** | `src/core/providers/` (`AppProviders`, `AuthProvider`, `ThemeProvider`, `LanguageProvider`), `src/core/theme/`, `src/core/i18n/` |
+| **Config** | `src/config/constants.ts` (e.g. `BASE_URL`, payment-related hosts) |
+
+### Imports
+
+- **`@/*`** resolves to **`src/*`** (see root `tsconfig.json` and `metro.config.js`).  
+- Route files under `app/` import screens with paths like `@/features/home/screens/HomeScreen`.
+
+### Navigation (high level)
+
+- **`app/index.tsx`** → `IndexScreen`: redirects by auth and grade (e.g. kindergarten → KG stack, signed-in → tabs, else → welcome).  
+- **`(auth)`** — welcome, login, signup, OTP, plan selection, etc.  
+- **`(tabs)`** — home, MCQ, flashcards, reports, profile; KG users are redirected to the KG flow.  
+- **`(kg)`** — kindergarten dashboard and related screens.
 
 ## API configuration
 
-The app resolves the backend base URL in **`src/config/constants.ts`** (`getBaseUrl()` → `BASE_URL`). Point that value at your API host for each environment. Payment-related URLs (if used) are configured in the same module.
+The backend base URL is defined in **`src/config/constants.ts`** (`getBaseUrl()` → `BASE_URL`). Point that value at your API host for each environment. Payment-related URLs (if used) are configured in the same module. There is also a `expo.extra.apiUrl` field in `app.json`; keep these in sync with your deployment story so they do not drift.
 
 ## API reference (backend)
 
@@ -105,4 +131,4 @@ Responses follow the shapes used in the app (grades → subjects → chapters �
 
 ## Contributing
 
-Pull requests are welcome. Please keep changes focused and consistent with existing patterns in `app/` and `src/`.
+Pull requests are welcome. Please keep changes focused and consistent with existing patterns: new screens and logic in **`src/`** (usually under **`src/features/`**), new routes as small files under **`app/`** that re-export the right screen.
