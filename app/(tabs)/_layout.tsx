@@ -4,13 +4,13 @@ import { Platform, View, StyleSheet, Image } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '@/core/providers/AuthProvider';
 
-import { HapticTab } from '@/components/HapticTab';
-import { IconSymbol } from '@/components/ui/IconSymbol';
-import { LanguageToggle } from '@/components/ui/LanguageToggle';
+import { HapticTab } from '@/features/common/components/HapticTab';
+import { IconSymbol } from '@/features/common/components/ui/IconSymbol';
+import { LanguageToggle } from '@/features/common/components/ui/LanguageToggle';
 import { useTheme } from '@/core/providers/ThemeProvider';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { TAB_LAYOUT } from '@/constants/tabLayout';
-import { tabLayoutStyles } from '@/appStyles/tabLayout.styles';
+import { TAB_LAYOUT } from '@/features/common/constants/tabLayout';
+import { tabLayoutStyles } from '@/features/common/appStyles/tabLayout.styles';
 
 export default function TabLayout() {
   const { isDarkMode } = useTheme();

@@ -13,11 +13,6 @@ export interface DeleteAccountResponse {
   message: string;
 }
 
-/**
- * Delete user account via API
- * @param password - User's password for confirmation
- * @returns Promise<DeleteAccountResponse> - API response with success status and message
- */
 export const deleteAccountAPI = async (password: string): Promise<DeleteAccountResponse> => {
   try {
     const token = await getAuthToken();

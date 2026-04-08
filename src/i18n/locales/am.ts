@@ -337,7 +337,7 @@ export default {
     howToPlay: 'አጠቃቀም',
     letsHaveFun: '',
     categories: {
-      // Fallback categories
+      
       'Animals': 'እንስሳት',
       'Colors': 'ቀለሞች',
       'Numbers': 'ቁጥሮች',
@@ -352,7 +352,7 @@ export default {
       'Food': 'ምግብ',
       'School': 'ትምህርት ቤት',
       'Toys': 'መጫወቻዎች',
-      // API categories
+      
       'Maths': 'ሂሳብ',
       'Domestic Animals': 'የቤት እንስሳት',
       'Wild Animals': 'የዱር እንስሳት',
@@ -361,7 +361,7 @@ export default {
       'School Compound': 'የትምህርት ቤት ግቢ',
       'Different Activities': 'የተለያዩ እንቅስቃሴዎች',
       'Foods': 'ምግቦች',
-      // UI text
+      
       title: 'የመማሪያ ጉዞዎን ይምረጡ!',
       subtitle: 'ርዕስ መርጠው መማር ይጀምሩ!'
     },

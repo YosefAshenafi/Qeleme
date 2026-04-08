@@ -7,7 +7,7 @@ import { useEffect, useState } from 'react';
 import 'react-native-reanimated';
 import { LogBox } from 'react-native';
 
-import CustomSplashScreen from '@/components/SplashScreen';
+import CustomSplashScreen from '@/features/common/components/SplashScreen';
 import { AppProviders } from '@/core/providers/AppProviders';
 import { useTheme } from '@/core/providers/ThemeProvider';
 

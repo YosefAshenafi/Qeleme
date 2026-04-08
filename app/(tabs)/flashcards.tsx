@@ -1,1 +1,1 @@
-export { default } from '@/features/flashcards/screens/FlashcardsScreen';
+export { default } from '@/features/flashcards/components/FlashcardsScreen';

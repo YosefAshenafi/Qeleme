@@ -18,11 +18,11 @@ export const KG_DESIGN_TOKENS = {
   },
   typography: {
     headline: {
-      fontFamily: 'System', // Fallback for Space Grotesk
+      fontFamily: 'System',
       fontWeight: '700' as const,
     },
     body: {
-      fontFamily: 'System', // Fallback for Manrope
+      fontFamily: 'System',
       fontWeight: '500' as const,
     },
   },

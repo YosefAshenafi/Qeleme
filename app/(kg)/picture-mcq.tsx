@@ -1,1 +1,1 @@
-export { default } from '@/features/kg/screens/PictureMCQScreen';
+export { default } from '@/features/kg/components/PictureMCQScreen';

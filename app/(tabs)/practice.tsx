@@ -1,1 +1,1 @@
-export { default } from '@/features/practice/screens/PracticeScreen';
+export { default } from '@/features/practice/components/PracticeScreen';

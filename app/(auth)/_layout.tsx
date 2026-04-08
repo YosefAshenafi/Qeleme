@@ -1,9 +1,5 @@
 import { Stack } from 'expo-router';
 
-/**
- * Auth stack — MegaTest student signup only (no parent / multi-child flows).
- * Route file names match `app/(auth)/*.tsx` re-exports.
- */
 export default function AuthLayout() {
   return (
     <Stack screenOptions={{ headerShown: false }}>

@@ -1,1 +1,1 @@
-export { default } from '@/features/auth/screens/PlanSelectionScreen';
+export { default } from '@/features/auth/components/PlanSelectionScreen';

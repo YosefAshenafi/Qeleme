@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { useColorScheme } from '@/hooks/useColorScheme';
+import { useColorScheme } from '@/features/common/hooks/useColorScheme';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const THEME_PREFERENCE_KEY = 'themePreference';
@@ -16,7 +16,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const [isDarkMode, setIsDarkMode] = useState(false);
 
   useEffect(() => {
-    // Load saved theme preference on app start
+    
     loadThemePreference();
   }, []);
 
@@ -26,7 +26,6 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
       if (savedTheme !== null) {
         setIsDarkMode(savedTheme === 'dark');
       }
-      // Default to light mode when no saved preference
     } catch (error) {
       setIsDarkMode(systemColorScheme === 'dark');
     }
@@ -38,7 +37,6 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     try {
       await AsyncStorage.setItem(THEME_PREFERENCE_KEY, newTheme ? 'dark' : 'light');
     } catch (error) {
-      // Silently handle theme preference save error
     }
   };
 

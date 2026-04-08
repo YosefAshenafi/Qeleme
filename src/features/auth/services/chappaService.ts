@@ -1,5 +1,5 @@
-// src/services/chappaService.ts
-import { PaymentResponse, PaymentStatusResponse } from '@/types/chappa';
+
+import { PaymentResponse, PaymentStatusResponse } from '@/features/common/types/chappa';
 import { CHAPPA_BASE_URL } from '@/config/constants';
 
 export const initiatePayment = async (
@@ -11,12 +11,12 @@ export const initiatePayment = async (
   customerName?: string
 ): Promise<PaymentResponse> => {
   try {
-    // Split customer name into first and last name
+    
     const nameParts = customerName ? customerName.split(' ') : ['Customer', 'User'];
     const firstName = nameParts[0] || 'Customer';
     const lastName = nameParts.slice(1).join(' ') || 'User';
 
-    // Use a proper success page URL that can handle deep linking back to the app
+    
     const callbackUrl = `https://www.trustechit.com/payment-success.html?orderId=${orderId}`;
     const returnUrl = 'megatest://payment-success';
 
@@ -53,11 +53,11 @@ export const initiatePayment = async (
     const data: PaymentResponse = await response.json();
     console.log('Payment - Response data:', data);
     
-    // Transform the response to match the expected format
+    
     const transformedResponse: PaymentResponse = {
       success: data.success,
       data: data.data,
-      paymentUrl: data.data?.checkout_url, // Map checkout_url to paymentUrl for backward compatibility
+      paymentUrl: data.data?.checkout_url,
       error: data.error
     };
     

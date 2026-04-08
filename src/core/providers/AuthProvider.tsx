@@ -26,7 +26,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Check for stored authentication data on app start
+    
     checkAuthStateOnStart();
   }, []);
 
@@ -41,7 +41,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         }
       }
     } catch (error) {
-      // Silently handle auth state check error
     } finally {
       setIsLoading(false);
     }
@@ -53,7 +52,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setUser(userData);
       setIsAuthenticated(true);
     } catch (error) {
-      // Silently handle auth state update error
     }
   };
 
@@ -64,28 +62,27 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setIsAuthenticated(false);
       router.replace('/(auth)/login');
     } catch (error) {
-      // Silently handle logout error
     }
   };
 
   const deleteAccount = async (password: string) => {
     try {
-      // Call the API to delete the account
+      
       const result = await deleteAccountAPI(password);
       
       if (result.success) {
-        // Clear all user data only after successful API call
+        
         await clearAuthData();
         setUser(null);
         setIsAuthenticated(false);
         
-        // Navigate to onboarding after account deletion
+        
         router.replace('/(auth)/onboarding');
       } else {
         throw new Error(result.message || 'Failed to delete account');
       }
     } catch (error) {
-      // Re-throw the error so the calling component can handle it
+      
       throw error;
     }
   };

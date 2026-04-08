@@ -1,9 +1,0 @@
-// Use environment-specific configuration
-const getBaseUrl = () => {
-  return 'https://www.trustechit.com'; 
-};
-
-export const BASE_URL = getBaseUrl();
-/** Payment gateway API base (host is provided by the payment provider integration). */
-export const CHAPPA_BASE_URL = 'https://api.qelem.net';
-export const OTP_BASE_URL = 'https://api.afromessage.com/api';

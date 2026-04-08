@@ -1,1 +1,1 @@
-export { default } from '@/features/root/screens/IndexScreen';
+export { default } from '@/features/root/components/IndexScreen';

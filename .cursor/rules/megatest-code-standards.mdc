@@ -1,0 +1,51 @@
+---
+description: No inline comments, constants separation, data-driven control flow
+alwaysApply: true
+---
+
+# Code style (Megatest)
+
+## Comments
+
+- **Do not add inline or block comments** in implementation files (`//`, `/* */`, JSDoc on obvious symbols). Prefer clear names, small functions, and typed APIs.
+- Exceptions: required file headers if mandated by license; `eslint-disable` only when unavoidable with a one-line directive and a ticket reference if your process requires it.
+
+## Constants
+
+- **No magic values** embedded in components or hooks. Move literals, repeated strings, numeric thresholds, style tokens used as data, and static option lists to:
+  - `src/features/<feature>/constants/` for one domain, or
+  - `src/features/common/constants/` when shared across features (or `src/core/config/` for API hosts and env-style keys).
+- Export named constants from dedicated modules (e.g. `ThingScreen.constants.ts` or `constants/thing.ts`). Import them where needed.
+
+## Control flow
+
+- **Avoid long chains of `if` / `else if` and nested conditionals** when the logic is really a lookup or strategy choice.
+- Prefer:
+  - **`Map` / object maps** for key → value or key → handler
+  - **Arrays + `.find` / `.some`** for ordered rules with predicates
+  - **`switch`** only when exhaustiveness over a discriminated union is clear
+  - **Early returns** to flatten nesting
+- Extract decision tables or handlers into constants or small pure functions in `utils/` when they grow.
+
+## Examples (patterns)
+
+```typescript
+const STATUS_COPY: Record<OrderStatus, string> = {
+  pending: '…',
+  paid: '…',
+}
+
+function label(status: OrderStatus) {
+  return STATUS_COPY[status]
+}
+```
+
+```typescript
+const handlers: Record<EventType, (e: Event) => void> = {
+  open: onOpen,
+  close: onClose,
+}
+handlers[type]?.(event)
+```
+
+Do not add explanatory comments inside these snippets; names should carry meaning.

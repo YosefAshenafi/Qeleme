@@ -1,0 +1,23 @@
+
+export const TAB_LAYOUT = {
+  tabActive: '#0F4BD7',
+  tabInactiveLight: '#9CA3AF',
+  tabInactiveDark: '#8B93A3',
+  headerBgLight: '#FFFFFF',
+  headerBgDark: '#101216',
+  headerBorderLight: '#E5E7EB',
+  headerBorderDark: '#2C3340',
+  iconCircleLight: '#F3F4F6',
+  iconCircleDark: '#2A313D',
+  iconColorLight: '#4B5563',
+  iconColorDark: '#E5E7EB',
+  tabBarBgLight: '#FFFFFF',
+  tabBarBgDark: '#191D24',
+  tabBarBorderLight: '#E5E7EB',
+  tabBarBorderDark: '#2C3340',
+  tabBarBaseHeight: 56,
+  tabBarLabelFontSize: 11,
+  headerPaddingHorizontal: 16,
+  tabBarPaddingTop: 8,
+  tabBarPaddingBottomMin: 10,
+} as const;

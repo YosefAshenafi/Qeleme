@@ -913,7 +913,7 @@ export default {
     subtitle: "Study your subjects and test yourself with the questions!",
     letsHaveFun: "",
     categories: {
-      // Fallback categories
+      
       'Animals': 'Animals',
       'Colors': 'Colors',
       'Numbers': 'Numbers',
@@ -928,7 +928,7 @@ export default {
       'Food': 'Food',
       'School': 'School',
       'Toys': 'Toys',
-      // API categories
+      
       'Maths': 'Maths',
       'Domestic Animals': 'Domestic Animals',
       'Wild Animals': 'Wild Animals',
@@ -937,7 +937,7 @@ export default {
       'School Compound': 'School Compound',
       'Different Activities': 'Different Activities',
       'Foods': 'Foods',
-      // UI text
+      
       title: 'Choose Your Learning Adventure!',
       subtitle: 'Choose a topic and Start Learning!'
     },

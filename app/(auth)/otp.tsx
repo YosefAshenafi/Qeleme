@@ -1,1 +1,1 @@
-export { default } from '@/features/auth/screens/OTPScreen';
+export { default } from '@/features/auth/components/OTPScreen';

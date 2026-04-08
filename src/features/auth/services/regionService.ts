@@ -3,7 +3,6 @@ import { BASE_URL } from '@/config/constants';
 export interface Region {
   id: number;
   name: string;
-  // Add other properties as needed based on API response
 }
 
 export const fetchRegions = async (): Promise<Region[]> => {
@@ -22,13 +21,13 @@ export const fetchRegions = async (): Promise<Region[]> => {
 
     const data = await response.json();
     
-    // Handle different possible response structures
+    
     if (Array.isArray(data)) {
       return data;
     } else if (data.data && Array.isArray(data.data)) {
       return data.data;
     } else if (data.regions && Array.isArray(data.regions)) {
-      // Convert array of strings to Region objects
+      
       return data.regions.map((regionName: string, index: number) => ({
         id: index + 1,
         name: regionName
@@ -39,7 +38,7 @@ export const fetchRegions = async (): Promise<Region[]> => {
     }
   } catch (error) {
     console.error('Error fetching regions:', error);
-    // Return a fallback list of regions if API fails
+    
     return [
       { id: 1, name: 'Addis Ababa' },
       { id: 2, name: 'Afar' },

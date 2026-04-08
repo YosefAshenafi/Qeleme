@@ -19,7 +19,7 @@ MegaTest does **not** include AI-generated tutoring, chatbots, or similar featur
 - **React 19** with **React Context** for global UI and session state (auth, theme, language) via `src/core/providers/`  
 - **i18next** for localization (`src/core/i18n`, `src/i18n/locales/`)  
 - **expo-secure-store** / AsyncStorage for tokens and user payload via `src/features/auth/utils/authStorage.ts`  
-- **Workspace packages** — root app **`@megatest/native`** depends on **`@megatest/source`** (`file:src`), the TypeScript source tree under `src/`
+- **Source** — application code lives under **`src/`** (features, `src/core`, `src/i18n`, etc.)
 
 ## Project hierarchy
 
@@ -34,18 +34,23 @@ MegaTest does **not** include AI-generated tutoring, chatbots, or similar featur
 
 ### Inside `src/`
 
+Product code is organized **by feature** under `src/features/`. Each domain folder (`auth`, `kg`, `home`, …) may include **`components/`**, **`hooks/`**, **`constants/`**, **`utils/`**, **`services/`**, and **`types/`** as needed—keep feature-owned code inside that feature.
+
+**Cross-feature** code (nothing fits a single domain) lives under **`src/features/common/`** with the same kinds of subfolders (`components`, `hooks`, `constants`, `utils`, `services`, `types`). Prefer the name **`common`** for this folder.
+
+Shared UI, services, utils, constants, and types now live under **`src/features/common/`** (see subfolders there).
+
 | Area | Typical location |
 |------|------------------|
-| **Feature screens** | `src/features/<domain>/screens/` (e.g. `auth`, `home`, `practice`, `flashcards`, `profile`, `reports`, `kg`, `root`) |
-| **Cross-feature UI** | `src/components/` |
-| **HTTP / API** | `src/services/` (e.g. `practiceService`, `flashcardService`, `kgService`), plus `src/features/auth/services/` for account and payment helpers |
-| **App shell** | `src/core/providers/` (`AppProviders`, `AuthProvider`, `ThemeProvider`, `LanguageProvider`), `src/core/theme/`, `src/core/i18n/` |
-| **Config** | `src/config/constants.ts` (e.g. `BASE_URL`, payment-related hosts) |
+| **Domain feature code** | `src/features/<domain>/` — `components/`, `hooks/`, `constants/`, `utils/`, `services/`, `types/` |
+| **Shared across features** | `src/features/common/` — same subfolder names as above |
+| **App shell** | `src/core/providers/`, `src/core/theme/`, `src/core/i18n/` |
+| **Config** | `src/core/config/constants.ts` (e.g. `BASE_URL`, payment-related hosts) |
 
 ### Imports
 
 - **`@/*`** resolves to **`src/*`** (see root `tsconfig.json` and `metro.config.js`).  
-- Route files under `app/` import screens with paths like `@/features/home/screens/HomeScreen`.
+- Route files under `app/` import screen components with paths like `@/features/home/components/HomeScreen`. Shared UI tends toward `@/features/common/components/...`.
 
 ### Navigation (high level)
 
@@ -56,7 +61,7 @@ MegaTest does **not** include AI-generated tutoring, chatbots, or similar featur
 
 ## API configuration
 
-The backend base URL is defined in **`src/config/constants.ts`** (`getBaseUrl()` → `BASE_URL`). Point that value at your API host for each environment. Payment-related URLs (if used) are configured in the same module. There is also a `expo.extra.apiUrl` field in `app.json`; keep these in sync with your deployment story so they do not drift.
+The backend base URL is defined in **`src/core/config/constants.ts`** (`getBaseUrl()` → `BASE_URL`). Point that value at your API host for each environment. Payment-related URLs (if used) are configured in the same module. There is also a `expo.extra.apiUrl` field in `app.json`; keep these in sync with your deployment story so they do not drift.
 
 ## API reference (backend)
 
@@ -95,7 +100,7 @@ The mobile client calls REST endpoints under `{BASE_URL}/api/...`. Examples:
 - **National exams (grouped)** — `GET /api/questions/grouped?gradeLevelId={id}&yearId={id}&subject={name}`  
 - **Available national exams** — `GET /api/national-exams/available/{gradeNumber}`  
 - **Chapter questions** — `GET /api/mcq/questions?gradeLevelId={id}&subjectId={id}&chapterId={id}`  
-- **Flashcards** — `GET /api/flashcards?...` (see `src/services/flashcardService.ts`)
+- **Flashcards** — `GET /api/flashcards?...` (see `src/features/common/services/flashcardService.ts`)
 
 Responses follow the shapes used in the app (grades → subjects → chapters → questions with options and explanations).
 

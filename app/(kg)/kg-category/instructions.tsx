@@ -1,1 +1,1 @@
-export { default } from '@/features/kg/screens/KGCategoryInstructionsScreen';
+export { default } from '@/features/kg/components/KGCategoryInstructionsScreen';

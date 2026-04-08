@@ -1,1 +1,1 @@
-export { default } from '@/features/auth/screens/PaymentScreen';
+export { default } from '@/features/auth/components/PaymentScreen';

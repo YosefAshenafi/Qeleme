@@ -1,0 +1,56 @@
+---
+description: Expo app routing, src/features layout, and features/common for shared code
+alwaysApply: true
+---
+
+# Project layout and hierarchy
+
+## Layers (top to bottom)
+
+1. **`app/`** — Expo Router only: route files, layouts, redirects. Keep them **thin** (compose UI from `src/features/...`, wire params, no business logic).
+2. **`src/`** — Implementation lives **under `src/features/`** (domain features + **`common`**). **`src/core/`** holds app shell code; env-style constants live under **`src/core/config/`** (see below). **`assets/`** stays at the repo root.
+
+## Domain features (`src/features/<feature-name>/`)
+
+Each product domain gets its own folder (e.g. `auth`, `kg`, `home`, `profile`, `practice`, …). **All** code that clearly belongs to that domain stays inside it. Use the same inner layout everywhere:
+
+| Folder | Purpose |
+|--------|---------|
+| **`components/`** | UI for this feature (including full-screen views; `app/` imports from here) |
+| **`hooks/`** | Feature-only hooks (`useX`) |
+| **`constants/`** | Strings, keys, static maps, thresholds for this feature only |
+| **`utils/`** | Pure helpers and formatters for this feature only |
+| **`services/`** | API clients, adapters, and side-effecting modules for this feature |
+| **`types/`** | Types and small interfaces used only by this feature |
+
+Split or add subfolders only when it stays easy to navigate; the rule is **locality first**: if it is owned by one feature, it does not live at `src/` root.
+
+## Shared code — `src/features/common/`
+
+Anything **used across multiple features** but **not** owned by a single domain goes under **`src/features/common/`**. Prefer the **same** subfolders as a domain feature:
+
+- `src/features/common/components/`
+- `src/features/common/hooks/`
+- `src/features/common/constants/`
+- `src/features/common/utils/`
+- `src/features/common/services/`
+- `src/features/common/types/`
+
+Use the name **`common`** (not `shared`) for this tree.
+
+## App shell and config (exceptions)
+
+- **`src/core/`** — App bootstrap: providers, theme tokens, **`core/config/`** for API base URLs and similar env-style constants, and related wiring. Keep this thin; prefer moving reusable **product** code into `features/common` or a domain feature.
+- **`src/i18n/`** — Locale JSON and translation wiring (stays next to `core` as today).
+- **`assets/`** — Static assets at repo root (see `@/assets/*` alias).
+
+Imports such as `@/config/constants` resolve to **`src/core/config/`** (see `tsconfig.json`).
+
+## Imports
+
+Use path aliases (`@/…`). Prefer:
+
+- `@/features/<domain>/...` for domain code
+- `@/features/common/...` for cross-feature code
+
+Shorter aliases (`@/components/...`, `@/hooks/...`, `@/services/...`, `@/utils/...`, `@/constants/...`, `@/types/...`, `@/appStyles/...`) resolve to the matching folder under **`src/features/common/`** (see root `tsconfig.json`).
