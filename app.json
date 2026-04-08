@@ -1,8 +1,95 @@
 {
-  "android": {
-    "package": "com.jossyfreelancer.megatest"
-  },
-  "ios": {
-    "bundleIdentifier": "com.jossyfreelancer.megatest"
+  "expo": {
+    "name": "MegaTest",
+    "slug": "megatest",
+    "version": "1.0.8",
+    "orientation": "default",
+    "icon": "./assets/images/logo.png",
+    "scheme": "megatest",
+    "userInterfaceStyle": "automatic",
+    "newArchEnabled": true,
+    "description": "MegaTest educational platform for interactive learning",
+    "splash": {
+      "image": "./assets/images/logo.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#00000000"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "requireFullScreen": false,
+      "bundleIdentifier": "com.megatest.edu",
+      "buildNumber": "1",
+      "icon": "./assets/images/logo.png",
+      "infoPlist": {
+        "UIRequiresFullScreen": false,
+        "UIStatusBarStyle": "UIStatusBarStyleDefault",
+        "NSCameraUsageDescription": "Allow $(PRODUCT_NAME) to access your camera to take photos.",
+        "NSMicrophoneUsageDescription": "Allow $(PRODUCT_NAME) to access your microphone for audio recording.",
+        "NSPhotoLibraryUsageDescription": "Allow $(PRODUCT_NAME) to access your photos.",
+        "NSPhotoLibraryAddUsageDescription": "Allow $(PRODUCT_NAME) to save photos to your library."
+      },
+      "splash": {
+        "image": "./assets/images/logo.png",
+        "resizeMode": "contain",
+        "backgroundColor": "#00000000"
+      }
+    },
+    "sdkVersion": "54.0.0",
+    "extra": {
+      "apiUrl": "https://api.megatest.app",
+      "router": {
+        "origin": false
+      },
+      "eas": {
+        "projectId": "7657cf48-e670-4112-b864-0bd2af8e9f88"
+      }
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/images/logo.png",
+        "backgroundColor": "#00000000"
+      },
+      "splash": {
+        "image": "./assets/images/logo.png",
+        "resizeMode": "contain",
+        "backgroundColor": "#00000000"
+      },
+      "package": "com.megatest.edu",
+      "versionCode": 15,
+      "permissions": [
+        "android.permission.INTERNET",
+        "android.permission.ACCESS_NETWORK_STATE",
+        "android.permission.CAMERA",
+        "android.permission.RECORD_AUDIO",
+        "android.permission.MODIFY_AUDIO_SETTINGS"
+      ],
+      "playStoreUrl": "https://play.google.com/store/apps/details?id=com.megatest.edu"
+    },
+    "web": {
+      "bundler": "metro",
+      "output": "static",
+      "favicon": "./assets/images/logo.png"
+    },
+    "plugins": [
+      "expo-router",
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/images/logo.png",
+          "imageWidth": 150,
+          "resizeMode": "contain",
+          "backgroundColor": "#00000000"
+        }
+      ],
+      "expo-secure-store",
+      "expo-font",
+      "expo-web-browser",
+      "expo-av",
+      "expo-video"
+    ],
+    "experiments": {
+      "typedRoutes": true
+    },
+    "owner": "yashenafi"
   }
 }
