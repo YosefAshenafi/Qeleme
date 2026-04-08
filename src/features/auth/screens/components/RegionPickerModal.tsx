@@ -1,11 +1,12 @@
 import React from 'react';
-import { Modal, View, ScrollView, TouchableOpacity, StyleSheet } from 'react-native';
+import { Modal, View, ScrollView, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '@/core/providers/ThemeProvider';
 import { getColors } from '@/constants/Colors';
 import { ThemedText } from '@/components/ThemedText';
 import { Region } from '@/features/auth/services/regionService';
+import { modalPickerStyles as styles } from './ModalPicker.styles';
 
 interface RegionPickerModalProps {
   visible: boolean;
@@ -81,44 +82,3 @@ export const RegionPickerModal: React.FC<RegionPickerModalProps> = ({
     </Modal>
   );
 };
-
-const styles = StyleSheet.create({
-  overlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 20,
-  },
-  content: {
-    width: '100%',
-    maxHeight: '70%',
-    borderRadius: 16,
-    overflow: 'hidden',
-  },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    padding: 16,
-    borderBottomWidth: 1,
-  },
-  title: {
-    fontSize: 18,
-    fontWeight: '600',
-  },
-  scrollView: {
-    maxHeight: 400,
-  },
-  option: {
-    paddingVertical: 14,
-    paddingHorizontal: 16,
-  },
-  optionSelected: {},
-  optionText: {
-    fontSize: 16,
-  },
-  optionTextSelected: {
-    fontWeight: '600',
-  },
-});

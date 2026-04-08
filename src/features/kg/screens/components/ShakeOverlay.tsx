@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text } from 'react-native';
 import Animated, { useAnimatedStyle, useSharedValue, withTiming, withSequence, withRepeat, Easing } from 'react-native-reanimated';
+import { shakeOverlayStyles as shakeStyles } from './ShakeOverlay.styles';
 
 interface ShakeOverlayProps {
   visible: boolean;
@@ -8,30 +9,6 @@ interface ShakeOverlayProps {
   language?: string;
   delay?: number;
 }
-
-const shakeStyles = StyleSheet.create({
-  container: {
-    ...StyleSheet.absoluteFillObject,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: 'rgba(0, 0, 0, 0.3)',
-  },
-  iconContainer: {
-    alignItems: 'center',
-  },
-  emoji: {
-    fontSize: 64,
-    marginBottom: 8,
-  },
-  text: {
-    fontSize: 28,
-    fontWeight: '700',
-    color: '#FFFFFF',
-    textShadowColor: 'rgba(0, 0, 0, 0.5)',
-    textShadowOffset: { width: 2, height: 2 },
-    textShadowRadius: 4,
-  },
-});
 
 export const ShakeOverlay = ({ visible, onAnimationEnd, language = 'en', delay = 2000 }: ShakeOverlayProps) => {
   const shakeX = useSharedValue(0);
@@ -41,7 +18,7 @@ export const ShakeOverlay = ({ visible, onAnimationEnd, language = 'en', delay =
       shakeX.value = withSequence(
         withTiming(-10, { duration: 50, easing: Easing.linear }),
         withRepeat(withTiming(10, { duration: 100, easing: Easing.linear }), 4, true),
-        withTiming(0, { duration: 50 })
+        withTiming(0, { duration: 50 }),
       );
 
       const timer = setTimeout(() => {
@@ -52,9 +29,12 @@ export const ShakeOverlay = ({ visible, onAnimationEnd, language = 'en', delay =
     }
   }, [visible, delay]);
 
-  const animatedStyle = useAnimatedStyle(() => ({
-    transform: [{ translateX: shakeX.value }],
-  } as any));
+  const animatedStyle = useAnimatedStyle(
+    () =>
+      ({
+        transform: [{ translateX: shakeX.value }],
+      }) as any,
+  );
 
   const getTryAgainText = () => {
     return language === 'am' ? 'ስህተት!' : 'Incorrect!';

@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from 'react';
-import { View, Image, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, Image, TouchableOpacity } from 'react-native';
 import { IconSymbol } from './IconSymbol';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { router } from 'expo-router';
+import { profileAvatarStyles as styles } from './ProfileAvatar.styles';
 
 interface ProfileAvatarProps {
   size?: number;
@@ -73,32 +74,3 @@ export function ProfileAvatar({
     </TouchableOpacity>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    borderRadius: 20,
-    justifyContent: 'center',
-    alignItems: 'center',
-    overflow: 'hidden',
-    paddingBottom: 5,
-  },
-  image: {
-    width: '100%',
-    height: '100%',
-  },
-  editButton: {
-    position: 'absolute',
-    bottom: 0,
-    right: 0,
-    backgroundColor: 'white',
-    borderRadius: 12,
-    shadowColor: "#000",
-    shadowOffset: {
-      width: 0,
-      height: 1,
-    },
-    shadowOpacity: 0.2,
-    shadowRadius: 1.41,
-    elevation: 2,
-  },
-}); 

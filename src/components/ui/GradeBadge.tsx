@@ -1,9 +1,10 @@
 import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useTheme } from '@/core/providers/ThemeProvider';
 import { getColors } from '@/constants/Colors';
 import { grades } from '@/constants/Grades';
+import { gradeBadgeStyles as styles } from './GradeBadge.styles';
 
 interface GradeBadgeProps {
   grade?: string;
@@ -114,64 +115,3 @@ export function GradeBadge({
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  gradientContainer: {
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.15,
-    shadowRadius: 4,
-    elevation: 3,
-  },
-  // Small size
-  smallContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 12,
-    gap: 4,
-  },
-  smallText: {
-    fontSize: 12,
-    fontWeight: '600',
-    letterSpacing: 0.3,
-  },
-  smallIcon: {
-    fontSize: 12,
-  },
-  // Medium size
-  mediumContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 16,
-    gap: 6,
-  },
-  mediumText: {
-    fontSize: 14,
-    fontWeight: '600',
-    letterSpacing: 0.3,
-  },
-  mediumIcon: {
-    fontSize: 14,
-  },
-  // Large size
-  largeContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 20,
-    gap: 8,
-  },
-  largeText: {
-    fontSize: 16,
-    fontWeight: '700',
-    letterSpacing: 0.4,
-  },
-  largeIcon: {
-    fontSize: 16,
-  },
-});

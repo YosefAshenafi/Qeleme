@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { View, StyleSheet } from 'react-native';
+import { View } from 'react-native';
 import Animated, { useAnimatedStyle, useSharedValue, withTiming, withDelay, Easing } from 'react-native-reanimated';
-
-const FIREWORK_COLORS = ['#FFD700', '#FF4136', '#FF851B', '#FFFFFF', '#FF69B4', '#7FDBFF', '#01FF70', '#FFDC00'];
+import { FIREWORK_BURST, FIREWORK_COLORS } from './fireworkBurst.constants';
+import { fireworkBurstStyles as particleStyles } from './FireworkBurst.styles';
 
 interface FireworkParticle {
   id: number;
@@ -18,17 +18,6 @@ interface FireworkBurstProps {
   delay?: number;
 }
 
-const particleStyles = StyleSheet.create({
-  container: {
-    position: 'absolute',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  particle: {
-    position: 'absolute',
-  },
-});
-
 const FireworkParticleComponent = ({ particle }: { particle: FireworkParticle }) => {
   const progress = useSharedValue(0);
   const opacity = useSharedValue(1);
@@ -39,9 +28,12 @@ const FireworkParticleComponent = ({ particle }: { particle: FireworkParticle })
     opacity.value = 1;
     particleOpacity.value = 1;
 
-    progress.value = withTiming(1, { duration: 1200, easing: Easing.out(Easing.quad) });
-    opacity.value = withTiming(0, { duration: 1200 });
-    particleOpacity.value = withDelay(600, withTiming(0, { duration: 600 }));
+    progress.value = withTiming(1, { duration: FIREWORK_BURST.particleDurationMs, easing: Easing.out(Easing.quad) });
+    opacity.value = withTiming(0, { duration: FIREWORK_BURST.particleDurationMs });
+    particleOpacity.value = withDelay(
+      FIREWORK_BURST.particleFadeDelayMs,
+      withTiming(0, { duration: FIREWORK_BURST.particleFadeDurationMs }),
+    );
   }, [particle.id]);
 
   const animatedStyle = useAnimatedStyle(() => {
@@ -50,18 +42,17 @@ const FireworkParticleComponent = ({ particle }: { particle: FireworkParticle })
     const scale = 1 - progress.value * 0.3;
 
     return {
-      transform: [
-        { translateX: x },
-        { translateY: y },
-        { scale: scale },
-      ],
+      transform: [{ translateX: x }, { translateY: y }, { scale }],
       opacity: opacity.value,
     } as any;
   });
 
-  const dotStyle = useAnimatedStyle(() => ({
-    opacity: particleOpacity.value,
-  } as any));
+  const dotStyle = useAnimatedStyle(
+    () =>
+      ({
+        opacity: particleOpacity.value,
+      }) as any,
+  );
 
   return (
     <Animated.View style={[particleStyles.particle, animatedStyle]}>
@@ -80,12 +71,12 @@ const FireworkParticleComponent = ({ particle }: { particle: FireworkParticle })
   );
 };
 
-export const FireworkBurst = ({ visible, onAnimationEnd, delay = 2000 }: FireworkBurstProps) => {
+export const FireworkBurst = ({ visible, onAnimationEnd, delay = FIREWORK_BURST.defaultDelayMs }: FireworkBurstProps) => {
   const [burstKey, setBurstKey] = useState(0);
 
   useEffect(() => {
     if (visible) {
-      setBurstKey(prev => prev + 1);
+      setBurstKey((prev) => prev + 1);
       const timer = setTimeout(() => {
         onAnimationEnd?.();
       }, delay);
@@ -96,12 +87,11 @@ export const FireworkBurst = ({ visible, onAnimationEnd, delay = 2000 }: Firewor
   const fireworks = useMemo(() => {
     const bursts = [];
     const particles: FireworkParticle[] = [];
-    const particleCount = 60;
 
-    for (let i = 0; i < particleCount; i++) {
+    for (let i = 0; i < FIREWORK_BURST.particleCount; i++) {
       particles.push({
         id: i,
-        angle: (i / particleCount) * Math.PI * 2,
+        angle: (i / FIREWORK_BURST.particleCount) * Math.PI * 2,
         speed: 80 + Math.random() * 120,
         color: FIREWORK_COLORS[Math.floor(Math.random() * FIREWORK_COLORS.length)],
         size: 6 + Math.random() * 6,

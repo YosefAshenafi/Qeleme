@@ -1,19 +1,19 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { 
-  Image, 
-  ImageProps, 
-  ImageSourcePropType, 
-  View, 
-  ActivityIndicator, 
-  StyleSheet,
+import {
+  Image,
+  ImageProps,
+  ImageSourcePropType,
+  View,
+  ActivityIndicator,
   Animated,
-  Dimensions
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useTheme } from '@/core/providers/ThemeProvider';
 import { getColors } from '@/constants/Colors';
 import { ImageSkeleton } from './ImageSkeleton';
+import { REMOTE_IMAGE_CACHE } from './remoteImage.constants';
+import { remoteImageStyles as styles } from './RemoteImage.styles';
 
 interface RemoteImageProps extends Omit<ImageProps, 'source'> {
   remoteUrl?: string | null;
@@ -29,9 +29,6 @@ interface RemoteImageProps extends Omit<ImageProps, 'source'> {
   progressive?: boolean;
   showSkeleton?: boolean;
 }
-
-const CACHE_PREFIX = 'remote_image_cache_';
-const CACHE_EXPIRY = 7 * 24 * 60 * 60 * 1000; // 7 days
 
 export function RemoteImage({ 
   remoteUrl, 
@@ -66,7 +63,7 @@ export function RemoteImage({
 
   // Generate cache key if not provided
   const getCacheKey = () => {
-    return cacheKey || `${CACHE_PREFIX}${remoteUrl}`;
+    return cacheKey || `${REMOTE_IMAGE_CACHE.prefix}${remoteUrl}`;
   };
 
   // Check cache for existing image
@@ -82,7 +79,7 @@ export function RemoteImage({
         const now = Date.now();
         
         // Check if cache is still valid
-        if (now - timestamp < CACHE_EXPIRY) {
+        if (now - timestamp < REMOTE_IMAGE_CACHE.expiryMs) {
           return uri;
         } else {
           // Remove expired cache
@@ -275,62 +272,3 @@ export function RemoteImage({
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    position: 'relative',
-  },
-  image: {
-    width: '100%',
-    height: '100%',
-  },
-  loadingOverlay: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  loadingGradient: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  loadingContainer: {
-    padding: 16,
-    borderRadius: 8,
-    backgroundColor: 'rgba(255, 255, 255, 0.9)',
-  },
-  progressContainer: {
-    position: 'absolute',
-    bottom: 8,
-    left: 8,
-    right: 8,
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  progressBackground: {
-    flex: 1,
-    height: 4,
-    backgroundColor: 'rgba(255, 255, 255, 0.3)',
-    borderRadius: 2,
-    overflow: 'hidden',
-  },
-  progressFill: {
-    height: '100%',
-    borderRadius: 2,
-  },
-  progressText: {
-    fontSize: 12,
-    fontWeight: '600',
-    minWidth: 30,
-    textAlign: 'right',
-  },
-}); 

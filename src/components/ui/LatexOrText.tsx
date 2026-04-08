@@ -1,5 +1,7 @@
 import React from 'react';
-import { Text, TextStyle, StyleSheet, Platform } from 'react-native';
+import { Text, TextStyle, Platform } from 'react-native';
+
+import { latexOrTextStyles as styles } from './LatexOrText.styles';
 
 interface LatexOrTextProps {
   content: string;
@@ -367,25 +369,5 @@ const LatexOrText: React.FC<LatexOrTextProps> = ({ content, inline = true, textS
     </Text>
   );
 };
-
-const styles = StyleSheet.create({
-  text: {
-    fontSize: 18,
-    lineHeight: 26,
-    fontFamily: 'System', // Ensure consistent system font
-  },
-  math: {
-    fontFamily: 'System',
-    fontWeight: '500',
-    fontSize: Platform.OS === 'android' ? 18 : 18,
-  },
-  inlineMath: {
-    marginHorizontal: 2,
-  },
-  blockMath: {
-    marginVertical: 4,
-    textAlign: 'center',
-  },
-});
 
 export default LatexOrText;

@@ -1,8 +1,8 @@
 import React, { useEffect, useRef } from 'react';
-import { View, StyleSheet, Animated, ViewStyle, DimensionValue } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
+import { View, Animated, ViewStyle, DimensionValue } from 'react-native';
 import { useTheme } from '@/core/providers/ThemeProvider';
-import { getColors } from '@/constants/Colors';
+import { IMAGE_SKELETON } from './imageSkeleton.constants';
+import { imageSkeletonStyles as styles } from './ImageSkeleton.styles';
 
 interface ImageSkeletonProps {
   width?: DimensionValue;
@@ -12,16 +12,15 @@ interface ImageSkeletonProps {
   animated?: boolean;
 }
 
-export function ImageSkeleton({ 
-  width = '100%', 
-  height = '100%', 
+export function ImageSkeleton({
+  width = '100%',
+  height = '100%',
   style,
-  borderRadius = 8,
-  animated = true
+  borderRadius = IMAGE_SKELETON.defaultBorderRadius,
+  animated = true,
 }: ImageSkeletonProps) {
   const { isDarkMode } = useTheme();
-  const colors = getColors(isDarkMode);
-  
+
   const shimmerAnim = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
@@ -29,9 +28,9 @@ export function ImageSkeleton({
       const shimmerAnimation = Animated.loop(
         Animated.timing(shimmerAnim, {
           toValue: 1,
-          duration: 1200,
+          duration: IMAGE_SKELETON.shimmerDurationMs,
           useNativeDriver: true,
-        })
+        }),
       );
 
       shimmerAnimation.start();
@@ -44,14 +43,14 @@ export function ImageSkeleton({
 
   const shimmerTranslateX = shimmerAnim.interpolate({
     inputRange: [0, 1],
-    outputRange: [-150, 150],
+    outputRange: [...IMAGE_SKELETON.shimmerTranslateRange],
   });
 
   const backgroundColor = isDarkMode ? '#2a2a2a' : '#f0f0f0';
   const shimmerColor = isDarkMode ? '#3a3a3a' : '#e0e0e0';
 
   return (
-    <View 
+    <View
       style={[
         styles.container,
         {
@@ -60,7 +59,7 @@ export function ImageSkeleton({
           borderRadius,
           backgroundColor,
         },
-        style
+        style,
       ]}
     >
       {animated && (
@@ -68,6 +67,8 @@ export function ImageSkeleton({
           style={[
             styles.shimmer,
             {
+              width: IMAGE_SKELETON.shimmerWidth,
+              opacity: IMAGE_SKELETON.shimmerOpacity,
               transform: [{ translateX: shimmerTranslateX }],
               backgroundColor: shimmerColor,
             },
@@ -77,19 +78,3 @@ export function ImageSkeleton({
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    position: 'relative',
-    overflow: 'hidden',
-  },
-  shimmer: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    width: 200,
-    opacity: 0.6,
-  },
-}); 

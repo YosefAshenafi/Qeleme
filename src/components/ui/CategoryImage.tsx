@@ -1,9 +1,9 @@
 import React from 'react';
-import { StyleSheet, ImageStyle } from 'react-native';
+import { ImageStyle } from 'react-native';
 import { RemoteImage } from './RemoteImage';
 import { useTheme } from '@/core/providers/ThemeProvider';
 import { getColors } from '@/constants/Colors';
-import { getOptimizedImageUrl } from '@/utils/imageOptimizer';
+import { categoryImageStyles as styles } from './CategoryImage.styles';
 
 interface CategoryImageProps {
   imageUrl?: string | null;
@@ -48,10 +48,3 @@ export function CategoryImage({
     />
   );
 }
-
-const styles = StyleSheet.create({
-  categoryImage: {
-    width: '100%',
-    height: '100%',
-  },
-}); 

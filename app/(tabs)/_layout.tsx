@@ -1,6 +1,6 @@
 import { Tabs, Redirect } from 'expo-router';
 import React from 'react';
-import { Platform, TouchableOpacity, View, StyleSheet, Text, Alert, Image } from 'react-native';
+import { Platform, View, StyleSheet, Image } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '@/core/providers/AuthProvider';
 
@@ -9,14 +9,8 @@ import { IconSymbol } from '@/components/ui/IconSymbol';
 import { LanguageToggle } from '@/components/ui/LanguageToggle';
 import { useTheme } from '@/core/providers/ThemeProvider';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-
-const BRAND_BLUE = '#0F4BD7';
-const TAB_ACTIVE = '#0F4BD7';
-const TAB_INACTIVE_LIGHT = '#9CA3AF';
-const HEADER_BG_LIGHT = '#FFFFFF';
-const HEADER_BG_DARK = '#101216';
-const ICON_CIRCLE_LIGHT = '#F3F4F6';
-const ICON_CIRCLE_DARK = '#2A313D';
+import { TAB_LAYOUT } from '@/constants/tabLayout';
+import { tabLayoutStyles } from '@/appStyles/tabLayout.styles';
 
 export default function TabLayout() {
   const { isDarkMode } = useTheme();
@@ -28,27 +22,26 @@ export default function TabLayout() {
     return <Redirect href="/kg-dashboard" />;
   }
 
-  const headerBg = isDarkMode ? HEADER_BG_DARK : HEADER_BG_LIGHT;
-  const headerBorder = isDarkMode ? '#2C3340' : '#E5E7EB';
-  const primaryText = isDarkMode ? '#F3F4F6' : '#111827';
-  const iconCircle = isDarkMode ? ICON_CIRCLE_DARK : ICON_CIRCLE_LIGHT;
-  const iconColor = isDarkMode ? '#E5E7EB' : '#4B5563';
+  const headerBg = isDarkMode ? TAB_LAYOUT.headerBgDark : TAB_LAYOUT.headerBgLight;
+  const headerBorder = isDarkMode ? TAB_LAYOUT.headerBorderDark : TAB_LAYOUT.headerBorderLight;
+  const iconCircle = isDarkMode ? TAB_LAYOUT.iconCircleDark : TAB_LAYOUT.iconCircleLight;
+  const iconColor = isDarkMode ? TAB_LAYOUT.iconColorDark : TAB_LAYOUT.iconColorLight;
 
-  const tabBarBg = isDarkMode ? '#191D24' : '#FFFFFF';
-  const tabBarBorder = isDarkMode ? '#2C3340' : '#E5E7EB';
+  const tabBarBg = isDarkMode ? TAB_LAYOUT.tabBarBgDark : TAB_LAYOUT.tabBarBgLight;
+  const tabBarBorder = isDarkMode ? TAB_LAYOUT.tabBarBorderDark : TAB_LAYOUT.tabBarBorderLight;
 
   const megaHeaderLeft = () => (
-    <View style={styles.headerLeft}>
+    <View style={tabLayoutStyles.headerLeft}>
       <Image
         source={require('@/assets/images/logo.png')}
-        style={styles.brandMark}
+        style={tabLayoutStyles.brandMark}
         resizeMode="contain"
       />
     </View>
   );
 
   const megaHeaderRight = () => (
-    <View style={styles.headerRight}>
+    <View style={tabLayoutStyles.headerRight}>
       <LanguageToggle colors={{ card: iconCircle, text: iconColor }} />
     </View>
   );
@@ -67,13 +60,13 @@ export default function TabLayout() {
         headerLeft: megaHeaderLeft,
         headerRight: megaHeaderRight,
         headerTitleAlign: 'center',
-        headerLeftContainerStyle: { paddingLeft: 16, flex: 1 },
-        headerRightContainerStyle: { paddingRight: 16, flex: 0 },
-        tabBarActiveTintColor: TAB_ACTIVE,
-        tabBarInactiveTintColor: isDarkMode ? '#8B93A3' : TAB_INACTIVE_LIGHT,
+        headerLeftContainerStyle: { paddingLeft: TAB_LAYOUT.headerPaddingHorizontal, flex: 1 },
+        headerRightContainerStyle: { paddingRight: TAB_LAYOUT.headerPaddingHorizontal, flex: 0 },
+        tabBarActiveTintColor: TAB_LAYOUT.tabActive,
+        tabBarInactiveTintColor: isDarkMode ? TAB_LAYOUT.tabInactiveDark : TAB_LAYOUT.tabInactiveLight,
         tabBarShowLabel: true,
         tabBarLabelStyle: {
-          fontSize: 11,
+          fontSize: TAB_LAYOUT.tabBarLabelFontSize,
           fontWeight: '600',
           marginBottom: Platform.OS === 'ios' ? 0 : 4,
         },
@@ -83,9 +76,9 @@ export default function TabLayout() {
           backgroundColor: tabBarBg,
           borderTopColor: tabBarBorder,
           borderTopWidth: StyleSheet.hairlineWidth,
-          height: 56 + Math.max(insets.bottom, 12),
-          paddingBottom: Math.max(insets.bottom, 10),
-          paddingTop: 8,
+          height: TAB_LAYOUT.tabBarBaseHeight + Math.max(insets.bottom, 12),
+          paddingBottom: Math.max(insets.bottom, TAB_LAYOUT.tabBarPaddingBottomMin),
+          paddingTop: TAB_LAYOUT.tabBarPaddingTop,
         },
       }}
     >
@@ -135,27 +128,3 @@ export default function TabLayout() {
     </Tabs>
   );
 }
-
-const styles = StyleSheet.create({
-  headerLeft: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
-  },
-  brandMark: {
-    width: 50,
-    height: 44,
-  },
-  headerRight: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
-  },
-  headerIconButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-});
