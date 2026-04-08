@@ -18,19 +18,19 @@ MegaTest does **not** include AI-generated tutoring, chatbots, or similar featur
 - **Expo SDK 54** · **React Native** · **expo-router** (file-based routes)  
 - **Redux Toolkit** for app state  
 - **i18next** for localization  
-- **@megatest/shared** — shared UI, features, services, and types (`shared/`)
+- **@megatest/source** — application source: UI, features, services, and types (`src/`)
 
 ## Repository layout
 
 | Path | Purpose |
 |------|---------|
 | `app/` | Expo Router screens: auth, main tabs (home, MCQ, flashcards, profile, reports), kindergarten (`kg`) flows |
-| `shared/` | Cross-cutting package: screens, services (`flashcardService`, `kgService`, …), config, components |
+| `src/` | Application source: screens, services (`flashcardService`, `kgService`, …), config, components |
 | `assets/` | Images, fonts, and other static assets |
 
 ## API configuration
 
-The app resolves the backend base URL in **`shared/config/constants.ts`** (`getBaseUrl()` → `BASE_URL`). Point that value at your API host for each environment. Payment-related URLs (if used) are configured in the same module.
+The app resolves the backend base URL in **`src/config/constants.ts`** (`getBaseUrl()` → `BASE_URL`). Point that value at your API host for each environment. Payment-related URLs (if used) are configured in the same module.
 
 ## API reference (backend)
 
@@ -69,7 +69,7 @@ The mobile client calls REST endpoints under `{BASE_URL}/api/...`. Examples:
 - **National exams (grouped)** — `GET /api/questions/grouped?gradeLevelId={id}&yearId={id}&subject={name}`  
 - **Available national exams** — `GET /api/national-exams/available/{gradeNumber}`  
 - **Chapter MCQs** — `GET /api/mcq/questions?gradeLevelId={id}&subjectId={id}&chapterId={id}`  
-- **Flashcards** — `GET /api/flashcards?...` (see `shared/services/flashcardService.ts`)
+- **Flashcards** — `GET /api/flashcards?...` (see `src/services/flashcardService.ts`)
 
 Responses follow the shapes used in the app (grades → subjects → chapters → questions with options and explanations).
 
@@ -105,4 +105,4 @@ Responses follow the shapes used in the app (grades → subjects → chapters �
 
 ## Contributing
 
-Pull requests are welcome. Please keep changes focused and consistent with existing patterns in `app/` and `shared/`.
+Pull requests are welcome. Please keep changes focused and consistent with existing patterns in `app/` and `src/`.

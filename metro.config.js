@@ -6,7 +6,7 @@ const path = require('path');
 const config = getDefaultConfig(__dirname);
 
 config.watchFolders = [
-  path.resolve(__dirname, 'shared'),
+  path.resolve(__dirname, 'src'),
 ];
 
 config.resolver = {
@@ -16,18 +16,18 @@ config.resolver = {
   ],
   alias: {
     '@/assets': path.resolve(__dirname, 'assets'),
-    '@/*': path.resolve(__dirname, 'shared/*'),
-    '@shared/*': path.resolve(__dirname, 'shared/*'),
-    '@/shared/*': path.resolve(__dirname, 'shared/*'),
-    '@/features/*': path.resolve(__dirname, 'shared/features/*'),
-    '@/components/*': path.resolve(__dirname, 'shared/components/*'),
-    '@/core/*': path.resolve(__dirname, 'shared/core/*'),
-    '@/hooks/*': path.resolve(__dirname, 'shared/hooks/*'),
-    '@/services/*': path.resolve(__dirname, 'shared/services/*'),
-    '@/types/*': path.resolve(__dirname, 'shared/types/*'),
-    '@/utils/*': path.resolve(__dirname, 'shared/utils/*'),
-    '@/constants/*': path.resolve(__dirname, 'shared/constants/*'),
-    '@/config/*': path.resolve(__dirname, 'shared/config/*'),
+    '@/*': path.resolve(__dirname, 'src/*'),
+    '@shared/*': path.resolve(__dirname, 'src/*'),
+    '@/shared/*': path.resolve(__dirname, 'src/*'),
+    '@/features/*': path.resolve(__dirname, 'src/features/*'),
+    '@/components/*': path.resolve(__dirname, 'src/components/*'),
+    '@/core/*': path.resolve(__dirname, 'src/core/*'),
+    '@/hooks/*': path.resolve(__dirname, 'src/hooks/*'),
+    '@/services/*': path.resolve(__dirname, 'src/services/*'),
+    '@/types/*': path.resolve(__dirname, 'src/types/*'),
+    '@/utils/*': path.resolve(__dirname, 'src/utils/*'),
+    '@/constants/*': path.resolve(__dirname, 'src/constants/*'),
+    '@/config/*': path.resolve(__dirname, 'src/config/*'),
   },
 };
 

@@ -58,7 +58,7 @@
     "react-redux": "^9.2.0",
     "redux": "^5.0.1",
     "victory-native": "^36.6.11",
-    "@megatest/shared": "file:shared"
+    "@megatest/source": "file:src"
   },
   "devDependencies": {
     "@babel/core": "^7.25.2",

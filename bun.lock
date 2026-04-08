@@ -7,7 +7,7 @@
       "dependencies": {
         "@expo/cli": "^0.24.20",
         "@expo/vector-icons": "^15.0.3",
-        "@megatest/shared": "file:shared",
+        "@megatest/source": "file:src",
         "@react-native-async-storage/async-storage": "2.2.0",
         "@react-native-picker/picker": "2.11.1",
         "@react-navigation/bottom-tabs": "^7.2.0",
@@ -490,7 +490,7 @@
 
     "@jridgewell/trace-mapping": ["@jridgewell/trace-mapping@0.3.31", "", { "dependencies": { "@jridgewell/resolve-uri": "^3.1.0", "@jridgewell/sourcemap-codec": "^1.4.14" } }, "sha512-zzNR+SdQSDJzc8joaeP8QQoCQr8NuYx2dIIytl1QeBEZHJ9uW6hebsrYgbz8hJwUQao3TWCMtmfV8Nu1twOLAw=="],
 
-    "@megatest/shared": ["@megatest/shared@file:shared", { "devDependencies": { "expo-av": "~16.0.8", "typescript": "^5.3.3" }, "peerDependencies": { "react": "^19.0.0", "react-native": "^0.81.5" } }],
+    "@megatest/source": ["@megatest/source@file:src", { "devDependencies": { "expo-av": "~16.0.8", "typescript": "^5.3.3" }, "peerDependencies": { "react": "^19.0.0", "react-native": "^0.81.5" } }],
 
     "@napi-rs/wasm-runtime": ["@napi-rs/wasm-runtime@0.2.12", "", { "dependencies": { "@emnapi/core": "^1.4.3", "@emnapi/runtime": "^1.4.3", "@tybys/wasm-util": "^0.10.0" } }, "sha512-ZVWUcfwY4E/yPitQJl481FjFo3K22D6qF0DuFH6Y/nbnE11GY5uguDxZMGXPQ8WQ0128MXQD7TnfHyK4oWoIJQ=="],
 

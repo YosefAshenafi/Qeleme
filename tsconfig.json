@@ -2,17 +2,17 @@
   "compilerOptions": {
     "baseUrl": ".",
     "paths": {
-      "@/*": ["shared/*"],
-      "@shared/*": ["shared/*"],
-      "@/features/*": ["shared/features/*"],
-      "@/components/*": ["shared/components/*"],
-      "@/core/*": ["shared/core/*"],
-      "@/hooks/*": ["shared/hooks/*"],
-      "@/services/*": ["shared/services/*"],
-      "@/types/*": ["shared/types/*"],
-      "@/utils/*": ["shared/utils/*"],
-      "@/constants/*": ["shared/constants/*"],
-      "@/config/*": ["shared/config/*"],
+      "@/*": ["src/*"],
+      "@shared/*": ["src/*"],
+      "@/features/*": ["src/features/*"],
+      "@/components/*": ["src/components/*"],
+      "@/core/*": ["src/core/*"],
+      "@/hooks/*": ["src/hooks/*"],
+      "@/services/*": ["src/services/*"],
+      "@/types/*": ["src/types/*"],
+      "@/utils/*": ["src/utils/*"],
+      "@/constants/*": ["src/constants/*"],
+      "@/config/*": ["src/config/*"],
       "@/assets/*": ["assets/*"]
     }
   },
@@ -22,6 +22,6 @@
     "**/*.tsx",
     ".expo/types/**/*.ts",
     "expo-env.d.ts",
-    "shared/**/*"
+    "src/**/*"
   ]
 }

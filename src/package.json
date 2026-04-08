@@ -1,5 +1,5 @@
 {
-  "name": "@megatest/shared",
+  "name": "@megatest/source",
   "version": "1.0.0",
   "main": "index.ts",
   "exports": {
@@ -13,7 +13,7 @@
     "./config": "./config/index.ts"
   },
   "scripts": {
-    "lint": "echo 'No lint configured for shared package'"
+    "lint": "echo 'No lint configured for src package'"
   },
   "peerDependencies": {
     "react": "^19.0.0",
