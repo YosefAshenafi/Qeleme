@@ -15,19 +15,9 @@ config.resolver = {
     path.resolve(__dirname, 'node_modules'),
   ],
   alias: {
+    // `@/assets` must precede `@` so `@/assets/…` resolves to repo `assets/`, not `src/assets/`.
     '@/assets': path.resolve(__dirname, 'assets'),
-    '@/*': path.resolve(__dirname, 'src/*'),
-    '@shared/*': path.resolve(__dirname, 'src/*'),
-    '@/shared/*': path.resolve(__dirname, 'src/*'),
-    '@/features/*': path.resolve(__dirname, 'src/features/*'),
-    '@/components/*': path.resolve(__dirname, 'src/components/*'),
-    '@/core/*': path.resolve(__dirname, 'src/core/*'),
-    '@/hooks/*': path.resolve(__dirname, 'src/hooks/*'),
-    '@/services/*': path.resolve(__dirname, 'src/services/*'),
-    '@/types/*': path.resolve(__dirname, 'src/types/*'),
-    '@/utils/*': path.resolve(__dirname, 'src/utils/*'),
-    '@/constants/*': path.resolve(__dirname, 'src/constants/*'),
-    '@/config/*': path.resolve(__dirname, 'src/config/*'),
+    '@': path.resolve(__dirname, 'src'),
   },
 };
 
