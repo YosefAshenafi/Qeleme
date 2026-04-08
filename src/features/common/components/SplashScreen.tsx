@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from 'react';
-import { View, Image, Animated, Text, useColorScheme } from 'react-native';
+import { View, Image, Animated, Text } from 'react-native';
 
 export default function CustomSplashScreen() {
   const scaleAnim = useRef(new Animated.Value(0.3)).current;

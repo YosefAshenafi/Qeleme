@@ -1,7 +1,6 @@
-import { TouchableOpacity, View, Image, Dimensions } from 'react-native';
+import { TouchableOpacity, View, Image } from 'react-native';
 import { router } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useTheme } from '@/core/providers/ThemeProvider';
 import { getColors } from '@/features/common/constants/Colors';

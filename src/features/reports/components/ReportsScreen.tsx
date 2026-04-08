@@ -3,8 +3,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { IconSymbol } from '@/features/common/components/ui/IconSymbol';
 import { useTheme } from '@/core/providers/ThemeProvider';
 import { getColors } from '@/features/common/constants/Colors';
-import { useCallback, useMemo, useRef, useState } from 'react';
-import React from 'react';
+import React, { useCallback, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '@/core/providers/AuthProvider';
 import { useFocusEffect } from 'expo-router';
@@ -40,8 +39,8 @@ export default function ReportsScreen() {
   const [refreshing, setRefreshing] = useState(false);
   const [userStats, setUserStats] = useState<UserStats | null>(null);
   const [loading, setLoading] = useState(true);
-  const [mcqMonthlySeries, setMcqMonthlySeries] = useState<Array<{ x: string; y: number }>>([]);
-  const [topSubjects, setTopSubjects] = useState<Array<{ subject: string; score: number; progress: number; mcqCount: number; flashcardCount: number }>>([]);
+  const [mcqMonthlySeries, setMcqMonthlySeries] = useState<{ x: string; y: number }[]>([]);
+  const [topSubjects, setTopSubjects] = useState<{ subject: string; score: number; progress: number; mcqCount: number; flashcardCount: number }[]>([]);
   const [kpiCards, setKpiCards] = useState<StatCard[]>([]);
   const [scoreSectionY, setScoreSectionY] = useState(0);
   const [topSubjectsSectionY, setTopSubjectsSectionY] = useState(0);
@@ -93,7 +92,7 @@ export default function ReportsScreen() {
 
     const now = new Date();
     const monthsBack = 6;
-    const buckets: Array<{ key: string; label: string; scores: number[] }> = [];
+    const buckets: { key: string; label: string; scores: number[] }[] = [];
 
     for (let i = monthsBack - 1; i >= 0; i--) {
       const d = new Date(now.getFullYear(), now.getMonth() - i, 1);

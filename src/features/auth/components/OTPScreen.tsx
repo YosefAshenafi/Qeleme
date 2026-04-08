@@ -22,7 +22,7 @@ export default function OTPScreen() {
   const [isLoading, setIsLoading] = useState(false);
   const [timeLeft, setTimeLeft] = useState(300); 
   const [canResend, setCanResend] = useState(false);
-  const inputRefs = useRef<Array<TextInput | null>>([]);
+  const inputRefs = useRef<(TextInput | null)[]>([]);
   const params = useLocalSearchParams();
   
   let userData = null;

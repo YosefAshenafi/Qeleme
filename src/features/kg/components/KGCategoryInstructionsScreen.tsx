@@ -5,8 +5,6 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { useTheme } from '@/core/providers/ThemeProvider';
 import { getColors } from '@/features/common/constants/Colors';
 import { ThemedText } from '@/features/common/components/ThemedText';
-import { ThemedView } from '@/features/common/components/ThemedView';
-import { Header } from '@/features/common/components/Header';
 import { IconSymbol } from '@/features/common/components/ui/IconSymbol';
 import { LanguageToggle } from '@/features/common/components/ui/LanguageToggle';
 import { useTranslation } from 'react-i18next';

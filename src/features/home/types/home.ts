@@ -6,7 +6,7 @@ export type ReportCard = {
   subtitle: string;
   gradient: HomeReportGradientKey;
   icon: 'chart.bar' | 'trophy.fill' | 'clock.fill';
-  stats: Array<{ label: string; value: string }>;
+  stats: { label: string; value: string }[];
 };
 
 export type BookItem = {

@@ -236,12 +236,12 @@ const latexToText = (input: string): string => {
     .trim();
 };
 
-const parseMixedContent = (content: string): Array<{ type: 'text' | 'latex'; content: string; inline: boolean }> => {
-  const parts: Array<{ type: 'text' | 'latex'; content: string; inline: boolean }> = [];
+const parseMixedContent = (content: string): { type: 'text' | 'latex'; content: string; inline: boolean }[] => {
+  const parts: { type: 'text' | 'latex'; content: string; inline: boolean }[] = [];
   let lastIndex = 0;
   
   
-  const allMatches: Array<{ match: RegExpExecArray; inline: boolean }> = [];
+  const allMatches: { match: RegExpExecArray; inline: boolean }[] = [];
   
   
   let match;

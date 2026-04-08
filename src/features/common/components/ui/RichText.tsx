@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import Markdown from 'react-native-markdown-display';
 import { StyleProp, StyleSheet, TextStyle, Text, View, Image, ActivityIndicator } from 'react-native';
 import LatexOrText from './LatexOrText';
 

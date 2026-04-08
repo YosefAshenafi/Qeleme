@@ -1,7 +1,7 @@
 
 import { OTP_BASE_URL } from '@/config/constants';
-import { OTPResponse, SendSMSResponse } from '../types/otp';
-import { storeOTP, getStoredOTP, clearStoredOTP, isOTPValid } from '@/features/auth/utils/authStorage';
+import { OTPResponse } from '../types/otp';
+import { storeOTP, clearStoredOTP, isOTPValid } from '@/features/auth/utils/authStorage';
 
 const OTP_API_KEY = 'eyJhbGciOiJIUzI1NiJ9.eyJpZGVudGlmaWVyIjoiUGJqTk9oSmJkVlR4SnlCUWt2R2RHdVozZHV2ZDRDWmUiLCJleHAiOjE4OTcwNzQ2NzUsImlhdCI6MTczOTMwODI3NSwianRpIjoiNjcyYzViYjUtNTVmMC00NDM0LWEyOGUtM2RiMGI4ZTIyOWUzIn0.PLOFqilQnoDF-idjF6jmkGCA7CC5XXViq6u28pD5weg';
 

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, ActivityIndicator, Alert, Dimensions } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, ActivityIndicator, Dimensions } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { useTheme } from '@/core/providers/ThemeProvider';
@@ -10,10 +10,7 @@ import { LanguageToggle } from '@/features/common/components/ui/LanguageToggle';
 import { IconSymbol } from '@/features/common/components/ui/IconSymbol';
 import { BentoCard } from '../components/dashboard/BentoCard';
 import { useAuth } from '@/core/providers/AuthProvider';
-import { ProfileAvatar } from '@/features/common/components/ui/ProfileAvatar';
-import { CategoryImage } from '@/features/common/components/ui/CategoryImage';
 import { getKGSubcategories, KGSubcategory } from '@/features/common/services/kgService';
-import { LinearGradient } from 'expo-linear-gradient';
 import Animated, { 
   useAnimatedStyle, 
   useSharedValue, 
@@ -25,12 +22,8 @@ import Animated, {
   Extrapolate
 } from 'react-native-reanimated';
 import { 
-  getSubcategoryConfig, 
-  getSubcategoryImageSource, 
   getSubcategoryNameByLanguage,
-  ANIMATION_CONFIG,
-  STYLE_CONFIG,
-  DEFAULT_SUBCATEGORY_IMAGE_URL
+  ANIMATION_CONFIG
 } from '@/features/common/constants/KGSubcategories';
 import { KGSubcategoriesScreenStyles as styles } from './KGSubcategoriesScreen.styles';
 

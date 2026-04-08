@@ -9,7 +9,6 @@ import { getColors } from '@/features/common/constants/Colors';
 import { useTranslation } from 'react-i18next';
 
 import { ThemedText } from '@/features/common/components/ThemedText';
-import { ThemedView } from '@/features/common/components/ThemedView';
 import { ResetPasswordScreenStyles as styles } from './ResetPasswordScreen.styles';
 
 const { width, height } = Dimensions.get('window');

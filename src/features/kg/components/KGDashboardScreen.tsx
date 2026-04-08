@@ -1,18 +1,16 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { View, Text, ScrollView, ActivityIndicator, Dimensions, Image, TouchableOpacity, StatusBar, Modal } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, ScrollView, ActivityIndicator, Image, TouchableOpacity, StatusBar, Modal } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { useTheme } from '@/core/providers/ThemeProvider';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '@/core/providers/AuthProvider';
 import { getKGCategories, KGCategory } from '@/features/common/services/kgService';
-import { IconSymbol } from '@/features/common/components/ui/IconSymbol';
 import { LanguageToggle } from '@/features/common/components/ui/LanguageToggle';
 import { KG_DESIGN_TOKENS } from '../constants/DesignTokens';
 import { KGDashboardScreenStyles as styles } from './KGDashboardScreen.styles';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Ionicons } from '@expo/vector-icons';
-import i18n from 'i18next';
 
 import { ExplorerHero } from '../components/dashboard/ExplorerHero';
 import { BentoCard } from '../components/dashboard/BentoCard';

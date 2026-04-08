@@ -1,30 +1,8 @@
-import React, { useState, useRef, useEffect, useLayoutEffect } from 'react';
+import React from 'react';
 import { StatusBar } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { router, useLocalSearchParams } from 'expo-router';
-import { useNavigation } from '@react-navigation/native';
-import { useTranslation } from 'react-i18next';
-import i18n from 'i18next';
-import {
-  useAnimatedStyle,
-  withTiming,
-  interpolate,
-  useSharedValue,
-  withSpring,
-} from 'react-native-reanimated';
-import { useTheme } from '@/core/providers/ThemeProvider';
-import { getColors } from '@/features/common/constants/Colors';
-import { useAuth } from '@/core/providers/AuthProvider';
-
 import { ThemedView } from '@/features/common/components/ThemedView';
-import {
-  getFlashcardStructure,
-  getFlashcardsForChapter,
-  Grade,
-  Flashcard,
-} from '@/features/common/services/flashcardService';
-import ActivityTrackingService from '@/features/common/services/activityTrackingService';
-import { resolveDeepLinkSessionMeta } from '@/features/flashcards/utils/resolveDeepLinkSessionMeta';
+import { useFlashcardsScreen } from '@/features/flashcards/hooks/useFlashcardsScreen';
 import {
   getFlashcardAnswerText,
   getFlashcardQuestionText,
@@ -41,664 +19,152 @@ import { FlashcardsSessionResults } from './FlashcardsSessionResults';
 import { FlashcardsScreenStyles as styles } from './FlashcardsScreen.styles';
 
 export default function FlashcardsScreen() {
-  const { isDarkMode } = useTheme();
-  const { user } = useAuth();
-  const { t } = useTranslation();
-  const colors = getColors(isDarkMode);
-  const navigation = useNavigation();
-  const params = useLocalSearchParams();
+  const fc = useFlashcardsScreen();
 
-  const startFlashcardsParam = params.startFlashcards;
-  const startFlashcards =
-    (Array.isArray(startFlashcardsParam) ? startFlashcardsParam[0] : startFlashcardsParam) === '1';
-  const hasPreSelectedSubject = Boolean(params.preSelectedSubject);
-  const isDeepLinkAutoStart = startFlashcards && hasPreSelectedSubject;
-  const deepLinkSubjectSlug =
-    typeof params.subjectSlug === 'string' ? params.subjectSlug.trim() : '';
-  const deepLinkChapterName =
-    typeof params.chapterName === 'string' ? params.chapterName.trim() : '';
-  const deepLinkGradeId = typeof params.gradeId === 'string' ? params.gradeId.trim() : '';
-
-  const [selectedGradeId, setSelectedGradeId] = useState<string>('1');
-  const [selectedGrade, setSelectedGrade] = useState<string>('');
-  const [selectedSubject, setSelectedSubject] = useState<string>('');
-  const [selectedChapter, setSelectedChapter] = useState<string>('');
-  const [showFlashcards, setShowFlashcards] = useState(false);
-  const [showResult, setShowResult] = useState(false);
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const [isRevealed, setIsRevealed] = useState(false);
-  const [showSubjectDropdown, setShowSubjectDropdown] = useState(false);
-  const [showChapterDropdown, setShowChapterDropdown] = useState(false);
-  const [flashcardsData, setFlashcardsData] = useState<Grade[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [currentFlashcards, setCurrentFlashcards] = useState<Flashcard[]>([]);
-  const [hasAppliedPreSelection, setHasAppliedPreSelection] = useState(false);
-  const [sessionStartTime, setSessionStartTime] = useState<number | null>(null);
-  const [flashPendingFinish, setFlashPendingFinish] = useState(false);
-  const [previousLanguage, setPreviousLanguage] = useState(i18n.language);
-  const [isPreSelected, setIsPreSelected] = useState(false);
-  const preSelectionAttempted = useRef(false);
-
-  const flashcardsAutoStartConsumedRef = useRef(false);
-
-  const flashcardSessionTrackedRef = useRef(false);
-
-  const sessionTrackMetaRef = useRef<{
-    subjectName: string;
-    chapterName?: string;
-    gradeName: string;
-  } | null>(null);
-
-  const revealAnimation = useSharedValue(0);
-  const progressAnimation = useSharedValue(0);
-
-  useLayoutEffect(() => {
-    (navigation as any)?.setOptions?.({ headerShown: false });
-  }, [navigation]);
-
-  const fetchFlashcards = async (gradeLevelId: string = '1') => {
-    try {
-      setIsLoading(true);
-      const data = await getFlashcardStructure(gradeLevelId);
-      setFlashcardsData(data);
-      setError(null);
-    } catch {
-      setError(t('errors.network.message'));
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    if (user?.grade) {
-      const gradeNumber = user.grade.replace(/[^\d]/g, '');
-      setSelectedGradeId(gradeNumber || '1');
-    } else {
-      setSelectedGradeId('1');
-    }
-  }, [user]);
-
-  useEffect(() => {
-    if (selectedGradeId) {
-      fetchFlashcards(selectedGradeId);
-    }
-  }, [selectedGradeId]);
-
-  useEffect(() => {
-    if (params.preSelectedSubject) {
-      preSelectionAttempted.current = false;
-      setHasAppliedPreSelection(false);
-      flashcardsAutoStartConsumedRef.current = false;
-    }
-  }, [params.preSelectedSubject, params.preSelectedChapterId]);
-
-  useEffect(() => {
-    if (flashcardsData && flashcardsData.length > 0) {
-      const grade = flashcardsData[0];
-      if (grade && grade.name) {
-        setSelectedGrade(grade.name);
-
-        if (params.preSelectedSubject && !preSelectionAttempted.current) {
-          preSelectionAttempted.current = true;
-
-          setShowFlashcards(false);
-          setCurrentIndex(0);
-          setIsRevealed(false);
-          setCurrentFlashcards([]);
-          setSessionStartTime(null);
-
-          revealAnimation.value = withSpring(0, {
-            damping: 12,
-            stiffness: 80,
-            mass: 0.8,
-          });
-          progressAnimation.value = withTiming(0);
-
-          const searchTerm = (params.preSelectedSubject as string).toLowerCase().trim();
-          let subject = grade.subjects?.find((s) => s.name.toLowerCase().trim() === searchTerm);
-
-          if (!subject) {
-            subject = grade.subjects?.find((s) => {
-              const subjectName = s.name.toLowerCase();
-              return subjectName.includes(searchTerm) || searchTerm.includes(subjectName);
-            });
-          }
-
-          if (subject) {
-            setSelectedSubject(subject.id);
-            const chId =
-              typeof params.preSelectedChapterId === 'string' ? params.preSelectedChapterId.trim() : '';
-            if (chId) {
-              const ch = subject.chapters?.find((c) => c.id === chId);
-              setSelectedChapter(ch ? ch.id : '');
-            } else {
-              setSelectedChapter('');
-            }
-            setIsPreSelected(true);
-            setHasAppliedPreSelection(true);
-          } else {
-            setSelectedSubject('');
-            setSelectedChapter('');
-            setIsPreSelected(false);
-            setHasAppliedPreSelection(true);
-          }
-        } else if (!params.preSelectedSubject && !hasAppliedPreSelection) {
-          setSelectedSubject('');
-          setSelectedChapter('');
-          setHasAppliedPreSelection(true);
-        }
-      }
-    }
-  }, [flashcardsData, params.preSelectedSubject, params.preSelectedChapterId]);
-
-  useEffect(() => {
-    if (selectedSubject && hasAppliedPreSelection) {
-      if (isPreSelected) {
-        setIsPreSelected(false);
-      } else {
-        setSelectedChapter('');
-      }
-    }
-  }, [selectedSubject]);
-
-  const selectedGradeData = selectedGrade && flashcardsData ? flashcardsData.find((g) => g.name === selectedGrade) : null;
-  const selectedSubjectData =
-    selectedSubject && selectedGradeData && selectedGradeData.subjects
-      ? selectedGradeData.subjects.find((s) => s.id === selectedSubject)
-      : null;
-
-  const selectedChapterData =
-    selectedChapter && selectedSubjectData && selectedSubjectData.chapters
-      ? selectedSubjectData.chapters.find((c) => c.id === selectedChapter)
-      : null;
-  const currentCard = currentFlashcards.length > currentIndex ? currentFlashcards[currentIndex] : null;
-
-  useEffect(() => {
-    if (currentCard) {
-      setIsRevealed(false);
-
-      revealAnimation.value = withSpring(0, {
-        damping: 12,
-        stiffness: 80,
-        mass: 0.8,
-      });
-    }
-  }, [currentCard]);
-
-  useEffect(() => {
-    if (showFlashcards && selectedChapterData?.flashcards && selectedChapterData.flashcards.length > 0) {
-      progressAnimation.value = withTiming((1 / selectedChapterData.flashcards.length) * 100);
-    }
-  }, [showFlashcards, selectedChapterData]);
-
-  useEffect(() => {
-    if (!flashPendingFinish) return;
-    setFlashPendingFinish(false);
-    setShowFlashcards(false);
-    setShowResult(true);
-  }, [flashPendingFinish, currentFlashcards]);
-
-  useEffect(() => {
-    if (previousLanguage !== i18n.language) {
-      setPreviousLanguage(i18n.language);
-    }
-  }, [i18n.language, previousLanguage]);
-
-  const frontAnimatedStyle = useAnimatedStyle(() => {
-    const rotateY = interpolate(revealAnimation.value, [0, 1], [0, 180]);
-    const scale = interpolate(revealAnimation.value, [0, 0.5, 1], [1, 1.1, 1]);
-    const shadowOpacity = interpolate(revealAnimation.value, [0, 0.5, 1], [0.1, 0.5, 0.1]);
-
-    return {
-      transform: [{ perspective: 2000 }, { rotateY: `${rotateY}deg` }, { scale }],
-      shadowOpacity,
-      shadowRadius: interpolate(revealAnimation.value, [0, 0.5, 1], [8, 24, 8]),
-    } as any;
-  });
-
-  const backAnimatedStyle = useAnimatedStyle(() => {
-    const rotateY = interpolate(revealAnimation.value, [0, 1], [180, 360]);
-    const scale = interpolate(revealAnimation.value, [0, 0.5, 1], [1, 1.1, 1]);
-    const shadowOpacity = interpolate(revealAnimation.value, [0, 0.5, 1], [0.1, 0.5, 0.1]);
-
-    return {
-      transform: [{ perspective: 2000 }, { rotateY: `${rotateY}deg` }, { scale }],
-      shadowOpacity,
-      shadowRadius: interpolate(revealAnimation.value, [0, 0.5, 1], [8, 24, 8]),
-    } as any;
-  });
-
-  const progressBarStyle = useAnimatedStyle(() => {
-    return {
-      width: `${progressAnimation.value}%`,
-    };
-  });
-
-  const handleReveal = () => {
-    setIsRevealed(!isRevealed);
-    revealAnimation.value = withSpring(isRevealed ? 0 : 1, {
-      damping: 12,
-      stiffness: 80,
-      mass: 0.8,
-    });
-  };
-
-  const trackFlashcardSessionEnd = async (cardsSnapshot: Flashcard[]) => {
-    if (flashcardSessionTrackedRef.current) return;
-    if (!user?.username || cardsSnapshot.length === 0) return;
-
-    const meta = sessionTrackMetaRef.current;
-    const subjectName = (meta?.subjectName || selectedSubjectData?.name || '').trim();
-    if (!subjectName) {
-      return;
-    }
-
-    flashcardSessionTrackedRef.current = true;
-
-    try {
-      const trackingService = ActivityTrackingService.getInstance();
-      await trackingService.initialize(user.username);
-
-      const cardsReviewed = cardsSnapshot.length;
-      const cardsMastered = cardsSnapshot.filter((card) => card.isChecked).length;
-      const start = sessionStartTime;
-      const timeSpentSec = start != null ? Math.max(0, Math.round((Date.now() - start) / 1000)) : 0;
-
-      const gradeName =
-        meta?.gradeName || selectedGradeData?.name || selectedGrade || user?.grade || 'unknown';
-
-      await trackingService.trackFlashcardActivity({
-        grade: gradeName,
-        subject: subjectName,
-        chapter: meta?.chapterName || selectedChapterData?.name || undefined,
-        cardsReviewed,
-        cardsMastered,
-        timeSpent: timeSpentSec,
-      });
-    } catch {
-      flashcardSessionTrackedRef.current = false;
-    }
-  };
-
-  const handleNext = () => {
-    if (currentFlashcards.length > 0 && currentIndex < currentFlashcards.length - 1) {
-      setCurrentIndex((prev) => prev + 1);
-      progressAnimation.value = withTiming(((currentIndex + 2) / currentFlashcards.length) * 100);
-    }
-  };
-
-  const handleStartFlashcards = async () => {
-    if (!selectedSubject || !selectedChapter) return;
-
-    try {
-      setIsLoading(true);
-
-      const grade = flashcardsData.find((g) => g.name === selectedGrade);
-      const subject = grade?.subjects.find((s) => s.id === selectedSubject);
-      const subjectSlug = subject?.slug;
-
-      if (!subjectSlug) {
-        throw new Error('Subject slug not found');
-      }
-
-      const chapterName = selectedChapterData?.name;
-      if (!chapterName) {
-        throw new Error('Chapter name not found');
-      }
-
-      const flashcards = await getFlashcardsForChapter(selectedGradeId, subjectSlug, chapterName);
-
-      if (!flashcards || flashcards.length === 0) {
-        setError(t('flashcards.noFlashcardsAvailable'));
-        return;
-      }
-
-      setCurrentFlashcards(flashcards.map((c) => ({ ...c, isChecked: false })));
-      flashcardSessionTrackedRef.current = false;
-      sessionTrackMetaRef.current = {
-        subjectName: selectedSubjectData?.name?.trim() || '',
-        chapterName: selectedChapterData?.name,
-        gradeName: selectedGradeData?.name || selectedGrade || user?.grade || 'unknown',
-      };
-      setSessionStartTime(Date.now());
-
-      const updatedFlashcardsData = flashcardsData.map((g) => {
-        if (g.name === selectedGrade) {
-          return {
-            ...g,
-            subjects: g.subjects.map((s) => {
-              if (s.id === selectedSubject) {
-                return {
-                  ...s,
-                  chapters: s.chapters.map((c) => {
-                    if (c.id === selectedChapter) {
-                      return {
-                        ...c,
-                        flashcards,
-                      };
-                    }
-                    return c;
-                  }),
-                };
-              }
-              return s;
-            }),
-          };
-        }
-        return g;
-      });
-
-      setFlashcardsData(updatedFlashcardsData);
-
-      setShowFlashcards(true);
-      setCurrentIndex(0);
-      setIsRevealed(false);
-      revealAnimation.value = withSpring(0, {
-        damping: 12,
-        stiffness: 80,
-        mass: 0.8,
-      });
-    } catch {
-      setError(t('errors.network.message'));
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    if (!startFlashcards) return;
-
-    if (deepLinkSubjectSlug && deepLinkChapterName) {
-      if (isLoading) return;
-      if (showFlashcards) return;
-      if (flashcardsAutoStartConsumedRef.current) return;
-      flashcardsAutoStartConsumedRef.current = true;
-
-      const run = async () => {
-        try {
-          setIsLoading(true);
-          const gradeToUse = deepLinkGradeId || selectedGradeId;
-          const flashcards = await getFlashcardsForChapter(
-            gradeToUse,
-            deepLinkSubjectSlug,
-            deepLinkChapterName
-          );
-          if (!flashcards || flashcards.length === 0) {
-            setError(t('flashcards.noFlashcardsAvailable'));
-            return;
-          }
-          setCurrentFlashcards(flashcards.map((c) => ({ ...c, isChecked: false })));
-          flashcardSessionTrackedRef.current = false;
-          sessionTrackMetaRef.current = resolveDeepLinkSessionMeta(
-            flashcardsData,
-            gradeToUse,
-            deepLinkSubjectSlug,
-            deepLinkChapterName
-          );
-          setSessionStartTime(Date.now());
-          setShowFlashcards(true);
-          setCurrentIndex(0);
-          setIsRevealed(false);
-          revealAnimation.value = withSpring(0, { damping: 12, stiffness: 80, mass: 0.8 });
-          progressAnimation.value = withTiming(0);
-        } catch {
-          setError(t('errors.network.message'));
-        } finally {
-          setIsLoading(false);
-        }
-      };
-
-      void run();
-      return;
-    }
-
-    if (!selectedSubject || !selectedChapter) return;
-    if (isLoading) return;
-    if (showFlashcards) return;
-    if (flashcardsAutoStartConsumedRef.current) return;
-    flashcardsAutoStartConsumedRef.current = true;
-    void handleStartFlashcards();
-  }, [
-    selectedSubject,
-    selectedChapter,
-    isLoading,
-    startFlashcards,
-    showFlashcards,
-    deepLinkSubjectSlug,
-    deepLinkChapterName,
-    deepLinkGradeId,
-  ]);
-
-  if (isLoading) {
+  if (fc.isLoading) {
     return (
       <FlashcardsLoadingState
-        backgroundColor={colors.background}
-        textColor={colors.text}
-        message={t('flashcards.loading')}
+        backgroundColor={fc.colors.background}
+        textColor={fc.colors.text}
+        message={fc.t('flashcards.loading')}
       />
     );
   }
 
-  if (error) {
+  if (fc.error) {
     return (
       <FlashcardsErrorState
-        backgroundColor={colors.background}
-        textColor={colors.text}
-        tintColor={colors.tint}
-        warningColor={colors.warning}
-        title={t('errors.network.title')}
-        message={t('errors.network.message')}
-        retryLabel={t('common.tryAgain')}
-        onRetry={() => {
-          setError(null);
-          setIsLoading(true);
-          fetchFlashcards(selectedGradeId);
-        }}
+        backgroundColor={fc.colors.background}
+        textColor={fc.colors.text}
+        tintColor={fc.colors.tint}
+        warningColor={fc.colors.warning}
+        title={fc.t('errors.network.title')}
+        message={fc.t('errors.network.message')}
+        retryLabel={fc.t('common.tryAgain')}
+        onRetry={fc.handleRetryNetworkError}
       />
     );
   }
 
-  if (showResult) {
-    const totalCards = currentFlashcards.length;
-    const masteredCount = currentFlashcards.filter((c) => Boolean(c?.isChecked)).length;
-    const stillLearningCount = Math.max(0, totalCards - masteredCount);
-    const masteredPct = totalCards > 0 ? Math.round((masteredCount / totalCards) * 100) : 0;
-
+  if (fc.showResult) {
     return (
       <FlashcardsSessionResults
-        isDarkMode={isDarkMode}
-        backgroundColor={colors.background}
-        sessionResultsTitle={t('flashcards.sessionResults', { defaultValue: 'Session Results' })}
-        accuracyLabel={t('flashcards.accuracy', { defaultValue: 'ACCURACY' })}
-        masteredLabel={t('flashcards.mastered', { defaultValue: 'Mastered' })}
-        persistenceLabel={t('flashcards.persistence', { defaultValue: 'PERSISTENCE' })}
-        stillLearningLabel={t('flashcards.stillLearning', { defaultValue: 'Still Learning' })}
-        retryLabel={t('flashcards.retry', { defaultValue: 'Retry' })}
-        doneLabel={t('flashcards.done', { defaultValue: 'Done' })}
-        masteredCount={masteredCount}
-        stillLearningCount={stillLearningCount}
-        masteredPct={masteredPct}
-        onRetry={() => {
-          setShowResult(false);
-          setShowFlashcards(true);
-          setCurrentIndex(0);
-          setIsRevealed(false);
-          flashcardSessionTrackedRef.current = false;
-          if (selectedSubjectData?.name?.trim()) {
-            sessionTrackMetaRef.current = {
-              subjectName: selectedSubjectData.name.trim(),
-              chapterName: selectedChapterData?.name,
-              gradeName: selectedGradeData?.name || selectedGrade || user?.grade || 'unknown',
-            };
-          }
-          setSessionStartTime(Date.now());
-          setCurrentFlashcards((prev) => prev.map((c) => ({ ...c, isChecked: false })));
-          revealAnimation.value = withSpring(0, { damping: 12, stiffness: 80, mass: 0.8 });
-          progressAnimation.value = withTiming(0);
-        }}
-        onDone={() => {
-          setShowResult(false);
-          setShowFlashcards(false);
-          setCurrentIndex(0);
-          setIsRevealed(false);
-          setCurrentFlashcards([]);
-          setSessionStartTime(null);
-          revealAnimation.value = withSpring(0, { damping: 12, stiffness: 80, mass: 0.8 });
-          progressAnimation.value = withTiming(0);
-          router.replace('/(tabs)/practice');
-        }}
+        isDarkMode={fc.isDarkMode}
+        backgroundColor={fc.colors.background}
+        sessionResultsTitle={fc.t('flashcards.sessionResults', { defaultValue: 'Session Results' })}
+        accuracyLabel={fc.t('flashcards.accuracy', { defaultValue: 'ACCURACY' })}
+        masteredLabel={fc.t('flashcards.mastered', { defaultValue: 'Mastered' })}
+        persistenceLabel={fc.t('flashcards.persistence', { defaultValue: 'PERSISTENCE' })}
+        stillLearningLabel={fc.t('flashcards.stillLearning', { defaultValue: 'Still Learning' })}
+        retryLabel={fc.t('flashcards.retry', { defaultValue: 'Retry' })}
+        doneLabel={fc.t('flashcards.done', { defaultValue: 'Done' })}
+        masteredCount={fc.masteredCount}
+        stillLearningCount={fc.stillLearningCount}
+        masteredPct={fc.masteredPct}
+        onRetry={fc.handleSessionResultsRetry}
+        onDone={fc.handleSessionResultsDone}
       />
     );
   }
 
-  if (!showFlashcards) {
-    if (isDeepLinkAutoStart && selectedSubject && isLoading) {
+  if (!fc.showFlashcards) {
+    if (fc.isDeepLinkAutoStart && fc.selectedSubject && fc.isLoading) {
       return (
         <FlashcardsLoadingState
-          backgroundColor={colors.background}
-          textColor={colors.text}
-          message={t('flashcards.loading')}
+          backgroundColor={fc.colors.background}
+          textColor={fc.colors.text}
+          message={fc.t('flashcards.loading')}
           centered
         />
       );
     }
 
     return (
-      <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]}>
-        <ThemedView style={[styles.container, { backgroundColor: colors.background }]}>
+      <SafeAreaView style={[styles.safeArea, { backgroundColor: fc.colors.background }]}>
+        <ThemedView style={[styles.container, { backgroundColor: fc.colors.background }]}>
           <FlashcardsSelectionForm
-            colors={colors}
-            isDarkMode={isDarkMode}
-            isPreSelected={isPreSelected}
-            subjectLabel={t('flashcards.subject')}
-            chapterLabel={t('flashcards.chapter')}
-            preSelectedSuffix={t('flashcards.preSelected')}
-            selectSubjectPlaceholder={t('flashcards.selectSubject')}
-            selectChapterPlaceholder={t('flashcards.selectChapter')}
-            startButtonLabel={t('flashcards.startFlashcards')}
-            noChaptersLabel={t('flashcards.noChaptersInList', { defaultValue: 'No chapters available' })}
-            selectedSubject={selectedSubject}
-            selectedChapter={selectedChapter}
-            selectedGradeData={selectedGradeData ?? undefined}
-            selectedSubjectData={selectedSubjectData ?? undefined}
-            showSubjectDropdown={showSubjectDropdown}
-            showChapterDropdown={showChapterDropdown}
-            onToggleSubjectDropdown={() => setShowSubjectDropdown(!showSubjectDropdown)}
-            onToggleChapterDropdown={() => setShowChapterDropdown(!showChapterDropdown)}
-            onCloseSubjectDropdown={() => setShowSubjectDropdown(false)}
-            onCloseChapterDropdown={() => setShowChapterDropdown(false)}
-            onSelectSubject={(subjectId) => {
-              setSelectedSubject(subjectId);
-              setSelectedChapter('');
-              setShowSubjectDropdown(false);
-            }}
-            onSelectChapter={(chapterId) => {
-              setSelectedChapter(chapterId);
-              setShowChapterDropdown(false);
-            }}
-            onStart={handleStartFlashcards}
+          colors={fc.colors}
+          isDarkMode={fc.isDarkMode}
+          isPreSelected={fc.isPreSelected}
+          subjectLabel={fc.t('flashcards.subject')}
+          chapterLabel={fc.t('flashcards.chapter')}
+          preSelectedSuffix={fc.t('flashcards.preSelected')}
+          selectSubjectPlaceholder={fc.t('flashcards.selectSubject')}
+          selectChapterPlaceholder={fc.t('flashcards.selectChapter')}
+          startButtonLabel={fc.t('flashcards.startFlashcards')}
+          noChaptersLabel={fc.t('flashcards.noChaptersInList', { defaultValue: 'No chapters available' })}
+          selectedSubject={fc.selectedSubject}
+          selectedChapter={fc.selectedChapter}
+          selectedGradeData={fc.selectedGradeData ?? undefined}
+          selectedSubjectData={fc.selectedSubjectData ?? undefined}
+          showSubjectDropdown={fc.showSubjectDropdown}
+          showChapterDropdown={fc.showChapterDropdown}
+          onToggleSubjectDropdown={() => fc.setShowSubjectDropdown(!fc.showSubjectDropdown)}
+          onToggleChapterDropdown={() => fc.setShowChapterDropdown(!fc.showChapterDropdown)}
+          onCloseSubjectDropdown={() => fc.setShowSubjectDropdown(false)}
+          onCloseChapterDropdown={() => fc.setShowChapterDropdown(false)}
+          onSelectSubject={(subjectId) => {
+            fc.setSelectedSubject(subjectId);
+            fc.setSelectedChapter('');
+            fc.setShowSubjectDropdown(false);
+          }}
+          onSelectChapter={(chapterId) => {
+            fc.setSelectedChapter(chapterId);
+            fc.setShowChapterDropdown(false);
+          }}
+          onStart={fc.handleStartFlashcards}
           />
         </ThemedView>
       </SafeAreaView>
     );
   }
 
-  if (!currentFlashcards || currentFlashcards.length === 0) {
+  if (!fc.currentFlashcards || fc.currentFlashcards.length === 0) {
     return (
       <FlashcardsEmptyChapterState
-        backgroundColor={colors.background}
-        textColor={colors.text}
-        tintColor={colors.tint}
-        warningColor={colors.warning}
-        title={t('flashcards.noFlashcards')}
-        subtitle={t('flashcards.noFlashcardsForChapter', {
+        backgroundColor={fc.colors.background}
+        textColor={fc.colors.text}
+        tintColor={fc.colors.tint}
+        warningColor={fc.colors.warning}
+        title={fc.t('flashcards.noFlashcards')}
+        subtitle={fc.t('flashcards.noFlashcardsForChapter', {
           defaultValue: 'No flashcards available for the selected chapter.',
         })}
-        actionLabel={t('flashcards.chooseDifferentChapter', { defaultValue: 'Choose Different Chapter' })}
-        onChooseDifferent={() => {
-          setShowFlashcards(false);
-          setSelectedSubject('');
-          setSelectedChapter('');
-          setCurrentFlashcards([]);
-        }}
+        actionLabel={fc.t('flashcards.chooseDifferentChapter', { defaultValue: 'Choose Different Chapter' })}
+        onChooseDifferent={fc.handleEmptyChapterChooseDifferent}
       />
     );
   }
 
-  const cardMutedMeta = isDarkMode ? '#93A4C7' : '#9AA3B2';
-
-  const onStillLearningPress = () => {
-    const isLastCard = currentFlashcards.length > 0 && currentIndex === currentFlashcards.length - 1;
-    if (isLastCard) {
-      const nextCards = currentFlashcards.map((c, i) =>
-        i === currentIndex ? { ...c, isChecked: false } : c
-      );
-      setCurrentFlashcards(nextCards);
-      void (async () => {
-        await trackFlashcardSessionEnd(nextCards);
-        setFlashPendingFinish(true);
-      })();
-    } else {
-      setCurrentFlashcards((prev) => {
-        const next = [...prev];
-        if (next[currentIndex]) next[currentIndex] = { ...next[currentIndex], isChecked: false };
-        return next;
-      });
-      handleNext();
-    }
-  };
-
-  const onGotItPress = () => {
-    const isLastCard = currentFlashcards.length > 0 && currentIndex === currentFlashcards.length - 1;
-    if (isLastCard) {
-      const nextCards = currentFlashcards.map((c, i) =>
-        i === currentIndex ? { ...c, isChecked: true } : c
-      );
-      setCurrentFlashcards(nextCards);
-      void (async () => {
-        await trackFlashcardSessionEnd(nextCards);
-        setFlashPendingFinish(true);
-      })();
-    } else {
-      setCurrentFlashcards((prev) => {
-        const next = [...prev];
-        if (next[currentIndex]) next[currentIndex] = { ...next[currentIndex], isChecked: true };
-        return next;
-      });
-      handleNext();
-    }
-  };
-
   return (
     <SafeAreaView style={[styles.safeArea, { backgroundColor: '#FFFFFF' }]} edges={['top', 'left', 'right']}>
-      <ThemedView style={[styles.container, { backgroundColor: isDarkMode ? colors.background : '#F4F6FA' }]}>
+      <ThemedView style={[styles.container, { backgroundColor: fc.isDarkMode ? fc.colors.background : '#F4F6FA' }]}>
         <StatusBar translucent={false} backgroundColor="#FFFFFF" barStyle="dark-content" />
         <FlashcardsScreenTopBar />
 
         <FlashcardsSessionProgress
-          isDarkMode={isDarkMode}
-          cardAltColor={colors.cardAlt}
-          currentIndex={currentIndex}
-          totalCards={currentFlashcards.length}
-          progressBarStyle={progressBarStyle}
+          isDarkMode={fc.isDarkMode}
+          cardAltColor={fc.colors.cardAlt}
+          currentIndex={fc.currentIndex}
+          totalCards={fc.currentFlashcards.length}
+          progressBarStyle={fc.progressBarStyle}
         />
 
         <FlashcardsFlipCard
-          isDarkMode={isDarkMode}
-          cardBackgroundColor={isDarkMode ? colors.cardAlt : '#FFFFFF'}
-          mutedTextColor={cardMutedMeta}
-          questionText={getFlashcardQuestionText(currentCard)}
-          answerText={getFlashcardAnswerText(currentCard)}
-          frontAnimatedStyle={frontAnimatedStyle}
-          backAnimatedStyle={backAnimatedStyle}
-          onReveal={handleReveal}
+          isDarkMode={fc.isDarkMode}
+          cardBackgroundColor={fc.isDarkMode ? fc.colors.cardAlt : '#FFFFFF'}
+          mutedTextColor={fc.cardMutedMeta}
+          questionText={getFlashcardQuestionText(fc.currentCard)}
+          answerText={getFlashcardAnswerText(fc.currentCard)}
+          frontAnimatedStyle={fc.frontAnimatedStyle}
+          backAnimatedStyle={fc.backAnimatedStyle}
+          onReveal={fc.handleReveal}
         />
 
         <FlashcardsSessionBottomActions
-          isDarkMode={isDarkMode}
-          onStillLearning={onStillLearningPress}
-          onGotIt={onGotItPress}
+          isDarkMode={fc.isDarkMode}
+          onStillLearning={fc.onStillLearningPress}
+          onGotIt={fc.onGotItPress}
         />
       </ThemedView>
     </SafeAreaView>
