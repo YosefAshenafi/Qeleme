@@ -1,18 +1,12 @@
 import { useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Grade } from '@/constants/Grades';
-import { ChildData } from './useSignupForm';
 
 export interface ValidationErrors {
   [key: string]: string;
 }
 
-export function useSignupValidation(
-  role: 'student' | 'parent',
-  usernameValid: boolean | null,
-  childrenData: ChildData[],
-  acceptTerms: boolean
-) {
+export function useSignupValidation(usernameValid: boolean | null, acceptTerms: boolean) {
   const { t } = useTranslation();
 
   const validateFullName = useCallback((name: string): string => {
@@ -93,46 +87,23 @@ export function useSignupValidation(
     return '';
   }, [t]);
 
-  const validateChildData = useCallback((child: ChildData, index: number): ValidationErrors => {
-    const errors: ValidationErrors = {};
-    
-    const fullNameError = validateFullName(child.fullName);
-    if (fullNameError) errors[`child${index}_fullName`] = fullNameError;
+  const validateAllFields = useCallback(
+    (
+      fullName: string,
+      phoneNumber: string,
+      username: string,
+      password: string,
+      confirmPassword: string,
+      grade: Grade | '',
+    ): { isValid: boolean; errors: ValidationErrors } => {
+      const errors: ValidationErrors = {};
 
-    const usernameError = validateUsername(child.username);
-    if (usernameError) errors[`child${index}_username`] = usernameError;
-
-    const gradeError = validateGrade(child.grade);
-    if (gradeError) errors[`child${index}_grade`] = gradeError;
-
-    const passwordError = validatePassword(child.password);
-    if (passwordError) errors[`child${index}_password`] = passwordError;
-
-    const confirmPasswordError = validatePasswordConfirmation(child.password, child.confirmPassword);
-    if (confirmPasswordError) errors[`child${index}_confirmPassword`] = confirmPasswordError;
-
-    return errors;
-  }, [validateFullName, validateUsername, validateGrade, validatePassword, validatePasswordConfirmation]);
-
-  const validateAllFields = useCallback((
-    fullName: string,
-    phoneNumber: string,
-    username: string,
-    password: string,
-    confirmPassword: string,
-    grade: Grade | ''
-  ): { isValid: boolean; errors: ValidationErrors } => {
-    const errors: ValidationErrors = {};
-
-    if (role === 'student') {
       const fullNameError = validateFullName(fullName);
       if (fullNameError) errors.fullName = fullNameError;
-    }
 
-    const phoneError = validatePhoneNumber(phoneNumber);
-    if (phoneError) errors.phoneNumber = phoneError;
+      const phoneError = validatePhoneNumber(phoneNumber);
+      if (phoneError) errors.phoneNumber = phoneError;
 
-    if (role === 'student') {
       const usernameError = validateUsername(username);
       if (usernameError) errors.username = usernameError;
 
@@ -144,35 +115,19 @@ export function useSignupValidation(
 
       const gradeError = validateGrade(grade);
       if (gradeError) errors.grade = gradeError;
-    }
 
-    if (role === 'parent') {
-      childrenData.forEach((child, index) => {
-        const childErrors = validateChildData(child, index);
-        Object.assign(errors, childErrors);
-      });
-    }
-
-    if (!acceptTerms) {
-      errors.acceptTerms = t('signup.errors.acceptTerms');
-    }
-
-    if (role === 'student' && usernameValid === false) {
-      errors.username = t('signup.errors.usernameTaken');
-    }
-
-    childrenData.forEach((child, index) => {
-      if (child.usernameValid === false) {
-        errors[`child${index}_username`] = t('signup.errors.usernameTaken');
+      if (!acceptTerms) {
+        errors.acceptTerms = t('signup.errors.acceptTerms');
       }
-    });
 
-    return { isValid: Object.keys(errors).length === 0, errors };
-  }, [
-    role, validateFullName, validatePhoneNumber, validateUsername, 
-    validatePassword, validatePasswordConfirmation, validateGrade, 
-    validateChildData, acceptTerms, usernameValid, childrenData, t
-  ]);
+      if (usernameValid === false) {
+        errors.username = t('signup.errors.usernameTaken');
+      }
+
+      return { isValid: Object.keys(errors).length === 0, errors };
+    },
+    [validateFullName, validatePhoneNumber, validateUsername, validatePassword, validatePasswordConfirmation, validateGrade, acceptTerms, usernameValid, t],
+  );
 
   return {
     validateFullName,
@@ -181,7 +136,6 @@ export function useSignupValidation(
     validatePasswordConfirmation,
     validateUsername,
     validateGrade,
-    validateChildData,
     validateAllFields,
   };
 }

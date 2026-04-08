@@ -15,40 +15,6 @@ import { ThemedText } from '@/components/ThemedText';
 import { LanguageToggle } from '@/components/ui/LanguageToggle';
 import { PlanSelectionScreenStyles as styles } from './PlanSelectionScreen.styles';
 
-// Helper function to generate parent credentials using datetime-based values
-const generateParentCredentials = (phoneNumber: string, childrenData?: any[]): { name: string; username: string; password: string; region: string } => {
-  const timestamp = Date.now();
-  const dateStr = new Date(timestamp).toISOString().replace(/[-:T.]/g, '').slice(0, 14); // YYYYMMDDHHmmss format
-  
-  // Clean phone number (remove +251, leading 0, etc.)
-  const cleanPhone = phoneNumber.replace(/^\+251/, '').replace(/^0/, '').replace(/[^0-9]/g, '').slice(-9);
-  
-  // Generate name: Parent_YYYYMMDDHHmmss
-  const name = `Parent_${dateStr}`;
-  
-  // Generate username: phone_timestamp
-  const username = `parent_${cleanPhone}_${timestamp}`;
-  
-  // Generate password: timestamp-based random string
-  const password = `Pwd${timestamp}${Math.random().toString(36).substring(2, 10)}`;
-  
-  // Use first child's region, or default to "Addis Ababa"
-  const region = childrenData && childrenData.length > 0 && childrenData[0].region 
-    ? childrenData[0].region 
-    : 'Addis Ababa';
-  
-  return { name, username, password, region };
-};
-
-interface ChildData {
-  fullName: string;
-  username: string;
-  grade: string;
-  password: string;
-  confirmPassword: string;
-  plan: string;
-}
-
 interface SelectedPlan {
   plan: string;
 }
@@ -65,16 +31,6 @@ export default function PlanSelectionScreen() {
   const params = useLocalSearchParams();
   const userData = params.userData ? JSON.parse(decodeURIComponent(params.userData as string)) : null;
 
-  // Debug: Log the received userData
-  console.log('Plan Selection - Received userData:', userData);
-  console.log('Plan Selection - userData keys:', userData ? Object.keys(userData) : 'No userData');
-  console.log('Plan Selection - userData.fullName:', userData?.fullName);
-  console.log('Plan Selection - userData.role:', userData?.role);
-  console.log('Plan Selection - userData.childrenData:', userData?.childrenData);
-  console.log('Plan Selection - userData.phoneNumber:', userData?.phoneNumber);
-  console.log('Plan Selection - userData.grade:', userData?.grade);
-  console.log('Plan Selection - userData.region:', userData?.region);
-
   useEffect(() => {
     fetchPaymentPlans();
   }, []);
@@ -86,25 +42,14 @@ export default function PlanSelectionScreen() {
         throw new Error('Failed to fetch payment plans');
       }
       const data = await response.json();
-      
-      // Debug: Log the full plan structure
-      console.log('Raw plans data:', data);
-      console.log('First plan structure:', data[0]);
-      
-      // Debug: Log the plans before sorting
-      console.log('Plans before sorting:', data.map((p: PaymentPlan) => ({ name: p.name, duration: p.durationInMonths, id: getPlanId(p) })));
-      
+
       // Filter out free plans and only show paid plans
       const paidPlans = data.filter((plan: PaymentPlan) => plan.durationInMonths > 0 && plan.amount > 0);
       
-      // Sort paid plans by duration in descending order
       const sortedPlans = paidPlans.sort((a: PaymentPlan, b: PaymentPlan) => {
         return b.durationInMonths - a.durationInMonths;
       });
-      
-      // Debug: Log the plans after sorting
-      console.log('Plans after sorting:', sortedPlans.map((p: PaymentPlan) => ({ name: p.name, duration: p.durationInMonths, id: getPlanId(p) })));
-      
+
       setPlans(sortedPlans);
     } catch (error) {
       Alert.alert(t('common.error'), t('auth.errors.fetchPlansFailed'));
@@ -137,21 +82,8 @@ export default function PlanSelectionScreen() {
     if (!selectedPlans.length) return 0;
     
     const plan = plans.find(p => getPlanId(p) === selectedPlans[0].plan);
-    console.log('Found plan for total calculation:', plan);
-    console.log('Selected plan ID:', selectedPlans[0].plan);
-    console.log('Available plan IDs:', plans.map(p => getPlanId(p)));
-    
-    // Ensure we don't modify the original plan data
     const baseAmount = plan ? (typeof plan.amount === 'string' ? parseFloat(plan.amount) : plan.amount) : 0;
-    
-    if (userData.role === 'parent' && userData.numberOfChildren > 0) {
-      const total = Number(baseAmount) * Number(userData.numberOfChildren);
-      console.log('Parent total calculation:', { baseAmount, numberOfChildren: userData.numberOfChildren, total });
-      return total.toFixed(2);
-    } else {
-      console.log('Student total calculation:', { baseAmount });
-      return Number(baseAmount).toFixed(2);
-    }
+    return Number(baseAmount).toFixed(2);
   };
 
   const getTotalCostAsNumber = () => {
@@ -159,23 +91,9 @@ export default function PlanSelectionScreen() {
     return typeof totalCost === 'string' ? parseFloat(totalCost) : totalCost;
   };
 
-  const getPricePerChild = () => {
-    if (!selectedPlans.length) return 0;
-    
-    const plan = plans.find(p => p._id === selectedPlans[0].plan);
-    return plan?.amount || 0;
-  };
-
   const handlePlanSelect = (plan: PaymentPlan) => {
     const planId = getPlanId(plan);
-    console.log('Full plan object:', plan);
-    console.log('Plan selected:', { 
-      planId: planId, 
-      planName: plan.name, 
-      amount: plan.amount,
-      allKeys: Object.keys(plan)
-    });
-    // For both parents and students, just select the plan (replace any existing selection)
+    // Replace any existing selection
     setSelectedPlans([{ plan: planId }]);
     requestAnimationFrame(() => {
       plansScrollRef.current?.scrollToEnd({ animated: true });
@@ -209,11 +127,6 @@ export default function PlanSelectionScreen() {
       // Initiate payment via checkout service
       const orderId = `ORDER_${Date.now()}`;
 
-      console.log('Initiating payment');
-      console.log('Order ID:', orderId);
-      console.log('Amount:', parseFloat(amount.toString()));
-      console.log('Phone:', userData.phoneNumber);
-
       const paymentData = await initiatePayment(
         parseFloat(amount.toString()),
         orderId,
@@ -223,9 +136,6 @@ export default function PlanSelectionScreen() {
         userData.fullName
       );
       
-      console.log('Payment response:', paymentData);
-      console.log('Payment response status:', paymentData.success);
-
       if (paymentData.success && paymentData.paymentUrl) {
         // Navigate to payment screen with checkout URL
         router.push({
@@ -240,12 +150,10 @@ export default function PlanSelectionScreen() {
           }
         });
       } else {
-        console.log('Payment failed:', paymentData);
         throw new Error(paymentData.error || 'Failed to initiate payment');
       }
 
     } catch (error) {
-      console.error('Payment failed:', error);
     } finally {
       // Clear loading state
       setIsProcessingPayment(false);

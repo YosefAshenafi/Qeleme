@@ -6,7 +6,7 @@ MegaTest does **not** include AI-generated tutoring, chatbots, or similar featur
 
 ## What the app does
 
-- **Authentication** — login, registration, OTP verification, password reset, role and plan selection, onboarding  
+- **Authentication** — login, student registration, OTP verification, password reset, plan selection, onboarding  
 - **MCQs** — curriculum questions by grade, subject, and chapter; national exam sets for supported grades  
 - **Flashcards** — grade- and chapter-scoped decks  
 - **Profile & reports** — student profile, stats, account settings  
@@ -50,7 +50,7 @@ MegaTest does **not** include AI-generated tutoring, chatbots, or similar featur
 ### Navigation (high level)
 
 - **`app/index.tsx`** → `IndexScreen`: redirects by auth and grade (e.g. kindergarten → KG stack, signed-in → tabs, else → welcome).  
-- **`(auth)`** — welcome, login, signup, OTP, plan selection, etc.  
+- **`(auth)`** — welcome, login, signup, forgot/reset password, OTP, plan selection, payment, onboarding, etc. (student accounts only).  
 - **`(tabs)`** — home, MCQ, flashcards, reports, profile; KG users are redirected to the KG flow.  
 - **`(kg)`** — kindergarten dashboard and related screens.
 

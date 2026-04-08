@@ -28,7 +28,6 @@ export default function OTPScreen() {
   let userData = null;
   
   try {
-    // Construct userData from individual parameters
     userData = {
       phoneNumber: params.phoneNumber as string,
       fullName: params.fullName as string,
@@ -36,9 +35,6 @@ export default function OTPScreen() {
       password: params.password as string,
       grade: params.grade as string,
       region: params.region as string,
-      role: params.role as string,
-      numberOfChildren: parseInt(params.numberOfChildren as string) || 0,
-      childrenData: params.childrenData ? JSON.parse(params.childrenData as string) : []
     };
   } catch (error) {
     setError(t('auth.otp.error.invalidData'));
@@ -179,9 +175,7 @@ export default function OTPScreen() {
                     pathname: '/(auth)/signup',
                     params: {
                       prefillData: encodeURIComponent(JSON.stringify(userData)),
-                      role: userData?.role || 'student',
-                      numberOfChildren: userData?.numberOfChildren?.toString() || '1'
-                    }
+                    },
                   });
                 }}
               >

@@ -1,4 +1,4 @@
-import { StyleSheet, TextInput, TouchableOpacity, View, KeyboardAvoidingView, Platform, ScrollView, Modal, Pressable, Text } from 'react-native';
+import { TextInput, TouchableOpacity, View, KeyboardAvoidingView, Platform, ScrollView, Text } from 'react-native';
 import { router } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useState } from 'react';
@@ -26,14 +26,9 @@ export default function SignupScreen() {
   const colors = getColors(isDarkMode);
   const [validationErrors, setValidationErrors] = useState<{ [key: string]: string }>({});
 
-  const { formState, role, numberOfChildren, handlers, setters } = useSignupForm();
-  const { regions, regionsLoading } = useRegions();
-  const { validateAllFields } = useSignupValidation(
-    role,
-    formState.usernameValid,
-    formState.childrenData,
-    formState.acceptTerms
-  );
+  const { formState, handlers, setters } = useSignupForm();
+  const { regions } = useRegions();
+  const { validateAllFields } = useSignupValidation(formState.usernameValid, formState.acceptTerms);
 
   const handleSubmit = async () => {
     setValidationErrors({});
@@ -43,9 +38,9 @@ export default function SignupScreen() {
       formState.username,
       formState.password,
       formState.confirmPassword,
-      formState.grade
+      formState.grade,
     );
-    
+
     if (!validation.isValid) {
       setValidationErrors(validation.errors);
       setters.setError(t('signup.errors.validationFailed'));
@@ -61,12 +56,12 @@ export default function SignupScreen() {
         <Text style={[styles.bgLetter, styles.bgLetterLeft, { color: isDarkMode ? 'rgba(255,255,255,0.02)' : 'rgba(255,255,255,0.22)' }]}>MegaTest</Text>
         <Text style={[styles.bgLetter, styles.bgLetterRight, { color: isDarkMode ? 'rgba(255,255,255,0.018)' : 'rgba(255,255,255,0.18)' }]}>M</Text>
       </View>
-      <KeyboardAvoidingView 
+      <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         style={styles.keyboardView}
         keyboardVerticalOffset={Platform.OS === 'ios' ? -64 : 0}
       >
-        <ScrollView 
+        <ScrollView
           style={styles.scrollView}
           contentContainerStyle={styles.scrollContent}
           showsVerticalScrollIndicator={false}
@@ -91,42 +86,74 @@ export default function SignupScreen() {
 
             <View style={[styles.formContainer, { backgroundColor: isDarkMode ? '#1C1C1E' : '#FFFFFF' }]}>
               <View style={styles.inputWrapper}>
-                {role === 'student' && (
-                  <>
-                    <View style={[styles.inputContainer, { backgroundColor: isDarkMode ? '#2C2C2E' : '#F9FAFB', borderColor: validationErrors.fullName ? '#F44336' : (isDarkMode ? '#3C3C3E' : '#E5E7EB') }]}>
-                      <Ionicons name="settings-outline" size={20} color={isDarkMode ? '#A0A0A5' : '#6B7280'} style={styles.inputIcon} />
-                      <TextInput
-                        style={[styles.input, { color: colors.text }]}
-                        placeholder={t('signup.fullName')}
-                        placeholderTextColor={isDarkMode ? '#A0A0A5' : '#9CA3AF'}
-                        value={formState.fullName}
-                        onChangeText={formState.setFullName}
-                      />
-                    </View>
-                    {validationErrors.fullName && <ThemedText style={[styles.errorText, { color: '#F44336' }]}>{validationErrors.fullName}</ThemedText>}
+                <View
+                  style={[
+                    styles.inputContainer,
+                    {
+                      backgroundColor: isDarkMode ? '#2C2C2E' : '#F9FAFB',
+                      borderColor: validationErrors.fullName ? '#F44336' : isDarkMode ? '#3C3C3E' : '#E5E7EB',
+                    },
+                  ]}
+                >
+                  <Ionicons name="settings-outline" size={20} color={isDarkMode ? '#A0A0A5' : '#6B7280'} style={styles.inputIcon} />
+                  <TextInput
+                    style={[styles.input, { color: colors.text }]}
+                    placeholder={t('signup.fullName')}
+                    placeholderTextColor={isDarkMode ? '#A0A0A5' : '#9CA3AF'}
+                    value={formState.fullName}
+                    onChangeText={formState.setFullName}
+                  />
+                </View>
+                {validationErrors.fullName ? (
+                  <ThemedText style={[styles.errorText, { color: '#F44336' }]}>{validationErrors.fullName}</ThemedText>
+                ) : null}
 
-                    <View style={[styles.inputContainer, { backgroundColor: isDarkMode ? '#2C2C2E' : '#F9FAFB', borderColor: (validationErrors.username || formState.usernameError) ? '#F44336' : (isDarkMode ? '#3C3C3E' : '#E5E7EB') }]}>
-                      <Ionicons name="at-outline" size={20} color={isDarkMode ? '#A0A0A5' : '#6B7280'} style={styles.inputIcon} />
-                      <TextInput
-                        style={[styles.input, { color: colors.text }]}
-                        placeholder={t('signup.username')}
-                        placeholderTextColor={isDarkMode ? '#A0A0A5' : '#9CA3AF'}
-                        value={formState.username}
-                        onChangeText={handlers.handleUsernameChange}
-                        autoCapitalize="none"
-                        autoCorrect={false}
-                        textContentType="username"
-                        keyboardAppearance={isDarkMode ? 'dark' : 'light'}
-                      />
-                      {formState.usernameChecking && <Ionicons name="time-outline" size={20} color={isDarkMode ? '#A0A0A5' : '#6B7280'} style={styles.inputIcon} />}
-                      {formState.usernameValid === true && <Ionicons name="checkmark-circle" size={20} color="#4CAF50" style={styles.inputIcon} />}
-                      {formState.usernameValid === false && <Ionicons name="close-circle" size={20} color="#F44336" style={styles.inputIcon} />}
-                    </View>
-                    {(validationErrors.username || formState.usernameError) && <ThemedText style={[styles.errorText, { color: '#F44336' }]}>{validationErrors.username || formState.usernameError}</ThemedText>}
-                  </>
+                <View
+                  style={[
+                    styles.inputContainer,
+                    {
+                      backgroundColor: isDarkMode ? '#2C2C2E' : '#F9FAFB',
+                      borderColor: validationErrors.username || formState.usernameError ? '#F44336' : isDarkMode ? '#3C3C3E' : '#E5E7EB',
+                    },
+                  ]}
+                >
+                  <Ionicons name="at-outline" size={20} color={isDarkMode ? '#A0A0A5' : '#6B7280'} style={styles.inputIcon} />
+                  <TextInput
+                    style={[styles.input, { color: colors.text }]}
+                    placeholder={t('signup.username')}
+                    placeholderTextColor={isDarkMode ? '#A0A0A5' : '#9CA3AF'}
+                    value={formState.username}
+                    onChangeText={handlers.handleUsernameChange}
+                    autoCapitalize="none"
+                    autoCorrect={false}
+                    textContentType="username"
+                    keyboardAppearance={isDarkMode ? 'dark' : 'light'}
+                  />
+                  {formState.usernameChecking ? (
+                    <Ionicons name="time-outline" size={20} color={isDarkMode ? '#A0A0A5' : '#6B7280'} style={styles.inputIcon} />
+                  ) : null}
+                  {formState.usernameValid === true ? (
+                    <Ionicons name="checkmark-circle" size={20} color="#4CAF50" style={styles.inputIcon} />
+                  ) : null}
+                  {formState.usernameValid === false ? (
+                    <Ionicons name="close-circle" size={20} color="#F44336" style={styles.inputIcon} />
+                  ) : null}
+                </View>
+                {(validationErrors.username || formState.usernameError) && (
+                  <ThemedText style={[styles.errorText, { color: '#F44336' }]}>
+                    {validationErrors.username || formState.usernameError}
+                  </ThemedText>
                 )}
 
-                <View style={[styles.inputContainer, { backgroundColor: isDarkMode ? '#2C2C2E' : '#F9FAFB', borderColor: validationErrors.phoneNumber ? '#F44336' : (isDarkMode ? '#3C3C3E' : '#E5E7EB') }]}>
+                <View
+                  style={[
+                    styles.inputContainer,
+                    {
+                      backgroundColor: isDarkMode ? '#2C2C2E' : '#F9FAFB',
+                      borderColor: validationErrors.phoneNumber ? '#F44336' : isDarkMode ? '#3C3C3E' : '#E5E7EB',
+                    },
+                  ]}
+                >
                   <Ionicons name="call-outline" size={20} color={isDarkMode ? '#A0A0A5' : '#6B7280'} style={styles.inputIcon} />
                   <View style={styles.phoneInputContainer}>
                     <ThemedText style={[styles.phonePrefix, { color: colors.text }]}>+251</ThemedText>
@@ -142,121 +169,87 @@ export default function SignupScreen() {
                     />
                   </View>
                 </View>
-                {validationErrors.phoneNumber && <ThemedText style={[styles.errorText, { color: '#F44336' }]}>{validationErrors.phoneNumber}</ThemedText>}
+                {validationErrors.phoneNumber ? (
+                  <ThemedText style={[styles.errorText, { color: '#F44336' }]}>{validationErrors.phoneNumber}</ThemedText>
+                ) : null}
 
-                {role === 'student' && (
-                  <>
-                    <PasswordInput
-                      value={formState.password}
-                      onChangeText={formState.setPassword}
-                      placeholder={t('signup.password')}
-                      autoCapitalize="none"
-                      textContentType="newPassword"
-                      keyboardAppearance={isDarkMode ? 'dark' : 'light'}
-                      error={!!validationErrors.password}
-                      errorMessage={validationErrors.password}
-                    />
-                    <PasswordInput
-                      value={formState.confirmPassword}
-                      onChangeText={formState.setConfirmPassword}
-                      placeholder={t('signup.confirmPassword')}
-                      autoCapitalize="none"
-                      textContentType="newPassword"
-                      error={!!validationErrors.confirmPassword}
-                      errorMessage={validationErrors.confirmPassword}
-                    />
-                  </>
-                )}
+                <PasswordInput
+                  value={formState.password}
+                  onChangeText={formState.setPassword}
+                  placeholder={t('signup.password')}
+                  autoCapitalize="none"
+                  textContentType="newPassword"
+                  keyboardAppearance={isDarkMode ? 'dark' : 'light'}
+                  error={!!validationErrors.password}
+                  errorMessage={validationErrors.password}
+                />
+                <PasswordInput
+                  value={formState.confirmPassword}
+                  onChangeText={formState.setConfirmPassword}
+                  placeholder={t('signup.confirmPassword')}
+                  autoCapitalize="none"
+                  textContentType="newPassword"
+                  error={!!validationErrors.confirmPassword}
+                  errorMessage={validationErrors.confirmPassword}
+                />
 
-                {role === 'parent' && numberOfChildren >= 1 && formState.childrenData.map((child, index) => (
-                  <View key={index} style={styles.childSection}>
-                    <ThemedText style={[styles.childTitle, { color: colors.text }]}>{t(`signup.childrenSelection.child${index + 1}`)}</ThemedText>
-                    <View style={[styles.inputContainer, { backgroundColor: isDarkMode ? '#2C2C2E' : '#F9FAFB', borderColor: validationErrors[`child${index}_fullName`] ? '#F44336' : (isDarkMode ? '#3C3C3E' : '#E5E7EB') }]}>
-                      <Ionicons name="settings-outline" size={20} color={isDarkMode ? '#A0A0A5' : '#6B7280'} style={styles.inputIcon} />
-                      <TextInput
-                        style={[styles.input, { color: colors.text }]}
-                        placeholder={t('signup.fullName')}
-                        placeholderTextColor={isDarkMode ? '#A0A0A5' : '#9CA3AF'}
-                        value={child.fullName}
-                        onChangeText={(text) => handlers.handleChildNameChange(text, index)}
-                      />
-                    </View>
-                    {validationErrors[`child${index}_fullName`] && <ThemedText style={[styles.errorText, { color: '#F44336' }]}>{validationErrors[`child${index}_fullName`]}</ThemedText>}
-                    
-                    <View style={[styles.inputContainer, { backgroundColor: isDarkMode ? '#2C2C2E' : '#F9FAFB', borderColor: validationErrors[`child${index}_username`] ? '#F44336' : (isDarkMode ? '#3C3C3E' : '#E5E7EB') }]}>
-                      <Ionicons name="at-outline" size={20} color={isDarkMode ? '#A0A0A5' : '#6B7280'} style={styles.inputIcon} />
-                      <TextInput
-                        style={[styles.input, { color: colors.text }]}
-                        placeholder={t('signup.username')}
-                        placeholderTextColor={isDarkMode ? '#A0A0A5' : '#9CA3AF'}
-                        value={child.username}
-                        onChangeText={(text) => handlers.handleChildUsernameChange(text, index)}
-                        autoCapitalize="none"
-                        autoCorrect={false}
-                        textContentType="username"
-                        keyboardAppearance={isDarkMode ? 'dark' : 'light'}
-                      />
-                      {child.usernameChecking && <Ionicons name="time-outline" size={20} color={isDarkMode ? '#A0A0A5' : '#6B7280'} style={styles.inputIcon} />}
-                      {child.usernameValid === true && <Ionicons name="checkmark-circle" size={20} color="#4CAF50" style={styles.inputIcon} />}
-                      {child.usernameValid === false && <Ionicons name="close-circle" size={20} color="#F44336" style={styles.inputIcon} />}
-                    </View>
-                    {validationErrors[`child${index}_username`] && <ThemedText style={[styles.errorText, { color: '#F44336' }]}>{validationErrors[`child${index}_username`]}</ThemedText>}
-                    
-                    <PasswordInput
-                      value={child.password}
-                      onChangeText={(text) => handlers.handleChildPasswordChange(text, index)}
-                      placeholder={t('signup.password')}
-                      autoCapitalize="none"
-                      textContentType="newPassword"
-                      autoComplete="off"
-                      spellCheck={false}
-                      error={!!validationErrors[`child${index}_password`]}
-                      errorMessage={validationErrors[`child${index}_password`]}
-                    />
-                    <PasswordInput
-                      value={child.confirmPassword}
-                      onChangeText={(text) => handlers.handleChildConfirmPasswordChange(text, index)}
-                      placeholder={t('signup.confirmPassword')}
-                      autoCapitalize="none"
-                      textContentType="newPassword"
-                      autoComplete="off"
-                      spellCheck={false}
-                      error={!!validationErrors[`child${index}_confirmPassword`]}
-                      errorMessage={validationErrors[`child${index}_confirmPassword`]}
-                    />
+                <View
+                  style={[
+                    styles.inputContainer,
+                    {
+                      backgroundColor: isDarkMode ? '#2C2C2E' : '#F9FAFB',
+                      borderColor: validationErrors.grade ? '#F44336' : isDarkMode ? '#3C3C3E' : '#E5E7EB',
+                    },
+                  ]}
+                >
+                  <Ionicons name="school-outline" size={20} color={isDarkMode ? '#A0A0A5' : '#6B7280'} style={styles.inputIcon} />
+                  <TouchableOpacity style={styles.dropdownButton} onPress={() => handlers.openGradeModal()}>
+                    <ThemedText
+                      style={[styles.input, { color: formState.grade ? colors.text : isDarkMode ? '#A0A0A5' : '#9CA3AF' }]}
+                    >
+                      {formState.grade ? grades.find((g) => g.value === formState.grade)?.label || t('signup.grade.label') : t('signup.grade.label')}
+                    </ThemedText>
+                    <Ionicons name="chevron-down" size={20} color={isDarkMode ? '#A0A0A5' : '#6B7280'} />
+                  </TouchableOpacity>
+                </View>
+                {validationErrors.grade ? (
+                  <ThemedText style={[styles.errorText, { color: '#F44336' }]}>{validationErrors.grade}</ThemedText>
+                ) : null}
 
-                    <View style={[styles.inputContainer, { backgroundColor: isDarkMode ? '#2C2C2E' : '#F9FAFB', borderColor: validationErrors[`child${index}_grade`] ? '#F44336' : (isDarkMode ? '#3C3C3E' : '#E5E7EB') }]}>
-                      <Ionicons name="school-outline" size={20} color={isDarkMode ? '#A0A0A5' : '#6B7280'} style={styles.inputIcon} />
-                      <TouchableOpacity style={styles.dropdownButton} onPress={() => handlers.openGradeModal(index)}>
-                        <ThemedText style={[styles.input, { color: child.grade ? colors.text : (isDarkMode ? '#A0A0A5' : '#9CA3AF') }]}>
-                          {child.grade ? grades.find(g => g.value === child.grade)?.label || t('signup.grade.label') : t('signup.grade.label')}
-                        </ThemedText>
-                        <Ionicons name="chevron-down" size={20} color={isDarkMode ? '#A0A0A5' : '#6B7280'} />
-                      </TouchableOpacity>
-                    </View>
-                    {validationErrors[`child${index}_grade`] && <ThemedText style={[styles.errorText, { color: '#F44336' }]}>{validationErrors[`child${index}_grade`]}</ThemedText>}
-
-                    <View style={[styles.inputContainer, { backgroundColor: isDarkMode ? '#2C2C2E' : '#F9FAFB', borderColor: validationErrors[`child${index}_region`] ? '#F44336' : (isDarkMode ? '#3C3C3E' : '#E5E7EB') }]}>
-                      <Ionicons name="location-outline" size={20} color={isDarkMode ? '#A0A0A5' : '#6B7280'} style={styles.inputIcon} />
-                      <TouchableOpacity style={styles.dropdownButton} onPress={() => handlers.openRegionModal(index)}>
-                        <ThemedText style={[styles.input, { color: child.region ? colors.text : (isDarkMode ? '#A0A0A5' : '#9CA3AF') }]}>
-                          {child.region ? regions.find(r => r.name === child.region)?.name || t('signup.region.label') : t('signup.region.label')}
-                        </ThemedText>
-                        <Ionicons name="chevron-down" size={20} color={isDarkMode ? '#A0A0A5' : '#6B7280'} />
-                      </TouchableOpacity>
-                    </View>
-                  </View>
-                ))}
+                <View
+                  style={[
+                    styles.inputContainer,
+                    {
+                      backgroundColor: isDarkMode ? '#2C2C2E' : '#F9FAFB',
+                      borderColor: isDarkMode ? '#3C3C3E' : '#E5E7EB',
+                    },
+                  ]}
+                >
+                  <Ionicons name="location-outline" size={20} color={isDarkMode ? '#A0A0A5' : '#6B7280'} style={styles.inputIcon} />
+                  <TouchableOpacity style={styles.dropdownButton} onPress={() => handlers.openRegionModal()}>
+                    <ThemedText
+                      style={[styles.input, { color: formState.region ? colors.text : isDarkMode ? '#A0A0A5' : '#9CA3AF' }]}
+                    >
+                      {formState.region ? regions.find((r) => r.name === formState.region)?.name || t('signup.region.label') : t('signup.region.label')}
+                    </ThemedText>
+                    <Ionicons name="chevron-down" size={20} color={isDarkMode ? '#A0A0A5' : '#6B7280'} />
+                  </TouchableOpacity>
+                </View>
               </View>
 
-              {formState.error && (
+              {formState.error ? (
                 <View style={styles.errorContainer}>
                   <ThemedText style={styles.errorText}>{formState.error}</ThemedText>
                 </View>
-              )}
+              ) : null}
 
               <View style={styles.termsContainer}>
-                <Checkbox value={formState.acceptTerms} onValueChange={formState.setAcceptTerms} color={formState.acceptTerms ? '#4F46E5' : undefined} style={styles.checkbox} />
+                <Checkbox
+                  value={formState.acceptTerms}
+                  onValueChange={formState.setAcceptTerms}
+                  color={formState.acceptTerms ? '#4F46E5' : undefined}
+                  style={styles.checkbox}
+                />
                 <View style={styles.termsTextContainer}>
                   <ThemedText style={[styles.termsText, { color: isDarkMode ? '#A0A0A5' : '#6B7280' }]}>{t('signup.terms.prefix')}</ThemedText>
                   <TouchableOpacity onPress={() => formState.setShowTermsModal(true)}>
@@ -264,10 +257,12 @@ export default function SignupScreen() {
                   </TouchableOpacity>
                 </View>
               </View>
-              {validationErrors.acceptTerms && <ThemedText style={[styles.errorText, { color: '#F44336' }]}>{validationErrors.acceptTerms}</ThemedText>}
+              {validationErrors.acceptTerms ? (
+                <ThemedText style={[styles.errorText, { color: '#F44336' }]}>{validationErrors.acceptTerms}</ThemedText>
+              ) : null}
 
-              <TouchableOpacity 
-                style={[styles.signupButton, (!formState.acceptTerms || formState.isSubmitting) && styles.signupButtonDisabled]} 
+              <TouchableOpacity
+                style={[styles.signupButton, (!formState.acceptTerms || formState.isSubmitting) && styles.signupButtonDisabled]}
                 onPress={handleSubmit}
                 activeOpacity={0.8}
                 disabled={!formState.acceptTerms || formState.isSubmitting}
@@ -297,25 +292,20 @@ export default function SignupScreen() {
         visible={formState.showGradeModal}
         onClose={() => formState.setShowGradeModal(false)}
         onSelect={handlers.handleGradeSelect}
-        selectedChildIndex={formState.selectedChildIndex}
+        selectedChildIndex={null}
         selectedGrade={formState.grade}
-        childrenGrades={formState.childrenData.map(c => c.grade)}
       />
 
       <RegionPickerModal
         visible={formState.showRegionModal}
         onClose={() => formState.setShowRegionModal(false)}
         onSelect={handlers.handleRegionSelect}
-        selectedChildIndex={formState.selectedChildIndex}
+        selectedChildIndex={null}
         selectedRegion={formState.region}
-        childrenRegions={formState.childrenData.map(c => c.region)}
         regions={regions}
       />
 
-      <TermsModal
-        visible={formState.showTermsModal}
-        onClose={() => formState.setShowTermsModal(false)}
-      />
+      <TermsModal visible={formState.showTermsModal} onClose={() => formState.setShowTermsModal(false)} />
     </SafeAreaView>
   );
 }
