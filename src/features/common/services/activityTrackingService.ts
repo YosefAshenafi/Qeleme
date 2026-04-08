@@ -555,7 +555,7 @@ class ActivityTrackingService {
       correctAnswers: data.correctAnswers,
       timeSpent: data.timeSpent,
       duration: Math.round(data.timeSpent / 60),
-      details: `Completed ${data.questionsAnswered} KG questions in ${data.categoryName}`,
+      details: `Completed ${data.questionsAnswered} kindergarten questions in ${data.categoryName}`,
       status: 'completed',
     });
   }

@@ -11,7 +11,7 @@ type HomeQuickAccessSectionProps = {
   quickCardBorder: string;
   isDarkMode: boolean;
   sectionTitle: string;
-  practiceLabel: string;
+  subjectsLabel: string;
   flashcardsLabel: string;
 };
 
@@ -21,7 +21,7 @@ export function HomeQuickAccessSection({
   quickCardBorder,
   isDarkMode,
   sectionTitle,
-  practiceLabel,
+  subjectsLabel,
   flashcardsLabel,
 }: HomeQuickAccessSectionProps) {
   return (
@@ -36,7 +36,7 @@ export function HomeQuickAccessSection({
           <View style={[styles.quickAccessIconCircle, { backgroundColor: isDarkMode ? '#1E3A5F' : '#E3F2FD' }]}>
             <IconSymbol name="book.fill" size={26} color="#0F4BD7" />
           </View>
-          <ThemedText style={[styles.quickAccessLabel, { color: sectionHeadingColor }]}>{practiceLabel}</ThemedText>
+          <ThemedText style={[styles.quickAccessLabel, { color: sectionHeadingColor }]}>{subjectsLabel}</ThemedText>
         </TouchableOpacity>
         <TouchableOpacity
           style={[styles.quickAccessCard, { backgroundColor: quickCardBg, borderColor: quickCardBorder }]}

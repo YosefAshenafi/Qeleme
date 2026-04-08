@@ -24,7 +24,7 @@ export default {
     },
     quickAccess: {
       sectionTitle: 'Recent Access',
-      practiceLabel: 'Practice',
+      subjectsLabel: 'Subjects',
       flashcardsLabel: 'Flashcards',
       reportsLabel: 'Reports',
     },
@@ -218,7 +218,7 @@ export default {
       homework: 'Homework',
       flashcard: 'Flashcards',
       mcq: 'MCQ Quiz',
-      kg_question: 'KG Question',
+      kg_question: 'Kindergarten',
       picture_mcq: 'Picture Quiz'
     },
     status: {

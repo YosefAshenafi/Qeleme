@@ -24,7 +24,7 @@ export default {
     },
     quickAccess: {
       sectionTitle: 'ፈጣን መዳረሻ',
-      practiceLabel: 'ልምምድ',
+      subjectsLabel: 'ትምህርቶች',
       flashcardsLabel: 'ፍላሽ ካርዶች',
       reportsLabel: 'ሪፖርቶች',
     },
@@ -460,7 +460,7 @@ export default {
       homework: 'የቤት ስራ',
       flashcard: 'ፍላሽ ካርዶች',
       mcq: 'ምርጫ ፈተና',
-      kg_question: 'ኪጂ ጥያቄ',
+      kg_question: 'ኪንደርጋርተን',
       picture_mcq: 'የምስል ፈተና'
     },
     status: {

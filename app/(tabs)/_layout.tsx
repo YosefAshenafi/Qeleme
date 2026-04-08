@@ -94,7 +94,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="practice"
         options={{
-          title: t('navigation.tabs.practice'),
+          title: t('navigation.tabs.subjects'),
           tabBarIcon: ({ color, focused }) => (
             <IconSymbol name={focused ? 'book.fill' : 'book'} size={focused ? 26 : 24} color={color} />
           ),

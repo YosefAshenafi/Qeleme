@@ -49,7 +49,7 @@ export default function HomeScreen() {
                 quickCardBorder={h.quickCardBorder}
                 isDarkMode={h.isDarkMode}
                 sectionTitle={h.t('home.quickAccess.sectionTitle')}
-                practiceLabel={h.t('home.quickAccess.practiceLabel')}
+                subjectsLabel={h.t('home.quickAccess.subjectsLabel')}
                 flashcardsLabel={h.t('home.quickAccess.flashcardsLabel')}
               />
 
