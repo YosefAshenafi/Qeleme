@@ -538,7 +538,7 @@ export default {
       goToInstructions: 'ወደ መመሪያዎች ይሂዱ',
       unauthorizedText: 'ይህን ባህሪ ለመጠቀም ፈቃድ ያስፈልግዎታል።',
       noQuestionsAvailable: 'ለዚህ ክፍል ጥያቄዎች አልተዘጋጁም።',
-      dragInstruction: 'ምስሉን ጎትተው ከታች ካሉት መልሶች ላይ ይጣሉ',
+      dragInstruction: 'ምስሉን ወደ መልስ ይጎትቱ ወይም መልስ ለመምረጥ ይንኩ',
       instructions: {
         look: {
           title: 'ምስሉን ተመልከት',
@@ -546,7 +546,7 @@ export default {
         },
         drag: {
           title: 'ጎትት እና አስቀምጥ',
-          description: 'ምስሉን ወደ ትክክለኛው መልስ አማራጭ ይጎትቱ።'
+          description: 'መልስ ለመምረጥ ይንኩ ፣ ወይም ምስሉን ወደ መልስ ይጎትቱ።'
         },
         next: {
           title: 'ወደ ቀጣይ ይሂዱ',

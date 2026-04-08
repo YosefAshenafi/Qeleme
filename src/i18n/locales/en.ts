@@ -611,7 +611,7 @@ export default {
       goToInstructions: 'Go to Instructions',
       unauthorizedText: 'You need to be authorized to access this feature.',
       noQuestionsAvailable: 'No questions available for this grade yet.',
-      dragInstruction: 'Drag the picture and drop to the answer',
+      dragInstruction: 'Drag the picture onto an answer, or tap an answer to select it',
       instructions: {
         look: {
           title: 'Look at the Image',
@@ -619,7 +619,7 @@ export default {
         },
         drag: {
           title: 'Drag and Drop',
-          description: 'Drag the image to the correct answer option.'
+          description: 'Tap an answer to select it or drag the picture onto an answer.'
         },
         next: {
           title: 'Move to Next',
