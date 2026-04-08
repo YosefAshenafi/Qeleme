@@ -1,6 +1,6 @@
 import { StyleSheet } from 'react-native';
 
-export const KGSubcategoriesScreenStyles = StyleSheet.create({
+export const EarlySubcategoriesScreenStyles = StyleSheet.create({
   container: {
     flex: 1,
   },

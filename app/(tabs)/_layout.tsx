@@ -19,7 +19,7 @@ export default function TabLayout() {
   const insets = useSafeAreaInsets();
 
   if (typeof user?.grade === 'string' && user.grade.toLowerCase().includes('kg')) {
-    return <Redirect href="/kg-dashboard" />;
+    return <Redirect href="/early-dashboard" />;
   }
 
   const headerBg = isDarkMode ? TAB_LAYOUT.headerBgDark : TAB_LAYOUT.headerBgLight;

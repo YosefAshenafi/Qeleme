@@ -1,7 +1,8 @@
 import { useState, useCallback, useEffect } from 'react';
 import { Image } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { getKGQuestions, getKGSubcategoryQuestions, getKGCategories, KGQuestion, KGCategory } from '@/features/common/services/kgService';
+import { getKGQuestions, getKGSubcategoryQuestions, getKGCategories, KGQuestion, KGCategory } from '@/features/common/services/earlyService';
+import { resolveKgQuestionImageUrl } from '../utils/resolveKgQuestionImageUrl';
 
 export interface Option {
   id: string;
@@ -64,7 +65,7 @@ export function useQuizData(categoryId: string, subcategoryId?: string, isSubcat
   const transformQuestions = useCallback((apiQuestions: KGQuestion[]): Question[] => {
     return apiQuestions.map((apiQuestion) => ({
       id: apiQuestion.id,
-      image: apiQuestion.image_url,
+      image: resolveKgQuestionImageUrl(apiQuestion.image_url),
       options: apiQuestion.choices.map((choice, choiceIndex) => ({
         id: String.fromCharCode(65 + choiceIndex),
         text: choice.text_en,

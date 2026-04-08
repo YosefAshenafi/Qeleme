@@ -1,6 +1,6 @@
 import { StyleSheet } from 'react-native';
 
-export const KGCategoryInstructionsScreenStyles = StyleSheet.create({
+export const EarlyCategoryInstructionsScreenStyles = StyleSheet.create({
   container: {
     flex: 1,
   },

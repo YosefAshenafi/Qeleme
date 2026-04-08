@@ -5,17 +5,17 @@ import { useRouter } from 'expo-router';
 import { useTheme } from '@/core/providers/ThemeProvider';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '@/core/providers/AuthProvider';
-import { getKGCategories, KGCategory } from '@/features/common/services/kgService';
+import { getKGCategories, KGCategory } from '@/features/common/services/earlyService';
 import { LanguageToggle } from '@/features/common/components/ui/LanguageToggle';
 import { KG_DESIGN_TOKENS } from '../constants/DesignTokens';
-import { KGDashboardScreenStyles as styles } from './KGDashboardScreen.styles';
+import { EarlyDashboardScreenStyles as styles } from './EarlyDashboardScreen.styles';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Ionicons } from '@expo/vector-icons';
 
 import { ExplorerHero } from '../components/dashboard/ExplorerHero';
 import { BentoCard } from '../components/dashboard/BentoCard';
 
-export default function KGDashboardScreen() {
+export default function EarlyDashboardScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const { isDarkMode } = useTheme();
@@ -103,10 +103,10 @@ export default function KGDashboardScreen() {
   const handleCategoryPress = (category: KGCategory) => {
     const categoryName = i18n.language === 'am' ? category.name_am : category.name_en;
     if (category.has_subcategories) {
-      router.push(`/kg-subcategories?categoryId=${category.id}&categoryName=${categoryName}`);
+      router.push(`/early-subcategories?categoryId=${category.id}&categoryName=${categoryName}`);
     } else {
       router.push({
-        pathname: '/picture-mcq',
+        pathname: '/early-picture',
         params: { category: categoryName, categoryId: category.id }
       });
     }

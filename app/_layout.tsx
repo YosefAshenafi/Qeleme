@@ -47,7 +47,7 @@ function RootNavigator() {
         <Stack.Screen name="(auth)" />
         <Stack.Screen name="(tabs)" />
         <Stack.Screen name="(user)" />
-        <Stack.Screen name="(kg)" />
+        <Stack.Screen name="(early)" />
       </Stack>
       <StatusBar style={isDarkMode ? 'light' : 'dark'} />
     </NavigationThemeProvider>

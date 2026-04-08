@@ -10,7 +10,7 @@ import { LanguageToggle } from '@/features/common/components/ui/LanguageToggle';
 import { IconSymbol } from '@/features/common/components/ui/IconSymbol';
 import { BentoCard } from '../components/dashboard/BentoCard';
 import { useAuth } from '@/core/providers/AuthProvider';
-import { getKGSubcategories, KGSubcategory } from '@/features/common/services/kgService';
+import { getKGSubcategories, KGSubcategory } from '@/features/common/services/earlyService';
 import Animated, { 
   useAnimatedStyle, 
   useSharedValue, 
@@ -24,12 +24,10 @@ import Animated, {
 import { 
   getSubcategoryNameByLanguage,
   ANIMATION_CONFIG
-} from '@/features/common/constants/KGSubcategories';
-import { KGSubcategoriesScreenStyles as styles } from './KGSubcategoriesScreen.styles';
+} from '@/features/common/constants/EarlySubcategories';
+import { EarlySubcategoriesScreenStyles as styles } from './EarlySubcategoriesScreen.styles';
 
-const { width } = Dimensions.get('window');
-
-export default function KGSubcategoriesScreen() {
+export default function EarlySubcategoriesScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const { categoryId, categoryName } = useLocalSearchParams();
@@ -86,7 +84,7 @@ export default function KGSubcategoriesScreen() {
 
   const handleSubcategoryPress = (subcategory: KGSubcategory) => {
     const subcategoryName = getSubcategoryNameByLanguage(subcategory, i18n.language);
-    router.push(`/kg-category/instructions?category=${subcategoryName}&subcategoryId=${subcategory.id}&hasSubcategories=false`);
+    router.push(`/early-category/instructions?category=${subcategoryName}&subcategoryId=${subcategory.id}&hasSubcategories=false` as any);
   };
 
   const handleBackPress = () => {
@@ -193,7 +191,7 @@ export default function KGSubcategoriesScreen() {
                       icon="🌟"
                       onPress={() => {
                         router.push({
-                          pathname: '/picture-mcq',
+                          pathname: '/early-picture',
                           params: { 
                             category: categoryName, 
                             categoryId: categoryId,

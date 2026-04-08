@@ -11,7 +11,6 @@ MegaTest does **not** include AI-generated tutoring, chatbots, or similar featur
 - **Flashcards** — grade- and chapter-scoped decks  
 - **Profile & reports** — student profile, stats, account settings  
 - **Payments** — plan selection and checkout (return URL uses the `megatest://` app scheme)  
-- **Kindergarten** — picture MCQ and category flows where enabled in the app  
 
 ## Tech stack
 
@@ -27,14 +26,14 @@ MegaTest does **not** include AI-generated tutoring, chatbots, or similar featur
 
 | Layer | Path | Role |
 |--------|------|------|
-| **Routes** | `app/` | Expo Router only: URL groups `(auth)`, `(tabs)`, `(kg)`, and the entry `index`. Files are thin re-exports such as `export { default } from '@/features/.../Screen'`. |
+| **Routes** | `app/` | Expo Router only: URL groups `(auth)`, `(tabs)`, and the entry `index`. Files are thin re-exports such as `export { default } from '@/features/.../Screen'`. |
 | **Source** | `src/` | All product code: screens, API services, shared UI, providers, theme, i18n, config, and types. |
 | **Assets** | `assets/` | Images, fonts, Lottie; referenced by the `@/assets/*` alias. |
 | **Native** | `ios/`, `android/` | Generated native projects for dev builds (`expo run:ios` / `expo run:android`). |
 
 ### Inside `src/`
 
-Product code is organized **by feature** under `src/features/`. Each domain folder (`auth`, `kg`, `home`, …) may include **`components/`**, **`hooks/`**, **`constants/`**, **`utils/`**, **`services/`**, and **`types/`** as needed—keep feature-owned code inside that feature.
+Product code is organized **by feature** under `src/features/`. Each domain folder (`auth`, `home`, `practice`, `flashcards`, `profile`, `reports`, …) may include **`components/`**, **`hooks/`**, **`constants/`**, **`utils/`**, **`services/`**, and **`types/`** as needed—keep feature-owned code inside that feature.
 
 **Cross-feature** code (nothing fits a single domain) lives under **`src/features/common/`** with the same kinds of subfolders (`components`, `hooks`, `constants`, `utils`, `services`, `types`). Prefer the name **`common`** for this folder.
 
@@ -54,10 +53,9 @@ Shared UI, services, utils, constants, and types now live under **`src/features/
 
 ### Navigation (high level)
 
-- **`app/index.tsx`** → `IndexScreen`: redirects by auth and grade (e.g. kindergarten → KG stack, signed-in → tabs, else → welcome).  
+- **`app/index.tsx`** → `IndexScreen`: redirects by auth and grade (signed-in → tabs, else → welcome).  
 - **`(auth)`** — welcome, login, signup, forgot/reset password, OTP, plan selection, payment, onboarding, etc. (student accounts only).  
-- **`(tabs)`** — home, practice, flashcards, reports, profile; KG users are redirected to the KG flow.  
-- **`(kg)`** — kindergarten dashboard and related screens.
+- **`(tabs)`** — home, practice, flashcards, reports, profile.
 
 ## API configuration
 

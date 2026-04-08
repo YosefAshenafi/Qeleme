@@ -1,6 +1,6 @@
 import { StyleSheet } from 'react-native';
 
-export const KGDashboardScreenStyles = StyleSheet.create({
+export const EarlyDashboardScreenStyles = StyleSheet.create({
   container: {
     flex: 1,
   },

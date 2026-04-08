@@ -512,7 +512,7 @@ export function usePracticeScreen() {
       
       
       if (typeof user?.grade === 'string' && user.grade.toLowerCase().includes('kg')) {
-        router.replace('/kg-dashboard');
+        router.replace('/early-dashboard');
       }
     };
     checkPhoneNumber();

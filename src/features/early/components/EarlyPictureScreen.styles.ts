@@ -1,7 +1,8 @@
 import { StyleSheet } from 'react-native';
+import { EARLY_PICTURE_DROP_TARGET_BORDER_WIDTH } from '../constants/EarlyPictureScreen.constants';
 import { KG_DESIGN_TOKENS } from '../constants/DesignTokens';
 
-export const PictureMCQStyles = StyleSheet.create({
+export const EarlyPictureScreenStyles = StyleSheet.create({
   safeArea: {
     flex: 1,
     backgroundColor: 'transparent',
@@ -207,6 +208,15 @@ export const PictureMCQStyles = StyleSheet.create({
     shadowOpacity: 0.5,
     shadowRadius: 12,
     elevation: 10,
+  },
+  kgOptionButtonDropTarget: {
+    borderWidth: EARLY_PICTURE_DROP_TARGET_BORDER_WIDTH,
+    borderColor: KG_DESIGN_TOKENS.colors.primary,
+    shadowColor: KG_DESIGN_TOKENS.colors.primary,
+    shadowOpacity: 0.45,
+    shadowRadius: 14,
+    shadowOffset: { width: 0, height: 0 },
+    elevation: 12,
   },
   kgOptionText: {
     color: '#FFFFFF',

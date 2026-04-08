@@ -20,7 +20,7 @@ export default function Index() {
   if (isAuthenticated) {
     
     if (typeof user?.grade === 'string' && user.grade.toLowerCase().includes('kg')) {
-      return <Redirect href="/kg-dashboard" />;
+      return <Redirect href="/early-dashboard" />;
     }
     
     return <Redirect href="/(tabs)" />;

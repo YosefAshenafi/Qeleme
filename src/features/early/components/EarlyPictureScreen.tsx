@@ -1,10 +1,10 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { TouchableOpacity, ScrollView, View, Text, ActivityIndicator, Image } from 'react-native';
+import { TouchableOpacity, View, Text, ActivityIndicator, Image, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import { router, useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { GestureHandlerRootView, GestureDetector, Gesture } from 'react-native-gesture-handler';
+import { GestureHandlerRootView, GestureDetector, Gesture, ScrollView } from 'react-native-gesture-handler';
 import Animated, { useAnimatedStyle, useSharedValue, withSpring, runOnJS } from 'react-native-reanimated';
 import * as Haptics from 'expo-haptics';
 import { useTranslation } from 'react-i18next';
@@ -21,7 +21,7 @@ import { IconSymbol } from '@/features/common/components/ui/IconSymbol';
 import { LanguageToggle } from '@/features/common/components/ui/LanguageToggle';
 import { ImageSkeleton } from '@/features/common/components/ui/ImageSkeleton';
 import RichText from '@/features/common/components/ui/RichText';
-import { PictureMCQStyles as styles } from './PictureMCQScreen.styles';
+import { EarlyPictureScreenStyles as styles } from './EarlyPictureScreen.styles';
 import { useQuizSettings } from '../hooks/useQuizSettings';
 import { useQuizSounds } from '../hooks/useQuizSounds';
 import { useQuizData, type Question } from '../hooks/useQuizData';
@@ -29,68 +29,91 @@ import { FireworkBurst } from './FireworkBurst';
 import { ShakeOverlay } from './ShakeOverlay';
 import { QuizSettingsModal } from './QuizSettingsModal';
 
-interface PictureMCQScreenProps {
-  onBackToInstructions: () => void;
+interface EarlyPictureScreenProps {
+  onBackToInstructions?: () => void;
+  question?: any;
+  imageStates?: any;
+  setImageStates?: any;
+  colors?: any;
+  t?: any;
 }
 
-const QuestionImage = React.memo(({
-  question,
-  imageStates,
-  setImageStates,
-  colors,
-  t
-}: {
+type QuestionImageProps = {
   question: Question;
-  imageStates: { [key: number]: { loading: boolean; error: boolean; loaded: boolean } };
-  setImageStates: React.Dispatch<React.SetStateAction<{ [key: number]: { loading: boolean; error: boolean; loaded: boolean } }>>;
-  colors: any;
-  t: any;
-}) => {
-  const imageState = imageStates[question.id] || { loading: true, error: false, loaded: false };
+  setImageStates: React.Dispatch<React.SetStateAction<Record<number, { loading: boolean; error: boolean; loaded: boolean }>>>;
+  colors: ReturnType<typeof getColors>;
+};
+
+const QuestionImage = React.memo(({ question, setImageStates, colors }: QuestionImageProps) => {
+  const imageUri = typeof question.image === 'string' ? question.image.trim() : '';
+  const [imageReady, setImageReady] = useState(false);
+  const [imageFailed, setImageFailed] = useState(false);
+
+  useEffect(() => {
+    setImageReady(false);
+    setImageFailed(false);
+  }, [question.id, imageUri]);
+
+  if (!imageUri) {
+    return (
+      <View style={styles.imageErrorContainer}>
+        <ThemedText style={[styles.imageErrorText, { color: colors.text }]}>
+          {i18n.t('mcq.pictureQuiz.noImage', 'No image for this question')}
+        </ThemedText>
+      </View>
+    );
+  }
 
   return (
-    <>
-      {(!imageState.loaded && !imageState.error && question.image) && (
-        <ImageSkeleton
-          width="100%"
-          height="100%"
-          style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, zIndex: 1 }}
-        />
-      )}
-      {question.image && !imageState.error && (
-        <Image
-          key={`question-image-${question.id}`}
-          source={{ uri: question.image }}
-          style={styles.questionImage}
-          resizeMode="contain"
-          onLoadStart={() => {
-            setImageStates(prev => {
-              const existing = prev[question.id];
-              if (existing && existing.loaded) return prev;
-              return { ...prev, [question.id]: { loading: true, error: false, loaded: false } };
-            });
-          }}
-          onLoad={() => {
-            setImageStates(prev => ({ ...prev, [question.id]: { loading: false, error: false, loaded: true } }));
-          }}
-          onError={() => {
-            setImageStates(prev => ({ ...prev, [question.id]: { loading: false, error: true, loaded: false } }));
-          }}
-        />
-      )}
-      {imageState.error && (
-        <View style={styles.imageErrorContainer}>
-          <IconSymbol name="photo" size={48} color={colors.text} />
-          <ThemedText style={[styles.imageErrorText, { color: colors.text }]}>
-            {t('common.imageLoadError', 'Image failed to load')}
-          </ThemedText>
+    <View style={questionImageInner.container}>
+      {!imageReady && !imageFailed && (
+        <View style={StyleSheet.absoluteFillObject} pointerEvents="none">
+          <ImageSkeleton width="100%" height="100%" borderRadius={0} />
         </View>
       )}
-    </>
+      {imageFailed ? (
+        <View style={styles.imageErrorContainer}>
+          <ThemedText style={[styles.imageErrorText, { color: colors.text }]}>
+            {i18n.t('mcq.pictureQuiz.imageLoadError', 'Could not load image')}
+          </ThemedText>
+        </View>
+      ) : (
+        <Image
+          style={[styles.questionImage, !imageReady && questionImageInner.hiddenWhileLoading]}
+          source={{ uri: imageUri }}
+          resizeMode="contain"
+          onLoad={() => {
+            setImageReady(true);
+            setImageStates((prev) => ({
+              ...prev,
+              [question.id]: { loading: false, error: false, loaded: true },
+            }));
+          }}
+          onError={() => {
+            setImageFailed(true);
+            setImageReady(false);
+            setImageStates((prev) => ({
+              ...prev,
+              [question.id]: { loading: false, error: true, loaded: false },
+            }));
+          }}
+        />
+      )}
+    </View>
   );
 });
 
-export default function PictureMCQScreen({ onBackToInstructions }: PictureMCQScreenProps) {
+const questionImageInner = StyleSheet.create({
+  container: {
+    width: '100%',
+    height: '100%',
+  },
+  hiddenWhileLoading: {
+    opacity: 0,
+  },
+});
+
+export default function EarlyPictureScreen({ onBackToInstructions }: EarlyPictureScreenProps) {
   const { isDarkMode } = useTheme();
   const { user, logout } = useAuth();
   const colors = getColors(isDarkMode);
@@ -106,7 +129,7 @@ export default function PictureMCQScreen({ onBackToInstructions }: PictureMCQScr
   } = useQuizSettings();
   const { playCorrectSound, playIncorrectSound } = useQuizSounds(soundEnabled);
   const {
-    questions, loading, error, allCategories, nextCategory, imageStates, setImageStates,
+    questions, loading, error, allCategories, nextCategory, setImageStates,
     fetchQuestions, preloadImages,
   } = useQuizData(categoryId, subcategoryId, isSubcategory);
 
@@ -122,10 +145,15 @@ export default function PictureMCQScreen({ onBackToInstructions }: PictureMCQScr
   const [showCorrectVideo, setShowCorrectVideo] = useState(false);
   const [showIncorrectVideo, setShowIncorrectVideo] = useState(false);
   const [sessionStartTime, setSessionStartTime] = useState<number | null>(null);
+  const [isImageDragging, setIsImageDragging] = useState(false);
   const [dropZones, setDropZones] = useState<{ [key: string]: { x: number; y: number; width: number; height: number } }>({});
 
   const dropZonesRef = useRef(dropZones);
   dropZonesRef.current = dropZones;
+
+  const scrollRef = useRef<React.ElementRef<typeof ScrollView>>(null);
+  const optionRowRefs = useRef<Record<string, View | null>>({});
+  const interactionLocked = useSharedValue(false);
 
   const updateDropZone = useCallback((optionId: string, zone: { x: number; y: number; width: number; height: number }) => {
     setDropZones(prev => {
@@ -135,17 +163,24 @@ export default function PictureMCQScreen({ onBackToInstructions }: PictureMCQScr
     });
   }, []);
 
-  useEffect(() => {
-    setDropZones({});
-  }, [currentQuestionIndex]);
-
   const imagePosition = useSharedValue({ x: 0, y: 0 });
   const imageScale = useSharedValue(1);
   const isDraggingShared = useSharedValue(false);
   const hoveredOptionShared = useSharedValue<string | null>(null);
+  const lastPointerAbs = useSharedValue({ x: 0, y: 0 });
 
   const currentQuestion = questions[currentQuestionIndex];
   const percentage = Math.round((score / questions.length) * 100);
+
+  const measureAllOptionZones = useCallback(() => {
+    if (!currentQuestion) return;
+    currentQuestion.options.forEach((option) => {
+      const node = optionRowRefs.current[option.id];
+      node?.measureInWindow((pageX, pageY, w, h) => {
+        updateDropZone(option.id, { x: pageX, y: pageY, width: w, height: h });
+      });
+    });
+  }, [currentQuestion, updateDropZone]);
 
   const getLocalizedCategoryName = useCallback(() => {
     if (!categoryId || allCategories.length === 0) {
@@ -168,70 +203,107 @@ export default function PictureMCQScreen({ onBackToInstructions }: PictureMCQScr
     setHoveredOption(optionId);
   }, []);
 
+  const setImageDragging = useCallback((dragging: boolean) => {
+    setIsImageDragging(dragging);
+  }, []);
+
   const handleAnswerSelection = useCallback((optionId: string) => {
     if (!currentQuestion) return;
+    if (interactionLocked.value) return;
     const selectedOption = currentQuestion.options.find(opt => opt.id === optionId);
-    if (selectedOption) {
-      setDroppedOption(optionId);
-      setSelectedAnswer(optionId);
-      if (selectedOption.isCorrect) {
-        setScore(prev => prev + 1);
-        setShowCorrectVideo(true);
-        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-        playCorrectSound();
-      } else {
-        setShowIncorrectVideo(true);
-        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
-        playIncorrectSound();
-      }
+    if (!selectedOption) return;
+    interactionLocked.value = true;
+    setDroppedOption(optionId);
+    setSelectedAnswer(optionId);
+    if (selectedOption.isCorrect) {
+      setScore(prev => prev + 1);
+      setShowCorrectVideo(true);
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      playCorrectSound();
+    } else {
+      setShowIncorrectVideo(true);
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+      playIncorrectSound();
     }
   }, [currentQuestion, playCorrectSound, playIncorrectSound]);
 
+  const finishDrop = useCallback((absoluteX: number, absoluteY: number, fallbackOptionId: string | null) => {
+    if (interactionLocked.value) return;
+    if (!currentQuestion) return;
+    const opts = currentQuestion.options;
+    if (opts.length === 0) return;
+    let pending = 0;
+    let resolvedHit: string | null = null;
+    opts.forEach((opt) => {
+      const node = optionRowRefs.current[opt.id];
+      if (!node) return;
+      pending += 1;
+      node.measureInWindow((px, py, w, h) => {
+        if (absoluteX >= px && absoluteX <= px + w && absoluteY >= py && absoluteY <= py + h) {
+          if (!resolvedHit) resolvedHit = opt.id;
+        }
+        pending -= 1;
+        if (pending === 0) {
+          const final =
+            resolvedHit || (fallbackOptionId && opts.some((o) => o.id === fallbackOptionId) ? fallbackOptionId : null);
+          if (final) handleAnswerSelection(final);
+        }
+      });
+    });
+    if (pending === 0) {
+      const final =
+        resolvedHit || (fallbackOptionId && opts.some((o) => o.id === fallbackOptionId) ? fallbackOptionId : null);
+      if (final) handleAnswerSelection(final);
+    }
+  }, [currentQuestion, handleAnswerSelection]);
+
   const imagePan = Gesture.Pan()
+    .simultaneousWithExternalGesture(scrollRef as unknown as React.RefObject<React.ComponentType<unknown>>)
     .onStart(() => {
       'worklet';
-      if (droppedOption) return;
+      if (interactionLocked.value) return;
+      runOnJS(measureAllOptionZones)();
+      runOnJS(setImageDragging)(true);
       isDraggingShared.value = true;
       imageScale.value = withSpring(0.5);
     })
     .onUpdate((event) => {
       'worklet';
-      if (droppedOption) return;
+      if (interactionLocked.value) return;
       imagePosition.value = { x: event.translationX, y: event.translationY };
-      const imageCenterX = event.absoluteX;
-      const imageCenterY = event.absoluteY;
-      let closestOption: string | null = null;
-      let minDistance = Infinity;
+      const absX = event.absoluteX;
+      const absY = event.absoluteY;
+      lastPointerAbs.value = { x: absX, y: absY };
       const zones = dropZonesRef.current;
       const zoneKeys = Object.keys(zones);
-      if (zoneKeys.length === 0) {
-        return;
-      }
-      zoneKeys.forEach((optionId) => {
-        const zone = zones[optionId];
-        const zoneCenterX = zone.x + zone.width / 2;
-        const zoneCenterY = zone.y + zone.height / 2;
-        const distance = Math.sqrt(Math.pow(imageCenterX - zoneCenterX, 2) + Math.pow(imageCenterY - zoneCenterY, 2));
-        if (distance < minDistance) {
-          minDistance = distance;
-          closestOption = optionId;
+      let hovered: string | null = null;
+      for (let i = 0; i < zoneKeys.length; i++) {
+        const optionId = zoneKeys[i];
+        const z = zones[optionId];
+        if (absX >= z.x && absX <= z.x + z.width && absY >= z.y && absY <= z.y + z.height) {
+          hovered = optionId;
+          break;
         }
-      });
-      runOnJS(updateHoveredOption)(closestOption);
-      hoveredOptionShared.value = closestOption;
+      }
+      runOnJS(updateHoveredOption)(hovered);
+      hoveredOptionShared.value = hovered;
     })
-    .onEnd(() => {
+    .onEnd((event) => {
       'worklet';
-      if (droppedOption) return;
+      if (interactionLocked.value) return;
       isDraggingShared.value = false;
       imageScale.value = withSpring(1);
       imagePosition.value = withSpring({ x: 0, y: 0 });
-      runOnJS(updateHoveredOption)(null);
-      const currentHoveredOption = hoveredOptionShared.value;
-      if (currentHoveredOption) {
-        runOnJS(handleAnswerSelection)(currentHoveredOption);
-      }
+      const fallbackHover = hoveredOptionShared.value;
       hoveredOptionShared.value = null;
+      runOnJS(updateHoveredOption)(null);
+      const absX = typeof event.absoluteX === 'number' ? event.absoluteX : lastPointerAbs.value.x;
+      const absY = typeof event.absoluteY === 'number' ? event.absoluteY : lastPointerAbs.value.y;
+      runOnJS(finishDrop)(absX, absY, fallbackHover);
+    })
+    .onFinalize(() => {
+      'worklet';
+      runOnJS(setImageDragging)(false);
     });
 
   useEffect(() => {
@@ -245,6 +317,8 @@ export default function PictureMCQScreen({ onBackToInstructions }: PictureMCQScr
   }, [user]);
 
   useEffect(() => {
+    interactionLocked.value = false;
+    optionRowRefs.current = {};
     setDropZones({});
   }, [currentQuestionIndex]);
 
@@ -262,14 +336,13 @@ export default function PictureMCQScreen({ onBackToInstructions }: PictureMCQScr
       setShowIncorrectVideo(false);
       setDroppedOption(null);
       setHoveredOption(null);
-      setDropZones({});
     } else {
       setShowResult(true);
     }
   }, [currentQuestion, currentQuestionIndex, questions, preloadImages]);
 
   const handleGoToInstructions = () => {
-    router.push('/kg-dashboard');
+    router.push('/early-dashboard');
   };
 
   const getMessage = () => {
@@ -283,11 +356,12 @@ export default function PictureMCQScreen({ onBackToInstructions }: PictureMCQScr
     if (nextCategory) {
       const categoryName = i18n.language === 'am' ? (nextCategory.name_am || nextCategory.name_en) : nextCategory.name_en;
       if (nextCategory.has_subcategories) {
-        router.push(`/kg-subcategories?categoryId=${nextCategory.id}&categoryName=${categoryName}`);
+        router.push(`/early-subcategories?categoryId=${nextCategory.id}&categoryName=${categoryName}`);
       } else {
-        router.push({ pathname: '/picture-mcq', params: { category: categoryName, categoryId: nextCategory.id } });
+        router.push({ pathname: '/early-picture', params: { category: categoryName, categoryId: nextCategory.id } });
       }
     } else {
+      interactionLocked.value = false;
       setCurrentQuestionIndex(0);
       setSelectedAnswer(null);
       setShowExplanation(false);
@@ -470,26 +544,28 @@ export default function PictureMCQScreen({ onBackToInstructions }: PictureMCQScr
             onDelayChange={(delay) => { setAutoAdvanceDelay(delay); saveSettings(soundEnabled, delay); }}
             onLogout={() => { setShowSettings(false); logout(); }}
           />
-          <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
-            <View style={styles.kgProgressContainer}>
-              <View style={styles.kgProgressBar}>
-                <View
-                  style={[styles.kgProgressFill, { backgroundColor: KG_DESIGN_TOKENS.colors.primary, width: `${((currentQuestionIndex + 1) / questions.length) * 100}%` }]}
-                />
-              </View>
-              <Text style={styles.kgProgressText}>{currentQuestionIndex + 1} / {questions.length}</Text>
+          <View style={styles.kgProgressContainer}>
+            <View style={styles.kgProgressBar}>
+              <View
+                style={[styles.kgProgressFill, { backgroundColor: KG_DESIGN_TOKENS.colors.primary, width: `${((currentQuestionIndex + 1) / questions.length) * 100}%` }]}
+              />
             </View>
+            <Text style={styles.kgProgressText}>{currentQuestionIndex + 1} / {questions.length}</Text>
+          </View>
+          <ScrollView
+            ref={scrollRef}
+            style={styles.scrollView}
+            showsVerticalScrollIndicator={false}
+            scrollEnabled={!isImageDragging}
+            scrollEventThrottle={16}
+            onScrollEndDrag={measureAllOptionZones}
+            onMomentumScrollEnd={measureAllOptionZones}
+          >
             {currentQuestion && (
               <>
                 <GestureDetector gesture={imagePan}>
                   <Animated.View style={[styles.imageContainer, imageAnimatedStyle, { backgroundColor: isDarkMode ? '#1C1C1E' : '#FFFFFF' }]}>
-                    <QuestionImage
-                      question={currentQuestion}
-                      imageStates={imageStates}
-                      setImageStates={setImageStates}
-                      colors={colors}
-                      t={t}
-                    />
+                    <QuestionImage question={currentQuestion} setImageStates={setImageStates} colors={colors} />
                     <FireworkBurst visible={showCorrectVideo} onAnimationEnd={handleNextQuestion} delay={autoAdvanceDelay} />
                     <ShakeOverlay visible={showIncorrectVideo} onAnimationEnd={handleNextQuestion} language={i18n.language} delay={autoAdvanceDelay} />
                   </Animated.View>
@@ -499,18 +575,23 @@ export default function PictureMCQScreen({ onBackToInstructions }: PictureMCQScr
                     const funColors = ['#4CAF50', '#FF9800', '#2196F3', '#9C27B0'];
                     const funColor = funColors[index % funColors.length];
                     const isHovered = hoveredOption === option.id;
+                    const isDropTarget = isHovered;
                     return (
                       <View
                         key={option.id}
-                        onLayout={(event) => {
-                          const { x, y, width, height } = event.nativeEvent.layout;
-                          event.target.measureInWindow((pageX, pageY, measuredWidth, measuredHeight) => {
-                            updateDropZone(option.id, { x: pageX, y: pageY, width: measuredWidth || width, height: measuredHeight || height });
-                          });
+                        ref={(el) => {
+                          optionRowRefs.current[option.id] = el;
                         }}
+                        onLayout={measureAllOptionZones}
                       >
                         <TouchableOpacity
-                          style={[styles.kgOptionButton, styles.kgOptionButtonBounce, isHovered && styles.kgOptionButtonHovered, { backgroundColor: selectedAnswer === option.id ? (option.isCorrect ? '#4CAF50' : '#F44336') : isHovered ? '#2E7D32' : funColor }]}
+                          style={[
+                            styles.kgOptionButton,
+                            styles.kgOptionButtonBounce,
+                            isHovered && styles.kgOptionButtonHovered,
+                            isDropTarget && styles.kgOptionButtonDropTarget,
+                            { backgroundColor: selectedAnswer === option.id ? (option.isCorrect ? '#4CAF50' : '#F44336') : isHovered ? '#2E7D32' : funColor },
+                          ]}
                           onPress={() => handleAnswerSelection(option.id)}
                           activeOpacity={0.8}
                         >

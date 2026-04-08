@@ -100,7 +100,7 @@ export default function LoginScreen() {
         
         
         if (data.user.type === 'student' && typeof data.user.grade === 'string' && data.user.grade.toLowerCase().includes('kg')) {
-          router.replace('/kg-dashboard');
+          router.replace('/early-dashboard');
         } else {
           router.replace('/(tabs)');
         }

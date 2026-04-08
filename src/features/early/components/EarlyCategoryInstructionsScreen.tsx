@@ -19,11 +19,11 @@ import Animated, {
   interpolate,
   Extrapolate
 } from 'react-native-reanimated';
-import { KGCategoryInstructionsScreenStyles as styles } from './KGCategoryInstructionsScreen.styles';
+import { EarlyCategoryInstructionsScreenStyles as styles } from './EarlyCategoryInstructionsScreen.styles';
 
 const { width } = Dimensions.get('window');
 
-export default function KGCategoryInstructions() {
+export default function EarlyCategoryInstructions() {
   const router = useRouter();
   const { isDarkMode } = useTheme();
   const colors = getColors(isDarkMode);
@@ -64,7 +64,7 @@ export default function KGCategoryInstructions() {
     if (hasSubcategories === 'true' && subcategoryId) {
       
       router.push({
-        pathname: '/picture-mcq',
+        pathname: '/early-picture',
         params: { 
           category, 
           categoryId, 
@@ -76,7 +76,7 @@ export default function KGCategoryInstructions() {
     } else {
       
       router.push({
-        pathname: '/picture-mcq',
+        pathname: '/early-picture',
         params: { category, categoryId }
       });
     }

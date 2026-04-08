@@ -151,7 +151,7 @@ export default function PracticeScreen() {
   } = usePracticeScreen();
 
   if (isKGStudent) {
-    return <Redirect href="/kg-dashboard" />;
+    return <Redirect href="/early-dashboard" />;
   }
 
   
