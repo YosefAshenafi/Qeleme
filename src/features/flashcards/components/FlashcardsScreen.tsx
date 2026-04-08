@@ -1,47 +1,44 @@
 import React, { useState, useRef, useEffect, useLayoutEffect } from 'react';
-import { TouchableOpacity, Dimensions, View, Modal, ScrollView, StatusBar, Image } from 'react-native';
+import { StatusBar } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useNavigation } from '@react-navigation/native';
 import { useTranslation } from 'react-i18next';
 import i18n from 'i18next';
-import Animated, {
+import {
   useAnimatedStyle,
   withTiming,
   interpolate,
   useSharedValue,
   withSpring,
-  Easing,
 } from 'react-native-reanimated';
-import { LinearGradient } from 'expo-linear-gradient';
-import { Ionicons } from '@expo/vector-icons';
-import { LanguageToggle } from '@/features/common/components/ui/LanguageToggle';
-import Svg, { Circle } from 'react-native-svg';
 import { useTheme } from '@/core/providers/ThemeProvider';
 import { getColors } from '@/features/common/constants/Colors';
 import { useAuth } from '@/core/providers/AuthProvider';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 
-import { ThemedText } from '@/features/common/components/ThemedText';
 import { ThemedView } from '@/features/common/components/ThemedView';
-import { IconSymbol } from '@/features/common/components/ui/IconSymbol';
-import RichText from '@/features/common/components/ui/RichText';
-import { getFlashcards, getFlashcardStructure, getFlashcardsForChapter, Grade, Subject, Chapter, Flashcard } from '@/features/common/services/flashcardService';
+import {
+  getFlashcardStructure,
+  getFlashcardsForChapter,
+  Grade,
+  Flashcard,
+} from '@/features/common/services/flashcardService';
 import ActivityTrackingService from '@/features/common/services/activityTrackingService';
+import { resolveDeepLinkSessionMeta } from '@/features/flashcards/utils/resolveDeepLinkSessionMeta';
+import {
+  getFlashcardAnswerText,
+  getFlashcardQuestionText,
+} from '@/features/flashcards/utils/flashcardText';
+import { FlashcardsEmptyChapterState } from './FlashcardsEmptyChapterState';
+import { FlashcardsErrorState } from './FlashcardsErrorState';
+import { FlashcardsFlipCard } from './FlashcardsFlipCard';
+import { FlashcardsLoadingState } from './FlashcardsLoadingState';
+import { FlashcardsScreenTopBar } from './FlashcardsScreenTopBar';
+import { FlashcardsSelectionForm } from './FlashcardsSelectionForm';
+import { FlashcardsSessionBottomActions } from './FlashcardsSessionBottomActions';
+import { FlashcardsSessionProgress } from './FlashcardsSessionProgress';
+import { FlashcardsSessionResults } from './FlashcardsSessionResults';
 import { FlashcardsScreenStyles as styles } from './FlashcardsScreen.styles';
-
-interface RecentActivity {
-  type: string;
-  grade: string;
-  subject: string;
-  chapter: string;
-  timestamp: number;
-  details: string;
-}
-
-const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
-const CARD_WIDTH = SCREEN_WIDTH - 40;
-const CARD_HEIGHT = Math.min(Math.round(SCREEN_HEIGHT * 0.56), Math.round(CARD_WIDTH * 1.12));
 
 export default function FlashcardsScreen() {
   const { isDarkMode } = useTheme();
@@ -61,7 +58,7 @@ export default function FlashcardsScreen() {
   const deepLinkChapterName =
     typeof params.chapterName === 'string' ? params.chapterName.trim() : '';
   const deepLinkGradeId = typeof params.gradeId === 'string' ? params.gradeId.trim() : '';
-  
+
   const [selectedGradeId, setSelectedGradeId] = useState<string>('1');
   const [selectedGrade, setSelectedGrade] = useState<string>('');
   const [selectedSubject, setSelectedSubject] = useState<string>('');
@@ -79,15 +76,13 @@ export default function FlashcardsScreen() {
   const [hasAppliedPreSelection, setHasAppliedPreSelection] = useState(false);
   const [sessionStartTime, setSessionStartTime] = useState<number | null>(null);
   const [flashPendingFinish, setFlashPendingFinish] = useState(false);
-  const scrollViewRef = useRef<ScrollView>(null);
   const [previousLanguage, setPreviousLanguage] = useState(i18n.language);
   const [isPreSelected, setIsPreSelected] = useState(false);
   const preSelectionAttempted = useRef(false);
-  
+
   const flashcardsAutoStartConsumedRef = useRef(false);
-  
+
   const flashcardSessionTrackedRef = useRef(false);
-  
 
   const sessionTrackMetaRef = useRef<{
     subjectName: string;
@@ -98,7 +93,6 @@ export default function FlashcardsScreen() {
   const revealAnimation = useSharedValue(0);
   const progressAnimation = useSharedValue(0);
 
-  
   useLayoutEffect(() => {
     (navigation as any)?.setOptions?.({ headerShown: false });
   }, [navigation]);
@@ -109,8 +103,7 @@ export default function FlashcardsScreen() {
       const data = await getFlashcardStructure(gradeLevelId);
       setFlashcardsData(data);
       setError(null);
-    } catch (error) {
-      
+    } catch {
       setError(t('errors.network.message'));
     } finally {
       setIsLoading(false);
@@ -118,28 +111,24 @@ export default function FlashcardsScreen() {
   };
 
   useEffect(() => {
-    
     if (user?.grade) {
       console.log('Setting grade from user data:', user.grade);
-      
+
       const gradeNumber = user.grade.replace(/[^\d]/g, '');
       console.log('Extracted grade number:', gradeNumber);
       setSelectedGradeId(gradeNumber || '1');
     } else {
-      
       console.log('No grade found in user data, defaulting to grade 1');
       setSelectedGradeId('1');
     }
   }, [user]);
 
-  
   useEffect(() => {
     if (selectedGradeId) {
       fetchFlashcards(selectedGradeId);
     }
   }, [selectedGradeId]);
 
-  
   useEffect(() => {
     if (params.preSelectedSubject) {
       console.log('Pre-selection parameter detected:', params.preSelectedSubject);
@@ -149,30 +138,25 @@ export default function FlashcardsScreen() {
     }
   }, [params.preSelectedSubject, params.preSelectedChapterId]);
 
-  
   useEffect(() => {
     if (flashcardsData && flashcardsData.length > 0) {
       const grade = flashcardsData[0];
       if (grade && grade.name) {
         setSelectedGrade(grade.name);
 
-        
         if (params.preSelectedSubject && !preSelectionAttempted.current) {
           console.log('=== Starting Pre-Selection Process ===');
           console.log('Looking for subject:', params.preSelectedSubject);
-          console.log('Available subjects:', grade.subjects?.map(s => ({ id: s.id, name: s.name })));
+          console.log('Available subjects:', grade.subjects?.map((s) => ({ id: s.id, name: s.name })));
 
-          
           preSelectionAttempted.current = true;
 
-          
           setShowFlashcards(false);
           setCurrentIndex(0);
           setIsRevealed(false);
           setCurrentFlashcards([]);
           setSessionStartTime(null);
 
-          
           revealAnimation.value = withSpring(0, {
             damping: 12,
             stiffness: 80,
@@ -180,16 +164,12 @@ export default function FlashcardsScreen() {
           });
           progressAnimation.value = withTiming(0);
 
-          
           const searchTerm = (params.preSelectedSubject as string).toLowerCase().trim();
-          let subject = grade.subjects?.find(s =>
-            s.name.toLowerCase().trim() === searchTerm
-          );
+          let subject = grade.subjects?.find((s) => s.name.toLowerCase().trim() === searchTerm);
 
-          
           if (!subject) {
             console.log('Exact match not found, trying partial match...');
-            subject = grade.subjects?.find(s => {
+            subject = grade.subjects?.find((s) => {
               const subjectName = s.name.toLowerCase();
               return subjectName.includes(searchTerm) || searchTerm.includes(subjectName);
             });
@@ -200,22 +180,20 @@ export default function FlashcardsScreen() {
             console.log('Setting selected subject to:', subject.id);
             setSelectedSubject(subject.id);
             const chId =
-              typeof params.preSelectedChapterId === 'string'
-                ? params.preSelectedChapterId.trim()
-                : '';
+              typeof params.preSelectedChapterId === 'string' ? params.preSelectedChapterId.trim() : '';
             if (chId) {
               const ch = subject.chapters?.find((c) => c.id === chId);
               setSelectedChapter(ch ? ch.id : '');
             } else {
               setSelectedChapter('');
             }
-            setIsPreSelected(true); 
+            setIsPreSelected(true);
             setHasAppliedPreSelection(true);
           } else {
             console.warn('✗ Subject not found!');
             console.log('Searched for:', params.preSelectedSubject);
-            console.log('Available options:', grade.subjects?.map(s => s.name).join(', '));
-            
+            console.log('Available options:', grade.subjects?.map((s) => s.name).join(', '));
+
             setSelectedSubject('');
             setSelectedChapter('');
             setIsPreSelected(false);
@@ -223,7 +201,6 @@ export default function FlashcardsScreen() {
           }
           console.log('=== Pre-Selection Process Complete ===');
         } else if (!params.preSelectedSubject && !hasAppliedPreSelection) {
-          
           setSelectedSubject('');
           setSelectedChapter('');
           setHasAppliedPreSelection(true);
@@ -232,64 +209,32 @@ export default function FlashcardsScreen() {
     }
   }, [flashcardsData, params.preSelectedSubject, params.preSelectedChapterId]);
 
-  
   useEffect(() => {
     if (selectedSubject && hasAppliedPreSelection) {
-      
       if (isPreSelected) {
-        
         setIsPreSelected(false);
       } else {
-        
         setSelectedChapter('');
       }
     }
   }, [selectedSubject]);
 
-  const selectedGradeData = selectedGrade && flashcardsData ? flashcardsData.find(g => g.name === selectedGrade) : null;
-  const selectedSubjectData = selectedSubject && selectedGradeData && selectedGradeData.subjects
-    ? selectedGradeData.subjects.find(s => s.id === selectedSubject)
-    : null;
-  
+  const selectedGradeData = selectedGrade && flashcardsData ? flashcardsData.find((g) => g.name === selectedGrade) : null;
+  const selectedSubjectData =
+    selectedSubject && selectedGradeData && selectedGradeData.subjects
+      ? selectedGradeData.subjects.find((s) => s.id === selectedSubject)
+      : null;
 
-  const selectedChapterData = selectedChapter && selectedSubjectData && selectedSubjectData.chapters
-    ? selectedSubjectData.chapters.find(c => c.id === selectedChapter)
-    : null;
-  const currentCard = currentFlashcards.length > currentIndex 
-    ? currentFlashcards[currentIndex] 
-    : null;
-  
-  
-  const isAmharicText = (text: string): boolean => {
-    if (!text) return false;
-    
-    const amharicRegex = /[\u1200-\u137F]/;
-    return amharicRegex.test(text);
-  };
+  const selectedChapterData =
+    selectedChapter && selectedSubjectData && selectedSubjectData.chapters
+      ? selectedSubjectData.chapters.find((c) => c.id === selectedChapter)
+      : null;
+  const currentCard = currentFlashcards.length > currentIndex ? currentFlashcards[currentIndex] : null;
 
-  
-  const getQuestionText = (card: typeof currentCard) => {
-    if (!card) return 'No question available';
-    return card.question;
-  };
-  
-  const getAnswerText = (card: typeof currentCard) => {
-    if (!card) return 'No answer available';
-    return card.answer;
-  };
-
-  
-  const isAmharicLanguage = i18n.language === 'am';
-  const progress = currentFlashcards.length > 0 
-    ? ((currentIndex + 1) / currentFlashcards.length) * 100 
-    : 0;
-
-  
   useEffect(() => {
     if (currentCard) {
       setIsRevealed(false);
-      
-      
+
       revealAnimation.value = withSpring(0, {
         damping: 12,
         stiffness: 80,
@@ -304,7 +249,6 @@ export default function FlashcardsScreen() {
     }
   }, [showFlashcards, selectedChapterData]);
 
-  
   useEffect(() => {
     if (!flashPendingFinish) return;
     setFlashPendingFinish(false);
@@ -312,7 +256,6 @@ export default function FlashcardsScreen() {
     setShowResult(true);
   }, [flashPendingFinish, currentFlashcards]);
 
-  
   useEffect(() => {
     if (previousLanguage !== i18n.language) {
       console.log('Language changed from', previousLanguage, 'to', i18n.language);
@@ -324,13 +267,9 @@ export default function FlashcardsScreen() {
     const rotateY = interpolate(revealAnimation.value, [0, 1], [0, 180]);
     const scale = interpolate(revealAnimation.value, [0, 0.5, 1], [1, 1.1, 1]);
     const shadowOpacity = interpolate(revealAnimation.value, [0, 0.5, 1], [0.1, 0.5, 0.1]);
-    
+
     return {
-      transform: [
-        { perspective: 2000 },
-        { rotateY: `${rotateY}deg` },
-        { scale },
-      ],
+      transform: [{ perspective: 2000 }, { rotateY: `${rotateY}deg` }, { scale }],
       shadowOpacity,
       shadowRadius: interpolate(revealAnimation.value, [0, 0.5, 1], [8, 24, 8]),
     } as any;
@@ -340,13 +279,9 @@ export default function FlashcardsScreen() {
     const rotateY = interpolate(revealAnimation.value, [0, 1], [180, 360]);
     const scale = interpolate(revealAnimation.value, [0, 0.5, 1], [1, 1.1, 1]);
     const shadowOpacity = interpolate(revealAnimation.value, [0, 0.5, 1], [0.1, 0.5, 0.1]);
-    
+
     return {
-      transform: [
-        { perspective: 2000 },
-        { rotateY: `${rotateY}deg` },
-        { scale },
-      ],
+      transform: [{ perspective: 2000 }, { rotateY: `${rotateY}deg` }, { scale }],
       shadowOpacity,
       shadowRadius: interpolate(revealAnimation.value, [0, 0.5, 1], [8, 24, 8]),
     } as any;
@@ -365,35 +300,6 @@ export default function FlashcardsScreen() {
       stiffness: 80,
       mass: 0.8,
     });
-  };
-
-  const resolveDeepLinkSessionMeta = (
-    data: Grade[],
-    gradeId: string,
-    subjectSlug: string,
-    chapterName: string
-  ): { subjectName: string; chapterName: string; gradeName: string } => {
-    if (!data.length) {
-      return {
-        subjectName: subjectSlug.replace(/-/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase()),
-        chapterName,
-        gradeName: '',
-      };
-    }
-    const grade = data.find((g) => g.id === gradeId) ?? data[0];
-    const gradeName = grade?.name || '';
-    const subject = grade?.subjects?.find((s) => s.slug === subjectSlug);
-    const subjectName =
-      subject?.name?.trim() ||
-      subjectSlug.replace(/-/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
-    const chapter = subject?.chapters?.find(
-      (c) => c.name.trim().toLowerCase() === chapterName.trim().toLowerCase()
-    );
-    return {
-      subjectName,
-      chapterName: chapter?.name || chapterName,
-      gradeName: gradeName || '',
-    };
   };
 
   const trackFlashcardSessionEnd = async (cardsSnapshot: Flashcard[]) => {
@@ -416,8 +322,7 @@ export default function FlashcardsScreen() {
       const cardsReviewed = cardsSnapshot.length;
       const cardsMastered = cardsSnapshot.filter((card) => card.isChecked).length;
       const start = sessionStartTime;
-      const timeSpentSec =
-        start != null ? Math.max(0, Math.round((Date.now() - start) / 1000)) : 0;
+      const timeSpentSec = start != null ? Math.max(0, Math.round((Date.now() - start) / 1000)) : 0;
 
       const gradeName =
         meta?.gradeName || selectedGradeData?.name || selectedGrade || user?.grade || 'unknown';
@@ -430,68 +335,45 @@ export default function FlashcardsScreen() {
         cardsMastered,
         timeSpent: timeSpentSec,
       });
-    } catch (error) {
-      console.error('Failed to track flashcard activity:', error);
+    } catch (err) {
+      console.error('Failed to track flashcard activity:', err);
       flashcardSessionTrackedRef.current = false;
     }
   };
 
   const handleNext = () => {
     if (currentFlashcards.length > 0 && currentIndex < currentFlashcards.length - 1) {
-      setCurrentIndex(prev => prev + 1);
+      setCurrentIndex((prev) => prev + 1);
       progressAnimation.value = withTiming(((currentIndex + 2) / currentFlashcards.length) * 100);
-    }
-  };
-
-  const handlePrevious = () => {
-    if (currentIndex > 0) {
-      setCurrentIndex(prev => prev - 1);
-      setIsRevealed(false);
-      revealAnimation.value = withSpring(0, {
-        damping: 12,
-        stiffness: 80,
-        mass: 0.8,
-      });
-      if (currentFlashcards.length > 0) {
-        progressAnimation.value = withTiming((currentIndex / currentFlashcards.length) * 100);
-      }
     }
   };
 
   const handleStartFlashcards = async () => {
     if (!selectedSubject || !selectedChapter) return;
-    
+
     try {
       setIsLoading(true);
-      
-      
-      const grade = flashcardsData.find(g => g.name === selectedGrade);
-      const subject = grade?.subjects.find(s => s.id === selectedSubject);
+
+      const grade = flashcardsData.find((g) => g.name === selectedGrade);
+      const subject = grade?.subjects.find((s) => s.id === selectedSubject);
       const subjectSlug = subject?.slug;
-      
+
       if (!subjectSlug) {
         throw new Error('Subject slug not found');
       }
-      
-      
+
       const chapterName = selectedChapterData?.name;
       if (!chapterName) {
         throw new Error('Chapter name not found');
       }
-      
-      
-      const flashcards = await getFlashcardsForChapter(
-        selectedGradeId,
-        subjectSlug,
-        chapterName
-      );
-      
+
+      const flashcards = await getFlashcardsForChapter(selectedGradeId, subjectSlug, chapterName);
+
       if (!flashcards || flashcards.length === 0) {
         setError(t('flashcards.noFlashcardsAvailable'));
         return;
       }
-      
-      
+
       setCurrentFlashcards(flashcards.map((c) => ({ ...c, isChecked: false })));
       flashcardSessionTrackedRef.current = false;
       sessionTrackMetaRef.current = {
@@ -499,38 +381,36 @@ export default function FlashcardsScreen() {
         chapterName: selectedChapterData?.name,
         gradeName: selectedGradeData?.name || selectedGrade || user?.grade || 'unknown',
       };
-      setSessionStartTime(Date.now()); 
-      
-      
-      const updatedFlashcardsData = flashcardsData.map(g => {
+      setSessionStartTime(Date.now());
+
+      const updatedFlashcardsData = flashcardsData.map((g) => {
         if (g.name === selectedGrade) {
           return {
             ...g,
-            subjects: g.subjects.map(s => {
+            subjects: g.subjects.map((s) => {
               if (s.id === selectedSubject) {
                 return {
                   ...s,
-                  chapters: s.chapters.map(c => {
+                  chapters: s.chapters.map((c) => {
                     if (c.id === selectedChapter) {
                       return {
                         ...c,
-                        flashcards: flashcards
+                        flashcards,
                       };
                     }
                     return c;
-                  })
+                  }),
                 };
               }
               return s;
-            })
+            }),
           };
         }
         return g;
       });
-      
+
       setFlashcardsData(updatedFlashcardsData);
-      
-      
+
       setShowFlashcards(true);
       setCurrentIndex(0);
       setIsRevealed(false);
@@ -539,19 +419,17 @@ export default function FlashcardsScreen() {
         stiffness: 80,
         mass: 0.8,
       });
-      
-    } catch (error) {
-      console.error('Error fetching chapter flashcards:', error);
+    } catch (e) {
+      console.error('Error fetching chapter flashcards:', e);
       setError(t('errors.network.message'));
     } finally {
       setIsLoading(false);
     }
   };
 
-  
   useEffect(() => {
     if (!startFlashcards) return;
-    
+
     if (deepLinkSubjectSlug && deepLinkChapterName) {
       if (isLoading) return;
       if (showFlashcards) return;
@@ -616,590 +494,235 @@ export default function FlashcardsScreen() {
 
   if (isLoading) {
     return (
-      <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]}>
-        <ThemedView style={[styles.container, { backgroundColor: colors.background }]}>
-          <ThemedText style={[styles.loadingText, { color: colors.text }]}>
-            {t('flashcards.loading')}
-          </ThemedText>
-        </ThemedView>
-      </SafeAreaView>
+      <FlashcardsLoadingState
+        backgroundColor={colors.background}
+        textColor={colors.text}
+        message={t('flashcards.loading')}
+      />
     );
   }
 
   if (error) {
     return (
-      <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]}>
-        <ThemedView style={[styles.container, { backgroundColor: colors.background }]}>
-          <ThemedView style={[styles.emptyStateContainer, { backgroundColor: colors.background }]}>
-            <IconSymbol name="globe" size={90} color={colors.warning} style={styles.emptyStateIcon} />
-            <ThemedText style={[styles.emptyStateTitle, { color: colors.text }]}>
-              {t('errors.network.title')}
-            </ThemedText>
-            <ThemedText style={[styles.emptyStateSubtitle, { color: colors.text, opacity: 0.7 }]}>
-              {t('errors.network.message')}
-            </ThemedText>
-            <TouchableOpacity 
-              style={[styles.retryButton, { backgroundColor: colors.tint, marginTop: 20 }]}
-              onPress={() => {
-                setError(null);
-                setIsLoading(true);
-                fetchFlashcards(selectedGradeId);
-              }}
-            >
-              <ThemedText style={[styles.retryButtonText, { color: '#FFFFFF' }]}>
-                {t('common.tryAgain')}
-              </ThemedText>
-            </TouchableOpacity>
-          </ThemedView>
-        </ThemedView>
-      </SafeAreaView>
+      <FlashcardsErrorState
+        backgroundColor={colors.background}
+        textColor={colors.text}
+        tintColor={colors.tint}
+        warningColor={colors.warning}
+        title={t('errors.network.title')}
+        message={t('errors.network.message')}
+        retryLabel={t('common.tryAgain')}
+        onRetry={() => {
+          setError(null);
+          setIsLoading(true);
+          fetchFlashcards(selectedGradeId);
+        }}
+      />
     );
   }
 
-  
   if (showResult) {
     const totalCards = currentFlashcards.length;
     const masteredCount = currentFlashcards.filter((c) => Boolean(c?.isChecked)).length;
     const stillLearningCount = Math.max(0, totalCards - masteredCount);
     const masteredPct = totalCards > 0 ? Math.round((masteredCount / totalCards) * 100) : 0;
 
-    const RING_SIZE = 260;
-    const STROKE = 18;
-    const r = (RING_SIZE - STROKE) / 2;
-    const c = 2 * Math.PI * r;
-    const dashOffset = c - (masteredPct / 100) * c;
-
     return (
-      <SafeAreaView style={[styles.safeArea, { backgroundColor: '#FFFFFF' }]} edges={['top', 'left', 'right']}>
-        <StatusBar translucent={false} backgroundColor="#FFFFFF" barStyle="dark-content" />
-        <ThemedView style={[styles.container, { backgroundColor: isDarkMode ? colors.background : '#F4F6FA' }]}>
-          <View style={styles.flashResultsHeader}>
-            <Image source={require('@/assets/images/logo.png')} style={styles.flashResultsBrand} resizeMode="contain" />
-            <ThemedText style={styles.flashResultsTitle}>{t('flashcards.sessionResults', { defaultValue: 'Session Results' })}</ThemedText>
-            <TouchableOpacity accessibilityRole="button" accessibilityLabel="Profile" style={styles.flashResultsProfileBtn}>
-              <IconSymbol name={'person.crop.circle' as any} size={22} color="#111827" />
-            </TouchableOpacity>
-          </View>
-
-          <ScrollView contentContainerStyle={styles.flashResultsScroll} showsVerticalScrollIndicator={false}>
-            <View style={styles.flashRingWrap}>
-              <Svg width={RING_SIZE} height={RING_SIZE}>
-                <Circle
-                  cx={RING_SIZE / 2}
-                  cy={RING_SIZE / 2}
-                  r={r}
-                  stroke="#E5E7EB"
-                  strokeWidth={STROKE}
-                  fill="none"
-                  strokeLinecap="round"
-                />
-                <Circle
-                  cx={RING_SIZE / 2}
-                  cy={RING_SIZE / 2}
-                  r={r}
-                  stroke="#0F4BD7"
-                  strokeWidth={STROKE}
-                  fill="none"
-                  strokeLinecap="round"
-                  strokeDasharray={`${c} ${c}`}
-                  strokeDashoffset={dashOffset}
-                  rotation={-90}
-                  originX={RING_SIZE / 2}
-                  originY={RING_SIZE / 2}
-                />
-              </Svg>
-
-              <View style={styles.flashRingCenter}>
-                <ThemedText style={styles.flashRingPct}>{masteredPct}%</ThemedText>
-                <ThemedText style={styles.flashRingSub}>MASTERED</ThemedText>
-              </View>
-
-              <View style={styles.flashRingBadge}>
-                <IconSymbol name={'star.fill' as any} size={14} color="#FFFFFF" />
-              </View>
-            </View>
-
-            <View style={styles.flashResultCards}>
-              <View style={styles.flashResultCard}>
-                <View style={[styles.flashResultIcon, { backgroundColor: 'rgba(16, 185, 129, 0.12)' }]}>
-                  <IconSymbol name={'checkmark' as any} size={16} color="#10B981" />
-                </View>
-                <View style={styles.flashResultCardText}>
-                  <ThemedText style={styles.flashResultCardLabel}>{t('flashcards.accuracy', { defaultValue: 'ACCURACY' })}</ThemedText>
-                  <ThemedText style={styles.flashResultCardValue}>
-                    {masteredCount} {t('flashcards.mastered', { defaultValue: 'Mastered' })}
-                  </ThemedText>
-                </View>
-                <IconSymbol name="chevron.right" size={18} color="#9CA3AF" />
-              </View>
-
-              <View style={styles.flashResultCard}>
-                <View style={[styles.flashResultIcon, { backgroundColor: 'rgba(245, 158, 11, 0.14)' }]}>
-                  <IconSymbol name={'exclamationmark' as any} size={14} color="#F59E0B" />
-                </View>
-                <View style={styles.flashResultCardText}>
-                  <ThemedText style={styles.flashResultCardLabel}>{t('flashcards.persistence', { defaultValue: 'PERSISTENCE' })}</ThemedText>
-                  <ThemedText style={styles.flashResultCardValue}>
-                    {stillLearningCount} {t('flashcards.stillLearning', { defaultValue: 'Still Learning' })}
-                  </ThemedText>
-                </View>
-                <IconSymbol name="chevron.right" size={18} color="#9CA3AF" />
-              </View>
-            </View>
-
-            <View style={styles.flashResultButtons}>
-              <TouchableOpacity
-                style={styles.flashRetryBtn}
-                onPress={() => {
-                  setShowResult(false);
-                  setShowFlashcards(true);
-                  setCurrentIndex(0);
-                  setIsRevealed(false);
-                  flashcardSessionTrackedRef.current = false;
-                  if (selectedSubjectData?.name?.trim()) {
-                    sessionTrackMetaRef.current = {
-                      subjectName: selectedSubjectData.name.trim(),
-                      chapterName: selectedChapterData?.name,
-                      gradeName: selectedGradeData?.name || selectedGrade || user?.grade || 'unknown',
-                    };
-                  }
-                  setSessionStartTime(Date.now());
-                  setCurrentFlashcards((prev) => prev.map((c) => ({ ...c, isChecked: false })));
-                  revealAnimation.value = withSpring(0, { damping: 12, stiffness: 80, mass: 0.8 });
-                  progressAnimation.value = withTiming(0);
-                }}
-              >
-                <IconSymbol name={'arrow.counterclockwise' as any} size={18} color="#6B7280" />
-                <ThemedText style={styles.flashRetryText}>{t('flashcards.retry', { defaultValue: 'Retry' })}</ThemedText>
-              </TouchableOpacity>
-
-              <TouchableOpacity
-                style={styles.flashDoneBtn}
-                onPress={() => {
-                  setShowResult(false);
-                  setShowFlashcards(false);
-                  setCurrentIndex(0);
-                  setIsRevealed(false);
-                  setCurrentFlashcards([]);
-                  setSessionStartTime(null);
-                  revealAnimation.value = withSpring(0, { damping: 12, stiffness: 80, mass: 0.8 });
-                  progressAnimation.value = withTiming(0);
-                  router.replace('/(tabs)/practice');
-                }}
-              >
-                <ThemedText style={styles.flashDoneText}>{t('flashcards.done', { defaultValue: 'Done' })}</ThemedText>
-                <IconSymbol name={'checkmark' as any} size={18} color="#FFFFFF" />
-              </TouchableOpacity>
-            </View>
-          </ScrollView>
-        </ThemedView>
-      </SafeAreaView>
+      <FlashcardsSessionResults
+        isDarkMode={isDarkMode}
+        backgroundColor={colors.background}
+        sessionResultsTitle={t('flashcards.sessionResults', { defaultValue: 'Session Results' })}
+        accuracyLabel={t('flashcards.accuracy', { defaultValue: 'ACCURACY' })}
+        masteredLabel={t('flashcards.mastered', { defaultValue: 'Mastered' })}
+        persistenceLabel={t('flashcards.persistence', { defaultValue: 'PERSISTENCE' })}
+        stillLearningLabel={t('flashcards.stillLearning', { defaultValue: 'Still Learning' })}
+        retryLabel={t('flashcards.retry', { defaultValue: 'Retry' })}
+        doneLabel={t('flashcards.done', { defaultValue: 'Done' })}
+        masteredCount={masteredCount}
+        stillLearningCount={stillLearningCount}
+        masteredPct={masteredPct}
+        onRetry={() => {
+          setShowResult(false);
+          setShowFlashcards(true);
+          setCurrentIndex(0);
+          setIsRevealed(false);
+          flashcardSessionTrackedRef.current = false;
+          if (selectedSubjectData?.name?.trim()) {
+            sessionTrackMetaRef.current = {
+              subjectName: selectedSubjectData.name.trim(),
+              chapterName: selectedChapterData?.name,
+              gradeName: selectedGradeData?.name || selectedGrade || user?.grade || 'unknown',
+            };
+          }
+          setSessionStartTime(Date.now());
+          setCurrentFlashcards((prev) => prev.map((c) => ({ ...c, isChecked: false })));
+          revealAnimation.value = withSpring(0, { damping: 12, stiffness: 80, mass: 0.8 });
+          progressAnimation.value = withTiming(0);
+        }}
+        onDone={() => {
+          setShowResult(false);
+          setShowFlashcards(false);
+          setCurrentIndex(0);
+          setIsRevealed(false);
+          setCurrentFlashcards([]);
+          setSessionStartTime(null);
+          revealAnimation.value = withSpring(0, { damping: 12, stiffness: 80, mass: 0.8 });
+          progressAnimation.value = withTiming(0);
+          router.replace('/(tabs)/practice');
+        }}
+      />
     );
   }
 
-  
   if (!showFlashcards) {
-    
     if (isDeepLinkAutoStart && selectedSubject && isLoading) {
       return (
-        <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]}>
-          <ThemedView style={[styles.container, { backgroundColor: colors.background, justifyContent: 'center' }]}>
-            <ThemedText style={[styles.loadingText, { color: colors.text }]}>
-              {t('flashcards.loading')}
-            </ThemedText>
-          </ThemedView>
-        </SafeAreaView>
+        <FlashcardsLoadingState
+          backgroundColor={colors.background}
+          textColor={colors.text}
+          message={t('flashcards.loading')}
+          centered
+        />
       );
     }
 
     return (
       <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]}>
         <ThemedView style={[styles.container, { backgroundColor: colors.background }]}>
-          <StatusBar translucent={false} backgroundColor="#FFFFFF" barStyle="dark-content" />
-          <View style={styles.flashHeaderWrap}>
-            <View style={styles.flashTopBar}>
-              <TouchableOpacity onPress={() => router.back()} style={{ padding: 8 }}>
-                <Ionicons name="chevron-back" size={24} color="#111827" />
-              </TouchableOpacity>
-              <View style={styles.flashTopLogoLeft} />
-              <LanguageToggle colors={{ card: '#F3F4F6', text: '#4B5563' }} />
-            </View>
-          </View>
-          <ThemedView style={[styles.formContainer, { backgroundColor: colors.background }]}>
-            <ThemedView style={[styles.formContent, { backgroundColor: colors.background }]}>
-              
-              <ThemedView style={[styles.formGroup, { backgroundColor: colors.background }]}>
-                <ThemedText style={[styles.formLabel, { color: colors.tint }]}>
-                  {t('flashcards.subject')}
-                  {isPreSelected && (
-                    <ThemedText style={[styles.preSelectedLabel, { color: colors.tint }]}>
-                      {' '}({t('flashcards.preSelected')})
-                    </ThemedText>
-                  )}
-                </ThemedText>
-                <TouchableOpacity
-                  style={[
-                    styles.formInput, 
-                    { 
-                      backgroundColor: colors.cardAlt, 
-                      borderColor: isPreSelected ? (isDarkMode ? '#FFFFFF' : colors.tint) : (isDarkMode ? '#FFFFFF' : colors.border),
-                      borderWidth: isPreSelected ? 2 : 1,
-                    }
-                  ]}
-                  onPress={() => setShowSubjectDropdown(!showSubjectDropdown)}
-                >
-                  <ThemedText style={[styles.formInputText, { color: colors.text }]}>
-                    {selectedSubject ? selectedGradeData?.subjects?.find((s: Subject) => s.id === selectedSubject)?.name : t('flashcards.selectSubject')}
-                  </ThemedText>
-                  <IconSymbol name="chevron.right" size={20} color={colors.tint} />
-                </TouchableOpacity>
-                {showSubjectDropdown && (
-                  <Modal
-                    visible={showSubjectDropdown}
-                    transparent={true}
-                    animationType="fade"
-                    onRequestClose={() => setShowSubjectDropdown(false)}
-                  >
-                    <TouchableOpacity
-                      style={[styles.modalOverlay, { backgroundColor: 'rgba(0, 0, 0, 0.5)' }]}
-                      activeOpacity={1}
-                      onPress={() => setShowSubjectDropdown(false)}
-                    >
-                      <ThemedView style={[styles.modalContent, { backgroundColor: colors.background }]}>
-                        <ScrollView>
-                          {selectedGradeData?.subjects?.sort((a, b) => {
-                            
-                            const getSubjectNumber = (name: string) => {
-                              const match = name.match(/(\d+)/);
-                              return match ? parseInt(match[1], 10) : 0;
-                            };
-                            return getSubjectNumber(a.name) - getSubjectNumber(b.name);
-                          }).map((subject: Subject, index: number) => (
-                            <TouchableOpacity
-                              key={`subject-${subject.id}-${index}`}
-                              style={[styles.modalItem, { backgroundColor: colors.background, borderBottomColor: colors.border }]}
-                              onPress={() => {
-                                setSelectedSubject(subject.id);
-                                setSelectedChapter('');
-                                setShowSubjectDropdown(false);
-                              }}
-                            >
-                              <ThemedText style={[styles.modalItemText, { color: colors.text }]}>{subject.name}</ThemedText>
-                              <IconSymbol name="chevron.right" size={20} color={colors.tint} />
-                            </TouchableOpacity>
-                          ))}
-                        </ScrollView>
-                      </ThemedView>
-                    </TouchableOpacity>
-                  </Modal>
-                )}
-              </ThemedView>
-
-              
-              <ThemedView style={[styles.formGroup, { backgroundColor: colors.background }]}>
-                <ThemedText style={[styles.formLabel, { color: colors.tint }]}>
-                  {t('flashcards.chapter')}
-                </ThemedText>
-                <TouchableOpacity
-                  style={[
-                    styles.formInput,
-                    { backgroundColor: colors.cardAlt, borderColor: isDarkMode ? '#FFFFFF' : colors.border },
-                    !selectedSubject && { 
-                      backgroundColor: isDarkMode ? 'rgba(0, 0, 0, 0.3)' : 'rgba(0, 0, 0, 0.05)',
-                      borderColor: isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'
-                    }
-                  ]}
-                  onPress={() => selectedSubject && setShowChapterDropdown(!showChapterDropdown)}
-                  disabled={!selectedSubject}
-                >
-                  <ThemedText 
-                    style={[
-                      styles.formInputText, 
-                      { color: colors.text }, 
-                      !selectedSubject && { 
-                        color: isDarkMode ? 'rgba(255, 255, 255, 0.3)' : 'rgba(0, 0, 0, 0.3)'
-                      }
-                    ]}
-                  >
-                    {selectedChapter ? selectedSubjectData?.chapters?.find((c: Chapter) => c.id === selectedChapter)?.name : t('flashcards.selectChapter')}
-                  </ThemedText>
-                  <IconSymbol 
-                    name="chevron.right" 
-                    size={20} 
-                    color={!selectedSubject ? (isDarkMode ? 'rgba(255, 255, 255, 0.3)' : 'rgba(0, 0, 0, 0.3)') : colors.tint} 
-                  />
-                </TouchableOpacity>
-                {showChapterDropdown && selectedSubject && (
-                  <Modal
-                    visible={showChapterDropdown}
-                    transparent={true}
-                    animationType="fade"
-                    onRequestClose={() => setShowChapterDropdown(false)}
-                  >
-                    <TouchableOpacity
-                      style={[styles.modalOverlay, { backgroundColor: 'rgba(0, 0, 0, 0.5)' }]}
-                      activeOpacity={1}
-                      onPress={() => setShowChapterDropdown(false)}
-                    >
-                      <ThemedView style={[styles.modalContent, { backgroundColor: colors.background }]}>
-                        <ScrollView>
-                          {selectedSubjectData?.chapters?.sort((a, b) => {
-                            
-                            const getChapterNumber = (name: string) => {
-                              const match = name.match(/(\d+)/);
-                              return match ? parseInt(match[1], 10) : 0;
-                            };
-                            return getChapterNumber(a.name) - getChapterNumber(b.name);
-                          }).map((chapter: Chapter, index: number) => (
-                            <TouchableOpacity
-                              key={`chapter-${chapter.id}-${index}`}
-                              style={[styles.modalItem, { backgroundColor: colors.background, borderBottomColor: colors.border }]}
-                              onPress={() => {
-                                setSelectedChapter(chapter.id);
-                                setShowChapterDropdown(false);
-                              }}
-                            >
-                              <ThemedText style={[styles.modalItemText, { color: colors.text }]}>{chapter.name}</ThemedText>
-                              <IconSymbol name="chevron.right" size={20} color={colors.tint} />
-                            </TouchableOpacity>
-                          )) || (
-                            <View style={[styles.modalItem, { backgroundColor: colors.background, borderBottomColor: colors.border }]}>
-                              <ThemedText style={[styles.modalItemText, { color: colors.text, opacity: 0.7 }]}>
-                                No chapters available
-                              </ThemedText>
-                            </View>
-                          )}
-                        </ScrollView>
-                      </ThemedView>
-                    </TouchableOpacity>
-                  </Modal>
-                )}
-              </ThemedView>
-
-              <TouchableOpacity
-                style={[
-                  styles.startButton,
-                  { backgroundColor: colors.tint },
-                  (!selectedSubject || !selectedChapter) && { opacity: 0.5 }
-                ]}
-                onPress={handleStartFlashcards}
-                disabled={!selectedSubject || !selectedChapter}
-              >
-                <ThemedText style={[styles.startButtonText, { color: '#fff' }]}>
-                  {t('flashcards.startFlashcards')}
-                </ThemedText>
-              </TouchableOpacity>
-            </ThemedView>
-          </ThemedView>
+          <FlashcardsSelectionForm
+            colors={colors}
+            isDarkMode={isDarkMode}
+            isPreSelected={isPreSelected}
+            subjectLabel={t('flashcards.subject')}
+            chapterLabel={t('flashcards.chapter')}
+            preSelectedSuffix={t('flashcards.preSelected')}
+            selectSubjectPlaceholder={t('flashcards.selectSubject')}
+            selectChapterPlaceholder={t('flashcards.selectChapter')}
+            startButtonLabel={t('flashcards.startFlashcards')}
+            noChaptersLabel={t('flashcards.noChaptersInList', { defaultValue: 'No chapters available' })}
+            selectedSubject={selectedSubject}
+            selectedChapter={selectedChapter}
+            selectedGradeData={selectedGradeData ?? undefined}
+            selectedSubjectData={selectedSubjectData ?? undefined}
+            showSubjectDropdown={showSubjectDropdown}
+            showChapterDropdown={showChapterDropdown}
+            onToggleSubjectDropdown={() => setShowSubjectDropdown(!showSubjectDropdown)}
+            onToggleChapterDropdown={() => setShowChapterDropdown(!showChapterDropdown)}
+            onCloseSubjectDropdown={() => setShowSubjectDropdown(false)}
+            onCloseChapterDropdown={() => setShowChapterDropdown(false)}
+            onSelectSubject={(subjectId) => {
+              setSelectedSubject(subjectId);
+              setSelectedChapter('');
+              setShowSubjectDropdown(false);
+            }}
+            onSelectChapter={(chapterId) => {
+              setSelectedChapter(chapterId);
+              setShowChapterDropdown(false);
+            }}
+            onStart={handleStartFlashcards}
+          />
         </ThemedView>
       </SafeAreaView>
     );
   }
 
-  
   if (!currentFlashcards || currentFlashcards.length === 0) {
     return (
-      <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]}>
-        <ThemedView style={[styles.container, { backgroundColor: colors.background }]}>
-          <ThemedView style={[styles.emptyStateContainer, { backgroundColor: colors.background }]}>
-            <IconSymbol name="rectangle.stack" size={90} color={colors.warning} style={styles.emptyStateIcon} />
-            <ThemedText style={[styles.emptyStateTitle, { color: colors.text }]}>
-              {t('flashcards.noFlashcards')}
-            </ThemedText>
-            <ThemedText style={[styles.emptyStateSubtitle, { color: colors.text, opacity: 0.7 }]}>
-              No flashcards available for the selected chapter.
-            </ThemedText>
-            <TouchableOpacity 
-              style={[styles.retryButton, { backgroundColor: colors.tint, marginTop: 20 }]}
-              onPress={() => {
-                setShowFlashcards(false);
-                setSelectedSubject('');
-                setSelectedChapter('');
-                setCurrentFlashcards([]);
-              }}
-            >
-              <ThemedText style={[styles.retryButtonText, { color: '#FFFFFF' }]}>
-                Choose Different Chapter
-              </ThemedText>
-            </TouchableOpacity>
-          </ThemedView>
-        </ThemedView>
-      </SafeAreaView>
+      <FlashcardsEmptyChapterState
+        backgroundColor={colors.background}
+        textColor={colors.text}
+        tintColor={colors.tint}
+        warningColor={colors.warning}
+        title={t('flashcards.noFlashcards')}
+        subtitle={t('flashcards.noFlashcardsForChapter', {
+          defaultValue: 'No flashcards available for the selected chapter.',
+        })}
+        actionLabel={t('flashcards.chooseDifferentChapter', { defaultValue: 'Choose Different Chapter' })}
+        onChooseDifferent={() => {
+          setShowFlashcards(false);
+          setSelectedSubject('');
+          setSelectedChapter('');
+          setCurrentFlashcards([]);
+        }}
+      />
     );
   }
+
+  const cardMutedMeta = isDarkMode ? '#93A4C7' : '#9AA3B2';
+
+  const onStillLearningPress = () => {
+    const isLastCard = currentFlashcards.length > 0 && currentIndex === currentFlashcards.length - 1;
+    if (isLastCard) {
+      const nextCards = currentFlashcards.map((c, i) =>
+        i === currentIndex ? { ...c, isChecked: false } : c
+      );
+      setCurrentFlashcards(nextCards);
+      void (async () => {
+        await trackFlashcardSessionEnd(nextCards);
+        setFlashPendingFinish(true);
+      })();
+    } else {
+      setCurrentFlashcards((prev) => {
+        const next = [...prev];
+        if (next[currentIndex]) next[currentIndex] = { ...next[currentIndex], isChecked: false };
+        return next;
+      });
+      handleNext();
+    }
+  };
+
+  const onGotItPress = () => {
+    const isLastCard = currentFlashcards.length > 0 && currentIndex === currentFlashcards.length - 1;
+    if (isLastCard) {
+      const nextCards = currentFlashcards.map((c, i) =>
+        i === currentIndex ? { ...c, isChecked: true } : c
+      );
+      setCurrentFlashcards(nextCards);
+      void (async () => {
+        await trackFlashcardSessionEnd(nextCards);
+        setFlashPendingFinish(true);
+      })();
+    } else {
+      setCurrentFlashcards((prev) => {
+        const next = [...prev];
+        if (next[currentIndex]) next[currentIndex] = { ...next[currentIndex], isChecked: true };
+        return next;
+      });
+      handleNext();
+    }
+  };
 
   return (
     <SafeAreaView style={[styles.safeArea, { backgroundColor: '#FFFFFF' }]} edges={['top', 'left', 'right']}>
       <ThemedView style={[styles.container, { backgroundColor: isDarkMode ? colors.background : '#F4F6FA' }]}>
         <StatusBar translucent={false} backgroundColor="#FFFFFF" barStyle="dark-content" />
-        <View style={styles.flashHeaderWrap}>
-          <View style={styles.flashTopBar}>
-            <TouchableOpacity onPress={() => router.back()} style={{ padding: 8 }}>
-              <Ionicons name="chevron-back" size={24} color="#111827" />
-            </TouchableOpacity>
-            <View style={styles.flashTopLogoLeft} />
-            <LanguageToggle colors={{ card: '#F3F4F6', text: '#4B5563' }} />
-          </View>
+        <FlashcardsScreenTopBar />
 
-        </View>
+        <FlashcardsSessionProgress
+          isDarkMode={isDarkMode}
+          cardAltColor={colors.cardAlt}
+          currentIndex={currentIndex}
+          totalCards={currentFlashcards.length}
+          progressBarStyle={progressBarStyle}
+        />
 
-        <View style={styles.flashProgressBlock}>
-          <View style={styles.flashProgressRow}>
-            <ThemedText style={[styles.flashProgressLabel, { color: isDarkMode ? '#9CA3AF' : '#9AA3B2' }]}>
-              PROGRESS
-            </ThemedText>
-            <View style={styles.flashProgressCountRow}>
-              <ThemedText style={[styles.flashProgressCount, { color: '#0F4BD7' }]}>
-                {currentIndex + 1} / {currentFlashcards.length}
-              </ThemedText>
-              <ThemedText style={[styles.flashProgressCardsSuffix, { color: isDarkMode ? '#9CA3AF' : '#9AA3B2' }]}>
-                cards
-              </ThemedText>
-            </View>
-          </View>
-          <View style={[styles.flashProgressTrack, { backgroundColor: isDarkMode ? colors.cardAlt : '#E5E7EB' }]}>
-            <Animated.View
-              style={[
-                styles.flashProgressFill,
-                { backgroundColor: '#0F4BD7' },
-                progressBarStyle,
-              ]}
-            />
-          </View>
-        </View>
+        <FlashcardsFlipCard
+          isDarkMode={isDarkMode}
+          cardBackgroundColor={isDarkMode ? colors.cardAlt : '#FFFFFF'}
+          mutedTextColor={cardMutedMeta}
+          questionText={getFlashcardQuestionText(currentCard)}
+          answerText={getFlashcardAnswerText(currentCard)}
+          frontAnimatedStyle={frontAnimatedStyle}
+          backAnimatedStyle={backAnimatedStyle}
+          onReveal={handleReveal}
+        />
 
-        <View style={styles.flashCardStage}>
-          <TouchableOpacity onPress={handleReveal} activeOpacity={0.95} style={styles.flashCardTouch}>
-            <View style={styles.flashCardShadowWrap}>
-              <Animated.View style={[styles.flashCardFace, frontAnimatedStyle, { backgroundColor: isDarkMode ? colors.cardAlt : '#FFFFFF' }]}>
-                <ThemedText style={[styles.flashCardMeta, { color: isDarkMode ? '#93A4C7' : '#9AA3B2' }]}>
-                  CONCEPT MASTERY
-                </ThemedText>
-                <ScrollView
-                  style={styles.flashCardScroll}
-                  contentContainerStyle={styles.flashCardScrollContent}
-                  nestedScrollEnabled
-                  bounces={false}
-                  showsVerticalScrollIndicator={false}
-                >
-                  <RichText
-                    text={getQuestionText(currentCard)}
-                    style={styles.flashCardTitle}
-                    color={isDarkMode ? '#FFFFFF' : '#111827'}
-                    fontSize={34}
-                    textAlign="center"
-                    lineHeight={42}
-                  />
-                </ScrollView>
-                <View style={styles.flashTapHintRow}>
-                  <IconSymbol name={'arrow.2.squarepath' as any} size={16} color={isDarkMode ? '#9CA3AF' : '#9AA3B2'} />
-                  <ThemedText style={[styles.flashTapHintText, { color: isDarkMode ? '#9CA3AF' : '#9AA3B2' }]}>
-                    TAP TO FLIP
-                  </ThemedText>
-                </View>
-              </Animated.View>
-
-              <Animated.View style={[styles.flashCardFace, styles.flashCardBackFace, backAnimatedStyle, { backgroundColor: isDarkMode ? colors.cardAlt : '#FFFFFF' }]}>
-                <ThemedText style={[styles.flashCardMeta, { color: isDarkMode ? '#93A4C7' : '#9AA3B2' }]}>
-                  CONCEPT MASTERY
-                </ThemedText>
-                <ScrollView
-                  style={styles.flashCardScroll}
-                  contentContainerStyle={styles.flashCardScrollContent}
-                  nestedScrollEnabled
-                  bounces={false}
-                  showsVerticalScrollIndicator={false}
-                >
-                  <RichText
-                    text={getAnswerText(currentCard)}
-                    style={styles.flashCardTitle}
-                    color={isDarkMode ? '#FFFFFF' : '#111827'}
-                    fontSize={28}
-                    textAlign="center"
-                    lineHeight={36}
-                  />
-                </ScrollView>
-                <View style={styles.flashTapHintRow}>
-                  <IconSymbol name={'arrow.2.squarepath' as any} size={16} color={isDarkMode ? '#9CA3AF' : '#9AA3B2'} />
-                  <ThemedText style={[styles.flashTapHintText, { color: isDarkMode ? '#9CA3AF' : '#9AA3B2' }]}>
-                    TAP TO FLIP
-                  </ThemedText>
-                </View>
-              </Animated.View>
-            </View>
-          </TouchableOpacity>
-        </View>
-
-        <View style={styles.flashBottomActions}>
-          <TouchableOpacity
-            style={styles.flashBottomActionLeft}
-            accessibilityRole="button"
-            accessibilityLabel="Still learning"
-            onPress={() => {
-              const isLastCard = currentFlashcards.length > 0 && currentIndex === currentFlashcards.length - 1;
-              if (isLastCard) {
-                const nextCards = currentFlashcards.map((c, i) =>
-                  i === currentIndex ? { ...c, isChecked: false } : c
-                );
-                setCurrentFlashcards(nextCards);
-                void (async () => {
-                  await trackFlashcardSessionEnd(nextCards);
-                  setFlashPendingFinish(true);
-                })();
-              } else {
-                setCurrentFlashcards((prev) => {
-                  const next = [...prev];
-                  if (next[currentIndex]) next[currentIndex] = { ...next[currentIndex], isChecked: false };
-                  return next;
-                });
-                handleNext();
-              }
-            }}
-          >
-            <View style={[styles.flashBottomIconGhost, { borderColor: isDarkMode ? '#3A4354' : '#D1D5DB' }]}>
-              <IconSymbol name={'arrow.counterclockwise' as any} size={18} color={isDarkMode ? '#D1D5DB' : '#6B7280'} />
-            </View>
-            <ThemedText style={[styles.flashBottomLabel, { color: isDarkMode ? '#D1D5DB' : '#6B7280' }]}>
-              STILL LEARNING
-            </ThemedText>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={styles.flashBottomActionRight}
-            accessibilityRole="button"
-            accessibilityLabel="Got it"
-            onPress={() => {
-              const isLastCard = currentFlashcards.length > 0 && currentIndex === currentFlashcards.length - 1;
-              if (isLastCard) {
-                const nextCards = currentFlashcards.map((c, i) =>
-                  i === currentIndex ? { ...c, isChecked: true } : c
-                );
-                setCurrentFlashcards(nextCards);
-                void (async () => {
-                  await trackFlashcardSessionEnd(nextCards);
-                  setFlashPendingFinish(true);
-                })();
-              } else {
-                setCurrentFlashcards((prev) => {
-                  const next = [...prev];
-                  if (next[currentIndex]) next[currentIndex] = { ...next[currentIndex], isChecked: true };
-                  return next;
-                });
-                handleNext();
-              }
-            }}
-          >
-            <View style={[styles.flashBottomIconPrimary, { backgroundColor: '#0F4BD7' }]}>
-              <IconSymbol name={'checkmark' as any} size={18} color="#FFFFFF" />
-            </View>
-            <ThemedText style={[styles.flashBottomLabelPrimary, { color: '#0F4BD7' }]}>
-              GOT IT
-            </ThemedText>
-          </TouchableOpacity>
-        </View>
+        <FlashcardsSessionBottomActions
+          isDarkMode={isDarkMode}
+          onStillLearning={onStillLearningPress}
+          onGotIt={onGotItPress}
+        />
       </ThemedView>
     </SafeAreaView>
   );
 }
-
- 

@@ -1,0 +1,11 @@
+export const SESSION_RESULTS_RING_SIZE = 260;
+export const SESSION_RESULTS_STROKE_WIDTH = 18;
+export const MODAL_OVERLAY_BACKGROUND = 'rgba(0, 0, 0, 0.5)';
+export const CHAPTER_INPUT_DISABLED_BG_DARK = 'rgba(0, 0, 0, 0.3)';
+export const CHAPTER_INPUT_DISABLED_BG_LIGHT = 'rgba(0, 0, 0, 0.05)';
+export const CHAPTER_INPUT_DISABLED_BORDER_DARK = 'rgba(255, 255, 255, 0.1)';
+export const CHAPTER_INPUT_DISABLED_BORDER_LIGHT = 'rgba(0, 0, 0, 0.1)';
+export const CHAPTER_PLACEHOLDER_MUTED_DARK = 'rgba(255, 255, 255, 0.3)';
+export const CHAPTER_PLACEHOLDER_MUTED_LIGHT = 'rgba(0, 0, 0, 0.3)';
+export const FLASH_HEADER_BACK_ICON = '#111827';
+export const FLASH_RETRY_BUTTON_TEXT = '#FFFFFF';
