@@ -1,5 +1,4 @@
-import { ScrollView } from 'react-native';
-import React, { useState, useRef, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useFocusEffect } from '@react-navigation/native';
 import { useTranslation } from 'react-i18next';
@@ -10,19 +9,15 @@ import { getColors } from '@/features/common/constants/Colors';
 import { getPracticeData, getNationalExamAvailable } from '@/features/common/services/practiceService';
 import { BASE_URL } from '@/config/constants';
 import { useAuth } from '@/core/providers/AuthProvider';
-import { HOME_CANVAS, HOME_CARD_SPACING, HOME_CARD_WIDTH } from '@/features/home/constants/homeUi';
-import type { BookItem, ReportCard } from '@/features/home/types/home';
-import { calculateReportData, getDefaultReportCards } from '@/features/home/utils/homeReportData';
+import { HOME_CANVAS } from '@/features/home/constants/homeUi';
+import type { BookItem } from '@/features/home/types/home';
 
 export function useHomeScreen() {
   const { t } = useTranslation();
   const { isDarkMode } = useTheme();
   const { user, login } = useAuth();
   const colors = getColors(isDarkMode);
-  const [activeIndex, setActiveIndex] = useState(0);
   const [refreshing, setRefreshing] = useState(false);
-  const scrollViewRef = useRef<ScrollView>(null);
-  const [reportCards, setReportCards] = useState<ReportCard[]>([]);
   const [homeMcqSubjects, setHomeMcqSubjects] = useState<BookItem[]>([]);
   const [isPracticeLoading, setIsPracticeLoading] = useState(false);
   const [nationalExamYears, setNationalExamYears] = useState<number[]>([]);
@@ -34,25 +29,6 @@ export function useHomeScreen() {
     if (!user?.grade) return false;
     const gradeNumber = user.grade.replace(/[^\d]/g, '');
     return ['6', '8', '12'].includes(gradeNumber);
-  };
-
-  const loadReportData = async () => {
-    try {
-      const activitiesJson = await AsyncStorage.getItem('recentActivities');
-      let activities: unknown[] = [];
-      if (activitiesJson) {
-        activities = JSON.parse(activitiesJson);
-      }
-
-      if (activities.length === 0) {
-        setReportCards(getDefaultReportCards(t));
-        return;
-      }
-
-      setReportCards(calculateReportData(activities, user?.username, t));
-    } catch {
-      setReportCards(getDefaultReportCards(t));
-    }
   };
 
   const fetchNationalExamYears = async () => {
@@ -133,7 +109,6 @@ export function useHomeScreen() {
     React.useCallback(() => {
       const loadData = async () => {
         if (!isKGStudent) {
-          await loadReportData();
           await fetchHomeMcqSubjects();
           if (hasNationalExams()) {
             await fetchNationalExamYears();
@@ -171,7 +146,6 @@ export function useHomeScreen() {
       }
 
       await Promise.all([
-        !isKGStudent ? loadReportData() : Promise.resolve(),
         !isKGStudent ? fetchHomeMcqSubjects() : Promise.resolve(),
         !isKGStudent && hasNationalExams() ? fetchNationalExamYears() : Promise.resolve(),
       ]);
@@ -179,12 +153,6 @@ export function useHomeScreen() {
     }
     setRefreshing(false);
   }, [isKGStudent, login, user?.grade]);
-
-  const handleScroll = (event: { nativeEvent: { contentOffset: { x: number } } }) => {
-    const contentOffset = event.nativeEvent.contentOffset.x;
-    const index = Math.round(contentOffset / (HOME_CARD_WIDTH + HOME_CARD_SPACING));
-    setActiveIndex(index);
-  };
 
   const handleBookPress = (type: 'practice' | 'flashcard', book: BookItem) => {
     if (type === 'practice') {
@@ -222,10 +190,7 @@ export function useHomeScreen() {
     isDarkMode,
     user,
     colors,
-    activeIndex,
     refreshing,
-    scrollViewRef,
-    reportCards,
     homeMcqSubjects,
     isPracticeLoading,
     nationalExamYears,
@@ -233,7 +198,6 @@ export function useHomeScreen() {
     isKGStudent,
     hasNationalExams,
     onRefresh,
-    handleScroll,
     handleBookPress,
     canvasBg,
     welcomeTitleColor,

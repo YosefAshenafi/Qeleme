@@ -30,8 +30,6 @@ export default function PracticeScreen() {
     setPracticeData,
     selectedGrade,
     setSelectedGrade,
-    selectedExamType,
-    setSelectedExamType,
     selectedSubject,
     setSelectedSubject,
     selectedChapter,
@@ -128,7 +126,6 @@ export default function PracticeScreen() {
     handleResult,
     handleCheckOtherQuestions,
     handleRetry,
-    handleStartTest,
     dismissBooksChapterModal,
     applyBooksChapterAndStartMcq,
     applyBooksChapterAndOpenFlashcards,
@@ -147,7 +144,6 @@ export default function PracticeScreen() {
     BOOK_CTA_ON,
     BOOKS_CANVAS,
     BRAND_BLUE,
-    toTitleCase,
     getBookCover,
     Keyboard,
     LinearGradient,
@@ -243,204 +239,11 @@ export default function PracticeScreen() {
     const booksChipIdleBorderOnPanel = isDarkMode ? '#363D4A' : '#E5E7EB';
 
     return (
-      <SafeAreaView
-        style={[
-          styles.safeArea,
-          {
-            backgroundColor: selectedExamType === 'practice' ? booksCanvasBg : colors.background,
-          },
-        ]}
-        edges={selectedExamType === 'practice' ? ['bottom', 'left', 'right'] : undefined}
-      >
-        
-        {selectedExamType === 'national' && (
-            <View style={[styles.headerContainer, { backgroundColor: colors.background, borderBottomColor: colors.border }]}>
-              <TouchableOpacity
-                style={styles.backButton}
-                onPress={() => {
-                  setSelectedExamType('practice');
-                  setSelectedSubject('');
-                  setSelectedChapter('');
-                  setSelectedChapterName('');
-                  setSelectedYear(null);
-                }}
-              >
-                  <IconSymbol name="chevron.left" size={24} color={isDarkMode ? '#FFFFFF' : colors.tint} />
-                </TouchableOpacity>
-              <ThemedText style={[styles.headerTitle, { color: colors.text }]}>
-                {t('mcq.nationalExam')}
-              </ThemedText>
-            </View>
-          )}
-        <ThemedView
-          style={[
-            styles.container,
-            selectedExamType === 'practice' && styles.containerBooks,
-            { backgroundColor: selectedExamType === 'practice' ? booksCanvasBg : colors.background },
-          ]}
-        >
-          <ThemedView
-            style={[
-              selectedExamType === 'practice' ? styles.formContainerBooks : styles.formContainer,
-              {
-                backgroundColor: selectedExamType === 'practice' ? booksCanvasBg : colors.background,
-              },
-            ]}
-          >
-            <ThemedView
-              style={[
-                styles.formContent,
-                selectedExamType === 'practice' && { flex: 1 },
-                { backgroundColor: selectedExamType === 'practice' ? booksCanvasBg : colors.background },
-              ]}
-            >
-              
-              {selectedExamType && (
-                <>
-                  
-                  {selectedExamType === 'national' && (
-                    <ThemedView style={[styles.formGroup, { backgroundColor: colors.background }]}>
-                      <ThemedText style={[styles.formLabel, { color: colors.tint }]}>
-                        {t('mcq.year')}
-                      </ThemedText>
-                      <TouchableOpacity
-                        style={[styles.formInput, { backgroundColor: colors.cardAlt, borderColor: isDarkMode ? '#FFFFFF' : colors.border }]}
-                        onPress={() => setShowYearDropdown(!showYearDropdown)}
-                      >
-                        <ThemedText style={[styles.formInputText, { color: colors.text }]}>
-                          {selectedYear || t('mcq.selectYear')}
-                        </ThemedText>
-                        <IconSymbol name="chevron.right" size={20} color={isDarkMode ? '#FFFFFF' : colors.tint} />
-                      </TouchableOpacity>
-                      {showYearDropdown && (
-                        <Modal
-                          visible={showYearDropdown}
-                          transparent={true}
-                          animationType="fade"
-                          onRequestClose={() => setShowYearDropdown(false)}
-                        >
-                          <TouchableOpacity
-                            style={[styles.modalOverlay, { backgroundColor: 'rgba(0, 0, 0, 0.5)' }]}
-                            activeOpacity={1}
-                            onPress={() => setShowYearDropdown(false)}
-                          >
-                            <ThemedView style={[styles.modalContent, { backgroundColor: colors.background }]}>
-                              <ScrollView showsVerticalScrollIndicator={false}>
-                                {availableYears.map((year) => (
-                                  <TouchableOpacity
-                                    key={year}
-                                    style={[styles.modalItem, { backgroundColor: colors.background, borderBottomColor: colors.border }]}
-                                    onPress={() => {
-                                      setSelectedYear(year.toString());
-                                      setShowYearDropdown(false);
-                                    }}
-                                  >
-                                    <ThemedText style={[styles.modalItemText, { color: colors.text }]}>{year}</ThemedText>
-                                    <IconSymbol name="chevron.right" size={20} color={isDarkMode ? '#FFFFFF' : colors.tint} />
-                                  </TouchableOpacity>
-                                ))}
-                              </ScrollView>
-                            </ThemedView>
-                          </TouchableOpacity>
-                        </Modal>
-                      )}
-                    </ThemedView>
-                  )}
-
-                  
-                  {selectedExamType === 'national' && (
-                    <>
-                      <ThemedView style={[styles.formGroup, { backgroundColor: colors.background }]}>
-                        <ThemedText style={[styles.formLabel, { color: colors.tint }]}>
-                          {t('mcq.subject')}
-                          {isPreSelected && (
-                            <ThemedText style={[styles.preSelectedLabel, { color: colors.tint }]}> </ThemedText>
-                          )}
-                        </ThemedText>
-                        <TouchableOpacity
-                          style={[
-                            styles.formInput,
-                            {
-                              backgroundColor: isPreSelected && isDarkMode ? colors.tint + '20' : colors.cardAlt,
-                              borderColor: isPreSelected
-                                ? isDarkMode
-                                  ? '#FFFFFF'
-                                  : colors.tint
-                                : isDarkMode
-                                  ? '#FFFFFF'
-                                  : colors.border,
-                              borderWidth: isPreSelected ? 2 : 1,
-                            },
-                          ]}
-                          onPress={() => setShowSubjectDropdown(!showSubjectDropdown)}
-                        >
-                          <ThemedText style={[styles.formInputText, { color: colors.text }]}>
-                            {selectedSubject ? toTitleCase(selectedSubject) : t('mcq.selectSubject')}
-                          </ThemedText>
-                          <IconSymbol name="chevron.right" size={20} color={isDarkMode ? '#FFFFFF' : colors.tint} />
-                        </TouchableOpacity>
-                        {showSubjectDropdown && (
-                          <Modal
-                            visible={showSubjectDropdown}
-                            transparent={true}
-                            animationType="fade"
-                            onRequestClose={() => setShowSubjectDropdown(false)}
-                          >
-                            <TouchableOpacity
-                              style={[styles.modalOverlay, { backgroundColor: 'rgba(0, 0, 0, 0.5)' }]}
-                              activeOpacity={1}
-                              onPress={() => setShowSubjectDropdown(false)}
-                            >
-                              <ThemedView style={[styles.modalContent, { backgroundColor: colors.background }]}>
-                                <ScrollView showsVerticalScrollIndicator={false}>
-                                  {availableSubjects.map((subject) => (
-                                    <TouchableOpacity
-                                      key={subject}
-                                      style={[
-                                        styles.modalItem,
-                                        { backgroundColor: colors.background, borderBottomColor: colors.border },
-                                      ]}
-                                      onPress={() => {
-                                        setSelectedSubject(subject);
-                                        setSelectedChapter('');
-                                        setSelectedChapterName('');
-                                        setIsPreSelected(false);
-                                        setShowSubjectDropdown(false);
-                                      }}
-                                    >
-                                      <ThemedText style={[styles.modalItemText, { color: colors.text }]}>
-                                        {toTitleCase(subject)}
-                                      </ThemedText>
-                                      <IconSymbol name="chevron.right" size={20} color={isDarkMode ? '#FFFFFF' : colors.tint} />
-                                    </TouchableOpacity>
-                                  ))}
-                                </ScrollView>
-                              </ThemedView>
-                            </TouchableOpacity>
-                          </Modal>
-                        )}
-                      </ThemedView>
-
-                      <TouchableOpacity
-                        style={[
-                          styles.startButton,
-                          { backgroundColor: colors.tint },
-                          (!selectedSubject || !selectedYear) && { opacity: 0.5 },
-                        ]}
-                        onPress={handleStartTest}
-                        disabled={!selectedSubject || !selectedYear}
-                      >
-                        <ThemedText style={[styles.startButtonText, { color: '#fff' }]}>
-                          {t('mcq.startQuiz')}
-                        </ThemedText>
-                      </TouchableOpacity>
-                    </>
-                  )}
-
-                  
-                  {selectedExamType === 'practice' && (
-                    <>
-                      {loading ? (
+      <SafeAreaView style={[styles.safeArea, { backgroundColor: booksCanvasBg }]} edges={['bottom', 'left', 'right']}>
+        <ThemedView style={[styles.container, styles.containerBooks, { backgroundColor: booksCanvasBg }]}>
+          <ThemedView style={[styles.formContainerBooks, { backgroundColor: booksCanvasBg }]}>
+            <ThemedView style={[styles.formContent, { flex: 1, backgroundColor: booksCanvasBg }]}>
+              {loading ? (
                         <View style={styles.booksHubScroll}>
                           <ActivityIndicator size="large" color={BRAND_BLUE} style={{ marginTop: 48 }} />
                         </View>
@@ -721,20 +524,12 @@ export default function PracticeScreen() {
                           </View>
                         </View>
                       )}
-                    </>
-                  )}
-                </>
-              )}
             </ThemedView>
           </ThemedView>
         </ThemedView>
 
         <Modal
-          visible={
-            showChapterChooser &&
-            !!selectedSubjectData &&
-            selectedExamType === 'practice'
-          }
+          visible={showChapterChooser && !!selectedSubjectData}
           transparent
           animationType="fade"
           onRequestClose={dismissBooksChapterModal}

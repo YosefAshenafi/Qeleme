@@ -32,7 +32,6 @@ import { BOOK_CARD_IMAGE_HEIGHT, BOOK_CTA_ON, BOOKS_CANVAS, BRAND_BLUE } from '@
 import type { BooksCategoryFilter } from '@/features/practice/utils/booksCategory';
 import { getSubjectBooksCategory } from '@/features/practice/utils/booksCategory';
 import { formatPracticeTime, getTimeParts } from '@/features/practice/utils/practiceTime';
-import { toTitleCase } from '@/features/practice/utils/toTitleCase';
 import { PracticeScreenStyles as styles } from '../components/PracticeScreen.styles';
 
 type BooksChapterIntent = 'practice' | 'flashcards' | 'either' | null;
@@ -50,7 +49,6 @@ export function usePracticeScreen() {
   const [practiceData, setPracticeData] = useState<PracticeData | null>(null);
   const [selectedGrade, setSelectedGrade] = useState<Grade | null>(null);
   
-  const [selectedExamType, setSelectedExamType] = useState<string | null>('practice');
   const [selectedSubject, setSelectedSubject] = useState('');
   const [selectedChapter, setSelectedChapter] = useState('');
   const [selectedChapterName, setSelectedChapterName] = useState('');
@@ -250,16 +248,6 @@ export function usePracticeScreen() {
       }
       
       setPracticeData(data);
-
-      setSelectedExamType((prev) => {
-        if (params.preSelectedExamType === 'national' && params.preSelectedYear) {
-          return prev;
-        }
-        if (prev === 'national') {
-          return prev;
-        }
-        return 'practice';
-      });
     }).catch((error) => {
       setError(error instanceof Error ? error.message : 'Failed to load practice data');
     }).finally(() => {
@@ -271,13 +259,6 @@ export function usePracticeScreen() {
   useEffect(() => {
     fetchPracticeData();
   }, []);
-
-  
-  useEffect(() => {
-    if (selectedGrade && !needsExamTypeSelection(selectedGrade)) {
-      setSelectedExamType('practice');
-    }
-  }, [selectedGrade]);
 
   
   useEffect(() => {
@@ -297,11 +278,7 @@ export function usePracticeScreen() {
       setSelectedChapter('');
       setSelectedChapterName('');
       setSelectedYear(null);
-      
-      
-      setSelectedExamType('practice');
-      
-      
+
       const subjectId = params.preSelectedSubjectId as string;
       setSelectedSubject(subjectId);
       setIsPreSelected(true);
@@ -310,7 +287,7 @@ export function usePracticeScreen() {
 
   
   useEffect(() => {
-    if (selectedExamType === 'national' && availableSubjects.length > 0 && booksListScrollRef.current) {
+    if (booksCategory === 'national' && availableSubjects.length > 0 && booksListScrollRef.current) {
       const scrollToNationalSubject = () => {
         const firstNationalSubject = availableSubjects[0];
         if (firstNationalSubject && booksSubjectRowY.current[firstNationalSubject]) {
@@ -321,15 +298,13 @@ export function usePracticeScreen() {
         }
       };
 
-      
       const timer = setTimeout(scrollToNationalSubject, 500);
       return () => clearTimeout(timer);
-    };
-  }, [selectedExamType, availableSubjects, booksSubjectRowY]);
+    }
+  }, [booksCategory, availableSubjects, booksSubjectRowY]);
 
   
   useEffect(() => {
-    if (selectedExamType !== 'practice') return;
     if (!selectedSubject) return;
     if (!displaySubjects.some((s) => s.id === selectedSubject)) return;
 
@@ -343,7 +318,7 @@ export function usePracticeScreen() {
 
     const tmr = setTimeout(scrollToSelected, 250);
     return () => clearTimeout(tmr);
-  }, [selectedExamType, selectedSubject, displaySubjects]);
+  }, [selectedSubject, displaySubjects]);
 
   
   useEffect(() => {
@@ -363,17 +338,9 @@ export function usePracticeScreen() {
       setSelectedSubject('');
       setSelectedChapter('');
       setSelectedChapterName('');
-      
-      
-      if (params.booksCategory === 'national') {
-        setSelectedExamType('practice');
-        setBooksCategory('national');
-        setSelectedSubject(`national-${params.preSelectedYear}`);
-      } else {
-        
-        setSelectedExamType('national');
-        setSelectedYear(params.preSelectedYear as string);
-      }
+
+      setBooksCategory('national');
+      setSelectedSubject(`national-${params.preSelectedYear}`);
       
       setIsPreSelected(true); 
       
@@ -507,10 +474,10 @@ export function usePracticeScreen() {
 
   
   useEffect(() => {
-    if (selectedExamType === 'national') {
+    if (booksCategory === 'national') {
       fetchNationalExamAvailable();
     }
-  }, [selectedExamType]);
+  }, [booksCategory]);
 
   
   useEffect(() => {
@@ -568,7 +535,6 @@ export function usePracticeScreen() {
             setCurrentQuestionIndex(0);
             setAnsweredQuestions({});
             setSelectedAnswer(null);
-            setSelectedExamType('practice');
           }} 
           style={{ padding: 8 }}
         >
@@ -599,7 +565,6 @@ export function usePracticeScreen() {
     
     if (params.reset === 'true') {
       setSelectedGrade(null);
-      setSelectedExamType('practice');
       setSelectedSubject('');
       setSelectedChapter('');
       setSelectedChapterName('');
@@ -695,7 +660,7 @@ export function usePracticeScreen() {
       const timeSpent = time; 
       const scorePercentage = totalQuestions > 0 ? Math.round((correctAnswers / totalQuestions) * 100) : 0;
       
-      const subjectName = selectedSubjectData?.name || '';
+      const subjectName = (selectedSubjectData?.name || selectedSubject || '').trim();
       if (!subjectName) {
         return;
       }
@@ -704,7 +669,7 @@ export function usePracticeScreen() {
         grade: selectedGrade?.id || user?.grade || 'unknown',
         subject: subjectName,
         chapter: selectedChapterData?.name || undefined,
-        examType: selectedExamType as 'national' | 'regular' | undefined,
+        examType: selectedYear ? 'national' : 'regular',
         year: selectedYear ? parseInt(selectedYear) : undefined,
         questionsAnswered: totalQuestions,
         correctAnswers: correctAnswers,
@@ -771,8 +736,7 @@ export function usePracticeScreen() {
     } else {
       
       try {
-        if (selectedExamType === 'national') {
-          
+        if (selectedYear) {
           if (!selectedYear || !selectedSubject) {
             setError('Missing required parameters for national exam');
             return;
@@ -849,86 +813,6 @@ export function usePracticeScreen() {
     }, 100);
   };
 
-  const handleStartTest = async () => {
-    if (!selectedGrade || !selectedSubject) {
-      return;
-    }
-
-    if (selectedExamType === 'national') {
-      if (!selectedYear) {
-        return;
-      }
-
-      try {
-        const gradeNumber = getGradeNumber(user?.grade);
-
-        const questions = await getNationalExamQuestions(
-          gradeNumber,
-          parseInt(selectedYear),
-          selectedSubject
-        );
-
-        const filteredQuestions = questions?.filter(q => 
-          !q.question?.toLowerCase().includes('valuing our elders')
-        ) || [];
-
-        if (!filteredQuestions || filteredQuestions.length === 0) {
-          setError('No questions found for this exam. Please try another year or subject.');
-          return;
-        }
-
-        
-        setNationalExamQuestions(filteredQuestions);
-
-        
-        setShowTest(true);
-        setCurrentQuestionIndex(0);
-        setSelectedAnswer(null);
-        setShowExplanation(false);
-        setShowAnswerMessage(false);
-        setScore(0);
-        setShowResult(false);
-        setAnsweredQuestions({});
-        setTime(0);
-        startTimer();
-      } catch (error) {
-        setError('Failed to load national exam questions. Please try again.');
-      }
-    } else {
-      if (!selectedChapter) {
-        return;
-      }
-
-      try {
-        const gradeNumber = getGradeNumber(user?.grade);
-        const subjectId = selectedSubject;
-        const chapterId = selectedChapter;
-
-        const questions = await getRegularPracticeQuestions(gradeNumber, subjectId, chapterId);
-
-        if (!questions || questions.length === 0) {
-          setError('No questions found for this chapter. Please try another chapter or contact support.');
-          return;
-        }
-
-        setNationalExamQuestions(questions);
-
-        setShowTest(true);
-        setCurrentQuestionIndex(0);
-        setSelectedAnswer(null);
-        setShowExplanation(false);
-        setShowAnswerMessage(false);
-        setScore(0);
-        setShowResult(false);
-        setAnsweredQuestions({});
-        setTime(0);
-        startTimer();
-      } catch (error) {
-        setError('Failed to load practice questions. Please try again.');
-      }
-    }
-  };
-
   const dismissBooksChapterModal = () => {
     setShowChapterChooser(false);
     setBooksChapterIntent(null);
@@ -937,7 +821,6 @@ export function usePracticeScreen() {
     setSelectedSubject('');
     setSelectedChapter('');
     setSelectedChapterName('');
-    setSelectedExamType('practice');
     setShowSubjectDropdown(false);
     setShowChapterDropdown(false);
     setShowYearDropdown(false);
@@ -968,7 +851,6 @@ export function usePracticeScreen() {
     setSelectedSubject(subjectId);
     setSelectedChapter(chapter.id);
     setSelectedChapterName(chapter.name);
-    setSelectedExamType('practice');
     setShowChapterChooser(false);
     setBooksChapterIntent(null);
     setBooksChapterModalStep('grid');
@@ -1115,12 +997,6 @@ export function usePracticeScreen() {
     setAnsweredQuestions({});
     setScore(0);
 
-    if (selectedExamType === 'national') {
-      setSelectedExamType('national');
-    } else {
-      setSelectedExamType('practice');
-    }
-
     fetchPracticeData();
   };
 
@@ -1155,8 +1031,6 @@ export function usePracticeScreen() {
     setPracticeData,
     selectedGrade,
     setSelectedGrade,
-    selectedExamType,
-    setSelectedExamType,
     selectedSubject,
     setSelectedSubject,
     selectedChapter,
@@ -1253,7 +1127,6 @@ export function usePracticeScreen() {
     handleResult,
     handleCheckOtherQuestions,
     handleRetry,
-    handleStartTest,
     dismissBooksChapterModal,
     applyBooksChapterAndStartMcq,
     applyBooksChapterAndOpenFlashcards,
@@ -1272,7 +1145,6 @@ export function usePracticeScreen() {
     BOOK_CTA_ON,
     BOOKS_CANVAS,
     BRAND_BLUE,
-    toTitleCase,
     getBookCover,
     Keyboard,
     LinearGradient,

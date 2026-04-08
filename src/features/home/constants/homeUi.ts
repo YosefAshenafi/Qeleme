@@ -2,9 +2,6 @@ import { Dimensions } from 'react-native';
 
 export const SCREEN_WIDTH = Dimensions.get('window').width;
 
-export const HOME_CARD_WIDTH = SCREEN_WIDTH - 40;
-export const HOME_CARD_SPACING = 16;
-
 export const HOME_CANVAS = { light: '#F1F2F4', dark: '#101216' } as const;
 export const WELCOME_CARD_BG = { light: '#E8F0FE', dark: '#1E2A3D' } as const;
 
@@ -17,12 +14,3 @@ export const SUBJECT_GRID_TOP_BAND_HEIGHT = SUBJECT_COVER_INNER_HEIGHT + 32;
 export const HOME_BOOK_CARD_WIDTH = (SCREEN_WIDTH - 60) / 2.2;
 
 export const BRAND_BLUE_RGB = '15,75,215';
-
-export const HOME_REPORT_GRADIENTS = {
-  purple: ['#8E6FFF', '#9577FF', '#9C7FFF'] as const,
-  blue: ['#5478FF', '#5B80FF', '#6288FF'] as const,
-  green: ['#00BA88', '#0AC090', '#14C698'] as const,
-  orange: ['#FF8F6B', '#FF9775', '#FF9F7F'] as const,
-} as const;
-
-export type HomeReportGradientKey = keyof typeof HOME_REPORT_GRADIENTS;

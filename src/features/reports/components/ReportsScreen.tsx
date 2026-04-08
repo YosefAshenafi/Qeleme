@@ -1,4 +1,4 @@
-import { ScrollView, View, Dimensions, RefreshControl, TouchableOpacity, AppState, AppStateStatus } from 'react-native';
+import { ScrollView, View, RefreshControl, TouchableOpacity, AppState, AppStateStatus } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { IconSymbol } from '@/features/common/components/ui/IconSymbol';
 import { useTheme } from '@/core/providers/ThemeProvider';
@@ -13,8 +13,7 @@ import { VictoryAxis, VictoryChart, VictoryLine } from 'victory-native';
 import { ThemedText } from '@/features/common/components/ThemedText';
 import { ThemedView } from '@/features/common/components/ThemedView';
 import { ReportsScreenStyles as styles } from './ReportsScreen.styles';
-
-const { width: SCREEN_WIDTH } = Dimensions.get('window');
+import { REPORTS_BRAND_BLUE } from '@/features/reports/constants/reportsUi';
 
 const REPORTS_EMPTY_MESSAGE = {
   en: 'Complete MCQs or study flashcards to see your learning reports here.',
@@ -34,7 +33,6 @@ export default function ReportsScreen() {
   const { isDarkMode } = useTheme();
   const { user } = useAuth();
   const colors = getColors(isDarkMode);
-  const brandBlue = '#0F4BD7';
   const scrollRef = useRef<ScrollView | null>(null);
   const [refreshing, setRefreshing] = useState(false);
   const [userStats, setUserStats] = useState<UserStats | null>(null);
@@ -230,8 +228,8 @@ export default function ReportsScreen() {
           <RefreshControl
             refreshing={refreshing}
             onRefresh={onRefresh}
-            tintColor={brandBlue}
-            colors={[brandBlue]}
+            tintColor={REPORTS_BRAND_BLUE}
+            colors={[REPORTS_BRAND_BLUE]}
           />
         }
       >
@@ -273,14 +271,14 @@ export default function ReportsScreen() {
                       >
                         <View style={styles.kpiTop}>
                           <View style={[styles.kpiIconLgWrap, { backgroundColor: card.iconBg }]}>
-                            <IconSymbol name={card.icon} size={28} color={brandBlue} />
+                            <IconSymbol name={card.icon} size={28} color={REPORTS_BRAND_BLUE} />
                           </View>
                           <ThemedText style={[styles.kpiTitleBelow, { color: colors.text + '80' }]}>{card.title}</ThemedText>
                         </View>
 
                         <View style={styles.kpiBottomRow}>
-                          <View style={[styles.kpiValueCircle, { backgroundColor: brandBlue + '10', borderColor: brandBlue + '20' }]}>
-                            <ThemedText style={[styles.kpiValueCircleText, { color: brandBlue }]}>{card.value}</ThemedText>
+                          <View style={[styles.kpiValueCircle, { backgroundColor: REPORTS_BRAND_BLUE + '10', borderColor: REPORTS_BRAND_BLUE + '20' }]}>
+                            <ThemedText style={[styles.kpiValueCircleText, { color: REPORTS_BRAND_BLUE }]}>{card.value}</ThemedText>
                           </View>
                         </View>
 
@@ -307,7 +305,7 @@ export default function ReportsScreen() {
                 >
                   <View style={styles.kpiHeader}>
                     <View style={[styles.kpiIconWrap, { backgroundColor: kpiCards[2].iconBg }]}>
-                      <IconSymbol name={kpiCards[2].icon} size={18} color={brandBlue} />
+                      <IconSymbol name={kpiCards[2].icon} size={18} color={REPORTS_BRAND_BLUE} />
                     </View>
                     <ThemedText style={[styles.kpiTitle, { color: colors.text + '80' }]}>{kpiCards[2].title}</ThemedText>
                   </View>
@@ -341,8 +339,8 @@ export default function ReportsScreen() {
                       {t('reports.scoreProgression.subtitle', { defaultValue: 'Overall Academic Performance' })}
                     </ThemedText>
                   </View>
-                  <View style={[styles.progressChip, { backgroundColor: brandBlue + '15' }]}>
-                    <ThemedText style={[styles.progressChipText, { color: brandBlue }]}>{avgChipText}</ThemedText>
+                  <View style={[styles.progressChip, { backgroundColor: REPORTS_BRAND_BLUE + '15' }]}>
+                    <ThemedText style={[styles.progressChipText, { color: REPORTS_BRAND_BLUE }]}>{avgChipText}</ThemedText>
                   </View>
                 </View>
 
@@ -369,7 +367,7 @@ export default function ReportsScreen() {
                       data={mcqMonthlySeries}
                       interpolation="monotoneX"
                       style={{
-                        data: { stroke: brandBlue, strokeWidth: 3 },
+                        data: { stroke: REPORTS_BRAND_BLUE, strokeWidth: 3 },
                       }}
                     />
                   </VictoryChart>
@@ -405,8 +403,8 @@ export default function ReportsScreen() {
                         ]}
                       >
                         <View style={styles.subjectBarHeader}>
-                          <View style={[styles.subjectBarIcon, { backgroundColor: colors.tint + '15' }]}>
-                            <IconSymbol name="trophy.fill" size={18} color={brandBlue} />
+                          <View style={[styles.subjectBarIcon, { backgroundColor: REPORTS_BRAND_BLUE + '18' }]}>
+                            <IconSymbol name="trophy.fill" size={18} color={REPORTS_BRAND_BLUE} />
                           </View>
                           <View style={styles.subjectBarTitleWrap}>
                             <ThemedText style={[styles.subjectBarTitle, { color: colors.text }]} numberOfLines={1}>
@@ -414,17 +412,17 @@ export default function ReportsScreen() {
                             </ThemedText>
                             <View style={styles.subjectBadgesRow}>
                               {item.mcqCount > 0 && (
-                                <View style={[styles.subjectBadge, { backgroundColor: brandBlue + '12' }]}>
-                                  <IconSymbol name="book.fill" size={12} color={brandBlue} />
-                                  <ThemedText style={[styles.subjectBadgeText, { color: brandBlue }]}>
+                                <View style={[styles.subjectBadge, { backgroundColor: REPORTS_BRAND_BLUE + '12' }]}>
+                                  <IconSymbol name="book.fill" size={12} color={REPORTS_BRAND_BLUE} />
+                                  <ThemedText style={[styles.subjectBadgeText, { color: REPORTS_BRAND_BLUE }]}>
                                     {`${item.mcqCount}`}
                                   </ThemedText>
                                 </View>
                               )}
                               {item.flashcardCount > 0 && (
-                                <View style={[styles.subjectBadge, { backgroundColor: brandBlue + '12' }]}>
-                                  <IconSymbol name="rectangle.stack" size={12} color={brandBlue} />
-                                  <ThemedText style={[styles.subjectBadgeText, { color: brandBlue }]}>
+                                <View style={[styles.subjectBadge, { backgroundColor: REPORTS_BRAND_BLUE + '12' }]}>
+                                  <IconSymbol name="rectangle.stack" size={12} color={REPORTS_BRAND_BLUE} />
+                                  <ThemedText style={[styles.subjectBadgeText, { color: REPORTS_BRAND_BLUE }]}>
                                     {`${item.flashcardCount}`}
                                   </ThemedText>
                                 </View>
@@ -441,7 +439,7 @@ export default function ReportsScreen() {
                               styles.subjectBarFill,
                               {
                                 width: `${Math.max(0, Math.min(100, item.progress || 0))}%`,
-                                backgroundColor: brandBlue,
+                                backgroundColor: REPORTS_BRAND_BLUE,
                               },
                             ]}
                           />

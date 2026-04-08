@@ -1,8 +1,6 @@
 import { StyleSheet, Dimensions } from 'react-native';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
-const CARD_WIDTH = SCREEN_WIDTH - 40;
-const CARD_SPACING = 16;
 const GRID_GAP = 12;
 const BOOK_GRID_CARD_WIDTH = (SCREEN_WIDTH - 40 - GRID_GAP) / 2;
 const SUBJECT_COVER_INNER_WIDTH = Math.min(120, Math.round(BOOK_GRID_CARD_WIDTH * 0.62));
@@ -275,97 +273,6 @@ export const HomeScreenStyles = StyleSheet.create({
   activityBadgeText: {
     fontSize: 12,
     fontWeight: '500',
-  },
-  carouselSection: {
-    marginTop: 8,
-    marginBottom: 16,
-  },
-  carouselContainer: {
-    paddingHorizontal: 20,
-  },
-  reportCard: {
-    width: CARD_WIDTH,
-    height: 200,
-    borderRadius: 20,
-    overflow: 'hidden',
-    elevation: 4,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
-    marginRight: 40,
-    marginLeft: -20,
-  },
-  reportCardContent: {
-    flex: 1,
-    padding: 24,
-    justifyContent: 'space-between',
-  },
-  reportCardHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-    justifyContent: 'space-between',
-  },
-  reportCardIconContainer: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: 'rgba(255, 255, 255, 0.2)',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  reportCardTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#fff',
-    flex: 1,
-  },
-  reportCardMain: {
-    marginTop: 10,
-  },
-  reportCardNumber: {
-    fontSize: 25,
-    fontWeight: '700',
-    color: '#fff',
-    marginBottom: 4,
-  },
-  reportCardSubtitle: {
-    fontSize: 16,
-    color: 'rgba(255, 255, 255, 0.9)',
-  },
-  reportCardStats: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginTop: 16,
-  },
-  reportStatItem: {
-    alignItems: 'center',
-  },
-  reportStatValue: {
-    fontSize: 24,
-    fontWeight: '600',
-    color: '#fff',
-    marginBottom: 4,
-  },
-  reportStatLabel: {
-    fontSize: 14,
-    color: 'rgba(255, 255, 255, 0.8)',
-  },
-  paginationDots: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-  },
-  paginationDot: {
-    width: 6,
-    height: 6,
-    borderRadius: 3,
-    backgroundColor: 'rgba(255, 255, 255, 0.5)',
-  },
-  paginationDotActive: {
-    backgroundColor: '#fff',
-    width: 18,
   },
   bookCarouselSection: {
     marginTop: 8,

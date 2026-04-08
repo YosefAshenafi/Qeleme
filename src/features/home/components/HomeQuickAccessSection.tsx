@@ -13,7 +13,6 @@ type HomeQuickAccessSectionProps = {
   sectionTitle: string;
   practiceLabel: string;
   flashcardsLabel: string;
-  reportsLabel: string;
 };
 
 export function HomeQuickAccessSection({
@@ -24,7 +23,6 @@ export function HomeQuickAccessSection({
   sectionTitle,
   practiceLabel,
   flashcardsLabel,
-  reportsLabel,
 }: HomeQuickAccessSectionProps) {
   return (
     <>
@@ -49,16 +47,6 @@ export function HomeQuickAccessSection({
             <IconSymbol name="rectangle.stack.fill" size={26} color="#2E7D32" />
           </View>
           <ThemedText style={[styles.quickAccessLabel, { color: sectionHeadingColor }]}>{flashcardsLabel}</ThemedText>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={[styles.quickAccessCard, { backgroundColor: quickCardBg, borderColor: quickCardBorder }]}
-          onPress={() => router.push('/(tabs)/reports')}
-          activeOpacity={0.88}
-        >
-          <View style={[styles.quickAccessIconCircle, { backgroundColor: isDarkMode ? '#3D2E1F' : '#FFF3E0' }]}>
-            <IconSymbol name="chart.bar.fill" size={26} color="#ED6C02" />
-          </View>
-          <ThemedText style={[styles.quickAccessLabel, { color: sectionHeadingColor }]}>{reportsLabel}</ThemedText>
         </TouchableOpacity>
       </View>
     </>

@@ -6,7 +6,6 @@ import { ThemedView } from '@/features/common/components/ThemedView';
 import { useHomeScreen } from '@/features/home/hooks/useHomeScreen';
 import { HomeNationalExamSection } from './HomeNationalExamSection';
 import { HomeQuickAccessSection } from './HomeQuickAccessSection';
-import { HomeReportCarousel } from './HomeReportCarousel';
 import { HomeSubjectGridSection } from './HomeSubjectGridSection';
 import { HomeWelcomeBlock } from './HomeWelcomeBlock';
 import { HomeScreenStyles as styles } from './HomeScreen.styles';
@@ -52,7 +51,6 @@ export default function HomeScreen() {
                 sectionTitle={h.t('home.quickAccess.sectionTitle')}
                 practiceLabel={h.t('home.quickAccess.practiceLabel')}
                 flashcardsLabel={h.t('home.quickAccess.flashcardsLabel')}
-                reportsLabel={h.t('home.quickAccess.reportsLabel')}
               />
 
               <HomeSubjectGridSection
@@ -85,14 +83,7 @@ export default function HomeScreen() {
                 />
               )}
             </>
-          ) : (
-            <HomeReportCarousel
-              scrollViewRef={h.scrollViewRef}
-              reportCards={h.reportCards}
-              activeIndex={h.activeIndex}
-              onScroll={h.handleScroll}
-            />
-          )}
+          ) : null}
         </ThemedView>
       </ScrollView>
     </SafeAreaView>
