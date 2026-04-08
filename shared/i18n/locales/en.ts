@@ -374,7 +374,7 @@ export default {
     edit: 'Edit',
     title: 'Settings',
     about: 'About MegaTest',
-    aboutInfo: 'MegaTest is a premium learning ecosystem designed to accelerate academic success through engaging, interactive content, customized study paths, and precise performance tracking.',
+    aboutInfo: 'MegaTest is a high school (secondary) study app: multiple-choice practice, flashcards, and exam prep with progress tracking.',
     contactUs: 'Contact Us',
     version: 'App Version',
     dangerZone: 'Danger Zone',
@@ -1174,7 +1174,7 @@ export default {
   },
   payment: {
     title: 'Payment',
-    subtitle: 'Redirecting to Chappa...',
+    subtitle: 'Redirecting to secure payment…',
     amount: 'Amount: {{amount}}',
     paymentMethod: 'Payment Method: {{paymentMethod}}',
     orderId: 'Order ID: {{orderId}}',

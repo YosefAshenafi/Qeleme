@@ -20,8 +20,8 @@ export const initiatePayment = async (
     const callbackUrl = `https://www.trustechit.com/payment-success.html?orderId=${orderId}`;
     const returnUrl = 'megatest://payment-success';
 
-    console.log('Chappa service - Request URL:', `${CHAPPA_BASE_URL}/pay`);
-    console.log('Chappa service - Request body:', {
+    console.log('Payment - Request URL:', `${CHAPPA_BASE_URL}/pay`);
+    console.log('Payment - Request body:', {
       amount: amount.toString(),
       email: customerEmail || 'customer@megatest.app',
       first_name: firstName,
@@ -47,11 +47,11 @@ export const initiatePayment = async (
       }),
     });
 
-    console.log('Chappa service - Response status:', response.status);
-    console.log('Chappa service - Response ok:', response.ok);
+    console.log('Payment - Response status:', response.status);
+    console.log('Payment - Response ok:', response.ok);
 
     const data: PaymentResponse = await response.json();
-    console.log('Chappa service - Response data:', data);
+    console.log('Payment - Response data:', data);
     
     // Transform the response to match the expected format
     const transformedResponse: PaymentResponse = {
@@ -63,7 +63,7 @@ export const initiatePayment = async (
     
     return transformedResponse;
   } catch (error) {
-    console.log('Chappa service - Error:', error);
+    console.log('Payment - Error:', error);
     throw error;
   }
 };

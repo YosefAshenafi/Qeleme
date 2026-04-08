@@ -1,56 +1,59 @@
-# Qeleme - Educational Platform
+# MegaTest
 
-Qeleme is a comprehensive educational platform that provides interactive learning experiences through various features including MCQs, flashcards, and more.
+**MegaTest** is a mobile learning app (iOS and Android) built with Expo and React Native. It is aimed at **high school (secondary)** students—practice questions, flashcards, and national exam practice—with sign-in, profiles, reports, and subscription payments. The experience is intended for a **teen** audience (typically **13+**), which fits common educational-app expectations on Google Play when you provide accurate store listing and age information.
 
-## Features
+MegaTest does **not** include AI-generated tutoring, chatbots, or similar features; learning is through structured questions and content from your configured backend.
 
-- **MCQ System**: Interactive multiple-choice questions for different grades and subjects
-- **Flashcards**: Digital flashcards for effective learning
-- **User Authentication**: Secure login and registration system
-- **Profile Management**: User profile with statistics and settings
-- **Payment Integration**: Secure payment processing for premium features
+## What the app does
 
-## API Endpoints
+- **Authentication** — login, registration, OTP verification, password reset, role and plan selection, onboarding  
+- **MCQs** — curriculum questions by grade, subject, and chapter; national exam sets for supported grades  
+- **Flashcards** — grade- and chapter-scoped decks  
+- **Profile & reports** — student profile, stats, account settings  
+- **Payments** — plan selection and checkout (return URL uses the `megatest://` app scheme)  
+- **Kindergarten** — picture MCQ and category flows where enabled in the app  
+
+## Tech stack
+
+- **Expo SDK 54** · **React Native** · **expo-router** (file-based routes)  
+- **Redux Toolkit** for app state  
+- **i18next** for localization  
+- **@megatest/shared** — shared UI, features, services, and types (`shared/`)
+
+## Repository layout
+
+| Path | Purpose |
+|------|---------|
+| `app/` | Expo Router screens: auth, main tabs (home, MCQ, flashcards, profile, reports), kindergarten (`kg`) flows |
+| `shared/` | Cross-cutting package: screens, services (`flashcardService`, `kgService`, …), config, components |
+| `assets/` | Images, fonts, and other static assets |
+
+## API configuration
+
+The app resolves the backend base URL in **`shared/config/constants.ts`** (`getBaseUrl()` → `BASE_URL`). Point that value at your API host for each environment. Payment-related URLs (if used) are configured in the same module.
+
+## API reference (backend)
+
+The mobile client calls REST endpoints under `{BASE_URL}/api/...`. Examples:
 
 ### Authentication
 
-#### Register Student
-```http
-POST /api/auth/register/student
-```
+**Register student** — `POST /api/auth/register/student`
 
-**Request Body:**
 ```json
 {
-  "fullName": "John Doe",
-  "username": "johndoe",
+  "fullName": "Jane Student",
+  "username": "janestudent",
   "password": "securepassword",
-  "grade": "Grade 5",
+  "grade": "Grade 12",
   "parentId": "0",
   "paymentPlan": "premium",
   "amountPaid": 100
 }
 ```
 
-**Response:**
-```json
-{
-  "success": true,
-  "message": "User registered successfully",
-  "data": {
-    "id": "user123",
-    "username": "johndoe",
-    "grade": "Grade 5"
-  }
-}
-```
+**Verify OTP** — `POST /api/auth/verify`
 
-#### Verify OTP
-```http
-POST /api/auth/verify
-```
-
-**Request Body:**
 ```json
 {
   "phoneNumber": "+251910810689",
@@ -58,202 +61,48 @@ POST /api/auth/verify
 }
 ```
 
-**Response:**
-```json
-{
-  "success": true,
-  "message": "OTP verified successfully"
-}
-```
+**Student profile** — `GET /api/auth/student/profile` (header: `Authorization: Bearer <token>`)
 
-### Student Profile
+### Learning content
 
-#### Get Student Profile
-```http
-GET /api/auth/student/profile
-```
+- **MCQ tree** — `GET /api/mcq?gradeLevelId={gradeNumber}`  
+- **National exams (grouped)** — `GET /api/questions/grouped?gradeLevelId={id}&yearId={id}&subject={name}`  
+- **Available national exams** — `GET /api/national-exams/available/{gradeNumber}`  
+- **Chapter MCQs** — `GET /api/mcq/questions?gradeLevelId={id}&subjectId={id}&chapterId={id}`  
+- **Flashcards** — `GET /api/flashcards?...` (see `shared/services/flashcardService.ts`)
 
-**Headers:**
-```
-Authorization: Bearer <token>
-```
+Responses follow the shapes used in the app (grades → subjects → chapters → questions with options and explanations).
 
-**Response:**
-```json
-{
-  "id": "user123",
-  "fullName": "John Doe",
-  "username": "johndoe",
-  "grade": "Grade 5",
-  "stats": {
-    "totalQuestions": 100,
-    "correctAnswers": 75,
-    "accuracy": 75
-  }
-}
-```
+## Getting started
 
-### Learning Content
+1. **Install dependencies** (from the repo root):
 
-#### Get MCQ Data
-```http
-GET /api/mcq?gradeLevelId={gradeNumber}
-```
+   ```bash
+   npm install
+   ```
 
-**Headers:**
-```
-Authorization: Bearer <token>
-```
+   The repo declares `bun@1.2.0` as the package manager; you can use `bun install` if you prefer.
 
-**Response:**
-```json
-{
-  "grades": [
-    {
-      "id": "grade-5",
-      "name": "Grade 5",
-      "subjects": [
-        {
-          "id": "math",
-          "name": "Mathematics",
-          "chapters": [
-            {
-              "id": "algebra",
-              "name": "Algebra",
-              "questions": [
-                {
-                  "id": "q1",
-                  "question": "What is 2 + 2?",
-                  "options": [
-                    {"id": "1", "text": "3", "isCorrect": false},
-                    {"id": "2", "text": "4", "isCorrect": true},
-                    {"id": "3", "text": "5", "isCorrect": false}
-                  ],
-                  "explanation": "The correct answer is 4"
-                }
-              ]
-            }
-          ]
-        }
-      ]
-    }
-  ]
-}
-```
+2. **Start the dev server**:
 
-#### Get National Exam Questions
-```http
-GET /api/questions/grouped?gradeLevelId={gradeLevelId}&yearId={yearId}&subject={subject}
-```
+   ```bash
+   npm run start
+   ```
 
-**Headers:**
-```
-Authorization: Bearer <token>
-```
+3. **Run on a device or simulator**:
 
-**Response:**
-```json
-{
-  "data": [
-    {
-      "subject": "Mathematics",
-      "year": 2023,
-      "gradeLevel": 8,
-      "questions": [
-        {
-          "id": "q1",
-          "question": "What is the value of x in 2x + 5 = 15?",
-          "options": [
-            {"id": "1", "text": "5", "isCorrect": true},
-            {"id": "2", "text": "7", "isCorrect": false},
-            {"id": "3", "text": "10", "isCorrect": false}
-          ],
-          "explanation": "To solve for x, subtract 5 from both sides and divide by 2"
-        }
-      ]
-    }
-  ]
-}
-```
+   - iOS: `npm run ios` (or `npx expo run:ios`)  
+   - Android: `npm run android` (or `npx expo run:android`)  
+   - Expo Go: scan the QR code from the dev server  
 
-#### Get Available National Exams
-```http
-GET /api/national-exams/available/{gradeNumber}
-```
+4. **Optional** — `npm run lint` / `npm test` for linting and tests.
 
-**Headers:**
-```
-Authorization: Bearer <token>
-```
+## App metadata
 
-**Response:**
-```json
-{
-  "success": true,
-  "data": {
-    "subjects": ["Mathematics", "English", "Science"],
-    "years": [2023, 2022, 2021]
-  }
-}
-```
-
-#### Get Regular MCQ Questions
-```http
-GET /api/mcq/questions?gradeLevelId={gradeLevelId}&subjectId={subjectId}&chapterId={chapterId}
-```
-
-**Headers:**
-```
-Authorization: Bearer <token>
-```
-
-**Response:**
-```json
-{
-  "data": [
-    {
-      "id": "q1",
-      "question": "What is the capital of France?",
-      "options": [
-        {"id": "1", "text": "London", "isCorrect": false},
-        {"id": "2", "text": "Paris", "isCorrect": true},
-        {"id": "3", "text": "Berlin", "isCorrect": false}
-      ],
-      "explanation": "Paris is the capital city of France"
-    }
-  ]
-}
-```
-
-## Getting Started
-
-1. Install dependencies:
-```bash
-npm install
-```
-
-2. Start the development server:
-```bash
-npx expo start
-```
-
-3. Run on your preferred platform:
-- iOS Simulator: Press `i`
-- Android Emulator: Press `a`
-- Expo Go: Scan the QR code with your mobile device
-
-## Environment Variables
-
-Create a `.env` file in the root directory with the following variables:
-```
-EXPO_PUBLIC_API_URL=http://172.20.10.3:5001
-EXPO_PUBLIC_OPENAI_API_KEY=your_openai_api_key
-```
+- **Bundle IDs** — iOS/Android: `com.megatest.edu` (see `app.json`)  
+- **URL scheme** — `megatest` (deep links for payment return, etc.)  
+- **EAS** — project id is set under `expo.extra.eas` in `app.json` for EAS Build  
 
 ## Contributing
 
-We welcome contributions! Please feel free to submit a Pull Request.
-
-## License
-
-This project is licensed under the MIT License - see the LICENSE file for details.
+Pull requests are welcome. Please keep changes focused and consistent with existing patterns in `app/` and `shared/`.

@@ -206,10 +206,10 @@ export default function PlanSelectionScreen() {
       // All plans are paid plans, proceed with payment
       const amount = getTotalCostAsNumber();
 
-      // Use Chappa service to initiate payment
+      // Initiate payment via checkout service
       const orderId = `ORDER_${Date.now()}`;
 
-      console.log('Initiating payment with Chappa service');
+      console.log('Initiating payment');
       console.log('Order ID:', orderId);
       console.log('Amount:', parseFloat(amount.toString()));
       console.log('Phone:', userData.phoneNumber);
@@ -227,7 +227,7 @@ export default function PlanSelectionScreen() {
       console.log('Payment response status:', paymentData.success);
 
       if (paymentData.success && paymentData.paymentUrl) {
-        // Navigate to payment screen with the Chappa URL
+        // Navigate to payment screen with checkout URL
         router.push({
           pathname: '/(auth)/payment',
           params: {

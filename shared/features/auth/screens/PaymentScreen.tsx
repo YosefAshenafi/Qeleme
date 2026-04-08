@@ -1,4 +1,4 @@
-import { TouchableOpacity, View, KeyboardAvoidingView, Platform, ScrollView, Image, Modal, Pressable, Alert } from 'react-native';
+import { TouchableOpacity, View, KeyboardAvoidingView, Platform, ScrollView, Image, Modal, Pressable, Alert, ActivityIndicator } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -407,10 +407,8 @@ export default function PaymentScreen() {
             </ThemedText>
           </View>
 
-          <View style={styles.container}>
-            <ThemedText style={styles.subtitle}>
-              Redirecting to Chappa...
-            </ThemedText>
+          <View style={[styles.container, { flex: 1, justifyContent: 'center', alignItems: 'center' }]}>
+            <ActivityIndicator size="large" color={colors.text} />
           </View>
         </View>
       </SafeAreaView>
