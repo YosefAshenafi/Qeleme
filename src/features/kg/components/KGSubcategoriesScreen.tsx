@@ -85,7 +85,6 @@ export default function KGSubcategoriesScreen() {
       setCategoryData(result.category);
       setSubcategories(result.subcategories);
     } catch (err) {
-      console.error('Failed to fetch KG subcategories:', err);
       setError(err instanceof Error ? err.message : 'Failed to load subcategories');
     } finally {
       setLoading(false);

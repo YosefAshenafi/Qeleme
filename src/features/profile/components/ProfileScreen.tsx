@@ -64,7 +64,6 @@ export default function ProfileScreen() {
       i18n.changeLanguage(language);
       await AsyncStorage.setItem('@prefs_language', language);
     } catch (error) {
-      console.error('Error saving language preference:', error);
     }
   };
 
@@ -160,13 +159,11 @@ export default function ProfileScreen() {
                   quality: 0.7,
                 });
 
-                console.log('Camera result:', cameraResult);
 
                 if (!cameraResult.canceled && cameraResult.assets && cameraResult.assets[0]) {
                   await uploadProfileImage(cameraResult.assets[0].uri);
                 }
               } catch (cameraError) {
-                console.error('Camera error:', cameraError);
                 Alert.alert(
                   t('profile.imagePicker.cameraError', { defaultValue: 'Camera Error' }),
                   t('profile.imagePicker.cameraErrorMessage', { defaultValue: 'Failed to access camera. Please check permissions.' })
@@ -185,13 +182,11 @@ export default function ProfileScreen() {
                   quality: 0.7,
                 });
 
-                console.log('Library result:', libraryResult);
 
                 if (!libraryResult.canceled && libraryResult.assets && libraryResult.assets[0]) {
                   await uploadProfileImage(libraryResult.assets[0].uri);
                 }
               } catch (libraryError) {
-                console.error('Library error:', libraryError);
                 Alert.alert(
                   t('profile.imagePicker.galleryError', { defaultValue: 'Gallery Error' }),
                   t('profile.imagePicker.galleryErrorMessage', { defaultValue: 'Failed to access gallery. Please check permissions.' })
@@ -202,7 +197,6 @@ export default function ProfileScreen() {
         ]
       );
     } catch (error) {
-      console.error('Error picking image:', error);
       Alert.alert(
         t('profile.imagePicker.error', { defaultValue: 'Error' }),
         t('profile.imagePicker.errorMessage', { defaultValue: 'Failed to select image. Please try again.' })
@@ -212,7 +206,6 @@ export default function ProfileScreen() {
 
   const uploadProfileImage = async (imageUri: string) => {
     try {
-      console.log('Updating profile image locally:', imageUri);
       
       
       await AsyncStorage.setItem('@profile_image', imageUri);
@@ -223,7 +216,6 @@ export default function ProfileScreen() {
         profileImage: imageUri,
       };
       
-      console.log('Updating user data with local profile image:', updatedUser.profileImage);
       await login(updatedUser);
       
       Alert.alert(
@@ -231,7 +223,6 @@ export default function ProfileScreen() {
         t('profile.imagePicker.successMessage', { defaultValue: 'Profile picture updated successfully!' })
       );
     } catch (error) {
-      console.error('Error updating profile image:', error);
       Alert.alert(
         t('profile.imagePicker.error', { defaultValue: 'Error' }),
         t('profile.imagePicker.errorMessage', { defaultValue: 'Failed to update profile picture. Please try again.' })
@@ -253,7 +244,6 @@ export default function ProfileScreen() {
           await login(updatedUser);
         }
       } catch (error) {
-        console.error('Error loading profile image:', error);
       }
     };
 

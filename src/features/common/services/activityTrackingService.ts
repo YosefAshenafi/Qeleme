@@ -133,7 +133,6 @@ class ActivityTrackingService {
         this.currentUsername = null;
       }
     } catch (error) {
-      console.error('Failed to initialize ActivityTrackingService:', error);
     }
   }
 
@@ -149,7 +148,6 @@ class ActivityTrackingService {
         this.activities = [];
       }
     } catch (error) {
-      console.error('Failed to load activities:', error);
       this.activities = [];
     }
   }
@@ -162,7 +160,6 @@ class ActivityTrackingService {
         this.stats = JSON.parse(statsJson);
       }
     } catch (error) {
-      console.error('Failed to load stats:', error);
       this.stats = null;
     }
   }
@@ -174,7 +171,6 @@ class ActivityTrackingService {
         await AsyncStorage.setItem(getActivitiesKey(this.currentUsername), JSON.stringify(this.activities));
       }
     } catch (error) {
-      console.error('Failed to save activities:', error);
     }
   }
 
@@ -185,7 +181,6 @@ class ActivityTrackingService {
         await AsyncStorage.setItem(getStatsKey(this.currentUsername), JSON.stringify(this.stats));
       }
     } catch (error) {
-      console.error('Failed to save stats:', error);
     }
   }
 
@@ -193,7 +188,6 @@ class ActivityTrackingService {
   public async addActivity(activity: NewActivity): Promise<void> {
     try {
       if (!this.currentUsername) {
-        console.warn('Cannot add activity: no current user set. Please initialize with a username first.');
         return;
       }
       
@@ -215,7 +209,6 @@ class ActivityTrackingService {
       await this.updateStats();
       await this.updateRecentActivities(newActivity);
     } catch (error) {
-      console.error('Failed to add activity:', error);
     }
   }
 
@@ -246,7 +239,6 @@ class ActivityTrackingService {
       
       await AsyncStorage.setItem(RECENT_ACTIVITIES_KEY, JSON.stringify(activities));
     } catch (error) {
-      console.error('Failed to update recent activities:', error);
     }
   }
 
@@ -333,7 +325,6 @@ class ActivityTrackingService {
           typeStats.lastActivity = Math.max(typeStats.lastActivity, activity.timestamp);
         } else {
           
-          console.warn(`Unknown activity type: ${activity.type}`);
         }
 
         
@@ -425,7 +416,6 @@ class ActivityTrackingService {
       this.stats = stats;
       await this.saveStats();
     } catch (error) {
-      console.error('Failed to update stats:', error);
     }
   }
 
@@ -474,7 +464,6 @@ class ActivityTrackingService {
       this.stats = null;
       await AsyncStorage.removeItem(RECENT_ACTIVITIES_KEY);
     } catch (error) {
-      console.error('Failed to clear all data:', error);
     }
   }
 
@@ -489,7 +478,6 @@ class ActivityTrackingService {
         this.currentUsername = null;
       }
     } catch (error) {
-      console.error('Failed to clear user data:', error);
     }
   }
 

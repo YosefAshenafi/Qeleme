@@ -205,10 +205,8 @@ export default function PictureMCQScreen({ onBackToInstructions }: PictureMCQScr
       let closestOption: string | null = null;
       let minDistance = Infinity;
       const zones = dropZonesRef.current;
-      console.log('onUpdate zones:', zones);
       const zoneKeys = Object.keys(zones);
       if (zoneKeys.length === 0) {
-        console.log('No drop zones available yet');
         return;
       }
       zoneKeys.forEach((optionId) => {
@@ -232,7 +230,6 @@ export default function PictureMCQScreen({ onBackToInstructions }: PictureMCQScr
       imagePosition.value = withSpring({ x: 0, y: 0 });
       runOnJS(updateHoveredOption)(null);
       const currentHoveredOption = hoveredOptionShared.value;
-      console.log('onEnd currentHoveredOption:', currentHoveredOption);
       if (currentHoveredOption) {
         runOnJS(handleAnswerSelection)(currentHoveredOption);
       }

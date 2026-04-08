@@ -52,7 +52,6 @@ export default function PaymentScreen() {
     const checkInitialURL = async () => {
       const initialURL = await Linking.getInitialURL();
       if (initialURL && initialURL.includes('payment-success')) {
-        console.log('Initial URL contains payment-success:', initialURL);
         setShowWebView(false);
         setPaymentCompleted(true);
         handlePaymentSuccess(parseFloat(amount), selectedPlanId);
@@ -70,10 +69,8 @@ export default function PaymentScreen() {
   }, [orderId]);
 
   const handleDeepLink = (event: { url: string }) => {
-    console.log('Deep link received:', event.url);
     
     if (event.url.includes('payment-success')) {
-      console.log('Payment success deep link received');
       setShowWebView(false);
       setPaymentCompleted(true);
       handlePaymentSuccess(parseFloat(amount), selectedPlanId);
@@ -81,7 +78,6 @@ export default function PaymentScreen() {
   };
 
   const pollPaymentStatus = async (orderId: string) => {
-    console.log('Starting payment status polling for orderId:', orderId);
     
     
     const interval = setInterval(async () => {
@@ -97,7 +93,6 @@ export default function PaymentScreen() {
         });
         const data = await response.json();
         
-        console.log('Payment status check:', data);
         
         
         const isSuccess = data.success && (
@@ -118,13 +113,11 @@ export default function PaymentScreen() {
         );
         
         if (isSuccess) {
-          console.log('Payment completed successfully via polling');
           clearInterval(interval);
           setShowWebView(false);
           setPaymentCompleted(true);
           await handlePaymentSuccess(parseFloat(amount), selectedPlanId);
         } else if (isFailed) {
-          console.log('Payment failed via polling');
           clearInterval(interval);
           setShowWebView(false);
           handlePaymentFailure();
@@ -136,7 +129,6 @@ export default function PaymentScreen() {
     
     setTimeout(() => {
       clearInterval(interval);
-      console.log('Payment status polling timed out');
     }, 300000);
   };
 
@@ -169,27 +161,22 @@ export default function PaymentScreen() {
       });
 
       const data = await response.json();
-      console.log('Payment Success - Registration response status:', response.status);
-      console.log('Payment Success - Registration response data:', data);
 
       if (!response.ok) {
         
         if (response.status === 409 || (data.message && data.message.includes('already exists'))) {
-          console.log('User already registered, proceeding with success flow');
           setRegistrationCompleted(true);
           setShowSuccessModal(true);
           return;
         }
         
         
-        console.error('Registration error logged, but continuing with success flow:', data);
       }
 
       setRegistrationCompleted(true);
       setShowSuccessModal(true);
 
     } catch (error: any) {
-      console.error('Payment success error:', error);
       
       
       setRegistrationCompleted(true);
@@ -229,15 +216,12 @@ export default function PaymentScreen() {
               source={{ uri: paymentUrl }}
               style={styles.webview}
               onNavigationStateChange={(navState) => {
-                console.log('WebView navigation state:', navState);
-                console.log('Current URL:', navState.url);
                 
                 
                 if (navState.url.includes('payment-success') || 
                     navState.url.includes('trustechit.com/payment-success') ||
                     navState.url.includes('success') ||
                     navState.url.includes('completed')) {
-                  console.log('Detected payment success page in WebView');
                   setShowWebView(false);
                   setPaymentCompleted(true);
                   handlePaymentSuccess(parseFloat(amount), selectedPlanId);
@@ -247,19 +231,15 @@ export default function PaymentScreen() {
                 if (navState.url.includes('webhook.site') || 
                     navState.url.includes('error') ||
                     navState.url.includes('failed')) {
-                  console.log('Detected error page in WebView');
                   setShowWebView(false);
                   handlePaymentFailure();
                 }
               }}
               onLoadStart={() => {
-                console.log('WebView load started');
               }}
               onLoadEnd={() => {
-                console.log('WebView load ended');
               }}
               onError={(syntheticEvent) => {
-                console.error('WebView error:', syntheticEvent.nativeEvent);
               }}
             />
           </View>

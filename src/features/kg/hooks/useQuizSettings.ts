@@ -21,7 +21,6 @@ export function useQuizSettings() {
         setAutoAdvanceDelay(parsed.autoAdvanceDelay ?? 2000);
       }
     } catch (error) {
-      console.log('Error loading settings:', error);
     }
   }, []);
 
@@ -32,7 +31,6 @@ export function useQuizSettings() {
         autoAdvanceDelay: newDelay,
       }));
     } catch (error) {
-      console.log('Error saving settings:', error);
     }
   }, []);
 

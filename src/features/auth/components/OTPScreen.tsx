@@ -90,7 +90,6 @@ export default function OTPScreen() {
         setError(''); 
         
         const response = await sendOTP(userData.phoneNumber);
-        console.log('[OTP] resend response:', response);
         
         if (response.success) {
           
@@ -126,7 +125,6 @@ export default function OTPScreen() {
       
       
       const response = await verifyOTP(userData.phoneNumber, otpString);
-      console.log('[OTP] verify response:', response);
       
       if (response.success) {
         

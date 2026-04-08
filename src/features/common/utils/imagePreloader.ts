@@ -44,7 +44,6 @@ export class ImagePreloader {
 
       return null;
     } catch (error) {
-      console.warn('Image preload failed:', error);
       return null;
     }
   }
@@ -70,7 +69,6 @@ export class ImagePreloader {
       try {
         await this.downloadAndCache(url);
       } catch (error) {
-        console.warn('Failed to preload image:', url, error);
       }
 
       
@@ -93,7 +91,6 @@ export class ImagePreloader {
       
       await this.cacheImage(url, url, 0);
     } catch (error) {
-      console.warn('Failed to verify image URL:', url, error);
       throw error;
     }
   }
@@ -110,7 +107,6 @@ export class ImagePreloader {
       
       await AsyncStorage.setItem(key, JSON.stringify(cacheEntry));
     } catch (error) {
-      console.warn('Failed to cache image:', error);
     }
   }
 
@@ -133,7 +129,6 @@ export class ImagePreloader {
         }
       }
     } catch (error) {
-      console.warn('Cache check failed:', error);
     }
     
     return null;
@@ -165,10 +160,8 @@ export class ImagePreloader {
       
       if (keysToRemove.length > 0) {
         await AsyncStorage.multiRemove(keysToRemove);
-        console.log(`Cleared ${keysToRemove.length} expired image cache entries`);
       }
     } catch (error) {
-      console.warn('Failed to clear expired cache:', error);
     }
   }
 
@@ -199,7 +192,6 @@ export class ImagePreloader {
         totalSize
       };
     } catch (error) {
-      console.warn('Failed to get cache stats:', error);
       return { totalEntries: 0, totalSize: 0 };
     }
   }

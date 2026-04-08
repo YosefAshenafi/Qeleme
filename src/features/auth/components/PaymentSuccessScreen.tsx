@@ -27,7 +27,6 @@ export default function PaymentSuccessScreen() {
     const status = params.status as string;
     const txRef = params.tx_ref as string;
     
-    console.log('Payment success callback received:', { status, txRef });
     
     if (status === 'success' && txRef) {
       Alert.alert(

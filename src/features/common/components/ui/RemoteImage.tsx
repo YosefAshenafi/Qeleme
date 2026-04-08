@@ -87,7 +87,6 @@ export function RemoteImage({
         }
       }
     } catch (error) {
-      console.warn('Cache check failed:', error);
     }
     
     return null;
@@ -105,7 +104,6 @@ export function RemoteImage({
       };
       await AsyncStorage.setItem(key, JSON.stringify(cacheData));
     } catch (error) {
-      console.warn('Cache save failed:', error);
     }
   };
 
@@ -151,7 +149,6 @@ export function RemoteImage({
       fadeInImage();
       
     } catch (error) {
-      console.warn('Image load failed:', error);
       setImageError(true);
       onError?.();
     } finally {
@@ -170,7 +167,6 @@ export function RemoteImage({
 
   useEffect(() => {
     if (remoteUrl && !imageError) {
-      console.log('Loading image:', remoteUrl);
       loadImage();
     }
   }, [remoteUrl, imageError]);
@@ -181,7 +177,6 @@ export function RemoteImage({
     ? { uri: remoteUrl }
     : fallbackSource;
 
-  console.log('Image source:', source);
 
   const handleLoad = () => {
     setImageLoaded(true);

@@ -190,7 +190,6 @@ export async function preloadOptimizedImages(
         throw new Error(`HTTP ${response.status}`);
       }
     } catch (error) {
-      console.warn(`Failed to preload image: ${url}`, error);
     }
   });
   

@@ -112,13 +112,9 @@ export default function FlashcardsScreen() {
 
   useEffect(() => {
     if (user?.grade) {
-      console.log('Setting grade from user data:', user.grade);
-
       const gradeNumber = user.grade.replace(/[^\d]/g, '');
-      console.log('Extracted grade number:', gradeNumber);
       setSelectedGradeId(gradeNumber || '1');
     } else {
-      console.log('No grade found in user data, defaulting to grade 1');
       setSelectedGradeId('1');
     }
   }, [user]);
@@ -131,7 +127,6 @@ export default function FlashcardsScreen() {
 
   useEffect(() => {
     if (params.preSelectedSubject) {
-      console.log('Pre-selection parameter detected:', params.preSelectedSubject);
       preSelectionAttempted.current = false;
       setHasAppliedPreSelection(false);
       flashcardsAutoStartConsumedRef.current = false;
@@ -145,10 +140,6 @@ export default function FlashcardsScreen() {
         setSelectedGrade(grade.name);
 
         if (params.preSelectedSubject && !preSelectionAttempted.current) {
-          console.log('=== Starting Pre-Selection Process ===');
-          console.log('Looking for subject:', params.preSelectedSubject);
-          console.log('Available subjects:', grade.subjects?.map((s) => ({ id: s.id, name: s.name })));
-
           preSelectionAttempted.current = true;
 
           setShowFlashcards(false);
@@ -168,7 +159,6 @@ export default function FlashcardsScreen() {
           let subject = grade.subjects?.find((s) => s.name.toLowerCase().trim() === searchTerm);
 
           if (!subject) {
-            console.log('Exact match not found, trying partial match...');
             subject = grade.subjects?.find((s) => {
               const subjectName = s.name.toLowerCase();
               return subjectName.includes(searchTerm) || searchTerm.includes(subjectName);
@@ -176,8 +166,6 @@ export default function FlashcardsScreen() {
           }
 
           if (subject) {
-            console.log('✓ Found subject:', { id: subject.id, name: subject.name });
-            console.log('Setting selected subject to:', subject.id);
             setSelectedSubject(subject.id);
             const chId =
               typeof params.preSelectedChapterId === 'string' ? params.preSelectedChapterId.trim() : '';
@@ -190,16 +178,11 @@ export default function FlashcardsScreen() {
             setIsPreSelected(true);
             setHasAppliedPreSelection(true);
           } else {
-            console.warn('✗ Subject not found!');
-            console.log('Searched for:', params.preSelectedSubject);
-            console.log('Available options:', grade.subjects?.map((s) => s.name).join(', '));
-
             setSelectedSubject('');
             setSelectedChapter('');
             setIsPreSelected(false);
             setHasAppliedPreSelection(true);
           }
-          console.log('=== Pre-Selection Process Complete ===');
         } else if (!params.preSelectedSubject && !hasAppliedPreSelection) {
           setSelectedSubject('');
           setSelectedChapter('');
@@ -258,7 +241,6 @@ export default function FlashcardsScreen() {
 
   useEffect(() => {
     if (previousLanguage !== i18n.language) {
-      console.log('Language changed from', previousLanguage, 'to', i18n.language);
       setPreviousLanguage(i18n.language);
     }
   }, [i18n.language, previousLanguage]);
@@ -309,7 +291,6 @@ export default function FlashcardsScreen() {
     const meta = sessionTrackMetaRef.current;
     const subjectName = (meta?.subjectName || selectedSubjectData?.name || '').trim();
     if (!subjectName) {
-      console.warn('[Flashcards] Activity not tracked: missing subject name (session meta).');
       return;
     }
 
@@ -335,8 +316,7 @@ export default function FlashcardsScreen() {
         cardsMastered,
         timeSpent: timeSpentSec,
       });
-    } catch (err) {
-      console.error('Failed to track flashcard activity:', err);
+    } catch {
       flashcardSessionTrackedRef.current = false;
     }
   };
@@ -419,8 +399,7 @@ export default function FlashcardsScreen() {
         stiffness: 80,
         mass: 0.8,
       });
-    } catch (e) {
-      console.error('Error fetching chapter flashcards:', e);
+    } catch {
       setError(t('errors.network.message'));
     } finally {
       setIsLoading(false);
@@ -463,8 +442,7 @@ export default function FlashcardsScreen() {
           setIsRevealed(false);
           revealAnimation.value = withSpring(0, { damping: 12, stiffness: 80, mass: 0.8 });
           progressAnimation.value = withTiming(0);
-        } catch (e) {
-          console.error('Deep-link flashcards start failed:', e);
+        } catch {
           setError(t('errors.network.message'));
         } finally {
           setIsLoading(false);

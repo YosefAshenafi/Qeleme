@@ -54,8 +54,7 @@ export default function HomeScreen() {
         const data = await getNationalExamAvailable(parseInt(gradeNumber, 10));
         setNationalExamYears(data.data.years);
       }
-    } catch (error) {
-      console.error('Failed to fetch national exam years:', error);
+    } catch {
       setNationalExamYears([]);
     } finally {
       setIsNationalExamLoading(false);
@@ -81,8 +80,7 @@ export default function HomeScreen() {
         }));
         setHomeMcqSubjects(tiles);
       }
-    } catch (error) {
-      console.log('Failed to fetch practice subjects from API:', error);
+    } catch {
       const gradeNumber = user?.grade?.replace(/[^0-9]/g, '') || '6';
       const fallbackSubjects = [
         'Mathematics',

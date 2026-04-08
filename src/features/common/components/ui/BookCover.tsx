@@ -85,7 +85,6 @@ export const BookCover: React.FC<BookCoverProps> = ({
             style={StyleSheet.absoluteFill}
             resizeMode="cover"
             onError={() => {
-              console.log('Failed to load image:', imageUrl);
               setImageError(true);
             }}
           />

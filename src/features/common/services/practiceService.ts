@@ -93,12 +93,8 @@ export const getPracticeData = async (gradeId: string): Promise<PracticeData> =>
       throw new Error('No authentication token found. Please login again.');
     }
 
-    
-    console.log('FORMATTED GRADE ID:', formattedGradeId);
     const gradeNumber = formattedGradeId.split('-')[1];
-    
-    
-    console.log('GRADE NUMBER:', gradeNumber);
+
     const response = await fetch(`${BASE_URL}/mcq?gradeLevelId=${gradeNumber}`, {
       method: 'GET',
       headers: {

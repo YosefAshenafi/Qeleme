@@ -1,8 +1,8 @@
 import React, { useState, useRef, useEffect, useMemo, useLayoutEffect } from 'react';
-import { StyleSheet, TouchableOpacity, ScrollView, View, Dimensions, Animated, Modal, Platform, ActivityIndicator, TextInput, Image, Text, Keyboard, useWindowDimensions } from 'react-native';
+import { StyleSheet, TouchableOpacity, ScrollView, View, Modal, ActivityIndicator, TextInput, Image, Text, Keyboard, useWindowDimensions } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
-import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
+import { Redirect, router, useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useTheme } from '@/core/providers/ThemeProvider';
@@ -10,13 +10,10 @@ import { getColors } from '@/features/common/constants/Colors';
 import { useAuth } from '@/core/providers/AuthProvider';
 import { useTranslation } from 'react-i18next';
 import { useNavigation } from '@react-navigation/native';
-import { Redirect } from 'expo-router';
-
 import { ThemedText } from '@/features/common/components/ThemedText';
 import { LanguageToggle } from '@/features/common/components/ui/LanguageToggle';
 import { ThemedView } from '@/features/common/components/ThemedView';
 import { IconSymbol } from '@/features/common/components/ui/IconSymbol';
-import RichText from '@/features/common/components/ui/RichText';
 import { getBookCover } from '@/features/common/services/bookCoverService';
 import {
   getPracticeData,
@@ -24,53 +21,30 @@ import {
   type Grade,
   type Subject,
   type Chapter,
-  type Question,
   type Option,
-  type ExamType,
   getNationalExamQuestions,
   getNationalExamAvailable,
   type NationalExamAPIResponse,
   getRegularPracticeQuestions,
 } from '@/features/common/services/practiceService';
-import { getFlashcardStructure, getFlashcardsForChapter, type Flashcard } from '@/features/common/services/flashcardService';
+import { getFlashcardStructure, getFlashcardsForChapter } from '@/features/common/services/flashcardService';
 import { getAuthToken } from '@/features/auth/utils/authStorage';
 import { BASE_URL } from '@/config/constants';
 
 import ActivityTrackingService from '@/features/common/services/activityTrackingService';
-import Svg, { Circle } from 'react-native-svg';
+import { BOOK_CARD_IMAGE_HEIGHT, BOOK_CTA_ON, BOOKS_CANVAS, BRAND_BLUE } from '@/features/practice/constants/practiceUi';
+import type { BooksCategoryFilter } from '@/features/practice/utils/booksCategory';
+import { getSubjectBooksCategory } from '@/features/practice/utils/booksCategory';
+import { formatPracticeTime, getTimeParts } from '@/features/practice/utils/practiceTime';
+import { toTitleCase } from '@/features/practice/utils/toTitleCase';
+import { PracticeLoadingState } from './PracticeLoadingState';
+import { PracticeErrorState } from './PracticeErrorState';
+import { PracticeNoSubjectsState } from './PracticeNoSubjectsState';
+import { PracticeSessionResultsPanel } from './PracticeSessionResultsPanel';
+import { PracticeMcqQuestionView } from './PracticeMcqQuestionView';
 import { PracticeScreenStyles as styles } from './PracticeScreen.styles';
 
-const BRAND_BLUE = '#0F4BD7';
-const BOOK_CTA_ON = '#FFFFFF';
-const BOOKS_CANVAS = { light: '#F1F2F4', dark: '#101216' } as const;
-const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
-
-const BOOK_CARD_IMAGE_HEIGHT = Math.min(
-  Math.round(SCREEN_HEIGHT * 0.58),
-  Math.round(SCREEN_WIDTH * 1.72)
-);
-
-type BooksCategoryFilter = 'all' | 'science' | 'languages' | 'mathematics' | 'humanities';
-
 type BooksChapterIntent = 'practice' | 'flashcards' | 'either' | null;
-
-function getSubjectBooksCategory(name: string): BooksCategoryFilter | 'other' {
-  const n = name.toLowerCase();
-  if (/\b(math|mathematics|algebra|geometry|calculus)\b/i.test(n)) return 'mathematics';
-  if (/\b(english|amharic|afaan|oromo|language|literature|grammar)\b/i.test(n)) return 'languages';
-  if (/\b(biology|chemistry|physics|science|environment)\b/i.test(n)) return 'science';
-  if (/\b(history|geography|civics|economics|social)\b/i.test(n)) return 'humanities';
-  return 'other';
-}
-
-interface RecentActivity {
-  type: string;
-  grade: string;
-  subject: string;
-  chapter: string;
-  timestamp: number;
-  details: string;
-}
 
 export default function PracticeScreen() {
   const { isDarkMode } = useTheme();
@@ -134,19 +108,6 @@ export default function PracticeScreen() {
   const [isTimerRunning, setIsTimerRunning] = useState(false);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  
-  const scaleAnim = useRef(new Animated.Value(0)).current;
-  const rotateAnim = useRef(new Animated.Value(0)).current;
-  const confettiAnim = useRef(new Animated.Value(0)).current;
-  const particleAnims = useRef(Array(64).fill(0).map(() => ({
-    scale: new Animated.Value(0),
-    translateX: new Animated.Value(0),
-    translateY: new Animated.Value(0),
-    opacity: new Animated.Value(1),
-    rotate: new Animated.Value(0),
-  }))).current;
-
-  
   const selectedGradeData = practiceData?.grades.find((grade: Grade) => grade.id === selectedGrade?.id);
   const selectedSubjectData = selectedGradeData?.subjects.find((subject: Subject) => subject.id === selectedSubject);
   const selectedChapterData = selectedSubjectData?.chapters.find((chapter: Chapter) => chapter.id === selectedChapter);
@@ -214,19 +175,9 @@ export default function PracticeScreen() {
 
   const currentQuestion = nationalExamQuestions[currentQuestionIndex];
   const isLastQuestion = currentQuestionIndex === (nationalExamQuestions.length - 1);
-  const isFirstQuestion = currentQuestionIndex === 0;
   const totalQuestions = nationalExamQuestions.length;
   const totalQuestionsSafe = Math.max(1, totalQuestions);
-  const percentage = Math.round((score / totalQuestions) * 100);
 
-  
-  useEffect(() => {
-    if (currentQuestion?.question) {
-      console.log('🔍 Displaying question:', currentQuestion.question);
-    }
-  }, [currentQuestion]);
-
-  
   const startTimer = () => {
     
     if (timerRef.current) {
@@ -261,25 +212,6 @@ export default function PracticeScreen() {
     stopTimer();
   }, [showTest, showResult]);
 
-  const formatTime = (seconds: number) => {
-    const minutes = Math.floor(seconds / 60);
-    const remainingSeconds = seconds % 60;
-    return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
-  };
-
-  const getTimeParts = (seconds: number) => {
-    const clamped = Math.max(0, Math.floor(seconds));
-    const hours = Math.floor(clamped / 3600);
-    const minutes = Math.floor((clamped % 3600) / 60);
-    const secs = clamped % 60;
-    return {
-      hours,
-      minutes,
-      seconds: secs,
-    };
-  };
-
-  
   const normalizeGrade = (gradeString: string | undefined): string => {
     if (!gradeString) return '6'; 
     return gradeString.replace(/^grade\s*/i, '').trim();
@@ -319,19 +251,9 @@ export default function PracticeScreen() {
     
     const normalizedGradeNumber = normalizeGrade(user?.grade);
     const userGrade = `grade-${normalizedGradeNumber}`;
-    console.log('🔧 Grade Normalization:', {
-      originalGrade: user?.grade,
-      extractedNumber: normalizedGradeNumber,
-      normalizedGrade: userGrade
-    });
     const gradeToFetch = selectedGrade?.id || userGrade;
-    console.log('🔧 Final Grade to Fetch:', gradeToFetch);
-    
 
     getPracticeData(gradeToFetch).then(data => {
-      console.log('DATA:', data);
-
-      
       if (data.grades.length > 0 && !selectedGrade) {
         setSelectedGrade(data.grades[0]);
       }
@@ -347,8 +269,7 @@ export default function PracticeScreen() {
         }
         return 'practice';
       });
-    }).catch(error => {
-      console.log('ERROR:', error);
+    }).catch((error) => {
       setError(error instanceof Error ? error.message : 'Failed to load practice data');
     }).finally(() => {
       setLoading(false);
@@ -370,12 +291,6 @@ export default function PracticeScreen() {
   
   useEffect(() => {
     if (params.preSelectedSubject && params.preSelectedSubjectId && practiceData) {
-      console.log('🎯 Pre-selected subject detected:', {
-        subject: params.preSelectedSubject,
-        subjectId: params.preSelectedSubjectId
-      });
-      
-      
       setShowTest(false);
       setShowResult(false);
       setCurrentQuestionIndex(0);
@@ -398,10 +313,7 @@ export default function PracticeScreen() {
       
       const subjectId = params.preSelectedSubjectId as string;
       setSelectedSubject(subjectId);
-      setIsPreSelected(true); 
-      
-      console.log('✅ Pre-selected subject set:', subjectId);
-      console.log('✅ Active MCQ session reset');
+      setIsPreSelected(true);
     }
   }, [params.preSelectedSubject, params.preSelectedSubjectId, practiceData]);
 
@@ -445,13 +357,6 @@ export default function PracticeScreen() {
   
   useEffect(() => {
     if (params.preSelectedExamType === 'national' && params.preSelectedYear && practiceData) {
-      console.log('🎯 Pre-selected national exam detected:', {
-        examType: params.preSelectedExamType,
-        year: params.preSelectedYear,
-        booksCategory: params.booksCategory
-      });
-      
-      
       setShowTest(false);
       setShowResult(false);
       setCurrentQuestionIndex(0);
@@ -483,11 +388,6 @@ export default function PracticeScreen() {
       
       
       fetchNationalExamAvailable();
-      
-      console.log('✅ Pre-selected national exam set:', {
-        examType: params.booksCategory === 'national' ? 'hub-national' : 'form-national',
-        year: params.preSelectedYear
-      });
     }
   }, [params.preSelectedExamType, params.preSelectedYear, params.booksCategory, practiceData]);
 
@@ -535,17 +435,11 @@ export default function PracticeScreen() {
   const handleNationalExamYearPress = async (year: string) => {
     try {
       const gradeNumber = getGradeNumber(user?.grade);
-      console.log('🔍 Debug - Grade number:', gradeNumber);
-      console.log('🔍 Debug - User grade:', user?.grade);
-      console.log('🔍 Debug - Selected year:', year);
-      
-      
+
       const token = await getAuthToken();
       if (!token) {
         throw new Error('No authentication token found');
       }
-      
-      console.log('🔍 Debug - Token exists:', !!token);
 
       const response = await fetch(`${BASE_URL}/api/national-exams/${gradeNumber}`, {
         method: 'GET',
@@ -556,39 +450,24 @@ export default function PracticeScreen() {
         },
       });
 
-      console.log('🔍 Debug - Response status:', response.status);
-      console.log('🔍 Debug - Response ok:', response.ok);
-
       if (!response.ok) {
         throw new Error(`HTTP ${response.status}: Failed to fetch national exam data`);
       }
 
       const data = await response.json();
-      console.log('🔍 Debug - Raw API response:', JSON.stringify(data, null, 2));
-      
-      
+
       if (!data || !data.data) {
-        console.error('🔍 Debug - Invalid data structure:', data);
         throw new Error('Invalid API response structure');
       }
-      
-      console.log('🔍 Debug - Years array:', data.data.years);
-      console.log('🔍 Debug - Years length:', data.data.years?.length);
-      
-      
-      const yearData = data.data.years.find((y: any) => y.year === parseInt(year));
-      console.log('🔍 Debug - Looking for year:', parseInt(year));
-      console.log('🔍 Debug - Found year data:', yearData);
-      
+
+      const yearData = data.data.years.find((y: { year: number }) => y.year === parseInt(year, 10));
+
       const subjectsForYear = yearData ? yearData.subjects : [];
-      console.log('🔍 Debug - Subjects for year:', subjectsForYear);
-      console.log('🔍 Debug - Subjects length:', subjectsForYear.length);
-      
+
       setAvailableSubjects(subjectsForYear);
       setSelectedYear(year);
       setShowNationalExamSubjectChooser(true);
     } catch (error) {
-      console.error('🔍 Debug - Error loading national exam subjects:', error); 
       setError(error instanceof Error ? error.message : 'Failed to load subjects');
     }
   };
@@ -610,14 +489,11 @@ export default function PracticeScreen() {
       );
       
       
-      const filteredQuestions = questions?.filter(q => {
+      const filteredQuestions = questions?.filter((q) => {
         const questionText = q.question?.toLowerCase() || '';
-        console.log('🔍 Filtering question:', questionText);
-        const shouldFilter = questionText.includes('valuing our elders') || 
-                             questionText.includes('valuing') && questionText.includes('elders');
-        if (shouldFilter) {
-          console.log('❌ Filtering out question:', questionText);
-        }
+        const shouldFilter =
+          questionText.includes('valuing our elders') ||
+          (questionText.includes('valuing') && questionText.includes('elders'));
         return !shouldFilter;
       }) || [];
       
@@ -763,64 +639,13 @@ export default function PracticeScreen() {
     };
   }, []);
 
-  useEffect(() => {
-    if (showResult) {
-      
-      Animated.sequence([
-        Animated.spring(scaleAnim, {
-          toValue: 1,
-          useNativeDriver: true,
-        }),
-        Animated.timing(rotateAnim, {
-          toValue: 1,
-          duration: 1000,
-          useNativeDriver: true,
-        }),
-      ]).start();
-    }
-  }, [showResult]);
-
-  
-
-  const spin = rotateAnim.interpolate({
-    inputRange: [0, 1],
-    outputRange: ['0deg', '360deg'],
-  });
-
-  const confettiScale = confettiAnim.interpolate({
-    inputRange: [0, 0.5, 1],
-    outputRange: [1, 1.2, 1],
-  });
-
-  const explosionScale = scaleAnim.interpolate({
-    inputRange: [0, 1],
-    outputRange: [0.5, 1.5],
-  });
-
-  const getMessage = () => {
-    if (percentage >= 90) return t('mcq.results.message.genius');
-    if (percentage >= 70) return t('mcq.results.message.doingWell');
-    if (percentage >= 50) return t('mcq.results.message.notBad');
-    return t('mcq.results.message.canDoBetter');
-  };
-
   const handleAnswerSelect = (answerId: string) => {
-    console.log('🎯 Answer Selected:', {
-      answerId,
-      currentQuestion: currentQuestion?.id,
-      hasExplanation: !!currentQuestion?.explanation,
-      explanation: currentQuestion?.explanation
-    });
-    
-    if (selectedAnswer) return; 
+    if (selectedAnswer) return;
     setSelectedAnswer(answerId);
-    setAnsweredQuestions(prev => ({ ...prev, [currentQuestionIndex]: answerId }));
+    setAnsweredQuestions((prev) => ({ ...prev, [currentQuestionIndex]: answerId }));
     setShowExplanation(true);
     setShowAnswerMessage(false);
-    
-    console.log('🎯 Explanation should now be shown:', true);
-    
-    
+
     const isCorrect = currentQuestion?.options?.find((opt: Option) => opt.id === answerId)?.isCorrect;
     if (isCorrect) {
       setScore(prev => prev + 1);
@@ -841,17 +666,14 @@ export default function PracticeScreen() {
     
     if (currentQuestionIndex < nationalExamQuestions.length - 1) {
       if (!selectedAnswer) {
-        console.log('❌ No answer selected, showing message');
         setShowAnswerMessage(true);
         return;
       }
-      console.log('✅ Moving to next question');
-      setCurrentQuestionIndex(prev => prev + 1);
+      setCurrentQuestionIndex((prev) => prev + 1);
       setSelectedAnswer(null);
       setShowExplanation(false);
       setShowAnswerMessage(false);
     } else {
-      console.log('🏁 Last question reached, showing results');
       setShowResult(true);
     }
   };
@@ -871,7 +693,6 @@ export default function PracticeScreen() {
     
     try {
       if (!user?.username) {
-        console.warn('Cannot track MCQ activity: no user logged in');
         return;
       }
       
@@ -899,8 +720,7 @@ export default function PracticeScreen() {
         timeSpent: timeSpent,
         score: scorePercentage,
       });
-    } catch (error) {
-      console.error('Failed to track MCQ activity:', error);
+    } catch {
     }
   };
 
@@ -1008,8 +828,7 @@ export default function PracticeScreen() {
             setError('No more questions available for this chapter');
           }
         }
-      } catch (error) {
-        console.error('Failed to load new questions:', error);
+      } catch {
         setError('Failed to load new questions. Please try again.');
       }
     }
@@ -1184,8 +1003,7 @@ export default function PracticeScreen() {
       setAnsweredQuestions({});
       setTime(0);
       startTimer();
-    } catch (e) {
-      console.error('Subjects hub practice start:', e);
+    } catch {
       setError('Failed to load practice questions. Please try again.');
     } finally {
       setBooksHubActionLoading(false);
@@ -1252,8 +1070,7 @@ export default function PracticeScreen() {
           startFlashcards: '1',
         },
       });
-    } catch (e) {
-      console.error('Subjects hub flashcards:', e);
+    } catch {
       setError(t('errors.network.message'));
     } finally {
       setBooksHubActionLoading(false);
@@ -1285,7 +1102,6 @@ export default function PracticeScreen() {
     return [styles.optionContainer];
   };
 
-  const progress = ((currentQuestionIndex + 1) / totalQuestionsSafe) * 100;
   const { hours: timeHours, minutes: timeMinutes, seconds: timeSeconds } = getTimeParts(time);
 
   
@@ -1296,98 +1112,53 @@ export default function PracticeScreen() {
   
   if (loading) {
     return (
-      <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]}>
-        <ThemedView style={[styles.container, { backgroundColor: colors.background, justifyContent: 'center', alignItems: 'center' }]}>
-          <ActivityIndicator size="large" color={colors.tint} />
-          <ThemedText style={{ marginTop: 20, color: colors.text }}>
-            {t('common.loading')}
-          </ThemedText>
-        </ThemedView>
-      </SafeAreaView>
+      <PracticeLoadingState
+        backgroundColor={colors.background}
+        tintColor={colors.tint}
+        textColor={colors.text}
+        message={t('common.loading')}
+      />
     );
   }
 
-  
   if (error) {
     return (
-      <ThemedView style={[styles.container, { backgroundColor: colors.background }]}>
-        <ThemedView style={[styles.mainContainer, { backgroundColor: colors.background, justifyContent: 'center', alignItems: 'center', padding: 20 }]}>
-          <ThemedView style={[styles.emptyStateContainer, { backgroundColor: colors.background }]}>
-            <IconSymbol name="globe" size={90} color={colors.warning} style={styles.emptyStateIcon} />
-            <ThemedText style={[styles.emptyStateTitle, { color: colors.text }]}>
-              {t('errors.network.title')}
-            </ThemedText>
-            <ThemedText style={[styles.emptyStateSubtitle, { color: colors.text, opacity: 0.7 }]}>
-              {t('errors.network.message')}
-            </ThemedText>
-            <TouchableOpacity 
-              style={[styles.retryButton, { backgroundColor: colors.tint, marginTop: 20 }]}
-              onPress={fetchPracticeData}
-            >
-              <ThemedText style={[styles.retryButtonText, { color: '#FFFFFF' }]}>
-                {t('common.tryAgain')}
-              </ThemedText>
-            </TouchableOpacity>
-          </ThemedView>
-        </ThemedView>
-      </ThemedView>
+      <PracticeErrorState
+        backgroundColor={colors.background}
+        textColor={colors.text}
+        tintColor={colors.tint}
+        warningColor={colors.warning}
+        title={t('errors.network.title')}
+        message={t('errors.network.message')}
+        retryLabel={t('common.tryAgain')}
+        onRetry={fetchPracticeData}
+      />
     );
   }
-  
-  
-  if (practiceData && practiceData.grades.length > 0 && (!selectedGradeData?.subjects || (selectedGradeData?.subjects?.length || 0) === 0)) {
+
+  if (
+    practiceData &&
+    practiceData.grades.length > 0 &&
+    (!selectedGradeData?.subjects || (selectedGradeData?.subjects?.length || 0) === 0)
+  ) {
     return (
-      <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]}>
-        <ScrollView style={{ flex: 1, padding: 20 }}>
-          <View style={{ alignItems: 'center', marginBottom: 20 }}>
-            <Ionicons name="warning-outline" size={60} color={colors.warning} />
-            <ThemedText style={{ color: colors.error, fontWeight: 'bold', fontSize: 18, marginTop: 10, textAlign: 'center' }}>
-              {t('mcq.noSubjectsFound.title')}
-            </ThemedText>
-          </View>
-          
-          <ThemedText style={{ color: colors.text, marginBottom: 20, textAlign: 'center', lineHeight: 22 }}>
-            {t('mcq.noSubjectsFound.description', { gradeName: selectedGradeData?.name })}
-          </ThemedText>
-          
-          <View style={{ marginBottom: 20, paddingHorizontal: 10 }}>
-            <View style={{ flexDirection: 'row', marginBottom: 10 }}>
-              <ThemedText style={{ color: colors.text, marginRight: 5 }}>•</ThemedText>
-              <ThemedText style={{ color: colors.text, flex: 1 }}>{t('mcq.noSubjectsFound.reasons.accountUpdate')}</ThemedText>
-            </View>
-            <View style={{ flexDirection: 'row', marginBottom: 10 }}>
-              <ThemedText style={{ color: colors.text, marginRight: 5 }}>•</ThemedText>
-              <ThemedText style={{ color: colors.text, flex: 1 }}>{t('mcq.noSubjectsFound.reasons.serverUnavailable')}</ThemedText>
-            </View>
-            <View style={{ flexDirection: 'row', marginBottom: 10 }}>
-              <ThemedText style={{ color: colors.text, marginRight: 5 }}>•</ThemedText>
-              <ThemedText style={{ color: colors.text, flex: 1 }}>{t('mcq.noSubjectsFound.reasons.contentBeingAdded')}</ThemedText>
-            </View>
-          </View>
-          
-          <View style={{ marginTop: 20 }}>
-            <TouchableOpacity 
-              style={[styles.button, { backgroundColor: colors.tint, marginBottom: 15 }]}
-              onPress={fetchPracticeData}
-            >
-              <Ionicons name="refresh" size={20} color="#FFFFFF" />
-              <ThemedText style={{ color: '#FFFFFF', fontWeight: 'bold', marginLeft: 10 }}>
-                {t('common.tryAgain')}
-              </ThemedText>
-            </TouchableOpacity>
-            
-            <TouchableOpacity 
-              style={[styles.button, { backgroundColor: colors.cardAlt, borderWidth: 1, borderColor: colors.border }]}
-              onPress={() => router.replace('/(tabs)')}
-            >
-              <Ionicons name="home" size={20} color={colors.text} />
-              <ThemedText style={{ color: colors.text, fontWeight: 'bold', marginLeft: 10 }}>
-                {t('home.goto')}
-              </ThemedText>
-            </TouchableOpacity>
-          </View>
-        </ScrollView>
-      </SafeAreaView>
+      <PracticeNoSubjectsState
+        backgroundColor={colors.background}
+        textColor={colors.text}
+        errorColor={colors.error}
+        warningColor={colors.warning}
+        tintColor={colors.tint}
+        cardAltColor={colors.cardAlt}
+        borderColor={colors.border}
+        title={t('mcq.noSubjectsFound.title')}
+        description={t('mcq.noSubjectsFound.description', { gradeName: selectedGradeData?.name })}
+        reasonAccount={t('mcq.noSubjectsFound.reasons.accountUpdate')}
+        reasonServer={t('mcq.noSubjectsFound.reasons.serverUnavailable')}
+        reasonContent={t('mcq.noSubjectsFound.reasons.contentBeingAdded')}
+        tryAgainLabel={t('common.tryAgain')}
+        homeLabel={t('home.goto')}
+        onRetry={fetchPracticeData}
+      />
     );
   }
 
@@ -1403,11 +1174,6 @@ export default function PracticeScreen() {
           : accuracy >= 50
             ? { title: 'Good progress.', subtitle: 'You’re getting there — review mistakes and try again.' }
             : { title: 'Keep practising.', subtitle: 'Focus on the explanations and retake the session.' };
-    const ringSize = 220;
-    const ringStroke = 14;
-    const ringRadius = (ringSize - ringStroke) / 2;
-    const ringCircumference = 2 * Math.PI * ringRadius;
-    const ringOffset = ringCircumference - (accuracy / 100) * ringCircumference;
 
     const handleDone = () => {
       if (timerRef.current) {
@@ -1439,119 +1205,21 @@ export default function PracticeScreen() {
     };
 
     return (
-      <SafeAreaView
-        edges={['left', 'right']}
-        style={[styles.safeArea, { backgroundColor: colors.background }]}
-      >
-        <ThemedView style={[styles.container, { backgroundColor: colors.background }]}>
-          <ScrollView contentContainerStyle={styles.resultScrollContent} showsVerticalScrollIndicator={false}>
-            <View style={styles.resultHero}>
-              <View style={[styles.resultPill, { backgroundColor: isDarkMode ? '#1F2A44' : '#E9EEFF' }]}>
-                <Text style={[styles.resultPillText, { color: BRAND_BLUE }]}>SESSION FINALIZED</Text>
-              </View>
-
-              <Text style={[styles.resultHeadline, { color: colors.text }]}>{resultCopy.title}</Text>
-              <Text style={[styles.resultSubhead, { color: isDarkMode ? '#C7CDD8' : '#6B7280' }]}>
-                {resultCopy.subtitle}
-              </Text>
-            </View>
-
-            <View style={styles.resultRingWrap}>
-              <View style={styles.resultRingShadow}>
-                <Svg width={ringSize} height={ringSize}>
-                  <Circle
-                    cx={ringSize / 2}
-                    cy={ringSize / 2}
-                    r={ringRadius}
-                    stroke={isDarkMode ? '#2A3140' : '#E5E7EB'}
-                    strokeWidth={ringStroke}
-                    fill="none"
-                    strokeLinecap="round"
-                  />
-                  <Circle
-                    cx={ringSize / 2}
-                    cy={ringSize / 2}
-                    r={ringRadius}
-                    stroke={BRAND_BLUE}
-                    strokeWidth={ringStroke}
-                    fill="none"
-                    strokeDasharray={`${ringCircumference} ${ringCircumference}`}
-                    strokeDashoffset={ringOffset}
-                    strokeLinecap="round"
-                    rotation={-90}
-                    originX={ringSize / 2}
-                    originY={ringSize / 2}
-                  />
-                </Svg>
-
-                <View style={styles.resultRingCenter}>
-                  <Text style={[styles.resultRingPercent, { color: BRAND_BLUE }]}>{accuracy}%</Text>
-                  <Text style={[styles.resultRingLabel, { color: isDarkMode ? '#C7CDD8' : '#6B7280' }]}>
-                    ACCURACY
-                  </Text>
-                </View>
-              </View>
-            </View>
-
-            <View style={styles.resultStatsGrid}>
-              <View style={[styles.resultStatCard, { backgroundColor: isDarkMode ? '#141821' : '#FFFFFF', borderColor: isDarkMode ? '#273043' : '#E5E7EB' }]}>
-                <View style={[styles.resultStatIconBox, { backgroundColor: isDarkMode ? '#0E2A17' : '#E9FBEF' }]}>
-                  <Ionicons name="checkmark" size={20} color="#16A34A" />
-                </View>
-                <View style={styles.resultStatTextCol}>
-                  <Text style={[styles.resultStatValue, { color: colors.text }]}>{String(correctCount).padStart(2, '0')}</Text>
-                  <Text style={[styles.resultStatLabel, { color: isDarkMode ? '#C7CDD8' : '#6B7280' }]}>CORRECT</Text>
-                </View>
-              </View>
-
-              <View style={[styles.resultStatCard, { backgroundColor: isDarkMode ? '#141821' : '#FFFFFF', borderColor: isDarkMode ? '#273043' : '#E5E7EB' }]}>
-                <View style={[styles.resultStatIconBox, { backgroundColor: isDarkMode ? '#2B1215' : '#FCE7EA' }]}>
-                  <Ionicons name="close" size={18} color="#DC2626" />
-                </View>
-                <View style={styles.resultStatTextCol}>
-                  <Text style={[styles.resultStatValue, { color: colors.text }]}>{String(incorrectCount).padStart(2, '0')}</Text>
-                  <Text style={[styles.resultStatLabel, { color: isDarkMode ? '#C7CDD8' : '#6B7280' }]}>INCORRECT</Text>
-                </View>
-              </View>
-
-              <View style={[styles.resultStatCard, { backgroundColor: isDarkMode ? '#141821' : '#FFFFFF', borderColor: isDarkMode ? '#273043' : '#E5E7EB' }]}>
-                <View style={[styles.resultStatIconBox, { backgroundColor: isDarkMode ? '#0D2233' : '#E6F0FF' }]}>
-                  <Ionicons name="time-outline" size={20} color={BRAND_BLUE} />
-                </View>
-                <View style={styles.resultStatTextCol}>
-                  <Text style={[styles.resultStatValue, { color: colors.text }]}>{formatTime(time)}</Text>
-                  <Text style={[styles.resultStatLabel, { color: isDarkMode ? '#C7CDD8' : '#6B7280' }]}>TIME</Text>
-                </View>
-              </View>
-
-              <View style={[styles.resultStatCard, styles.resultMasteryCard, { backgroundColor: BRAND_BLUE, borderColor: BRAND_BLUE }]}>
-                <View style={[styles.resultStatIconBadge, { backgroundColor: 'rgba(255,255,255,0.18)' }]}>
-                  <Ionicons name="trending-up-outline" size={18} color="#FFFFFF" />
-                </View>
-                <View style={styles.resultStatTextCol}>
-                  <Text style={[styles.resultMasteryTitle, { color: '#FFFFFF' }]}>{accuracy}%</Text>
-                  <Text
-                    numberOfLines={1}
-                    ellipsizeMode="clip"
-                    style={[styles.resultMasterySub, { color: 'rgba(255,255,255,0.85)' }]}
-                  >
-                    {t('mcq.results.performance')}
-                  </Text>
-                </View>
-              </View>
-            </View>
-
-            <View style={styles.resultButtonsWrap}>
-              <TouchableOpacity style={[styles.resultButton, styles.resultButtonSecondary, { backgroundColor: isDarkMode ? '#2A3140' : '#E5E7EB' }]} onPress={handleRetry}>
-                <Text style={[styles.resultButtonSecondaryText, { color: BRAND_BLUE }]}>{t('mcq.results.retrySession')}</Text>
-              </TouchableOpacity>
-              <TouchableOpacity style={[styles.resultButton, styles.resultButtonPrimary, { backgroundColor: BRAND_BLUE }]} onPress={handleDone}>
-                <Text style={styles.resultButtonPrimaryText}>{t('mcq.results.done')}</Text>
-              </TouchableOpacity>
-            </View>
-          </ScrollView>
-        </ThemedView>
-      </SafeAreaView>
+      <PracticeSessionResultsPanel
+        backgroundColor={colors.background}
+        textColor={colors.text}
+        isDarkMode={isDarkMode}
+        correctCount={correctCount}
+        incorrectCount={incorrectCount}
+        accuracy={accuracy}
+        formattedTime={formatPracticeTime(time)}
+        resultCopy={resultCopy}
+        performanceLabel={t('mcq.results.performance')}
+        retryLabel={t('mcq.results.retrySession')}
+        doneLabel={t('mcq.results.done')}
+        onRetry={handleRetry}
+        onDone={handleDone}
+      />
     );
   }
 
@@ -2378,320 +2046,39 @@ export default function PracticeScreen() {
       style={[styles.safeArea, { backgroundColor: colors.background }]}
     >
       <ThemedView
-        style={[
-          styles.container,
-          { backgroundColor: colors.background },
-          !showResult ? styles.practiceQuestionContainer : null,
-        ]}
+        style={[styles.container, { backgroundColor: colors.background }, styles.practiceQuestionContainer]}
       >
         <ThemedView
-          style={[
-            styles.content,
-            { backgroundColor: colors.background },
-            !showResult ? styles.questionModeInnerContent : null,
-          ]}
+          style={[styles.content, { backgroundColor: colors.background }, styles.questionModeInnerContent]}
         >
-          {!showResult ? (
-            <>
-              <View style={styles.sessionProgressSection}>
-                <View style={styles.sessionProgressTopRow}>
-                  <ThemedText style={[styles.sessionProgressLabel, { color: isDarkMode ? '#FFFFFF' : '#6B7280' }]}>
-                    {t('mcq.results.sessionProgress')}
-                  </ThemedText>
-                  <ThemedText style={[styles.sessionProgressCount, { color: BRAND_BLUE }]}>
-                    {currentQuestionIndex + 1} of {totalQuestions}
-                  </ThemedText>
-                </View>
-
-                <View style={[styles.sessionProgressBarTrack, { backgroundColor: colors.cardAlt }]}>
-                  <View
-                    style={[
-                      styles.sessionProgressBarFill,
-                      {
-                        backgroundColor: BRAND_BLUE,
-                        width: `${((currentQuestionIndex + 1) / totalQuestions) * 100}%`,
-                      },
-                    ]}
-                  />
-                </View>
-
-                  <View style={styles.timeBoxesRow}>
-                  <View style={[styles.timeBox, { backgroundColor: colors.cardAlt, borderColor: colors.border }]}>
-                    <ThemedText style={styles.timeValueText}>
-                      {String(timeHours).padStart(2, '0')}
-                    </ThemedText>
-                    <ThemedText style={[styles.timeLabelText, { color: colors.tabIconDefault }]}>{t('mcq.results.timeLabels.hours')}</ThemedText>
-                  </View>
-                  <View style={[styles.timeBox, { backgroundColor: colors.cardAlt, borderColor: colors.border }]}>
-                    <ThemedText style={styles.timeValueText}>
-                      {String(timeMinutes).padStart(2, '0')}
-                    </ThemedText>
-                    <ThemedText style={[styles.timeLabelText, { color: colors.tabIconDefault }]}>{t('mcq.results.timeLabels.minutes')}</ThemedText>
-                  </View>
-                  <View style={[styles.timeBox, { backgroundColor: colors.cardAlt, borderColor: colors.border }]}>
-                    <ThemedText style={styles.timeValueText}>
-                      {String(timeSeconds).padStart(2, '0')}
-                    </ThemedText>
-                    <ThemedText style={[styles.timeLabelText, { color: colors.tabIconDefault }]}>{t('mcq.results.timeLabels.seconds')}</ThemedText>
-                  </View>
-                </View>
-              </View>
-
-              <View style={styles.questionModeBody}>
-                
-                {showAnswerMessage && (
-                  <View
-                    style={{
-                      backgroundColor: colors.warning + '20',
-                      borderLeftWidth: 4,
-                      borderLeftColor: colors.warning,
-                      paddingHorizontal: 16,
-                      paddingVertical: 8,
-                      marginTop: 8,
-                      borderRadius: 8,
-                      marginHorizontal: 16,
-                    }}
-                  >
-                    <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                      <ThemedText
-                        style={{
-                          fontSize: 14,
-                          color: colors.warning,
-                          marginRight: 6,
-                        }}
-                      >
-                        ⚠️
-                      </ThemedText>
-                      <ThemedText
-                        style={{
-                          fontSize: 13,
-                          fontWeight: '500',
-                          color: colors.warning,
-                          flex: 1,
-                        }}
-                      >
-                        {t('mcq.selectAnswer')}
-                      </ThemedText>
-                    </View>
-                  </View>
-                )}
-
-                <ScrollView
-                  ref={scrollViewRef}
-                  style={styles.scrollView}
-                  showsVerticalScrollIndicator={false}
-                  contentContainerStyle={styles.questionScrollContent}
-                >
-                  <View style={styles.questionContainer}>
-                    <RichText
-                      text={currentQuestion?.question || 'Question not available'}
-                      style={styles.questionText}
-                      color={colors.text}
-                      fontSize={20}
-                      textAlign="left"
-                      lineHeight={28}
-                      image_url={currentQuestion?.image_url}
-                    />
-                  </View>
-
-                  <View style={styles.optionsContainer}>
-                  {currentQuestion?.options?.filter((option: Option) => option.text && option.text.trim() !== '')?.map((option: Option, index: number) => {
-                    const optionId = String(option.id);
-                    const isCorrect = !!option.isCorrect;
-                    const isSelected = selectedAnswer === optionId;
-                    return (
-                      <TouchableOpacity
-                        key={optionId}
-                        style={[
-                          styles.optionContainer,
-                          { backgroundColor: colors.background, borderColor: isDarkMode ? '#FFFFFF' : colors.border },
-                          getOptionStyle(optionId),
-                        ]}
-                        onPress={() => handleAnswerSelect(optionId)}
-                        disabled={!!selectedAnswer}
-                      >
-                        <View style={styles.optionContent}>
-                          <View
-                            style={[
-                              styles.optionId,
-                              {
-                                backgroundColor: showExplanation && isCorrect
-                                  ? BRAND_BLUE
-                                  : showExplanation && isSelected && !isCorrect
-                                    ? 'rgba(244, 67, 54, 0.10)'
-                                    : colors.background,
-                                borderColor: showExplanation && isCorrect
-                                  ? BRAND_BLUE
-                                  : showExplanation && isSelected && !isCorrect
-                                    ? '#F44336'
-                                    : isDarkMode
-                                      ? '#FFFFFF'
-                                      : colors.border,
-                              },
-                            ]}
-                          >
-                            <ThemedText
-                              style={[
-                                styles.optionIdText,
-                                {
-                                  color: showExplanation && isCorrect
-                                    ? '#FFFFFF'
-                                    : showExplanation && isSelected && !isCorrect
-                                      ? '#F44336'
-                                      : colors.tabIconDefault,
-                                },
-                              ]}
-                            >
-                              {String.fromCharCode(65 + index)}
-                            </ThemedText>
-                          </View>
-                          <RichText
-                            text={option.text}
-                            style={styles.optionText}
-                            color={colors.text}
-                            fontSize={16}
-                            textAlign="left"
-                            lineHeight={22}
-                          />
-                        </View>
-
-                        {showExplanation && isCorrect && (
-                          <View style={styles.optionCheckIcon} pointerEvents="none">
-                            <Ionicons name="checkmark" size={16} color="#FFFFFF" />
-                          </View>
-                        )}
-                      </TouchableOpacity>
-                    );
-                  }) || (
-                    <View style={[styles.optionContainer, { backgroundColor: colors.background, borderColor: isDarkMode ? '#FFFFFF' : colors.border, justifyContent: 'center', alignItems: 'center' }]}>
-                      <ThemedText style={[styles.optionText, { color: colors.text, opacity: 0.7 }]}>
-                        No options available
-                      </ThemedText>
-                    </View>
-                  )}
-                </View>
-
-                
-                </ScrollView>
-
-                
-                <View style={[styles.bottomActionBar, { backgroundColor: colors.background }]}>
-                  <TouchableOpacity
-                    style={[
-                      styles.bottomSecondaryButton,
-                      { opacity: selectedAnswer ? 1 : 0.55, backgroundColor: colors.cardAlt, borderColor: colors.border },
-                    ]}
-                    onPress={() => (isLastQuestion ? handleResult() : handleNextQuestion())}
-                  >
-                    <Ionicons name="bookmark-outline" size={20} color={BRAND_BLUE} />
-                    <ThemedText style={styles.bottomSecondaryButtonText}>{t('mcq.results.reviewLater')}</ThemedText>
-                  </TouchableOpacity>
-
-                  <TouchableOpacity
-                    style={[
-                      styles.bottomPrimaryButton,
-                      { opacity: selectedAnswer ? 1 : 0.55 },
-                    ]}
-                    onPress={() => (isLastQuestion ? handleResult() : handleNextQuestion())}
-                  >
-                    <ThemedText style={styles.bottomPrimaryButtonText}>
-                      {isLastQuestion ? t('mcq.finish') : t('mcq.next')}
-                    </ThemedText>
-                    <Ionicons name="arrow-forward" size={22} color="#FFFFFF" />
-                  </TouchableOpacity>
-                </View>
-              </View>
-            </>
-          ) : (
-            <ScrollView showsVerticalScrollIndicator={false}>
-              <View style={[styles.resultCard, { backgroundColor: colors.card }]}>
-                <LinearGradient
-                  colors={[colors.cardGradientStart, colors.cardGradientEnd]}
-                  style={StyleSheet.absoluteFill}
-                />
-                
-                <View style={styles.trophyContainer}>
-                  <Animated.View style={{ transform: [{ scale: scaleAnim }, { rotate: spin }] }}>
-                    <IconSymbol name="trophy.fill" size={50} color={percentage >= 90 ? '#FFD700' : colors.tint} />
-                  </Animated.View>
-                </View>
-                
-                <ThemedText style={[styles.scoreText, { color: colors.text }]}>
-                  {t('mcq.results.score', { score: score, total: totalQuestions })}
-                </ThemedText>
-                
-                <View style={[styles.percentageContainer, { backgroundColor: colors.cardAlt, borderColor: colors.border }]}>
-                  <ThemedText style={[styles.percentageText, { color: colors.text }]}>
-                    {percentage}%
-                  </ThemedText>
-                </View>
-                
-                <View style={[styles.messageContainer, { backgroundColor: colors.cardAlt, borderColor: colors.border }]}>
-                  <ThemedText style={[styles.messageText, { color: colors.text }]}>
-                    {getMessage()}
-                  </ThemedText>
-                </View>
-              </View>
-
-              <ThemedView style={styles.actionButtons}>
-                <TouchableOpacity
-                  style={[styles.button, styles.retryButton, { backgroundColor: colors.tint, marginBottom: 12 }]}
-                  onPress={selectedExamType === 'national' ? handleRetry : handleCheckOtherQuestions}
-                >
-                  <ThemedText style={[styles.retryButtonText, { color: '#fff' }]}>
-                    {selectedExamType === 'national' ? t('mcq.results.tryOtherNationalExam') : t('mcq.results.checkOtherQuestions')}
-                  </ThemedText>
-                  <Ionicons name={selectedExamType === 'national' ? "refresh" : "arrow-forward"} size={24} color="#fff" />
-                </TouchableOpacity>
-                
-                <TouchableOpacity
-                  style={[styles.button, styles.homeButton, { backgroundColor: colors.cardAlt, borderColor: colors.border }]}
-                  onPress={() => {
-                    
-                    if (timerRef.current) {
-                      clearInterval(timerRef.current);
-                      timerRef.current = null;
-                    }
-                    
-                    setShowResult(false);
-                    setShowTest(false);
-                    setSelectedSubject('');
-                    setSelectedChapter('');
-                    setSelectedChapterName('');
-                    setSelectedYear('');
-                    setTime(0);
-                    setIsTimerRunning(false);
-                    setCurrentQuestionIndex(0);
-                    setSelectedAnswer(null);
-                    setShowExplanation(false);
-                    setAnsweredQuestions({});
-                    setScore(0);
-                    
-                    
-                    if (selectedExamType === 'national') {
-                      setSelectedExamType('national');
-                    } else {
-                      setSelectedExamType('practice');
-                    }
-
-                    fetchPracticeData();
-                  }}
-                >
-                  <ThemedText style={[styles.homeButtonText, { color: colors.text }]}>
-                    {selectedExamType === 'national' ? t('mcq.results.chooseAnotherNationalExamYear') : t('mcq.results.chooseAnotherSubject')}
-                  </ThemedText>
-                </TouchableOpacity>
-              </ThemedView>
-            </ScrollView>
-          )}
+          <PracticeMcqQuestionView
+            colors={colors}
+            isDarkMode={isDarkMode}
+            sessionProgressLabel={t('mcq.results.sessionProgress')}
+            currentQuestionIndex={currentQuestionIndex}
+            totalQuestions={totalQuestions}
+            timeHours={timeHours}
+            timeMinutes={timeMinutes}
+            timeSeconds={timeSeconds}
+            hoursLabel={t('mcq.results.timeLabels.hours')}
+            minutesLabel={t('mcq.results.timeLabels.minutes')}
+            secondsLabel={t('mcq.results.timeLabels.seconds')}
+            showAnswerMessage={showAnswerMessage}
+            selectAnswerHint={t('mcq.selectAnswer')}
+            currentQuestion={currentQuestion}
+            selectedAnswer={selectedAnswer}
+            showExplanation={showExplanation}
+            getOptionStyle={getOptionStyle}
+            onSelectOption={handleAnswerSelect}
+            onAdvance={() => (isLastQuestion ? handleResult() : handleNextQuestion())}
+            reviewLaterLabel={t('mcq.results.reviewLater')}
+            finishLabel={t('mcq.finish')}
+            nextLabel={t('mcq.next')}
+            isLastQuestion={isLastQuestion}
+            scrollViewRef={scrollViewRef}
+          />
         </ThemedView>
       </ThemedView>
     </SafeAreaView>
   );
 }
-
-const toTitleCase = (str: string) => {
-  return str.replace(/\w\S*/g, (txt) => {
-    return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();
-  });
-}; 

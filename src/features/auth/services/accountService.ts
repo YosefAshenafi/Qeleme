@@ -25,13 +25,6 @@ export const deleteAccountAPI = async (password: string): Promise<DeleteAccountR
       confirmation: true
     };
 
-    console.log('🗑️ Delete Account API Request:', {
-      url: `${BASE_URL}/account`,
-      method: 'DELETE',
-      hasToken: !!token,
-      confirmation: true
-    });
-
     const response = await fetch(`${BASE_URL}/account`, {
       method: 'DELETE',
       headers: {
@@ -42,20 +35,16 @@ export const deleteAccountAPI = async (password: string): Promise<DeleteAccountR
       body: JSON.stringify(requestBody),
     });
 
-    console.log('📥 Delete Account API Response Status:', response.status);
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => null);
-      console.log('❌ Delete Account API Error Response:', errorData);
       throw new Error(errorData?.message || `Failed to delete account. Status: ${response.status}`);
     }
 
     const data: DeleteAccountResponse = await response.json();
-    console.log('✅ Delete Account API Success Response:', data);
     
     return data;
   } catch (error) {
-    console.error('Error deleting account:', error);
     throw error;
   }
 };

@@ -48,7 +48,6 @@ export function useQuizData(categoryId: string, subcategoryId?: string, isSubcat
       }
       return null;
     } catch (error) {
-      console.error('Error reading cache:', error);
       return null;
     }
   }, [getCacheKey]);
@@ -59,7 +58,6 @@ export function useQuizData(categoryId: string, subcategoryId?: string, isSubcat
       const cacheData = { questions: qs, timestamp: Date.now() };
       await AsyncStorage.setItem(cacheKey, JSON.stringify(cacheData));
     } catch (error) {
-      console.error('Error caching questions:', error);
     }
   }, [getCacheKey]);
 
@@ -160,7 +158,6 @@ export function useQuizData(categoryId: string, subcategoryId?: string, isSubcat
         }
       }
     } catch (err) {
-      console.error('Error fetching KG questions:', err);
       setError(err instanceof Error ? err.message : 'Failed to fetch questions');
       setLoading(false);
     }
@@ -175,7 +172,6 @@ export function useQuizData(categoryId: string, subcategoryId?: string, isSubcat
         setNextCategory(categories[currentIndex + 1]);
       }
     } catch (err) {
-      console.error('Error fetching all categories:', err);
     }
   }, [categoryId]);
 

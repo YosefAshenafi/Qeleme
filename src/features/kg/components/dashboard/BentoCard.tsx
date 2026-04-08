@@ -44,7 +44,6 @@ export const BentoCard: React.FC<BentoCardProps> = ({
   ];
 
   if (title !== 'Maths') {
-    console.log(resolvedImageSource);
   }
 
   return (

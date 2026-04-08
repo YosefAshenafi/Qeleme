@@ -42,7 +42,6 @@ export default function KGDashboardScreen() {
         setAutoAdvanceDelay(parsed.autoAdvanceDelay ?? 2000);
       }
     } catch (error) {
-      console.log('Error loading settings:', error);
     }
   };
 
@@ -53,7 +52,6 @@ export default function KGDashboardScreen() {
         autoAdvanceDelay: newDelay,
       }));
     } catch (error) {
-      console.log('Error saving settings:', error);
     }
   };
 
@@ -72,7 +70,6 @@ export default function KGDashboardScreen() {
       const apiCategories = await getKGCategories();
       setCategories(apiCategories);
     } catch (err) {
-      console.error('Failed to fetch KG categories:', err);
       setError(err instanceof Error ? err.message : 'Failed to load categories');
     } finally {
       setLoading(false);

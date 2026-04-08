@@ -133,7 +133,6 @@ export function useSignupForm() {
     try {
       await sendOTP(fullPhoneNumber);
     } catch (err) {
-      console.error('OTP send error:', err);
     }
 
     setIsSubmitting(true);

@@ -33,11 +33,9 @@ export const fetchRegions = async (): Promise<Region[]> => {
         name: regionName
       }));
     } else {
-      console.warn('Unexpected regions API response structure:', data);
       return [];
     }
   } catch (error) {
-    console.error('Error fetching regions:', error);
     
     return [
       { id: 1, name: 'Addis Ababa' },

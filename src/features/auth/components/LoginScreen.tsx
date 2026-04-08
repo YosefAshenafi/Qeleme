@@ -71,10 +71,6 @@ export default function LoginScreen() {
     if (validateForm()) {
       setIsLoading(true);
       setError('');
-      
-      
-      console.log('LOGIN PAYLOAD', { username: username.toLowerCase(), password });
-      console.log('LOGIN URL:', `${BASE_URL}/api/auth/login`);
       try {
         
         const response = await fetch(`${BASE_URL}/api/auth/login`, {
@@ -90,11 +86,7 @@ export default function LoginScreen() {
           }),
         });
 
-        console.log('Response status:', response.status);
-        console.log('Response headers:', response.headers);
-        
         const data = await response.json();
-        console.log('Login response:', data);
 
         if (!response.ok) {
           throw new Error(data.message || t('login.error.invalidCredentials'));
@@ -113,7 +105,6 @@ export default function LoginScreen() {
           router.replace('/(tabs)');
         }
       } catch (error) {
-        console.error('Login error:', error);
         if (error instanceof Error) {
 
           

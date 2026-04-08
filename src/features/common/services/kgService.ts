@@ -102,7 +102,6 @@ export const getKGCategories = async (): Promise<KGCategory[]> => {
 
     return data.data;
   } catch (error) {
-    console.error('Error fetching KG categories:', error);
     throw error;
   }
 };
@@ -139,7 +138,6 @@ export const getKGCategoryById = async (categoryId: number): Promise<KGCategory>
 
     return data.data;
   } catch (error) {
-    console.error('Error fetching KG category:', error);
     throw error;
   }
 };
@@ -179,7 +177,6 @@ export const getKGSubcategories = async (categoryId: number): Promise<{category:
       subcategories: data.data
     };
   } catch (error) {
-    console.error('Error fetching KG subcategories:', error);
     throw error;
   }
 };
@@ -219,7 +216,6 @@ export const getKGQuestions = async (categoryId: number): Promise<{category: any
       questions: data.questions
     };
   } catch (error) {
-    console.error('Error fetching KG questions:', error);
     throw error;
   }
 };
@@ -259,7 +255,6 @@ export const getKGSubcategoryQuestions = async (subcategoryId: number, categoryI
       questions: data.questions
     };
   } catch (error) {
-    console.error('Error fetching KG subcategory questions:', error);
     throw error;
   }
 }; 

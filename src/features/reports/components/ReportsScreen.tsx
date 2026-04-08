@@ -60,7 +60,6 @@ export default function ReportsScreen() {
       setUserStats(stats);
       setLoading(false);
     } catch (error) {
-      console.error('Failed to load report data:', error);
       setLoading(false);
     }
   }, [user?.username]);

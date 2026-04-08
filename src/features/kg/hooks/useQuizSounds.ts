@@ -18,7 +18,6 @@ export function useQuizSounds(soundEnabled: boolean) {
         await sound.unloadAsync();
       }, 1000);
     } catch (error) {
-      console.log('Error playing correct sound:', error);
     }
   }, [soundEnabled]);
 
@@ -35,7 +34,6 @@ export function useQuizSounds(soundEnabled: boolean) {
         await sound.unloadAsync();
       }, 500);
     } catch (error) {
-      console.log('Error playing incorrect sound:', error);
     }
   }, [soundEnabled]);
 

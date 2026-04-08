@@ -20,17 +20,6 @@ export const initiatePayment = async (
     const callbackUrl = `https://www.trustechit.com/payment-success.html?orderId=${orderId}`;
     const returnUrl = 'megatest://payment-success';
 
-    console.log('Payment - Request URL:', `${CHAPPA_BASE_URL}/pay`);
-    console.log('Payment - Request body:', {
-      amount: amount.toString(),
-      email: customerEmail || 'customer@megatest.app',
-      first_name: firstName,
-      last_name: lastName,
-      tx_ref: orderId,
-      callback_url: callbackUrl,
-      return_url: returnUrl
-    });
-
     const response = await fetch(`${CHAPPA_BASE_URL}/pay`, {
       method: 'POST',
       headers: {
@@ -47,13 +36,8 @@ export const initiatePayment = async (
       }),
     });
 
-    console.log('Payment - Response status:', response.status);
-    console.log('Payment - Response ok:', response.ok);
-
     const data: PaymentResponse = await response.json();
-    console.log('Payment - Response data:', data);
-    
-    
+
     const transformedResponse: PaymentResponse = {
       success: data.success,
       data: data.data,
@@ -63,7 +47,6 @@ export const initiatePayment = async (
     
     return transformedResponse;
   } catch (error) {
-    console.log('Payment - Error:', error);
     throw error;
   }
 };
