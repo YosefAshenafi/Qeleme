@@ -448,7 +448,7 @@ export const PracticeScreenStyles = StyleSheet.create<any>({
     borderWidth: 1,
   },
   nextButton: {
-    backgroundColor: '#6B54AE',
+    backgroundColor: BRAND_BLUE,
   },
   navButtonDisabled: {
     opacity: 0.5,

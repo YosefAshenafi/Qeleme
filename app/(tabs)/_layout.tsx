@@ -62,8 +62,8 @@ export default function TabLayout() {
         headerTitleAlign: 'center',
         headerLeftContainerStyle: { paddingLeft: TAB_LAYOUT.headerPaddingHorizontal, flex: 1 },
         headerRightContainerStyle: { paddingRight: TAB_LAYOUT.headerPaddingHorizontal, flex: 0 },
-        tabBarActiveTintColor: TAB_LAYOUT.tabActive,
-        tabBarInactiveTintColor: isDarkMode ? TAB_LAYOUT.tabInactiveDark : TAB_LAYOUT.tabInactiveLight,
+        tabBarActiveTintColor: isDarkMode ? '#FFFFFF' : TAB_LAYOUT.tabActive,
+        tabBarInactiveTintColor: isDarkMode ? '#C7CDD8' : TAB_LAYOUT.tabInactiveLight,
         tabBarShowLabel: true,
         tabBarLabelStyle: {
           fontSize: TAB_LAYOUT.tabBarLabelFontSize,

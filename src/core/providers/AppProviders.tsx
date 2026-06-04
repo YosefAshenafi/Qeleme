@@ -31,7 +31,7 @@ export function AppProviders({ children }: AppProvidersProps) {
 
   if (!isReady) {
     return (
-      <View style={{ flex: 1, backgroundColor: '#6B54AE', justifyContent: 'center', alignItems: 'center' }}>
+      <View style={{ flex: 1, backgroundColor: '#0F4BD7', justifyContent: 'center', alignItems: 'center' }}>
         <Image source={require('@/assets/images/logo.png')} style={{ width: 150, height: 150 }} />
       </View>
     );

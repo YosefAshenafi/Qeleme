@@ -486,7 +486,7 @@ export const FlashcardsScreenStyles = StyleSheet.create({
     borderWidth: 1,
   },
   nextButton: {
-    backgroundColor: '#6B54AE',
+    backgroundColor: '#0F4BD7',
   },
   navButtonDisabled: {
     opacity: 0.5,
