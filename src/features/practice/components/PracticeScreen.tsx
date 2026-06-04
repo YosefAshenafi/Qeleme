@@ -576,7 +576,7 @@ export default function PracticeScreen() {
                   ) : null}
                   <View style={{ marginTop: booksChapterModalStep === 'eitherPick' ? 0 : 6, gap: 2 }}>
                     <ThemedText
-                      style={styles.booksChapterModalSubject}
+                      style={[styles.booksChapterModalSubject, isDarkMode && { color: '#FFFFFF' }]}
                       numberOfLines={2}
                     >
                       {selectedSubjectData?.name}
@@ -696,7 +696,7 @@ export default function PracticeScreen() {
                               },
                             ]}
                           >
-                            <ThemedText style={[styles.booksChapterGridCellIndexText, { color: BRAND_BLUE }]}>
+                            <ThemedText style={[styles.booksChapterGridCellIndexText, { color: isDarkMode ? '#FFFFFF' : BRAND_BLUE }]}>
                               {idx + 1}
                             </ThemedText>
                           </View>

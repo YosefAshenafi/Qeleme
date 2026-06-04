@@ -78,7 +78,7 @@ export function PracticeMcqQuestionView({
           <ThemedText style={[styles.sessionProgressLabel, { color: isDarkMode ? '#FFFFFF' : '#6B7280' }]}>
             {sessionProgressLabel}
           </ThemedText>
-          <ThemedText style={[styles.sessionProgressCount, { color: BRAND_BLUE }]}>
+          <ThemedText style={[styles.sessionProgressCount, { color: isDarkMode ? '#FFFFFF' : BRAND_BLUE }]}>
             {currentQuestionIndex + 1} of {totalQuestions}
           </ThemedText>
         </View>
@@ -97,15 +97,15 @@ export function PracticeMcqQuestionView({
 
         <View style={styles.timeBoxesRow}>
           <View style={[styles.timeBox, { backgroundColor: colors.cardAlt, borderColor: colors.border }]}>
-            <ThemedText style={styles.timeValueText}>{String(timeHours).padStart(2, '0')}</ThemedText>
+            <ThemedText style={[styles.timeValueText, { color: isDarkMode ? '#FFFFFF' : BRAND_BLUE }]}>{String(timeHours).padStart(2, '0')}</ThemedText>
             <ThemedText style={[styles.timeLabelText, { color: colors.tabIconDefault }]}>{hoursLabel}</ThemedText>
           </View>
           <View style={[styles.timeBox, { backgroundColor: colors.cardAlt, borderColor: colors.border }]}>
-            <ThemedText style={styles.timeValueText}>{String(timeMinutes).padStart(2, '0')}</ThemedText>
+            <ThemedText style={[styles.timeValueText, { color: isDarkMode ? '#FFFFFF' : BRAND_BLUE }]}>{String(timeMinutes).padStart(2, '0')}</ThemedText>
             <ThemedText style={[styles.timeLabelText, { color: colors.tabIconDefault }]}>{minutesLabel}</ThemedText>
           </View>
           <View style={[styles.timeBox, { backgroundColor: colors.cardAlt, borderColor: colors.border }]}>
-            <ThemedText style={styles.timeValueText}>{String(timeSeconds).padStart(2, '0')}</ThemedText>
+            <ThemedText style={[styles.timeValueText, { color: isDarkMode ? '#FFFFFF' : BRAND_BLUE }]}>{String(timeSeconds).padStart(2, '0')}</ThemedText>
             <ThemedText style={[styles.timeLabelText, { color: colors.tabIconDefault }]}>{secondsLabel}</ThemedText>
           </View>
         </View>

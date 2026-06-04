@@ -582,9 +582,9 @@ export default {
       sessionProgress: 'የሙከራ ሂደት',
       reviewLater: 'ቀዳሚ',
       timeLabels: {
-        hours: 'ሰዓታት',
-        minutes: 'ደቂታት',
-        seconds: 'ሰከንዶች'
+        hours: 'ሰዓት',
+        minutes: 'ደቂቃ',
+        seconds: 'ሰከንድ'
       }
     },
     selectAnswer: 'እባክዎ ከመቀጠልዎ በፊት መልስ ይምረጡ',

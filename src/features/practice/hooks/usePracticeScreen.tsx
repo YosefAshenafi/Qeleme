@@ -284,9 +284,8 @@ export function usePracticeScreen() {
       setShowAnswerMessage(false);
       setScore(0);
       setNationalExamQuestions([]);
-      setShowChapterChooser(false);
-      
-      
+
+
       setSelectedChapter('');
       setSelectedChapterName('');
       setSelectedYear(null);
@@ -294,6 +293,14 @@ export function usePracticeScreen() {
       const subjectId = params.preSelectedSubjectId as string;
       setSelectedSubject(subjectId);
       setIsPreSelected(true);
+
+      // Arriving from a Home subject tile: after scrolling to the selected book,
+      // open the chapter chooser in "either" mode so the user picks a chapter and
+      // then chooses MCQ (Q&A) or Flashcards.
+      setBooksEitherPendingChapter(null);
+      setBooksChapterIntent('either');
+      setBooksChapterModalStep('grid');
+      setShowChapterChooser(true);
     }
   }, [params.preSelectedSubject, params.preSelectedSubjectId, practiceData]);
 

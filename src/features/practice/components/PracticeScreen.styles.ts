@@ -1176,11 +1176,9 @@ export const PracticeScreenStyles = StyleSheet.create<any>({
   },
   timeBox: {
     flex: 1,
-    flexDirection: 'row',
-    borderRadius: 10,
-    paddingVertical: 6,
+    borderRadius: 12,
+    paddingVertical: 9,
     paddingHorizontal: 8,
-    gap: 5,
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: '#F5F5F5',
@@ -1188,14 +1186,15 @@ export const PracticeScreenStyles = StyleSheet.create<any>({
     borderColor: '#E0E0E0',
   },
   timeValueText: {
-    fontSize: 15,
+    fontSize: 19,
     fontWeight: '900',
     color: BRAND_BLUE,
     letterSpacing: 0.2,
   },
   timeLabelText: {
-    fontSize: 10,
+    fontSize: 11,
     fontWeight: '700',
+    marginTop: 3,
     color: '#6B7280',
   },
   questionScrollContent: {
