@@ -4,7 +4,7 @@
     "slug": "megatest",
     "version": "1.0.8",
     "orientation": "default",
-    "icon": "./assets/images/logo.png",
+    "icon": "./assets/images/app-icon.png",
     "scheme": "megatest",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
@@ -19,7 +19,7 @@
       "requireFullScreen": false,
       "bundleIdentifier": "com.megatest.edu",
       "buildNumber": "1",
-      "icon": "./assets/images/logo.png",
+      "icon": "./assets/images/app-icon.png",
       "infoPlist": {
         "UIRequiresFullScreen": false,
         "UIStatusBarStyle": "UIStatusBarStyleDefault",
@@ -46,7 +46,7 @@
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/images/logo.png",
+        "foregroundImage": "./assets/images/app-icon.png",
         "backgroundColor": "#00000000"
       },
       "splash": {
@@ -68,7 +68,7 @@
     "web": {
       "bundler": "metro",
       "output": "static",
-      "favicon": "./assets/images/logo.png"
+      "favicon": "./assets/images/app-icon.png"
     },
     "plugins": [
       "expo-router",

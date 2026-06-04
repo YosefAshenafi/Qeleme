@@ -140,7 +140,8 @@ export default function PracticeScreen() {
     resultPanelCopy,
     formattedPracticeTime,
     styles,
-    BOOK_CARD_IMAGE_HEIGHT,
+    SUBJECT_ROW_COVER_WIDTH,
+    SUBJECT_ROW_COVER_HEIGHT,
     BOOK_CTA_ON,
     BOOKS_CANVAS,
     BRAND_BLUE,
@@ -249,35 +250,37 @@ export default function PracticeScreen() {
                         </View>
                       ) : (
                         <View style={styles.booksHubSplit}>
-                          <View
-                            style={[
-                              styles.booksSearchPanel,
-                              {
-                                backgroundColor: booksCardBg,
-                                shadowColor: isDarkMode ? '#000' : '#94A3B8',
-                              },
-                            ]}
-                          >
+                          {booksCategory !== 'national' && (
                             <View
                               style={[
-                                styles.booksSearchField,
+                                styles.booksSearchPanel,
                                 {
-                                  backgroundColor: isDarkMode ? '#1C222C' : '#F4F5F7',
+                                  backgroundColor: booksCardBg,
+                                  shadowColor: isDarkMode ? '#000' : '#94A3B8',
                                 },
                               ]}
                             >
-                              <IconSymbol name="magnifyingglass" size={20} color={booksMutedText} />
-                              <TextInput
-                                value={booksSearchQuery}
-                                onChangeText={setBooksSearchQuery}
-                                placeholder={t('mcq.subjects.searchPlaceholder')}
-                                placeholderTextColor={booksMutedText}
-                                style={[styles.booksSearchInput, { color: booksPrimaryText }]}
-                                returnKeyType="search"
-                                onSubmitEditing={() => Keyboard.dismiss()}
-                              />
+                              <View
+                                style={[
+                                  styles.booksSearchField,
+                                  {
+                                    backgroundColor: isDarkMode ? '#1C222C' : '#F4F5F7',
+                                  },
+                                ]}
+                              >
+                                <IconSymbol name="magnifyingglass" size={20} color={booksMutedText} />
+                                <TextInput
+                                  value={booksSearchQuery}
+                                  onChangeText={setBooksSearchQuery}
+                                  placeholder={t('mcq.subjects.searchPlaceholder')}
+                                  placeholderTextColor={booksMutedText}
+                                  style={[styles.booksSearchInput, { color: booksPrimaryText }]}
+                                  returnKeyType="search"
+                                  onSubmitEditing={() => Keyboard.dismiss()}
+                                />
+                              </View>
                             </View>
-                          </View>
+                          )}
 
                           <View
                             style={[
@@ -390,44 +393,49 @@ export default function PracticeScreen() {
                                     subject: subject.name,
                                   })}
                                 >
-                                  <View
-                                    style={[
-                                      styles.bookRowImageWrap,
-                                      { height: BOOK_CARD_IMAGE_HEIGHT },
-                                    ]}
-                                  >
-                                    {imageUrl ? (
-                                      <Image
-                                        source={{ uri: imageUrl }}
-                                        style={StyleSheet.absoluteFill}
-                                        resizeMode="cover"
-                                      />
-                                    ) : (
-                                      <>
-                                        <LinearGradient
-                                          colors={[...cover.coverGradient]}
-                                          start={{ x: 0, y: 0 }}
-                                          end={{ x: 1, y: 1 }}
+                                  <View style={[styles.bookRowImageWrap, { backgroundColor: booksCardBg }]}>
+                                    <View
+                                      style={[
+                                        styles.bookRowCover,
+                                        {
+                                          width: SUBJECT_ROW_COVER_WIDTH,
+                                          height: SUBJECT_ROW_COVER_HEIGHT,
+                                          backgroundColor: cover.coverColor,
+                                          shadowColor: isDarkMode ? '#000' : '#64748B',
+                                        },
+                                      ]}
+                                    >
+                                      {imageUrl ? (
+                                        <Image
+                                          source={{ uri: imageUrl }}
                                           style={StyleSheet.absoluteFill}
+                                          resizeMode="cover"
                                         />
-                                        <View style={styles.bookRowNoImageText}>
-                                          <Text style={styles.bookRowNoImageTitle}>
-                                            {subject.name}
-                                          </Text>
-                                          <Text style={styles.bookRowNoImageSubtitle}>
-                                            Grade {gradeDigit}
+                                      ) : (
+                                        <>
+                                          <LinearGradient
+                                            colors={[...cover.coverGradient]}
+                                            start={{ x: 0, y: 0 }}
+                                            end={{ x: 1, y: 1 }}
+                                            style={StyleSheet.absoluteFill}
+                                          />
+                                          <View style={styles.bookRowNoImageText}>
+                                            <Text style={styles.bookRowNoImageTitle} numberOfLines={3}>
+                                              {subject.name}
+                                            </Text>
+                                            <Text style={styles.bookRowNoImageSubtitle}>
+                                              Grade {gradeDigit}
+                                            </Text>
+                                          </View>
+                                        </>
+                                      )}
+                                      {subject.id.startsWith('national-') && (
+                                        <View style={styles.bookRowBadge}>
+                                          <Text style={styles.bookRowBadgeText}>
+                                            {t('mcq.subjects.badgeNational', { defaultValue: 'NATIONAL' })}
                                           </Text>
                                         </View>
-                                      </>
-                                    )}
-                                    <View style={styles.bookRowBadge}>
-                                      <Text style={styles.bookRowBadgeText}>
-                                        {subject.id.startsWith('national-') 
-                                          ? t('mcq.subjects.badgeNational', { defaultValue: 'NATIONAL' })
-                                          : index % 2 === 0
-                                            ? t('mcq.subjects.badgeNew')
-                                            : t('mcq.subjects.badgeUpdated')}
-                                      </Text>
+                                      )}
                                     </View>
                                   </View>
                                   <View style={styles.bookRowBody}>
@@ -513,13 +521,6 @@ export default function PracticeScreen() {
                             );
                           })}
 
-                          {filteredBooksSubjects.length === 0 && (
-                            <ThemedText
-                              style={[styles.booksEmpty, { color: booksMutedText }]}
-                            >
-                              {t('mcq.subjects.empty')}
-                            </ThemedText>
-                          )}
                           </ScrollView>
                           </View>
                         </View>
@@ -565,7 +566,7 @@ export default function PracticeScreen() {
                         { color: booksMutedText, fontWeight: '600' },
                       ]}
                     >
-                      Select Chapter Number
+                      Select Chapter
                     </ThemedText>
                   ) : null}
                   <View style={{ marginTop: booksChapterModalStep === 'eitherPick' ? 0 : 6, gap: 2 }}>
@@ -874,6 +875,7 @@ export default function PracticeScreen() {
             getOptionStyle={getOptionStyle}
             onSelectOption={handleAnswerSelect}
             onAdvance={() => (isLastQuestion ? handleResult() : handleNextQuestion())}
+            onPrevious={handlePreviousQuestion}
             reviewLaterLabel={t('mcq.results.reviewLater')}
             finishLabel={t('mcq.finish')}
             nextLabel={t('mcq.next')}

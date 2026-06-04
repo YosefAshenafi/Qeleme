@@ -12,7 +12,7 @@ export const FIREWORK_COLORS = [
 export const FIREWORK_BURST = {
   defaultDelayMs: 2000,
   particleCount: 60,
-  particleDurationMs: 1200,
-  particleFadeDelayMs: 600,
-  particleFadeDurationMs: 600,
+  particleDurationMs: 700,
+  particleFadeDelayMs: 300,
+  particleFadeDurationMs: 400,
 } as const;

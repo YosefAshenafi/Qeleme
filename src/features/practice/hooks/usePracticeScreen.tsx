@@ -28,7 +28,7 @@ import { getAuthToken } from '@/features/auth/utils/authStorage';
 import { BASE_URL } from '@/config/constants';
 
 import ActivityTrackingService from '@/features/common/services/activityTrackingService';
-import { BOOK_CARD_IMAGE_HEIGHT, BOOK_CTA_ON, BOOKS_CANVAS, BRAND_BLUE } from '@/features/practice/constants/practiceUi';
+import { BOOK_CARD_IMAGE_HEIGHT, BOOK_CTA_ON, BOOKS_CANVAS, BRAND_BLUE, SUBJECT_ROW_COVER_WIDTH, SUBJECT_ROW_COVER_HEIGHT } from '@/features/practice/constants/practiceUi';
 import type { BooksCategoryFilter } from '@/features/practice/utils/booksCategory';
 import { getSubjectBooksCategory } from '@/features/practice/utils/booksCategory';
 import { formatPracticeTime, getTimeParts } from '@/features/practice/utils/practiceTime';
@@ -62,6 +62,10 @@ export function usePracticeScreen() {
   const booksListScrollRef = useRef<ScrollView>(null);
   const booksSubjectRowY = useRef<Record<string, number>>({});
   const explanationRef = useRef<View>(null);
+  // Guards one-shot consumption of route preselection params. A focus refetch
+  // refreshes practiceData, so without this the preselect effects would re-run
+  // and snap the user back to the originally selected subject/national exam.
+  const preSelectionAttempted = useRef(false);
   const [score, setScore] = useState(0);
   const [showResult, setShowResult] = useState(false);
   const [showTest, setShowTest] = useState(false);
@@ -85,7 +89,7 @@ export function usePracticeScreen() {
 
   const booksChapterModeLabel =
     booksChapterIntent === 'practice'
-      ? 'Multiple Questions'
+      ? 'Multiple Choice Questions'
       : booksChapterIntent === 'flashcards'
         ? 'Flashcards'
         : '';
@@ -130,7 +134,7 @@ export function usePracticeScreen() {
     
     return availableYears.map(year => ({
       id: `national-${year}`,
-      name: `${year} National Exam`,
+      name: `${year} National Exam (A.A)`,
       chapters: [] 
     }));
   }, [availableYears]);
@@ -261,8 +265,16 @@ export function usePracticeScreen() {
   }, []);
 
   
+  // A new (or changed) preselection arrived from navigation — allow it to be
+  // applied exactly once. Param-only dependency means a practiceData refetch
+  // does NOT reset this guard.
   useEffect(() => {
-    if (params.preSelectedSubject && params.preSelectedSubjectId && practiceData) {
+    preSelectionAttempted.current = false;
+  }, [params.preSelectedSubject, params.preSelectedSubjectId, params.preSelectedExamType, params.preSelectedYear]);
+
+  useEffect(() => {
+    if (params.preSelectedSubject && params.preSelectedSubjectId && practiceData && !preSelectionAttempted.current) {
+      preSelectionAttempted.current = true;
       setShowTest(false);
       setShowResult(false);
       setCurrentQuestionIndex(0);
@@ -322,7 +334,8 @@ export function usePracticeScreen() {
 
   
   useEffect(() => {
-    if (params.preSelectedExamType === 'national' && params.preSelectedYear && practiceData) {
+    if (params.preSelectedExamType === 'national' && params.preSelectedYear && practiceData && !preSelectionAttempted.current) {
+      preSelectionAttempted.current = true;
       setShowTest(false);
       setShowResult(false);
       setCurrentQuestionIndex(0);
@@ -551,7 +564,7 @@ export function usePracticeScreen() {
         null
       ) : nationalExamQuestions.length > 0 ? (
         <View style={{ alignItems: 'center' }}>
-          <Text style={{ fontSize: 16, fontWeight: '600', color: '#111827' }}>{selectedSubject}{selectedChapterName ? `: ${selectedChapterName.replace(/-(\d+)$/, '')}` : ''}</Text>
+          <Text style={{ fontSize: 16, fontWeight: '600', color: '#111827' }}>{selectedChapterName ? `${t('mcq.chapterShort')} ${selectedChapterName.replace(/-(\d+)$/, '')}` : ''}</Text>
         </View>
       ) : null,
       headerRight: () => (
@@ -559,7 +572,7 @@ export function usePracticeScreen() {
       ),
       headerTitleAlign: 'center',
     });
-  }, [navigation, colors.text, showResult, nationalExamQuestions.length]);
+  }, [navigation, colors.text, showResult, nationalExamQuestions.length, selectedChapterName, t]);
 
   useEffect(() => {
     
@@ -1142,6 +1155,8 @@ export function usePracticeScreen() {
     formattedPracticeTime: formatPracticeTime(time),
     styles,
     BOOK_CARD_IMAGE_HEIGHT,
+    SUBJECT_ROW_COVER_WIDTH,
+    SUBJECT_ROW_COVER_HEIGHT,
     BOOK_CTA_ON,
     BOOKS_CANVAS,
     BRAND_BLUE,

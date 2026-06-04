@@ -36,6 +36,7 @@ type PracticeMcqQuestionViewProps = {
   getOptionStyle: (optionId: string) => ViewStyle[];
   onSelectOption: (optionId: string) => void;
   onAdvance: () => void;
+  onPrevious: () => void;
   reviewLaterLabel: string;
   finishLabel: string;
   nextLabel: string;
@@ -63,6 +64,7 @@ export function PracticeMcqQuestionView({
   getOptionStyle,
   onSelectOption,
   onAdvance,
+  onPrevious,
   reviewLaterLabel,
   finishLabel,
   nextLabel,
@@ -244,11 +246,12 @@ export function PracticeMcqQuestionView({
           <TouchableOpacity
             style={[
               styles.bottomSecondaryButton,
-              { opacity: selectedAnswer ? 1 : 0.55, backgroundColor: colors.cardAlt, borderColor: colors.border },
+              { opacity: currentQuestionIndex > 0 ? 1 : 0.55, backgroundColor: colors.cardAlt, borderColor: colors.border },
             ]}
-            onPress={onAdvance}
+            onPress={onPrevious}
+            disabled={currentQuestionIndex === 0}
           >
-            <Ionicons name="bookmark-outline" size={20} color={BRAND_BLUE} />
+            <Ionicons name="arrow-back" size={20} color={BRAND_BLUE} />
             <ThemedText style={styles.bottomSecondaryButtonText}>{reviewLaterLabel}</ThemedText>
           </TouchableOpacity>
 

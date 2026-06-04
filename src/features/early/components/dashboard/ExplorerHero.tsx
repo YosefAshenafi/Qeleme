@@ -14,7 +14,7 @@ export const ExplorerHero: React.FC<ExplorerHeroProps> = ({ name, isDarkMode }) 
   return (
     <View style={styles.container}>
       <Text style={[styles.title, { color: isDarkMode ? '#FFFFFF' : colors.primary }]}>
-        Hello, Explorer!
+        Hello, {name?.trim() ? name.trim().split(/\s+/)[0] : 'Explorer'}!
       </Text>
       <Text style={[styles.subtitle, { color: isDarkMode ? 'rgba(255,255,255,0.7)' : colors.onSurfaceVariant }]}>
         Ready to learn something amazing today? Choose a path below to start your adventure.

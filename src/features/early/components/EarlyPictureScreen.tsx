@@ -258,7 +258,7 @@ export default function EarlyPictureScreen({ onBackToInstructions }: EarlyPictur
   }, [currentQuestion, handleAnswerSelection]);
 
   const imagePan = Gesture.Pan()
-    .simultaneousWithExternalGesture(scrollRef as unknown as React.RefObject<React.ComponentType<unknown>>)
+    .blocksExternalGesture(scrollRef as unknown as React.RefObject<React.ComponentType<unknown>>)
     .onStart(() => {
       'worklet';
       if (interactionLocked.value) return;
@@ -383,7 +383,7 @@ export default function EarlyPictureScreen({ onBackToInstructions }: EarlyPictur
             </ThemedText>
             <TouchableOpacity style={[styles.pictureButton, styles.pictureHomeButton]} onPress={() => router.push('/(tabs)/practice')}>
               <ThemedText style={styles.pictureHomeButtonText}>{t('mcq.pictureQuiz.goToRegularQuestions')}</ThemedText>
-              <IconSymbol name="house.fill" size={24} color="#4CAF50" />
+              <IconSymbol name="house.fill" size={24} color="#2196F3" />
             </TouchableOpacity>
           </ThemedView>
         </SafeAreaView>
@@ -419,7 +419,7 @@ export default function EarlyPictureScreen({ onBackToInstructions }: EarlyPictur
               <ThemedText style={[styles.formTitle, { color: colors.tint }]}>❌ {error}</ThemedText>
               <TouchableOpacity style={[styles.pictureButton, styles.pictureHomeButton]} onPress={fetchQuestions}>
                 <ThemedText style={styles.pictureHomeButtonText}>{t('common.retry', 'Retry')}</ThemedText>
-                <IconSymbol name="chevron.right" size={24} color="#4CAF50" />
+                <IconSymbol name="chevron.right" size={24} color="#2196F3" />
               </TouchableOpacity>
             </ThemedView>
           </ThemedView>
@@ -438,7 +438,7 @@ export default function EarlyPictureScreen({ onBackToInstructions }: EarlyPictur
               <ThemedText style={[styles.formTitle, { color: colors.tint }]}>{t('mcq.pictureQuiz.noQuestionsAvailable')}</ThemedText>
               <TouchableOpacity style={[styles.pictureButton, styles.pictureHomeButton]} onPress={() => router.push('/(tabs)/practice')}>
                 <ThemedText style={styles.pictureHomeButtonText}>{t('mcq.pictureQuiz.goToRegularQuestions')}</ThemedText>
-                <IconSymbol name="house.fill" size={24} color="#4CAF50" />
+                <IconSymbol name="house.fill" size={24} color="#2196F3" />
               </TouchableOpacity>
             </ThemedView>
           </ThemedView>
@@ -462,7 +462,7 @@ export default function EarlyPictureScreen({ onBackToInstructions }: EarlyPictur
               <LanguageToggle colors={{ ...colors, text: isDarkMode ? '#FFFFFF' : colors.tint }} />
             </View>
           </View>
-          <LinearGradient colors={['#4CAF50', '#2196F3', '#00BCD4']} style={styles.resultGradientContainer}>
+          <LinearGradient colors={['#2196F3', '#42A5F5', '#00BCD4']} style={styles.resultGradientContainer}>
             <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
               <View style={styles.resultContent}>
                 <View style={styles.celebrationEmojiContainer}>
@@ -488,7 +488,7 @@ export default function EarlyPictureScreen({ onBackToInstructions }: EarlyPictur
                     <IconSymbol
                       key={index}
                       name="star.fill"
-                      size={40}
+                      size={30}
                       color={index < Math.ceil(percentage / 20) ? "#FFD700" : "rgba(255,255,255,0.3)"}
                       style={styles.star}
                     />
@@ -572,10 +572,13 @@ export default function EarlyPictureScreen({ onBackToInstructions }: EarlyPictur
                 </GestureDetector>
                 <View style={styles.kgOptionsContainer}>
                   {currentQuestion.options.map((option, index) => {
-                    const funColors = ['#4CAF50', '#FF9800', '#2196F3', '#9C27B0'];
+                    const funColors = ['#2196F3', '#FF9800', '#9C27B0', '#00BCD4'];
                     const funColor = funColors[index % funColors.length];
                     const isHovered = hoveredOption === option.id;
                     const isDropTarget = isHovered;
+                    const textEn = option.text_en?.trim() ?? '';
+                    const textAm = option.text_am?.trim() ?? '';
+                    const showAmharic = textAm !== '' && textAm !== textEn;
                     return (
                       <View
                         key={option.id}
@@ -590,14 +593,15 @@ export default function EarlyPictureScreen({ onBackToInstructions }: EarlyPictur
                             styles.kgOptionButtonBounce,
                             isHovered && styles.kgOptionButtonHovered,
                             isDropTarget && styles.kgOptionButtonDropTarget,
-                            { backgroundColor: selectedAnswer === option.id ? (option.isCorrect ? '#4CAF50' : '#F44336') : isHovered ? '#2E7D32' : funColor },
+                            { backgroundColor: selectedAnswer === option.id ? (option.isCorrect ? '#2196F3' : '#F44336') : isHovered ? '#1565C0' : funColor },
                           ]}
                           onPress={() => handleAnswerSelection(option.id)}
                           activeOpacity={0.8}
+                          disabled={selectedAnswer !== null}
                         >
                           <View style={styles.optionTextRow}>
                             <Text style={styles.kgOptionText}>{option.text_en}</Text>
-                            <Text style={styles.kgOptionTextAmharic}>{option.text_am}</Text>
+                            {showAmharic && <Text style={styles.kgOptionTextAmharic}>{option.text_am}</Text>}
                           </View>
                         </TouchableOpacity>
                       </View>
