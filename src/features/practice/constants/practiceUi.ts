@@ -11,9 +11,9 @@ export const BOOK_CARD_IMAGE_HEIGHT = Math.min(
   Math.round(SCREEN_WIDTH * 1.72)
 );
 
-// Portrait book cover shown on each subject row card — same proportions as the
-// home page subject tiles (width * 1.36), just a little larger.
-export const SUBJECT_ROW_COVER_WIDTH = Math.min(150, Math.round(SCREEN_WIDTH * 0.4));
+// Portrait book cover shown on the left of each horizontal subject row card —
+// same proportions as the home page subject tiles (height = width * 1.36).
+export const SUBJECT_ROW_COVER_WIDTH = Math.min(100, Math.round(SCREEN_WIDTH * 0.26));
 export const SUBJECT_ROW_COVER_HEIGHT = Math.round(SUBJECT_ROW_COVER_WIDTH * 1.36);
 
 export const SESSION_RESULT_RING_SIZE = 156;

@@ -367,16 +367,10 @@ export default function PracticeScreen() {
                               >
                                 <TouchableOpacity
                                   onPress={() => {
-                                    
                                     const isNationalExamYear = subject.id.startsWith('national-');
-                                    
                                     if (isNationalExamYear) {
-                                      
-                                      const year = subject.id.replace('national-', '');
-                                      
-                                      handleNationalExamYearPress(year);
+                                      handleNationalExamYearPress(subject.id.replace('national-', ''));
                                     } else {
-                                      
                                       setSelectedSubject(subject.id);
                                       setSelectedChapter('');
                                       setSelectedChapterName('');
@@ -392,54 +386,70 @@ export default function PracticeScreen() {
                                     grade: gradeDigit,
                                     subject: subject.name,
                                   })}
+                                  style={[
+                                    styles.bookRowCover,
+                                    {
+                                      width: SUBJECT_ROW_COVER_WIDTH,
+                                      height: SUBJECT_ROW_COVER_HEIGHT,
+                                      backgroundColor: cover.coverColor,
+                                      shadowColor: isDarkMode ? '#000' : '#64748B',
+                                    },
+                                  ]}
                                 >
-                                  <View style={[styles.bookRowImageWrap, { backgroundColor: booksCardBg }]}>
-                                    <View
-                                      style={[
-                                        styles.bookRowCover,
-                                        {
-                                          width: SUBJECT_ROW_COVER_WIDTH,
-                                          height: SUBJECT_ROW_COVER_HEIGHT,
-                                          backgroundColor: cover.coverColor,
-                                          shadowColor: isDarkMode ? '#000' : '#64748B',
-                                        },
-                                      ]}
-                                    >
-                                      {imageUrl ? (
-                                        <Image
-                                          source={{ uri: imageUrl }}
-                                          style={StyleSheet.absoluteFill}
-                                          resizeMode="cover"
-                                        />
-                                      ) : (
-                                        <>
-                                          <LinearGradient
-                                            colors={[...cover.coverGradient]}
-                                            start={{ x: 0, y: 0 }}
-                                            end={{ x: 1, y: 1 }}
-                                            style={StyleSheet.absoluteFill}
-                                          />
-                                          <View style={styles.bookRowNoImageText}>
-                                            <Text style={styles.bookRowNoImageTitle} numberOfLines={3}>
-                                              {subject.name}
-                                            </Text>
-                                            <Text style={styles.bookRowNoImageSubtitle}>
-                                              Grade {gradeDigit}
-                                            </Text>
-                                          </View>
-                                        </>
-                                      )}
-                                      {subject.id.startsWith('national-') && (
-                                        <View style={styles.bookRowBadge}>
-                                          <Text style={styles.bookRowBadgeText}>
-                                            {t('mcq.subjects.badgeNational', { defaultValue: 'NATIONAL' })}
-                                          </Text>
-                                        </View>
-                                      )}
+                                  {imageUrl ? (
+                                    <Image
+                                      source={{ uri: imageUrl }}
+                                      style={StyleSheet.absoluteFill}
+                                      resizeMode="cover"
+                                    />
+                                  ) : (
+                                    <>
+                                      <LinearGradient
+                                        colors={[...cover.coverGradient]}
+                                        start={{ x: 0, y: 0 }}
+                                        end={{ x: 1, y: 1 }}
+                                        style={StyleSheet.absoluteFill}
+                                      />
+                                      <View style={styles.bookRowNoImageText}>
+                                        <Text style={styles.bookRowNoImageTitle} numberOfLines={3}>
+                                          {subject.name}
+                                        </Text>
+                                        <Text style={styles.bookRowNoImageSubtitle}>
+                                          Grade {gradeDigit}
+                                        </Text>
+                                      </View>
+                                    </>
+                                  )}
+                                  {subject.id.startsWith('national-') && (
+                                    <View style={styles.bookRowBadge}>
+                                      <Text style={styles.bookRowBadgeText}>
+                                        {t('mcq.subjects.badgeNational', { defaultValue: 'NATIONAL' })}
+                                      </Text>
                                     </View>
-                                  </View>
-                                  <View style={styles.bookRowBody}>
-                                    <ThemedText style={[styles.bookRowTitle, { color: booksPrimaryText }]}>
+                                  )}
+                                </TouchableOpacity>
+                                <View style={styles.bookRowContent}>
+                                  <TouchableOpacity
+                                    activeOpacity={0.92}
+                                    onPress={() => {
+                                      const isNationalExamYear = subject.id.startsWith('national-');
+                                      if (isNationalExamYear) {
+                                        handleNationalExamYearPress(subject.id.replace('national-', ''));
+                                      } else {
+                                        setSelectedSubject(subject.id);
+                                        setSelectedChapter('');
+                                        setSelectedChapterName('');
+                                        setIsPreSelected(false);
+                                        setBooksChapterIntent('either');
+                                        setBooksChapterModalStep('grid');
+                                        setShowChapterChooser(true);
+                                      }
+                                    }}
+                                  >
+                                    <ThemedText
+                                      style={[styles.bookRowTitle, { color: booksPrimaryText }]}
+                                      numberOfLines={2}
+                                    >
                                       {t('mcq.subjects.cardTitle', { grade: gradeDigit, subject: subject.name })}
                                     </ThemedText>
                                     <ThemedText
@@ -448,74 +458,69 @@ export default function PracticeScreen() {
                                     >
                                       {t('mcq.subjects.cardDescription')}
                                     </ThemedText>
-                                  </View>
-                                </TouchableOpacity>
-                                <View
-                                  style={[
-                                    styles.bookRowActions,
-                                    {
-                                      borderTopWidth: 1,
-                                      borderColor: booksCardBorder,
-                                      backgroundColor: booksChipIdleOnPanel,
-                                    },
-                                  ]}
-                                >
-                                  <TouchableOpacity
-                                    style={[
-                                      styles.bookRowPillFilled,
-                                      { backgroundColor: BRAND_BLUE, shadowColor: BRAND_BLUE },
-                                    ]}
-                                    onPress={() => {
-                                      
-                                      const isNationalExamYear = subject.id.startsWith('national-');
-                                      
-                                      if (isNationalExamYear) {
-                                        
-                                        const year = subject.id.replace('national-', '');
-                                        
-                                        handleNationalExamYearPress(year);
-                                      } else {
-                                        
-                                        setSelectedSubject(subject.id);
-                                        setSelectedChapter('');
-                                        setSelectedChapterName('');
-                                        setIsPreSelected(false);
-                                        setBooksChapterIntent('practice');
-                                        setBooksChapterModalStep('grid');
-                                        setShowChapterChooser(true);
-                                      }
-                                    }}
-                                    activeOpacity={0.9}
-                                  >
-                                    <IconSymbol name="doc.text.fill" size={20} color={BOOK_CTA_ON} />
-                                    <Text style={styles.bookRowPillTextOnBlue}>
-                                      {t('mcq.subjects.qaPractice')}
-                                    </Text>
                                   </TouchableOpacity>
-                                  
-                                  {!subject.id.startsWith('national-') && (
+                                  <View style={styles.bookRowActions}>
                                     <TouchableOpacity
                                       style={[
                                         styles.bookRowPillFilled,
                                         { backgroundColor: BRAND_BLUE, shadowColor: BRAND_BLUE },
                                       ]}
                                       onPress={() => {
-                                        setSelectedSubject(subject.id);
-                                        setSelectedChapter('');
-                                        setSelectedChapterName('');
-                                        setIsPreSelected(false);
-                                        setBooksChapterIntent('flashcards');
-                                        setBooksChapterModalStep('grid');
-                                        setShowChapterChooser(true);
+                                        const isNationalExamYear = subject.id.startsWith('national-');
+                                        if (isNationalExamYear) {
+                                          handleNationalExamYearPress(subject.id.replace('national-', ''));
+                                        } else {
+                                          setSelectedSubject(subject.id);
+                                          setSelectedChapter('');
+                                          setSelectedChapterName('');
+                                          setIsPreSelected(false);
+                                          setBooksChapterIntent('practice');
+                                          setBooksChapterModalStep('grid');
+                                          setShowChapterChooser(true);
+                                        }
                                       }}
                                       activeOpacity={0.9}
                                     >
-                                      <IconSymbol name="rectangle.stack" size={20} color={BOOK_CTA_ON} />
-                                      <Text style={styles.bookRowPillTextOnBlue}>
-                                        {t('mcq.subjects.flashcards')}
+                                      <IconSymbol name="questionmark.circle.fill" size={16} color={BOOK_CTA_ON} />
+                                      <Text
+                                        style={styles.bookRowPillTextOnBlue}
+                                        numberOfLines={1}
+                                        adjustsFontSizeToFit
+                                        minimumFontScale={0.8}
+                                      >
+                                        {t('mcq.subjects.qaPractice')}
                                       </Text>
                                     </TouchableOpacity>
-                                  )}
+
+                                    {!subject.id.startsWith('national-') && (
+                                      <TouchableOpacity
+                                        style={[
+                                          styles.bookRowPillFilled,
+                                          { backgroundColor: BRAND_BLUE, shadowColor: BRAND_BLUE },
+                                        ]}
+                                        onPress={() => {
+                                          setSelectedSubject(subject.id);
+                                          setSelectedChapter('');
+                                          setSelectedChapterName('');
+                                          setIsPreSelected(false);
+                                          setBooksChapterIntent('flashcards');
+                                          setBooksChapterModalStep('grid');
+                                          setShowChapterChooser(true);
+                                        }}
+                                        activeOpacity={0.9}
+                                      >
+                                        <IconSymbol name="rectangle.stack.fill" size={16} color={BOOK_CTA_ON} />
+                                        <Text
+                                          style={styles.bookRowPillTextOnBlue}
+                                          numberOfLines={1}
+                                          adjustsFontSizeToFit
+                                          minimumFontScale={0.8}
+                                        >
+                                          {t('mcq.subjects.flashcards')}
+                                        </Text>
+                                      </TouchableOpacity>
+                                    )}
+                                  </View>
                                 </View>
                               </View>
                             );
