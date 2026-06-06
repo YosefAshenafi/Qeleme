@@ -24,6 +24,12 @@ export const EarlyCategoryInstructionsScreenStyles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
+  headerLogo: {
+    width: 36,
+    height: 30,
+    marginLeft: 4,
+    marginBottom: 4,
+  },
   headerTextContainer: {
     flex: 1,
     alignItems: 'center',

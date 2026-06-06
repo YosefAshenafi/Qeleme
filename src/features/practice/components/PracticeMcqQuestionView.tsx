@@ -37,6 +37,7 @@ type PracticeMcqQuestionViewProps = {
   onSelectOption: (optionId: string) => void;
   onAdvance: () => void;
   onPrevious: () => void;
+  onExit: () => void;
   reviewLaterLabel: string;
   finishLabel: string;
   nextLabel: string;
@@ -65,6 +66,7 @@ export function PracticeMcqQuestionView({
   onSelectOption,
   onAdvance,
   onPrevious,
+  onExit,
   reviewLaterLabel,
   finishLabel,
   nextLabel,
@@ -78,9 +80,19 @@ export function PracticeMcqQuestionView({
           <ThemedText style={[styles.sessionProgressLabel, { color: isDarkMode ? '#FFFFFF' : '#6B7280' }]}>
             {sessionProgressLabel}
           </ThemedText>
-          <ThemedText style={[styles.sessionProgressCount, { color: isDarkMode ? '#FFFFFF' : BRAND_BLUE }]}>
-            {currentQuestionIndex + 1} of {totalQuestions}
-          </ThemedText>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 14 }}>
+            <ThemedText style={[styles.sessionProgressCount, { color: isDarkMode ? '#FFFFFF' : BRAND_BLUE }]}>
+              {currentQuestionIndex + 1} of {totalQuestions}
+            </ThemedText>
+            <TouchableOpacity
+              onPress={onExit}
+              hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+              accessibilityRole="button"
+              accessibilityLabel="End session"
+            >
+              <Ionicons name="close-circle" size={26} color={isDarkMode ? '#FFFFFF' : '#9AA3B2'} />
+            </TouchableOpacity>
+          </View>
         </View>
 
         <View style={[styles.sessionProgressBarTrack, { backgroundColor: colors.cardAlt }]}>

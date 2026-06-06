@@ -524,6 +524,11 @@ export default function EarlyPictureScreen({ onBackToInstructions }: EarlyPictur
           <TouchableOpacity style={styles.backButton} onPress={handleGoToInstructions}>
             <Ionicons name="chevron-back" size={28} color="#111827" />
           </TouchableOpacity>
+          <Image
+            source={require('@/assets/images/logo.png')}
+            style={styles.headerLogo}
+            resizeMode="contain"
+          />
           <View style={styles.headerCenter}>
             <Text style={styles.headerTitleText}>{getLocalizedCategoryName()}</Text>
           </View>

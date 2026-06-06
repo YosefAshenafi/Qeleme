@@ -1,5 +1,6 @@
 import React from 'react';
 import { StatusBar } from 'react-native';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { ThemedView } from '@/features/common/components/ThemedView';
 import { useFlashcardsScreen } from '@/features/flashcards/hooks/useFlashcardsScreen';
@@ -137,36 +138,45 @@ export default function FlashcardsScreen() {
   }
 
   return (
-    <SafeAreaView style={[styles.safeArea, { backgroundColor: '#FFFFFF' }]} edges={['top', 'left', 'right']}>
-      <ThemedView style={[styles.container, { backgroundColor: fc.isDarkMode ? fc.colors.background : '#F4F6FA' }]}>
-        <StatusBar translucent={false} backgroundColor="#FFFFFF" barStyle="dark-content" />
-        <FlashcardsScreenTopBar />
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <SafeAreaView style={[styles.safeArea, { backgroundColor: '#FFFFFF' }]} edges={['top', 'left', 'right']}>
+        <ThemedView style={[styles.container, { backgroundColor: fc.isDarkMode ? fc.colors.background : '#F4F6FA' }]}>
+          <StatusBar translucent={false} backgroundColor="#FFFFFF" barStyle="dark-content" />
+          <FlashcardsScreenTopBar
+            onClose={() => {
+              fc.setShowResult(false);
+              fc.setShowFlashcards(false);
+            }}
+          />
 
-        <FlashcardsSessionProgress
-          isDarkMode={fc.isDarkMode}
-          cardAltColor={fc.colors.cardAlt}
-          currentIndex={fc.currentIndex}
-          totalCards={fc.currentFlashcards.length}
-          progressBarStyle={fc.progressBarStyle}
-        />
+          <FlashcardsSessionProgress
+            isDarkMode={fc.isDarkMode}
+            cardAltColor={fc.colors.cardAlt}
+            currentIndex={fc.currentIndex}
+            totalCards={fc.currentFlashcards.length}
+            progressBarStyle={fc.progressBarStyle}
+          />
 
-        <FlashcardsFlipCard
-          isDarkMode={fc.isDarkMode}
-          cardBackgroundColor={fc.isDarkMode ? fc.colors.cardAlt : '#FFFFFF'}
-          mutedTextColor={fc.cardMutedMeta}
-          questionText={getFlashcardQuestionText(fc.currentCard)}
-          answerText={getFlashcardAnswerText(fc.currentCard)}
-          frontAnimatedStyle={fc.frontAnimatedStyle}
-          backAnimatedStyle={fc.backAnimatedStyle}
-          onReveal={fc.handleReveal}
-        />
+          <FlashcardsFlipCard
+            isDarkMode={fc.isDarkMode}
+            cardBackgroundColor={fc.isDarkMode ? fc.colors.cardAlt : '#FFFFFF'}
+            mutedTextColor={fc.cardMutedMeta}
+            questionText={getFlashcardQuestionText(fc.currentCard)}
+            answerText={getFlashcardAnswerText(fc.currentCard)}
+            frontAnimatedStyle={fc.frontAnimatedStyle}
+            backAnimatedStyle={fc.backAnimatedStyle}
+            onReveal={fc.handleReveal}
+            onSwipeLeft={fc.onStillLearningPress}
+            onSwipeRight={fc.onGotItPress}
+          />
 
-        <FlashcardsSessionBottomActions
-          isDarkMode={fc.isDarkMode}
-          onStillLearning={fc.onStillLearningPress}
-          onGotIt={fc.onGotItPress}
-        />
-      </ThemedView>
-    </SafeAreaView>
+          <FlashcardsSessionBottomActions
+            isDarkMode={fc.isDarkMode}
+            onStillLearning={fc.onStillLearningPress}
+            onGotIt={fc.onGotItPress}
+          />
+        </ThemedView>
+      </SafeAreaView>
+    </GestureHandlerRootView>
   );
 }

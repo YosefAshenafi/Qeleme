@@ -1,5 +1,5 @@
 import React from 'react';
-import { TouchableOpacity, ScrollView, View, Dimensions, Text } from 'react-native';
+import { TouchableOpacity, ScrollView, View, Dimensions, Text, Image } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useTheme } from '@/core/providers/ThemeProvider';
@@ -125,6 +125,11 @@ export default function EarlyCategoryInstructions() {
           >
             <Text style={styles.backEmoji}>⬅️</Text>
           </TouchableOpacity>
+          <Image
+            source={require('@/assets/images/logo.png')}
+            style={styles.headerLogo}
+            resizeMode="contain"
+          />
           <View style={styles.headerTextContainer}>
             <ThemedText style={styles.headerTitle}>
               {hasSubcategories === 'true' && subcategory 

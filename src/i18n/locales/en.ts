@@ -916,6 +916,10 @@ export default {
     howToPlay: 'How to Play',
     subtitle: "Study your subjects and test yourself with the questions!",
     letsHaveFun: "",
+    heroGreeting: 'Hello, {{name}}!',
+    heroSubtitle: 'Ready to learn something amazing today? Choose a path below to start your adventure.',
+    cardStartAdventure: 'Start your adventure!',
+    cardMathSubtitle: '1, 2, 3... Counting is fun!',
     categories: {
       
       'Animals': 'Animals',

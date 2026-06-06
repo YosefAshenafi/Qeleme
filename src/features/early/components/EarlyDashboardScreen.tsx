@@ -19,7 +19,7 @@ export default function EarlyDashboardScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const { isDarkMode } = useTheme();
-  const { i18n } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { user, logout } = useAuth();
   const colors = KG_DESIGN_TOKENS.colors;
 
@@ -165,7 +165,7 @@ export default function EarlyDashboardScreen() {
                   <BentoCard
                     key={category.id}
                     title={i18n.language === 'am' ? category.name_am : category.name_en}
-                    subtitle={category.name_en === 'Math' ? '1, 2, 3... Counting is fun!' : 'Start your adventure!'}
+                    subtitle={isMath ? t('kg.cardMathSubtitle') : t('kg.cardStartAdventure')}
                     imageUrl={isMath ? 'https://kgimages.blr1.cdn.digitaloceanspaces.com/Cover%20Pages/kg/maths.png' : category.image_url}
                     variant={getCategoryVariant(category, index)}
                     backgroundColor={getCategoryColor(index)}

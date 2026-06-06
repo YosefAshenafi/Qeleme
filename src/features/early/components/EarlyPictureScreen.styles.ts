@@ -41,6 +41,11 @@ export const EarlyPictureScreenStyles = StyleSheet.create({
     padding: 8,
     marginRight: 8,
   },
+  headerLogo: {
+    width: 36,
+    height: 30,
+    marginBottom: 4,
+  },
   profileIconContainer: {
     width: 40,
     height: 40,

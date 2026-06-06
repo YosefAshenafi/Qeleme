@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, ActivityIndicator, Dimensions } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, ActivityIndicator, Dimensions, Image } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { useTheme } from '@/core/providers/ThemeProvider';
@@ -141,6 +141,11 @@ export default function EarlySubcategoriesScreen() {
         >
           <IconSymbol name="chevron.left" size={24} color={colors.text} />
         </TouchableOpacity>
+        <Image
+          source={require('@/assets/images/logo.png')}
+          style={styles.headerLogo}
+          resizeMode="contain"
+        />
         <View style={styles.headerCenter}>
           <Text style={[styles.headerTitle, { color: colors.text }]}>
             {categoryName}

@@ -18,6 +18,12 @@ export const EarlySubcategoriesScreenStyles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
+  headerLogo: {
+    width: 36,
+    height: 30,
+    marginLeft: 4,
+    marginBottom: 4,
+  },
   headerCenter: {
     flex: 1,
     alignItems: 'center',

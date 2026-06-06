@@ -9,8 +9,9 @@ export const tabLayoutStyles = StyleSheet.create({
     gap: 10,
   },
   brandMark: {
-    width: 50,
-    height: 44,
+    width: 40,
+    height: 34,
+    marginBottom: 6,
   },
   headerRight: {
     flexDirection: 'row',

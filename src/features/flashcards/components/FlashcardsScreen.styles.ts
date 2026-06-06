@@ -24,8 +24,9 @@ export const FlashcardsScreenStyles = StyleSheet.create({
     paddingBottom: 8,
   },
   flashTopLogoLeft: {
-    width: 50,
-    height: 44,
+    width: 40,
+    height: 34,
+    marginBottom: 6,
   },
   flashBrandPill: {
     width: 38,

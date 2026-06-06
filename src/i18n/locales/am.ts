@@ -339,6 +339,10 @@ export default {
     subtitle: 'ትምህርቶችዎን በመማር በጥያቄዎቹ እውቀትዎን ይመዝኑ!',
     howToPlay: 'አጠቃቀም',
     letsHaveFun: '',
+    heroGreeting: 'ሰላም {{name}}!',
+    heroSubtitle: 'ዛሬ አስደናቂ ነገር ለመማር ዝግጁ ነዎት? ለመጀመር ከታች ካሉት ይምረጡ።',
+    cardStartAdventure: 'ጉዞዎን ይጀምሩ!',
+    cardMathSubtitle: '1, 2, 3... መቁጠር አስደሳች ነው!',
     categories: {
       
       'Animals': 'እንስሳት',

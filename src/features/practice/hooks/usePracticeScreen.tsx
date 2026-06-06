@@ -538,24 +538,26 @@ export function usePracticeScreen() {
     checkPhoneNumber();
   }, [user?.grade]);
 
+  const exitSession = React.useCallback(() => {
+    setNationalExamQuestions([]);
+    setShowResult(false);
+    setShowTest(false);
+    setSelectedSubject('');
+    setSelectedChapter('');
+    setSelectedChapterName('');
+    setSelectedGrade(null);
+    setSelectedYear(null);
+    setCurrentQuestionIndex(0);
+    setAnsweredQuestions({});
+    setSelectedAnswer(null);
+  }, []);
+
   useLayoutEffect(() => {
-    
+
     (navigation as any)?.setOptions?.({
       headerLeft: () => (showResult || nationalExamQuestions.length > 0) ? (
-        <TouchableOpacity 
-          onPress={() => {
-            setNationalExamQuestions([]);
-            setShowResult(false);
-            setShowTest(false);
-            setSelectedSubject('');
-            setSelectedChapter('');
-            setSelectedChapterName('');
-            setSelectedGrade(null);
-            setSelectedYear(null);
-            setCurrentQuestionIndex(0);
-            setAnsweredQuestions({});
-            setSelectedAnswer(null);
-          }} 
+        <TouchableOpacity
+          onPress={exitSession}
           style={{ padding: 8 }}
         >
           <Ionicons name="chevron-back" size={24} color="#111827" />
@@ -579,7 +581,7 @@ export function usePracticeScreen() {
       ),
       headerTitleAlign: 'center',
     });
-  }, [navigation, colors.text, showResult, nationalExamQuestions.length, selectedChapterName, t]);
+  }, [navigation, colors.text, showResult, nationalExamQuestions.length, selectedChapterName, t, exitSession]);
 
   useEffect(() => {
     
@@ -1145,6 +1147,7 @@ export function usePracticeScreen() {
     handleNextQuestion,
     handlePreviousQuestion,
     handleResult,
+    exitSession,
     handleCheckOtherQuestions,
     handleRetry,
     dismissBooksChapterModal,

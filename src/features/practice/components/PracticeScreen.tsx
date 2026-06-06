@@ -124,6 +124,7 @@ export default function PracticeScreen() {
     handleNextQuestion,
     handlePreviousQuestion,
     handleResult,
+    exitSession,
     handleCheckOtherQuestions,
     handleRetry,
     dismissBooksChapterModal,
@@ -881,6 +882,7 @@ export default function PracticeScreen() {
             onSelectOption={handleAnswerSelect}
             onAdvance={() => (isLastQuestion ? handleResult() : handleNextQuestion())}
             onPrevious={handlePreviousQuestion}
+            onExit={exitSession}
             reviewLaterLabel={t('mcq.results.reviewLater')}
             finishLabel={t('mcq.finish')}
             nextLabel={t('mcq.next')}

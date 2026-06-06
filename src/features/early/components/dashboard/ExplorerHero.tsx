@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Text } from 'react-native';
+import { useTranslation } from 'react-i18next';
 import { KG_DESIGN_TOKENS } from '../../constants/DesignTokens';
 import { ExplorerHeroStyles as styles } from './ExplorerHero.styles';
 
@@ -10,14 +11,16 @@ interface ExplorerHeroProps {
 
 export const ExplorerHero: React.FC<ExplorerHeroProps> = ({ name, isDarkMode }) => {
   const colors = KG_DESIGN_TOKENS.colors;
-  
+  const { t } = useTranslation();
+  const displayName = name?.trim() ? name.trim().split(/\s+/)[0] : 'Explorer';
+
   return (
     <View style={styles.container}>
       <Text style={[styles.title, { color: isDarkMode ? '#FFFFFF' : colors.primary }]}>
-        Hello, {name?.trim() ? name.trim().split(/\s+/)[0] : 'Explorer'}!
+        {t('kg.heroGreeting', { name: displayName })}
       </Text>
       <Text style={[styles.subtitle, { color: isDarkMode ? 'rgba(255,255,255,0.7)' : colors.onSurfaceVariant }]}>
-        Ready to learn something amazing today? Choose a path below to start your adventure.
+        {t('kg.heroSubtitle')}
       </Text>
     </View>
   );
