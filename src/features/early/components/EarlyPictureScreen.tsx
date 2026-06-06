@@ -154,14 +154,18 @@ export default function EarlyPictureScreen({ onBackToInstructions }: EarlyPictur
   const scrollRef = useRef<React.ElementRef<typeof ScrollView>>(null);
   const optionRowRefs = useRef<Record<string, View | null>>({});
   const interactionLocked = useSharedValue(false);
+  // Mirror of the drop zones on the UI thread so the pan worklet can read them
+  // (a plain React ref isn't reliably visible from a worklet).
+  const dropZonesShared = useSharedValue<{ [key: string]: { x: number; y: number; width: number; height: number } }>({});
 
   const updateDropZone = useCallback((optionId: string, zone: { x: number; y: number; width: number; height: number }) => {
     setDropZones(prev => {
       const updated = { ...prev, [optionId]: zone };
       dropZonesRef.current = updated;
+      dropZonesShared.value = updated;
       return updated;
     });
-  }, []);
+  }, [dropZonesShared]);
 
   const imagePosition = useSharedValue({ x: 0, y: 0 });
   const imageScale = useSharedValue(1);
@@ -259,13 +263,15 @@ export default function EarlyPictureScreen({ onBackToInstructions }: EarlyPictur
 
   const imagePan = Gesture.Pan()
     .blocksExternalGesture(scrollRef as unknown as React.RefObject<React.ComponentType<unknown>>)
+    .activeOffsetX([-12, 12])
+    .activeOffsetY([-12, 12])
     .onStart(() => {
       'worklet';
       if (interactionLocked.value) return;
       runOnJS(measureAllOptionZones)();
       runOnJS(setImageDragging)(true);
       isDraggingShared.value = true;
-      imageScale.value = withSpring(0.5);
+      imageScale.value = withSpring(0.32);
     })
     .onUpdate((event) => {
       'worklet';
@@ -274,7 +280,7 @@ export default function EarlyPictureScreen({ onBackToInstructions }: EarlyPictur
       const absX = event.absoluteX;
       const absY = event.absoluteY;
       lastPointerAbs.value = { x: absX, y: absY };
-      const zones = dropZonesRef.current;
+      const zones = dropZonesShared.value;
       const zoneKeys = Object.keys(zones);
       let hovered: string | null = null;
       for (let i = 0; i < zoneKeys.length; i++) {
@@ -596,9 +602,21 @@ export default function EarlyPictureScreen({ onBackToInstructions }: EarlyPictur
                           style={[
                             styles.kgOptionButton,
                             styles.kgOptionButtonBounce,
+                            isImageDragging && !isHovered && styles.kgOptionButtonDimmed,
                             isHovered && styles.kgOptionButtonHovered,
                             isDropTarget && styles.kgOptionButtonDropTarget,
-                            { backgroundColor: selectedAnswer === option.id ? (option.isCorrect ? '#2196F3' : '#F44336') : isHovered ? '#1565C0' : funColor },
+                            {
+                              backgroundColor:
+                                selectedAnswer !== null
+                                  ? option.isCorrect
+                                    ? '#22C55E'
+                                    : selectedAnswer === option.id
+                                      ? '#F44336'
+                                      : funColor
+                                  : isHovered
+                                    ? '#1565C0'
+                                    : funColor,
+                            },
                           ]}
                           onPress={() => handleAnswerSelection(option.id)}
                           activeOpacity={0.8}
