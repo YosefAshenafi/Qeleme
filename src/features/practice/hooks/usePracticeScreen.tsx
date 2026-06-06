@@ -290,6 +290,11 @@ export function usePracticeScreen() {
       setSelectedChapterName('');
       setSelectedYear(null);
 
+      // Reset the category filter and search so the full subject list shows
+      // (they may have been left on 'national'/filtered from a previous selection).
+      setBooksCategory('all');
+      setBooksSearchQuery('');
+
       const subjectId = params.preSelectedSubjectId as string;
       setSelectedSubject(subjectId);
       setIsPreSelected(true);
