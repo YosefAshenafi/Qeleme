@@ -151,6 +151,18 @@ export default function ReportsScreen() {
   const ringCirc = 2 * Math.PI * ringRadius;
   const ringOffset = ringCirc - (accuracy / 100) * ringCirc;
 
+  // Score progression headline = trend across the charted months (distinct from the
+  // overall accuracy shown in the hero ring), so the two cards never repeat the same number.
+  const scoreTrend = useMemo(() => {
+    const pts = mcqMonthlySeries.filter((p) => p.y > 0);
+    if (pts.length < 2) return null;
+    return pts[pts.length - 1].y - pts[0].y;
+  }, [mcqMonthlySeries]);
+  const scoreTrendText =
+    !hasGradedQuestions || scoreTrend === null ? '—' : `${scoreTrend > 0 ? '+' : ''}${scoreTrend}%`;
+  const scoreTrendColor =
+    scoreTrend === null || scoreTrend === 0 ? BLUE : scoreTrend > 0 ? '#16A34A' : '#DC2626';
+
   const studyTimeText = useMemo(() => {
     const totalMin = Math.max(0, Math.round(userStats?.totalStudyTime ?? 0));
     const h = Math.floor(totalMin / 60);
@@ -281,7 +293,7 @@ export default function ReportsScreen() {
                     </View>
                     <View style={styles.heroStatText}>
                       <ThemedText style={[styles.heroStatValue, { color: colors.text }]}>
-                        {userStats!.totalCorrectAnswers}/{userStats!.totalQuestionsAnswered}
+                        {userStats!.totalQuestionsAnswered}
                       </ThemedText>
                       <ThemedText style={[styles.heroStatLabel, { color: muted }]}>
                         {t('reports.dash.questions')}
@@ -328,8 +340,8 @@ export default function ReportsScreen() {
                       {t('reports.scoreProgression.subtitle', { defaultValue: 'Overall Academic Performance' })}
                     </ThemedText>
                   </View>
-                  <View style={[styles.chip, { backgroundColor: BLUE + '15' }]}>
-                    <ThemedText style={[styles.chipText, { color: BLUE }]}>{accuracyText}</ThemedText>
+                  <View style={[styles.chip, { backgroundColor: scoreTrendColor + '15' }]}>
+                    <ThemedText style={[styles.chipText, { color: scoreTrendColor }]}>{scoreTrendText}</ThemedText>
                   </View>
                 </View>
 

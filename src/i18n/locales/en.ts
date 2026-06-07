@@ -681,7 +681,7 @@ export default {
       chooseAnotherNationalExamYear: 'Choose Another National Exam Year (A.A)',
       retrySession: 'RETRY SESSION',
       done: 'DONE',
-      sessionProgress: 'SESSION PROGRESS',
+      sessionProgress: 'SESSION',
       reviewLater: 'Previous',
       timeLabels: {
         hours: 'HOURS',

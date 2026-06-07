@@ -34,8 +34,6 @@ type PracticeMcqQuestionViewProps = {
   onSelectOption: (optionId: string) => void;
   onAdvance: () => void;
   onPrevious: () => void;
-  onExit: () => void;
-  onOpenSettings: () => void;
   reviewLaterLabel: string;
   finishLabel: string;
   nextLabel: string;
@@ -61,8 +59,6 @@ export function PracticeMcqQuestionView({
   onSelectOption,
   onAdvance,
   onPrevious,
-  onExit,
-  onOpenSettings,
   reviewLaterLabel,
   finishLabel,
   nextLabel,
@@ -98,22 +94,6 @@ export function PracticeMcqQuestionView({
             <ThemedText style={[styles.sessionProgressCount, { color: isDarkMode ? '#FFFFFF' : BRAND_BLUE }]}>
               {currentQuestionIndex + 1} of {totalQuestions}
             </ThemedText>
-            <TouchableOpacity
-              onPress={onOpenSettings}
-              hitSlop={{ top: 10, bottom: 10, left: 8, right: 8 }}
-              accessibilityRole="button"
-              accessibilityLabel="Quiz settings"
-            >
-              <Ionicons name="settings-outline" size={22} color={isDarkMode ? '#FFFFFF' : '#9AA3B2'} />
-            </TouchableOpacity>
-            <TouchableOpacity
-              onPress={onExit}
-              hitSlop={{ top: 10, bottom: 10, left: 8, right: 10 }}
-              accessibilityRole="button"
-              accessibilityLabel="End session"
-            >
-              <Ionicons name="close-circle" size={24} color={isDarkMode ? '#FFFFFF' : '#9AA3B2'} />
-            </TouchableOpacity>
           </View>
         </View>
 

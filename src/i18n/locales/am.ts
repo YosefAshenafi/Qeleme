@@ -210,7 +210,7 @@ export default {
     welcome: 'እንኳን በደህና መጡ',
     welcomeBack: 'እንኳን ደህና መጡ',
     subtitle: 'አእምሮዎን በእያንዳንዱ ትምህርት ያበልጽጉ!',
-    subtitleV2: 'በትምህርት ጉዞዎ ላይ ቀጥሉ።',
+    subtitleV2: 'የትምህርት ጉዞዎን ይጀምሩ!',
     usernameOrEmail: 'መለያ ስም ወይም ኢሜይል',
     usernameOrEmailPlaceholder: 'name@institution.edu',
     username: {
@@ -609,7 +609,7 @@ export default {
       chooseAnotherNationalExamYear: 'ሌላ የብሔራዊ ፈተና ዓመት ይምረጡ (አ.አ)',
       retrySession: 'ቀሪ ጥያቄዎችን ይሞክሩ',
       done: 'ጨርሰዋል',
-      sessionProgress: 'የሙከራ ሂደት',
+      sessionProgress: 'ሙከራ',
       reviewLater: 'ቀዳሚ',
       timeLabels: {
         hours: 'ሰዓት',
@@ -973,7 +973,7 @@ export default {
   welcome: {
     title: 'እንኳን ወደ MegaTest በደህና መጡ!',
     subtitle: 'አዲስ ከሆኑ እባክዎ ይመዝገቡ። አስቀድመው መለያ ካለዎት እባክዎ በመለያዎ ይግቡ።',
-    startYour: 'ትምህርት',
+    startYour: 'የትምህርት',
     academic: 'ጉዞዎን',
     journey: 'ይጀምሩ!',
     subtitleV2: 'ከዘመናዊ እና ጥልቅ የትምህርት ልምድ ጋር ወደ ወደፊታዊ የመማር ዓለም ይግቡ።',

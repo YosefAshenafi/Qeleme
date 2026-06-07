@@ -148,22 +148,33 @@ export function usePracticeScreen() {
   
   const nationalExamYears = useMemo(() => {
     if (availableYears.length === 0) return [];
-    
+
     return availableYears.map(year => ({
       id: `national-${year}`,
       name: `${year} National Exam (A.A)`,
-      chapters: [] 
+      chapters: []
     }));
   }, [availableYears]);
 
-  
+  // National exams filtered by the current search query (used in the All tab,
+  // where the search bar is visible).
+  const filteredNationalExamYears = useMemo(() => {
+    const q = booksSearchQuery.trim().toLowerCase();
+    if (!q) return nationalExamYears;
+    return nationalExamYears.filter((s) => s.name.toLowerCase().includes(q));
+  }, [nationalExamYears, booksSearchQuery]);
+
   const displaySubjects = useMemo(() => {
     if (booksCategory === 'national') {
-      return nationalExamYears;
-    } else {
-      return filteredBooksSubjects;
+      // Same layout/behavior as the other tabs (search bar visible) — honor the query.
+      return filteredNationalExamYears;
     }
-  }, [booksCategory, filteredBooksSubjects, nationalExamYears]);
+    if (booksCategory === 'all') {
+      // "All" shows regular subjects plus national exams, both honoring search.
+      return [...filteredBooksSubjects, ...filteredNationalExamYears];
+    }
+    return filteredBooksSubjects;
+  }, [booksCategory, filteredBooksSubjects, filteredNationalExamYears, nationalExamYears]);
 
   const chapterGridColumns = useMemo(() => {
     
@@ -592,7 +603,7 @@ export function usePracticeScreen() {
   useLayoutEffect(() => {
 
     (navigation as any)?.setOptions?.({
-      headerLeft: () => (showResult || nationalExamQuestions.length > 0) ? (
+      headerLeft: () => (showTest || showResult || nationalExamQuestions.length > 0) ? (
         <TouchableOpacity
           onPress={exitSession}
           style={{ padding: 8 }}
@@ -622,7 +633,7 @@ export function usePracticeScreen() {
       ),
       headerTitleAlign: 'center',
     });
-  }, [navigation, colors.text, showResult, nationalExamQuestions.length, selectedChapterName, selectedSubjectData?.name, t, exitSession]);
+  }, [navigation, colors.text, showTest, showResult, nationalExamQuestions.length, selectedChapterName, selectedSubjectData?.name, t, exitSession]);
 
   useEffect(() => {
     
@@ -863,28 +874,56 @@ export function usePracticeScreen() {
     }
   };
 
-  const handleRetry = () => {
-    
+  // Retry Session: immediately start a new MCQ session on the SAME chapter
+  // (or national exam year), pulling a fresh batch of questions. The fetch
+  // happens before switching screens so the results stay visible (no flash
+  // back to the subject list) until the new questions are ready.
+  const handleRetry = async () => {
     if (timerRef.current) {
       clearInterval(timerRef.current);
       timerRef.current = null;
     }
-    
-    setCurrentQuestionIndex(0);
-    setSelectedAnswer(null);
-    setShowExplanation(false);
-    setShowAnswerMessage(false);
-    setScore(0);
-    setShowResult(false);
-    setShowTest(false);
-    setAnsweredQuestions({});
-    setTime(0);
-    setIsTimerRunning(false);
-    
-    
-    setTimeout(() => {
+
+    try {
+      const gradeNumber = getGradeNumber(user?.grade);
+      let questions: NationalExamAPIResponse[] = [];
+
+      if (selectedYear) {
+        if (!selectedSubject) {
+          setError('Missing required parameters for national exam');
+          return;
+        }
+        const fetched = await getNationalExamQuestions(gradeNumber, parseInt(selectedYear), selectedSubject);
+        questions = (fetched || []).filter(
+          (q) => !q.question?.toLowerCase().includes('valuing our elders')
+        );
+      } else {
+        if (!selectedSubject || !selectedChapter) {
+          setError('Missing required parameters for MCQ');
+          return;
+        }
+        questions = (await getRegularPracticeQuestions(gradeNumber, selectedSubject, selectedChapter)) || [];
+      }
+
+      if (questions.length === 0) {
+        setError('No more questions available for this chapter.');
+        return;
+      }
+
+      setCurrentQuestionIndex(0);
+      setSelectedAnswer(null);
+      setShowExplanation(false);
+      setShowAnswerMessage(false);
+      setScore(0);
+      setAnsweredQuestions({});
+      setTime(0);
+      setNationalExamQuestions(questions);
+      setShowResult(false);
+      setShowTest(true);
       startTimer();
-    }, 100);
+    } catch {
+      setError('Failed to load new questions. Please try again.');
+    }
   };
 
   const dismissBooksChapterModal = () => {
@@ -1059,6 +1098,7 @@ export function usePracticeScreen() {
 
     setShowResult(false);
     setShowTest(false);
+    setNationalExamQuestions([]);
     setSelectedSubject('');
     setSelectedChapter('');
     setSelectedChapterName('');

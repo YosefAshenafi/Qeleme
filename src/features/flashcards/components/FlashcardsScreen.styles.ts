@@ -1,4 +1,5 @@
 import { StyleSheet, Dimensions } from 'react-native';
+import { SESSION_RESULTS_RING_SIZE } from '@/features/flashcards/constants/flashcardsUi';
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 const CARD_WIDTH = SCREEN_WIDTH - 40;
@@ -247,17 +248,17 @@ export const FlashcardsScreenStyles = StyleSheet.create({
   },
   flashResultsScroll: {
     paddingHorizontal: 18,
-    paddingTop: 20,
+    paddingTop: 14,
     paddingBottom: 18,
     flexGrow: 1,
   },
   flashRingWrap: {
     alignSelf: 'center',
-    width: 260,
-    height: 260,
+    width: SESSION_RESULTS_RING_SIZE,
+    height: SESSION_RESULTS_RING_SIZE,
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 18,
+    marginBottom: 12,
   },
   flashRingCenter: {
     position: 'absolute',
@@ -269,11 +270,11 @@ export const FlashcardsScreenStyles = StyleSheet.create({
     justifyContent: 'center',
   },
   flashRingPct: {
-    fontSize: 44,
+    fontSize: 34,
     fontWeight: '900',
     color: '#111827',
     letterSpacing: -0.6,
-    lineHeight: 54,
+    lineHeight: 40,
   },
   flashRingSub: {
     marginTop: 4,
@@ -284,11 +285,11 @@ export const FlashcardsScreenStyles = StyleSheet.create({
   },
   flashRingBadge: {
     position: 'absolute',
-    right: 42,
-    top: 28,
-    width: 34,
-    height: 34,
-    borderRadius: 17,
+    right: 24,
+    top: 14,
+    width: 28,
+    height: 28,
+    borderRadius: 14,
     backgroundColor: '#0F4BD7',
     alignItems: 'center',
     justifyContent: 'center',

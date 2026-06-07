@@ -16,7 +16,6 @@ export const PracticeScreenStyles = StyleSheet.create<any>({
     paddingTop: 0,
     paddingHorizontal: 0,
     paddingBottom: 0,
-    minHeight: SCREEN_HEIGHT - 100,
   },
   scrollContent: {
     flexGrow: 1,
@@ -768,7 +767,9 @@ export const PracticeScreenStyles = StyleSheet.create<any>({
   booksHubListBody: {
     paddingHorizontal: 14,
     paddingTop: 12,
-    paddingBottom: 20,
+    // Clear the bottom tab bar (base height + safe-area inset) so the last
+    // rows aren't hidden behind it when the list is long (e.g. the All tab).
+    paddingBottom: 100,
     gap: 12,
   },
   booksNationalLink: {

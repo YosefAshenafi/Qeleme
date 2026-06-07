@@ -125,7 +125,6 @@ export default function PracticeScreen() {
     handleNextQuestion,
     handlePreviousQuestion,
     handleResult,
-    exitSession,
     autoNextEnabled,
     setAutoNextEnabled,
     autoNextDelay,
@@ -258,37 +257,35 @@ export default function PracticeScreen() {
                         </View>
                       ) : (
                         <View style={styles.booksHubSplit}>
-                          {booksCategory !== 'national' && (
+                          <View
+                            style={[
+                              styles.booksSearchPanel,
+                              {
+                                backgroundColor: booksCardBg,
+                                shadowColor: isDarkMode ? '#000' : '#94A3B8',
+                              },
+                            ]}
+                          >
                             <View
                               style={[
-                                styles.booksSearchPanel,
+                                styles.booksSearchField,
                                 {
-                                  backgroundColor: booksCardBg,
-                                  shadowColor: isDarkMode ? '#000' : '#94A3B8',
+                                  backgroundColor: isDarkMode ? '#1C222C' : '#F4F5F7',
                                 },
                               ]}
                             >
-                              <View
-                                style={[
-                                  styles.booksSearchField,
-                                  {
-                                    backgroundColor: isDarkMode ? '#1C222C' : '#F4F5F7',
-                                  },
-                                ]}
-                              >
-                                <IconSymbol name="magnifyingglass" size={20} color={booksMutedText} />
-                                <TextInput
-                                  value={booksSearchQuery}
-                                  onChangeText={setBooksSearchQuery}
-                                  placeholder={t('mcq.subjects.searchPlaceholder')}
-                                  placeholderTextColor={booksMutedText}
-                                  style={[styles.booksSearchInput, { color: booksPrimaryText }]}
-                                  returnKeyType="search"
-                                  onSubmitEditing={() => Keyboard.dismiss()}
-                                />
-                              </View>
+                              <IconSymbol name="magnifyingglass" size={20} color={booksMutedText} />
+                              <TextInput
+                                value={booksSearchQuery}
+                                onChangeText={setBooksSearchQuery}
+                                placeholder={t('mcq.subjects.searchPlaceholder')}
+                                placeholderTextColor={booksMutedText}
+                                style={[styles.booksSearchInput, { color: booksPrimaryText }]}
+                                returnKeyType="search"
+                                onSubmitEditing={() => Keyboard.dismiss()}
+                              />
                             </View>
-                          )}
+                          </View>
 
                           <View
                             style={[
@@ -886,8 +883,6 @@ export default function PracticeScreen() {
             onSelectOption={handleAnswerSelect}
             onAdvance={() => (isLastQuestion ? handleResult() : handleNextQuestion())}
             onPrevious={handlePreviousQuestion}
-            onExit={exitSession}
-            onOpenSettings={() => setShowPracticeSettings(true)}
             reviewLaterLabel={t('mcq.results.reviewLater')}
             finishLabel={t('mcq.finish')}
             nextLabel={t('mcq.next')}

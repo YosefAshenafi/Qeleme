@@ -1,5 +1,5 @@
-export const SESSION_RESULTS_RING_SIZE = 260;
-export const SESSION_RESULTS_STROKE_WIDTH = 18;
+export const SESSION_RESULTS_RING_SIZE = 180;
+export const SESSION_RESULTS_STROKE_WIDTH = 14;
 export const MODAL_OVERLAY_BACKGROUND = 'rgba(0, 0, 0, 0.5)';
 export const CHAPTER_INPUT_DISABLED_BG_DARK = 'rgba(0, 0, 0, 0.3)';
 export const CHAPTER_INPUT_DISABLED_BG_LIGHT = 'rgba(0, 0, 0, 0.05)';
