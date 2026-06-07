@@ -189,7 +189,7 @@ export async function preloadOptimizedImages(
       if (!response.ok) {
         throw new Error(`HTTP ${response.status}`);
       }
-    } catch (error) {
+    } catch {
     }
   });
   

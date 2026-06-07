@@ -35,7 +35,7 @@ export const fetchRegions = async (): Promise<Region[]> => {
     } else {
       return [];
     }
-  } catch (error) {
+  } catch {
     
     return [
       { id: 1, name: 'Addis Ababa' },

@@ -489,6 +489,11 @@ export default {
       subtitle: 'ጠቅላላ የትምህርት አፈፃፀም',
       empty: 'የነጥብ እድገትዎን ለማየት የምርጫ ክፍለ ጊዜ ይፈጽሙ።'
     },
+    studyActivity: {
+      title: 'የጥናት እንቅስቃሴ',
+      subtitle: 'በየቀኑ የተጠናበት ጊዜ',
+      empty: 'መቼ እና ለምን ያህል ጊዜ እንዳጠኑ ለማየት ክፍለ ጊዜ ያጠናቅቁ።'
+    },
     topPerformingSubjects: {
       title: 'በጣም የሚዳሰሱ የትምህርት ዓይነቶች'
     },
@@ -652,12 +657,13 @@ export default {
         humanities: 'ሰው እና ማህበራት',
         national: 'ብሔራዊ ፈተናዎች (አ.አ)',
       },
-      cardTitle: '{{grade}}ኛ ክፍል {{subject}}',
+      cardTitle: 'የ{{grade}}ኛ ክፍል {{subject}}',
       cardDescription: 'በምዕራፍ የተደራጁ መለማመጃ እና ግምገማ።',
       qaPractice: 'የምርጫ ልምምድ',
       flashcards: 'ፍላሽ ካርዶች',
       selectSubject: 'የትምህርት አይነት ይምረጡ',
       nationalExam: 'ብሔራዊ ፈተና (አ.አ)',
+      nationalExamLabel: 'የብሔራዊ ፈተና (አ.አ)',
       badgeNew: 'አዲም',
       badgeUpdated: 'የተነመበ',
       badgeNational: 'ብሔራዊ (አ.አ)',
@@ -695,10 +701,15 @@ export default {
     accuracy: 'ትክክለኛነት',
     mastered: 'ተመልሷል',
     persistence: 'ቆይታ',
-    stillLearning: 'እየተማረ',
+    stillLearning: 'ልማር',
     retry: 'እንደገና ይሞክሩ',
     done: 'ጨርሰዋል',
-    preSelected: 'ቀደም-ተመረጡ'
+    preSelected: 'ቀደም-ተመረጡ',
+    conceptMastery: 'ጽንሰ-ሐሳብ',
+    tapToFlip: 'ለመገልበጥ ይንኩ',
+    gotIt: 'ገባኝ',
+    progress: 'ሂደት',
+    cards: 'ካርዶች'
   },
   homework: {
     title: 'የቤት ስራ',

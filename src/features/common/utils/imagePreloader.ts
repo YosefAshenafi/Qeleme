@@ -43,7 +43,7 @@ export class ImagePreloader {
       }
 
       return null;
-    } catch (error) {
+    } catch {
       return null;
     }
   }
@@ -68,7 +68,7 @@ export class ImagePreloader {
 
       try {
         await this.downloadAndCache(url);
-      } catch (error) {
+      } catch {
       }
 
       
@@ -106,7 +106,7 @@ export class ImagePreloader {
       };
       
       await AsyncStorage.setItem(key, JSON.stringify(cacheEntry));
-    } catch (error) {
+    } catch {
     }
   }
 
@@ -128,7 +128,7 @@ export class ImagePreloader {
           await AsyncStorage.removeItem(key);
         }
       }
-    } catch (error) {
+    } catch {
     }
     
     return null;
@@ -152,7 +152,7 @@ export class ImagePreloader {
               keysToRemove.push(key);
             }
           }
-        } catch (error) {
+        } catch {
           
           keysToRemove.push(key);
         }
@@ -161,7 +161,7 @@ export class ImagePreloader {
       if (keysToRemove.length > 0) {
         await AsyncStorage.multiRemove(keysToRemove);
       }
-    } catch (error) {
+    } catch {
     }
   }
 
@@ -183,7 +183,7 @@ export class ImagePreloader {
               totalSize += entry.size;
             }
           }
-        } catch (error) {
+        } catch {
         }
       }
       
@@ -191,7 +191,7 @@ export class ImagePreloader {
         totalEntries: imageKeys.length,
         totalSize
       };
-    } catch (error) {
+    } catch {
       return { totalEntries: 0, totalSize: 0 };
     }
   }

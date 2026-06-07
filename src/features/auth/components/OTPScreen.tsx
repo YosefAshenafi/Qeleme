@@ -36,7 +36,7 @@ export default function OTPScreen() {
       grade: params.grade as string,
       region: params.region as string,
     };
-  } catch (error) {
+  } catch {
     setError(t('auth.otp.error.invalidData'));
   }
 
@@ -98,7 +98,7 @@ export default function OTPScreen() {
         } else {
           setError(response.message || t('auth.otp.error.sendFailed'));
         }
-      } catch (error) {
+      } catch {
         setError(t('auth.otp.error.sendFailedRetry'));
       } finally {
         setIsLoading(false);
@@ -142,7 +142,7 @@ export default function OTPScreen() {
         
         inputRefs.current[0]?.focus();
       }
-    } catch (error) {
+    } catch {
       setError(t('auth.otp.errors.verificationFailed'));
       
       setOtp(['', '', '', '', '', '']);

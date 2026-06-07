@@ -1,26 +1,24 @@
-import { ScrollView, View, RefreshControl, AppState, AppStateStatus } from 'react-native';
+import { ScrollView, View, RefreshControl } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Svg, { Circle } from 'react-native-svg';
 import { IconSymbol } from '@/features/common/components/ui/IconSymbol';
 import { useTheme } from '@/core/providers/ThemeProvider';
 import { getColors } from '@/features/common/constants/Colors';
-import React, { useCallback, useMemo, useRef, useState } from 'react';
+import { useCallback, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '@/core/providers/AuthProvider';
-import { useFocusEffect } from 'expo-router';
-import ActivityTrackingService, { Activity, UserStats } from '@/features/common/services/activityTrackingService';
-import { VictoryAxis, VictoryChart, VictoryLine } from 'victory-native';
+import { Activity } from '@/features/common/services/activityTrackingService';
+import { VictoryAxis, VictoryBar, VictoryChart } from 'victory-native';
 
 import { ThemedText } from '@/features/common/components/ThemedText';
 import { ThemedView } from '@/features/common/components/ThemedView';
 import { ReportsScreenStyles as styles } from './ReportsScreen.styles';
 import { REPORTS_BRAND_BLUE } from '@/features/reports/constants/reportsUi';
+import { useReportsData } from '@/features/reports/hooks/useReportsData';
 
 const BLUE = REPORTS_BRAND_BLUE;
 const RING_SIZE = 116;
 const RING_STROKE = 11;
-
-type SubjectRow = { subject: string; score: number; progress: number; mcqCount: number; flashcardCount: number };
 
 const scoreColor = (score: number) => (score >= 70 ? '#16A34A' : score >= 50 ? '#F59E0B' : '#EF4444');
 
@@ -31,118 +29,19 @@ export default function ReportsScreen() {
   const colors = getColors(isDarkMode);
   const scrollRef = useRef<ScrollView | null>(null);
   const [refreshing, setRefreshing] = useState(false);
-  const [userStats, setUserStats] = useState<UserStats | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [mcqMonthlySeries, setMcqMonthlySeries] = useState<{ x: string; y: number }[]>([]);
-  const [topSubjects, setTopSubjects] = useState<SubjectRow[]>([]);
-  const [recentActivities, setRecentActivities] = useState<Activity[]>([]);
+  const { userStats, recentActivities, loading, studyDailySeries, studyRangeLabel, topSubjects, reload } =
+    useReportsData(user?.username, i18n.language);
 
   const muted = colors.text + (isDarkMode ? 'B0' : '99');
   const faint = colors.text + (isDarkMode ? '70' : '66');
   const trackColor = isDarkMode ? '#1B2230' : '#EEF2F7';
   const cardExtras = { backgroundColor: colors.card, borderColor: colors.border, borderWidth: isDarkMode ? 1 : 0 };
 
-  const loadReportData = useCallback(async () => {
-    try {
-      if (!user?.username) {
-        setUserStats(null);
-        setRecentActivities([]);
-        setLoading(false);
-        return;
-      }
-      const trackingService = ActivityTrackingService.getInstance();
-      await trackingService.initialize(user.username);
-      setUserStats(trackingService.getStats());
-      setRecentActivities(trackingService.getRecentActivities(8));
-      setLoading(false);
-    } catch {
-      setLoading(false);
-    }
-  }, [user?.username]);
-
-  useFocusEffect(
-    useCallback(() => {
-      void loadReportData();
-    }, [loadReportData])
-  );
-
-  React.useEffect(() => {
-    const onChange = (state: AppStateStatus) => {
-      if (state === 'active' && user?.username) void loadReportData();
-    };
-    const sub = AppState.addEventListener('change', onChange);
-    return () => sub.remove();
-  }, [loadReportData, user?.username]);
-
-  // Derive chart series + subject rows whenever stats change.
-  React.useEffect(() => {
-    if (!userStats) {
-      setMcqMonthlySeries([]);
-      setTopSubjects([]);
-      return;
-    }
-    const trackingService = ActivityTrackingService.getInstance();
-
-    const mcqActivities = trackingService
-      .getActivitiesByType('mcq')
-      .filter((a) => a.status === 'completed' && typeof a.score === 'number');
-
-    const now = new Date();
-    const monthsBack = 6;
-    const buckets: { key: string; label: string; scores: number[] }[] = [];
-    for (let i = monthsBack - 1; i >= 0; i--) {
-      const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
-      buckets.push({
-        key: `${d.getFullYear()}-${d.getMonth()}`,
-        label: d.toLocaleString(i18n.language === 'am' ? 'am-ET' : 'en-US', { month: 'short' }).toUpperCase(),
-        scores: [],
-      });
-    }
-    mcqActivities.forEach((a) => {
-      const d = new Date(a.timestamp);
-      const bucket = buckets.find((b) => b.key === `${d.getFullYear()}-${d.getMonth()}`);
-      if (bucket && typeof a.score === 'number') bucket.scores.push(a.score);
-    });
-    const series = buckets.map((b) => ({
-      x: b.label,
-      y: b.scores.length ? Math.round(b.scores.reduce((s, v) => s + v, 0) / b.scores.length) : 0,
-    }));
-    setMcqMonthlySeries(series.some((p) => p.y > 0) ? series : []);
-
-    const allCompleted = trackingService
-      .getRecentActivities(10000)
-      .filter((a) => a.status === 'completed' && a.subject && a.subject.trim() !== '');
-    const perSubjectCounts = allCompleted.reduce((acc, a) => {
-      const subject = a.subject.trim();
-      const lower = subject.toLowerCase();
-      if (!subject || lower.includes('unknown') || lower.includes('undefined')) return acc;
-      if (!acc[subject]) acc[subject] = { mcqCount: 0, flashcardCount: 0 };
-      if (a.type === 'mcq') acc[subject].mcqCount += 1;
-      if (a.type === 'flashcard') acc[subject].flashcardCount += 1;
-      return acc;
-    }, {} as Record<string, { mcqCount: number; flashcardCount: number }>);
-
-    const subjectRows = Object.entries(userStats.subjectBreakdown)
-      .filter(([subject]) => {
-        const s = (subject || '').trim().toLowerCase();
-        return s && !s.includes('unknown') && !s.includes('undefined');
-      })
-      .map(([subject, data]) => ({
-        subject: subject.trim(),
-        progress: Math.min(100, Math.round((data.questionsAnswered / Math.max(1, userStats.totalQuestionsAnswered)) * 100)),
-        score: data.averageScore,
-        mcqCount: perSubjectCounts[subject.trim()]?.mcqCount ?? 0,
-        flashcardCount: perSubjectCounts[subject.trim()]?.flashcardCount ?? 0,
-      }))
-      .sort((a, b) => b.score - a.score || b.progress - a.progress);
-    setTopSubjects(subjectRows);
-  }, [i18n.language, userStats]);
-
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
-    await loadReportData();
+    await reload();
     setRefreshing(false);
-  }, [loadReportData]);
+  }, [reload]);
 
   const accuracy = Math.max(0, Math.min(100, userStats?.averageScore ?? 0));
   const hasGradedQuestions = (userStats?.totalQuestionsAnswered ?? 0) > 0;
@@ -151,17 +50,13 @@ export default function ReportsScreen() {
   const ringCirc = 2 * Math.PI * ringRadius;
   const ringOffset = ringCirc - (accuracy / 100) * ringCirc;
 
-  // Score progression headline = trend across the charted months (distinct from the
-  // overall accuracy shown in the hero ring), so the two cards never repeat the same number.
-  const scoreTrend = useMemo(() => {
-    const pts = mcqMonthlySeries.filter((p) => p.y > 0);
-    if (pts.length < 2) return null;
-    return pts[pts.length - 1].y - pts[0].y;
-  }, [mcqMonthlySeries]);
-  const scoreTrendText =
-    !hasGradedQuestions || scoreTrend === null ? '—' : `${scoreTrend > 0 ? '+' : ''}${scoreTrend}%`;
-  const scoreTrendColor =
-    scoreTrend === null || scoreTrend === 0 ? BLUE : scoreTrend > 0 ? '#16A34A' : '#DC2626';
+  // Total time studied across the charted window — the headline for the study-activity card.
+  const studyWindowText = useMemo(() => {
+    const totalMin = studyDailySeries.reduce((s, p) => s + p.y, 0);
+    const h = Math.floor(totalMin / 60);
+    const m = totalMin % 60;
+    return h > 0 ? `${h}h ${m}m` : `${m}m`;
+  }, [studyDailySeries]);
 
   const studyTimeText = useMemo(() => {
     const totalMin = Math.max(0, Math.round(userStats?.totalStudyTime ?? 0));
@@ -329,25 +224,30 @@ export default function ReportsScreen() {
                 </View>
               </ThemedView>
 
-              {/* Score progression */}
+              {/* Study activity */}
               <ThemedView style={[styles.card, cardExtras]}>
                 <View style={styles.cardHeaderRow}>
                   <View style={{ flex: 1 }}>
                     <ThemedText style={[styles.cardTitle, { color: colors.text }]}>
-                      {t('reports.scoreProgression.title', { defaultValue: 'Score Progression' })}
+                      {t('reports.studyActivity.title', { defaultValue: 'Study Activity' })}
                     </ThemedText>
                     <ThemedText style={[styles.cardSubtitle, { color: faint }]}>
-                      {t('reports.scoreProgression.subtitle', { defaultValue: 'Overall Academic Performance' })}
+                      {studyRangeLabel || t('reports.studyActivity.subtitle', { defaultValue: 'Time studied each day' })}
                     </ThemedText>
                   </View>
-                  <View style={[styles.chip, { backgroundColor: scoreTrendColor + '15' }]}>
-                    <ThemedText style={[styles.chipText, { color: scoreTrendColor }]}>{scoreTrendText}</ThemedText>
+                  <View style={[styles.chip, { backgroundColor: BLUE + '15' }]}>
+                    <ThemedText style={[styles.chipText, { color: BLUE }]}>{studyWindowText}</ThemedText>
                   </View>
                 </View>
 
-                {mcqMonthlySeries.length > 0 ? (
-                  <VictoryChart height={180} padding={{ top: 12, left: 16, right: 16, bottom: 34 }} domain={{ y: [0, 100] }}>
+                {studyDailySeries.length > 0 ? (
+                  <VictoryChart
+                    height={180}
+                    padding={{ top: 12, left: 34, right: 16, bottom: 34 }}
+                    domainPadding={{ x: 12, y: [0, 10] }}
+                  >
                     <VictoryAxis
+                      tickFormat={(tick: string, index: number) => (index % 2 === 0 ? tick : '')}
                       style={{
                         axis: { stroke: 'transparent' },
                         tickLabels: { fill: faint, fontSize: 10, fontWeight: '700' },
@@ -357,24 +257,25 @@ export default function ReportsScreen() {
                     />
                     <VictoryAxis
                       dependentAxis
+                      tickFormat={(tick: number) => `${tick}m`}
                       style={{
                         axis: { stroke: 'transparent' },
-                        tickLabels: { fill: 'transparent' },
+                        tickLabels: { fill: faint, fontSize: 9, fontWeight: '700' },
                         grid: { stroke: isDarkMode ? '#FFFFFF10' : '#0F172A0D' },
                         ticks: { stroke: 'transparent' },
                       }}
                     />
-                    <VictoryLine
-                      data={mcqMonthlySeries}
-                      interpolation="monotoneX"
-                      style={{ data: { stroke: BLUE, strokeWidth: 3 } }}
+                    <VictoryBar
+                      data={studyDailySeries}
+                      cornerRadius={{ top: 4 }}
+                      style={{ data: { fill: BLUE, width: 9 } }}
                     />
                   </VictoryChart>
                 ) : (
                   <View style={styles.emptyChart}>
                     <ThemedText style={[styles.emptyChartText, { color: faint }]}>
-                      {t('reports.scoreProgression.empty', {
-                        defaultValue: 'Complete an MCQ session to see your score trend.',
+                      {t('reports.studyActivity.empty', {
+                        defaultValue: 'Complete a session to see when and how long you studied.',
                       })}
                     </ThemedText>
                   </View>

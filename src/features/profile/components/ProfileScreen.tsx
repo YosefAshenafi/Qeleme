@@ -15,7 +15,6 @@ import { StatusBar } from 'expo-status-bar';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Constants from 'expo-constants';
 import { useTranslation } from 'react-i18next';
-import * as ImagePicker from 'expo-image-picker';
 
 import { IconSymbol } from '@/features/common/components/ui/IconSymbol';
 import { AccountSettings } from '@/features/profile/components/AccountSettings';
@@ -28,6 +27,7 @@ import ActivityTrackingService from '@/features/common/services/activityTracking
 import { ProfileScreenStyles as styles } from './ProfileScreen.styles';
 import { PROFILE_BRAND_BLUE } from '@/features/profile/constants/brand';
 import { usePracticeSettings, AUTO_NEXT_DELAY_OPTIONS } from '@/features/practice/hooks/usePracticeSettings';
+import { useProfileImage } from '@/features/profile/hooks/useProfileImage';
 
 export default function ProfileScreen() {
   const { isDarkMode, toggleTheme } = useTheme();
@@ -62,13 +62,6 @@ export default function ProfileScreen() {
       setCurrentLanguage(language);
       i18n.changeLanguage(language);
       await AsyncStorage.setItem('@prefs_language', language);
-    } catch (error) {
-    }
-  };
-
-  const setPref = async (key: string, value: string) => {
-    try {
-      await AsyncStorage.setItem(key, value);
     } catch {
     }
   };
@@ -89,7 +82,7 @@ export default function ProfileScreen() {
         const updatedUserData = await response.json();
         await login(updatedUserData);
       }
-    } catch (error) {
+    } catch {
     }
     setRefreshing(false);
   }, []);
@@ -125,131 +118,7 @@ export default function ProfileScreen() {
     };
   }, [i18n.language, t, user?.fullName, user?.grade, user?.joinDate, user?.paymentPlan, user?.username]);
 
-  const handleImagePicker = async () => {
-    try {
-      
-      const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
-      
-      if (permissionResult.granted === false) {
-        Alert.alert(
-          t('profile.imagePicker.permissionRequired', { defaultValue: 'Permission Required' }),
-          t('profile.imagePicker.permissionMessage', { defaultValue: 'Please grant permission to access your photo library to change your profile picture.' })
-        );
-        return;
-      }
-
-      
-      Alert.alert(
-        t('profile.imagePicker.selectPhoto', { defaultValue: 'Select Photo' }),
-        '',
-        [
-          {
-            text: t('profile.imagePicker.cancel', { defaultValue: 'Cancel' }),
-            style: 'cancel',
-          },
-          {
-            text: t('profile.imagePicker.camera', { defaultValue: 'Camera' }),
-            onPress: async () => {
-              try {
-                const cameraResult = await ImagePicker.launchCameraAsync({
-                  mediaTypes: ImagePicker.MediaTypeOptions.Images,
-                  allowsEditing: true,
-                  aspect: [1, 1],
-                  quality: 0.7,
-                });
-
-
-                if (!cameraResult.canceled && cameraResult.assets && cameraResult.assets[0]) {
-                  await uploadProfileImage(cameraResult.assets[0].uri);
-                }
-              } catch (cameraError) {
-                Alert.alert(
-                  t('profile.imagePicker.cameraError', { defaultValue: 'Camera Error' }),
-                  t('profile.imagePicker.cameraErrorMessage', { defaultValue: 'Failed to access camera. Please check permissions.' })
-                );
-              }
-            },
-          },
-          {
-            text: t('profile.imagePicker.gallery', { defaultValue: 'Gallery' }),
-            onPress: async () => {
-              try {
-                const libraryResult = await ImagePicker.launchImageLibraryAsync({
-                  mediaTypes: ImagePicker.MediaTypeOptions.Images,
-                  allowsEditing: true,
-                  aspect: [1, 1],
-                  quality: 0.7,
-                });
-
-
-                if (!libraryResult.canceled && libraryResult.assets && libraryResult.assets[0]) {
-                  await uploadProfileImage(libraryResult.assets[0].uri);
-                }
-              } catch (libraryError) {
-                Alert.alert(
-                  t('profile.imagePicker.galleryError', { defaultValue: 'Gallery Error' }),
-                  t('profile.imagePicker.galleryErrorMessage', { defaultValue: 'Failed to access gallery. Please check permissions.' })
-                );
-              }
-            },
-          },
-        ]
-      );
-    } catch (error) {
-      Alert.alert(
-        t('profile.imagePicker.error', { defaultValue: 'Error' }),
-        t('profile.imagePicker.errorMessage', { defaultValue: 'Failed to select image. Please try again.' })
-      );
-    }
-  };
-
-  const uploadProfileImage = async (imageUri: string) => {
-    try {
-      
-      
-      await AsyncStorage.setItem('@profile_image', imageUri);
-      
-      
-      const updatedUser = {
-        ...user!,
-        profileImage: imageUri,
-      };
-      
-      await login(updatedUser);
-      
-      Alert.alert(
-        t('profile.imagePicker.success', { defaultValue: 'Success' }),
-        t('profile.imagePicker.successMessage', { defaultValue: 'Profile picture updated successfully!' })
-      );
-    } catch (error) {
-      Alert.alert(
-        t('profile.imagePicker.error', { defaultValue: 'Error' }),
-        t('profile.imagePicker.errorMessage', { defaultValue: 'Failed to update profile picture. Please try again.' })
-      );
-    }
-  };
-
-  
-  useEffect(() => {
-    const loadProfileImage = async () => {
-      try {
-        const savedProfileImage = await AsyncStorage.getItem('@profile_image');
-        if (savedProfileImage && user && !user.profileImage) {
-          
-          const updatedUser = {
-            ...user,
-            profileImage: savedProfileImage,
-          };
-          await login(updatedUser);
-        }
-      } catch (error) {
-      }
-    };
-
-    if (user) {
-      loadProfileImage();
-    }
-  }, [user]);
+  const { handleImagePicker } = useProfileImage();
 
   return (
     <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]}>

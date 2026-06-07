@@ -12,7 +12,7 @@ export function useRegions() {
     try {
       const regionsData = await fetchRegions();
       setRegions(regionsData);
-    } catch (error) {
+    } catch {
       setRegionsError('Failed to load regions. Please try again.');
     } finally {
       setRegionsLoading(false);

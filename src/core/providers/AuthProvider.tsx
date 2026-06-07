@@ -40,7 +40,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           setIsAuthenticated(true);
         }
       }
-    } catch (error) {
+    } catch {
     } finally {
       setIsLoading(false);
     }
@@ -51,7 +51,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       await storeUserData(userData);
       setUser(userData);
       setIsAuthenticated(true);
-    } catch (error) {
+    } catch {
     }
   };
 
@@ -61,7 +61,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setUser(null);
       setIsAuthenticated(false);
       router.replace('/(auth)/login');
-    } catch (error) {
+    } catch {
     }
   };
 

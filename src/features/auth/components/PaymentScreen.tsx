@@ -26,10 +26,10 @@ export default function PaymentScreen() {
   const amount = params.amount as string;
   const paymentUrl = params.paymentUrl as string;
   const orderId = params.orderId as string;
-  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [, setShowSuccessModal] = useState(false);
   const [showWebView, setShowWebView] = useState(true);
   const [paymentCompleted, setPaymentCompleted] = useState(false);
-  const [registrationCompleted, setRegistrationCompleted] = useState(false);
+  const [, setRegistrationCompleted] = useState(false);
 
   useEffect(() => {
     
@@ -122,7 +122,7 @@ export default function PaymentScreen() {
           setShowWebView(false);
           handlePaymentFailure();
         }
-      } catch (error) {
+      } catch {
       }
     }, 5000);
 
@@ -176,7 +176,7 @@ export default function PaymentScreen() {
       setRegistrationCompleted(true);
       setShowSuccessModal(true);
 
-    } catch (error: any) {
+    } catch {
       
       
       setRegistrationCompleted(true);

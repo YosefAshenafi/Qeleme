@@ -48,7 +48,7 @@ export function useQuizData(categoryId: string, subcategoryId?: string, isSubcat
         }
       }
       return null;
-    } catch (error) {
+    } catch {
       return null;
     }
   }, [getCacheKey]);
@@ -58,7 +58,7 @@ export function useQuizData(categoryId: string, subcategoryId?: string, isSubcat
       const cacheKey = getCacheKey(cId, subId);
       const cacheData = { questions: qs, timestamp: Date.now() };
       await AsyncStorage.setItem(cacheKey, JSON.stringify(cacheData));
-    } catch (error) {
+    } catch {
     }
   }, [getCacheKey]);
 
@@ -172,7 +172,7 @@ export function useQuizData(categoryId: string, subcategoryId?: string, isSubcat
       if (currentIndex !== -1 && currentIndex < categories.length - 1) {
         setNextCategory(categories[currentIndex + 1]);
       }
-    } catch (err) {
+    } catch {
     }
   }, [categoryId]);
 

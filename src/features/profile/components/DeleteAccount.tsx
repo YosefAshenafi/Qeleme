@@ -64,7 +64,7 @@ export function DeleteAccount({ colors, userPhoneNumber }: DeleteAccountProps) {
           result.message || 'Failed to send verification code'
         );
       }
-    } catch (error) {
+    } catch {
       Alert.alert(
         t('common.error', { defaultValue: 'Error' }),
         'Failed to send verification code'

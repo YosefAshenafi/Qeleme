@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, ViewStyle } from 'react-native';
 import Animated, { type AnimatedStyle } from 'react-native-reanimated';
+import { useTranslation } from 'react-i18next';
 import { ThemedText } from '@/features/common/components/ThemedText';
 import { FlashcardsScreenStyles as styles } from './FlashcardsScreen.styles';
 
@@ -19,18 +20,19 @@ export function FlashcardsSessionProgress({
   totalCards,
   progressBarStyle,
 }: FlashcardsSessionProgressProps) {
+  const { t } = useTranslation();
   return (
     <View style={styles.flashProgressBlock}>
       <View style={styles.flashProgressRow}>
         <ThemedText style={[styles.flashProgressLabel, { color: isDarkMode ? '#9CA3AF' : '#9AA3B2' }]}>
-          PROGRESS
+          {t('flashcards.progress')}
         </ThemedText>
         <View style={styles.flashProgressCountRow}>
           <ThemedText style={[styles.flashProgressCount, { color: '#0F4BD7' }]}>
             {currentIndex + 1} / {totalCards}
           </ThemedText>
           <ThemedText style={[styles.flashProgressCardsSuffix, { color: isDarkMode ? '#9CA3AF' : '#9AA3B2' }]}>
-            cards
+            {t('flashcards.cards')}
           </ThemedText>
         </View>
       </View>

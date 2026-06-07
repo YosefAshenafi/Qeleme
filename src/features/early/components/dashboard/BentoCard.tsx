@@ -1,11 +1,9 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, Image, Dimensions, type ImageSourcePropType } from 'react-native';
+import { View, Text, TouchableOpacity, Image, type ImageSourcePropType } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { KG_DESIGN_TOKENS } from '../../constants/DesignTokens';
 import { IconSymbol } from '@/features/common/components/ui/IconSymbol';
 import { BentoCardStyles as styles } from './BentoCard.styles';
-
-const { width } = Dimensions.get('window');
 
 interface BentoCardProps {
   title: string;

@@ -1,4 +1,4 @@
-import { TextInput, TouchableOpacity, View, Animated, Dimensions, Image, KeyboardAvoidingView, Platform } from 'react-native';
+import { TextInput, TouchableOpacity, View, Animated, Image, KeyboardAvoidingView, Platform } from 'react-native';
 import { router } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useState, useEffect, useRef } from 'react';
@@ -10,8 +10,6 @@ import { useTranslation } from 'react-i18next';
 
 import { ThemedText } from '@/features/common/components/ThemedText';
 import { ResetPasswordScreenStyles as styles } from './ResetPasswordScreen.styles';
-
-const { width, height } = Dimensions.get('window');
 
 const PHONE_REGEX = /^(?:\+251|0|251)?([9][0-9]{8})$/;
 
@@ -62,7 +60,7 @@ export default function ResetPasswordScreen() {
       
       
       setIsSuccess(true);
-    } catch (error) {
+    } catch {
       setError(t('resetPassword.error.message'));
     }
   };

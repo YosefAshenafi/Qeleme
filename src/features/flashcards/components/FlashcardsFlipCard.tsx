@@ -12,6 +12,7 @@ import Animated, {
 } from 'react-native-reanimated';
 import type { AnimatedStyle } from 'react-native-reanimated';
 import type { ViewStyle } from 'react-native';
+import { useTranslation } from 'react-i18next';
 import { ThemedText } from '@/features/common/components/ThemedText';
 import { IconSymbol } from '@/features/common/components/ui/IconSymbol';
 import RichText from '@/features/common/components/ui/RichText';
@@ -45,6 +46,7 @@ export function FlashcardsFlipCard({
   onSwipeLeft,
   onSwipeRight,
 }: FlashcardsFlipCardProps) {
+  const { t } = useTranslation();
   const mainTextColor = isDarkMode ? '#FFFFFF' : '#111827';
 
   const translateX = useSharedValue(0);
@@ -95,7 +97,7 @@ export function FlashcardsFlipCard({
           <TouchableOpacity onPress={onReveal} activeOpacity={0.95} style={styles.flashCardTouch}>
             <View style={styles.flashCardShadowWrap}>
               <Animated.View style={[styles.flashCardFace, frontAnimatedStyle, { backgroundColor: cardBackgroundColor }]}>
-                <ThemedText style={[styles.flashCardMeta, { color: mutedTextColor }]}>CONCEPT MASTERY</ThemedText>
+                <ThemedText style={[styles.flashCardMeta, { color: mutedTextColor }]}>{t('flashcards.conceptMastery')}</ThemedText>
                 <ScrollView
                   style={styles.flashCardScroll}
                   contentContainerStyle={styles.flashCardScrollContent}
@@ -114,9 +116,7 @@ export function FlashcardsFlipCard({
                 </ScrollView>
                 <View style={styles.flashTapHintRow}>
                   <IconSymbol name={'arrow.2.squarepath' as any} size={16} color={isDarkMode ? '#9CA3AF' : '#9AA3B2'} />
-                  <ThemedText style={[styles.flashTapHintText, { color: isDarkMode ? '#9CA3AF' : '#9AA3B2' }]}>
-                    TAP TO FLIP
-                  </ThemedText>
+                  <ThemedText style={[styles.flashTapHintText, { color: isDarkMode ? '#9CA3AF' : '#9AA3B2' }]}>{t('flashcards.tapToFlip')}</ThemedText>
                 </View>
               </Animated.View>
 
@@ -128,7 +128,7 @@ export function FlashcardsFlipCard({
                   { backgroundColor: cardBackgroundColor },
                 ]}
               >
-                <ThemedText style={[styles.flashCardMeta, { color: mutedTextColor }]}>CONCEPT MASTERY</ThemedText>
+                <ThemedText style={[styles.flashCardMeta, { color: mutedTextColor }]}>{t('flashcards.conceptMastery')}</ThemedText>
                 <ScrollView
                   style={styles.flashCardScroll}
                   contentContainerStyle={styles.flashCardScrollContent}
@@ -147,9 +147,7 @@ export function FlashcardsFlipCard({
                 </ScrollView>
                 <View style={styles.flashTapHintRow}>
                   <IconSymbol name={'arrow.2.squarepath' as any} size={16} color={isDarkMode ? '#9CA3AF' : '#9AA3B2'} />
-                  <ThemedText style={[styles.flashTapHintText, { color: isDarkMode ? '#9CA3AF' : '#9AA3B2' }]}>
-                    TAP TO FLIP
-                  </ThemedText>
+                  <ThemedText style={[styles.flashTapHintText, { color: isDarkMode ? '#9CA3AF' : '#9AA3B2' }]}>{t('flashcards.tapToFlip')}</ThemedText>
                 </View>
               </Animated.View>
             </View>

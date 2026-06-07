@@ -51,7 +51,7 @@ export default function PlanSelectionScreen() {
       });
 
       setPlans(sortedPlans);
-    } catch (error) {
+    } catch {
       Alert.alert(t('common.error'), t('auth.errors.fetchPlansFailed'));
     } finally {
       setLoading(false);
@@ -153,7 +153,7 @@ export default function PlanSelectionScreen() {
         throw new Error(paymentData.error || 'Failed to initiate payment');
       }
 
-    } catch (error) {
+    } catch {
     } finally {
       
       setIsProcessingPayment(false);

@@ -132,7 +132,7 @@ export function useSignupForm() {
 
     try {
       await sendOTP(fullPhoneNumber);
-    } catch (err) {
+    } catch {
     }
 
     setIsSubmitting(true);

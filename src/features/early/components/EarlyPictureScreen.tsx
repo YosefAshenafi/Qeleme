@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { TouchableOpacity, View, Text, ActivityIndicator, Image, StyleSheet } from 'react-native';
+import { TouchableOpacity, View, Text, ActivityIndicator, Image } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import { router, useLocalSearchParams } from 'expo-router';
@@ -19,15 +19,17 @@ import { ThemedText } from '@/features/common/components/ThemedText';
 import { ThemedView } from '@/features/common/components/ThemedView';
 import { IconSymbol } from '@/features/common/components/ui/IconSymbol';
 import { LanguageToggle } from '@/features/common/components/ui/LanguageToggle';
-import { ImageSkeleton } from '@/features/common/components/ui/ImageSkeleton';
 import RichText from '@/features/common/components/ui/RichText';
 import { EarlyPictureScreenStyles as styles } from './EarlyPictureScreen.styles';
 import { useQuizSettings } from '../hooks/useQuizSettings';
 import { useQuizSounds } from '../hooks/useQuizSounds';
-import { useQuizData, type Question } from '../hooks/useQuizData';
+import { useQuizData } from '../hooks/useQuizData';
 import { FireworkBurst } from './FireworkBurst';
 import { ShakeOverlay } from './ShakeOverlay';
 import { QuizSettingsModal } from './QuizSettingsModal';
+import { QuestionImage } from './QuestionImage';
+import { EarlyPictureResults } from './EarlyPictureResults';
+import { EarlyPictureOptions } from './EarlyPictureOptions';
 
 interface EarlyPictureScreenProps {
   onBackToInstructions?: () => void;
@@ -38,80 +40,6 @@ interface EarlyPictureScreenProps {
   t?: any;
 }
 
-type QuestionImageProps = {
-  question: Question;
-  setImageStates: React.Dispatch<React.SetStateAction<Record<number, { loading: boolean; error: boolean; loaded: boolean }>>>;
-  colors: ReturnType<typeof getColors>;
-};
-
-const QuestionImage = React.memo(({ question, setImageStates, colors }: QuestionImageProps) => {
-  const imageUri = typeof question.image === 'string' ? question.image.trim() : '';
-  const [imageReady, setImageReady] = useState(false);
-  const [imageFailed, setImageFailed] = useState(false);
-
-  useEffect(() => {
-    setImageReady(false);
-    setImageFailed(false);
-  }, [question.id, imageUri]);
-
-  if (!imageUri) {
-    return (
-      <View style={styles.imageErrorContainer}>
-        <ThemedText style={[styles.imageErrorText, { color: colors.text }]}>
-          {i18n.t('mcq.pictureQuiz.noImage', 'No image for this question')}
-        </ThemedText>
-      </View>
-    );
-  }
-
-  return (
-    <View style={questionImageInner.container}>
-      {!imageReady && !imageFailed && (
-        <View style={StyleSheet.absoluteFillObject} pointerEvents="none">
-          <ImageSkeleton width="100%" height="100%" borderRadius={0} />
-        </View>
-      )}
-      {imageFailed ? (
-        <View style={styles.imageErrorContainer}>
-          <ThemedText style={[styles.imageErrorText, { color: colors.text }]}>
-            {i18n.t('mcq.pictureQuiz.imageLoadError', 'Could not load image')}
-          </ThemedText>
-        </View>
-      ) : (
-        <Image
-          style={[styles.questionImage, !imageReady && questionImageInner.hiddenWhileLoading]}
-          source={{ uri: imageUri }}
-          resizeMode="contain"
-          onLoad={() => {
-            setImageReady(true);
-            setImageStates((prev) => ({
-              ...prev,
-              [question.id]: { loading: false, error: false, loaded: true },
-            }));
-          }}
-          onError={() => {
-            setImageFailed(true);
-            setImageReady(false);
-            setImageStates((prev) => ({
-              ...prev,
-              [question.id]: { loading: false, error: true, loaded: false },
-            }));
-          }}
-        />
-      )}
-    </View>
-  );
-});
-
-const questionImageInner = StyleSheet.create({
-  container: {
-    width: '100%',
-    height: '100%',
-  },
-  hiddenWhileLoading: {
-    opacity: 0,
-  },
-});
 
 export default function EarlyPictureScreen({ onBackToInstructions }: EarlyPictureScreenProps) {
   const { isDarkMode } = useTheme();
@@ -139,12 +67,12 @@ export default function EarlyPictureScreen({ onBackToInstructions }: EarlyPictur
   const [score, setScore] = useState(0);
   const [isAuthorized, setIsAuthorized] = useState(false);
   const [hoveredOption, setHoveredOption] = useState<string | null>(null);
-  const [droppedOption, setDroppedOption] = useState<string | null>(null);
+  const [, setDroppedOption] = useState<string | null>(null);
   const [showResult, setShowResult] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [showCorrectVideo, setShowCorrectVideo] = useState(false);
   const [showIncorrectVideo, setShowIncorrectVideo] = useState(false);
-  const [sessionStartTime, setSessionStartTime] = useState<number | null>(null);
+  const [, setSessionStartTime] = useState<number | null>(null);
   const [isImageDragging, setIsImageDragging] = useState(false);
   const [dropZones, setDropZones] = useState<{ [key: string]: { x: number; y: number; width: number; height: number } }>({});
 
@@ -455,71 +383,17 @@ export default function EarlyPictureScreen({ onBackToInstructions }: EarlyPictur
 
   if (showResult) {
     return (
-      <GestureHandlerRootView style={{ flex: 1 }}>
-        <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]}>
-          <View style={[styles.header, { backgroundColor: colors.background }]}>
-            <TouchableOpacity style={styles.backButton} onPress={handleGoToInstructions}>
-              <IconSymbol name="house.fill" size={24} color={colors.text} />
-            </TouchableOpacity>
-            <ThemedText style={[styles.headerTitle, { color: isDarkMode ? '#FFFFFF' : undefined }]}>
-              {t('mcq.results.title')}
-            </ThemedText>
-            <View style={styles.headerRight}>
-              <LanguageToggle colors={{ ...colors, text: isDarkMode ? '#FFFFFF' : colors.tint }} />
-            </View>
-          </View>
-          <LinearGradient colors={['#2196F3', '#42A5F5', '#00BCD4']} style={styles.resultGradientContainer}>
-            <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
-              <View style={styles.resultContent}>
-                <View style={styles.celebrationEmojiContainer}>
-                  <Text style={styles.celebrationEmoji}>
-                    {percentage >= 70 ? '🎉' : percentage >= 50 ? '👍' : '💪'}
-                  </Text>
-                </View>
-                <View style={styles.scoreContainer}>
-                  <View style={styles.scoreCircle}>
-                    <ThemedText style={[styles.scoreText, { color: '#FFFFFF' }]}>
-                      {score}/{questions.length}
-                    </ThemedText>
-                  </View>
-                </View>
-                <View style={styles.percentageContainer}>
-                  <ThemedText style={styles.percentageText}>{percentage}%</ThemedText>
-                </View>
-                <View style={styles.messageContainer}>
-                  <ThemedText style={[styles.messageText, styles.funMessageText]}>{getMessage()}</ThemedText>
-                </View>
-                <View style={styles.starsContainer}>
-                  {[...Array(5)].map((_, index) => (
-                    <IconSymbol
-                      key={index}
-                      name="star.fill"
-                      size={30}
-                      color={index < Math.ceil(percentage / 20) ? "#FFD700" : "rgba(255,255,255,0.3)"}
-                      style={styles.star}
-                    />
-                  ))}
-                </View>
-              </View>
-              <View style={styles.actionButtons}>
-                <TouchableOpacity
-                  style={[styles.button, styles.retryButton, nextCategory && { backgroundColor: '#FF9800' }]}
-                  onPress={handleRetry}
-                >
-                  <IconSymbol name={nextCategory ? "arrow.right.circle.fill" : "chevron.right"} size={24} color="#FFFFFF" />
-                  <ThemedText style={styles.retryButtonText}>
-                    {nextCategory ? t('mcq.results.tryOtherQuestions', 'Try other remaining Questions') : t('mcq.results.tryAgain')}
-                  </ThemedText>
-                </TouchableOpacity>
-                <TouchableOpacity style={[styles.button, styles.homeButton]} onPress={handleGoToInstructions}>
-                  <IconSymbol name="checkmark.circle.fill" size={24} color="#FFFFFF" />
-                  <ThemedText style={styles.buttonText}>{i18n.language === 'am' ? 'ያጠናቅቁ' : 'Done'}</ThemedText>
-                </TouchableOpacity>
-              </View>
-            </ScrollView>
-          </LinearGradient>
-        </SafeAreaView>
-      </GestureHandlerRootView>
+      <EarlyPictureResults
+        colors={colors}
+        isDarkMode={isDarkMode}
+        score={score}
+        totalQuestions={questions.length}
+        percentage={percentage}
+        hasNextCategory={!!nextCategory}
+        message={getMessage()}
+        onHome={handleGoToInstructions}
+        onRetry={handleRetry}
+      />
     );
   }
 
@@ -581,56 +455,15 @@ export default function EarlyPictureScreen({ onBackToInstructions }: EarlyPictur
                     <ShakeOverlay visible={showIncorrectVideo} onAnimationEnd={handleNextQuestion} language={i18n.language} delay={autoAdvanceDelay} />
                   </Animated.View>
                 </GestureDetector>
-                <View style={styles.kgOptionsContainer}>
-                  {currentQuestion.options.map((option, index) => {
-                    const funColors = ['#2196F3', '#FF9800', '#9C27B0', '#00BCD4'];
-                    const funColor = funColors[index % funColors.length];
-                    const isHovered = hoveredOption === option.id;
-                    const isDropTarget = isHovered;
-                    const textEn = option.text_en?.trim() ?? '';
-                    const textAm = option.text_am?.trim() ?? '';
-                    const showAmharic = textAm !== '' && textAm !== textEn;
-                    return (
-                      <View
-                        key={option.id}
-                        ref={(el) => {
-                          optionRowRefs.current[option.id] = el;
-                        }}
-                        onLayout={measureAllOptionZones}
-                      >
-                        <TouchableOpacity
-                          style={[
-                            styles.kgOptionButton,
-                            styles.kgOptionButtonBounce,
-                            isImageDragging && !isHovered && styles.kgOptionButtonDimmed,
-                            isHovered && styles.kgOptionButtonHovered,
-                            isDropTarget && styles.kgOptionButtonDropTarget,
-                            {
-                              backgroundColor:
-                                selectedAnswer !== null
-                                  ? option.isCorrect
-                                    ? '#22C55E'
-                                    : selectedAnswer === option.id
-                                      ? '#F44336'
-                                      : funColor
-                                  : isHovered
-                                    ? '#1565C0'
-                                    : funColor,
-                            },
-                          ]}
-                          onPress={() => handleAnswerSelection(option.id)}
-                          activeOpacity={0.8}
-                          disabled={selectedAnswer !== null}
-                        >
-                          <View style={styles.optionTextRow}>
-                            <Text style={styles.kgOptionText}>{option.text_en}</Text>
-                            {showAmharic && <Text style={styles.kgOptionTextAmharic}>{option.text_am}</Text>}
-                          </View>
-                        </TouchableOpacity>
-                      </View>
-                    );
-                  })}
-                </View>
+                <EarlyPictureOptions
+                  options={currentQuestion.options}
+                  selectedAnswer={selectedAnswer}
+                  hoveredOption={hoveredOption}
+                  isImageDragging={isImageDragging}
+                  optionRowRefs={optionRowRefs}
+                  onSelect={handleAnswerSelection}
+                  onMeasure={measureAllOptionZones}
+                />
                 <View style={styles.instructionTextContainer}>
                   <ThemedText style={[styles.instructionText, { color: isDarkMode ? colors.text + 'CC' : '#666666' }]}>
                     {t('mcq.pictureQuiz.dragInstruction')}

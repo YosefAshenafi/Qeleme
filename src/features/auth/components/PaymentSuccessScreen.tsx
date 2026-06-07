@@ -6,13 +6,11 @@ import { Ionicons } from '@expo/vector-icons';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useTheme } from '@/core/providers/ThemeProvider';
 import { getColors } from '@/features/common/constants/Colors';
-import { useTranslation } from 'react-i18next';
 import { ThemedText } from '@/features/common/components/ThemedText';
 import { LanguageToggle } from '@/features/common/components/ui/LanguageToggle';
 import { PaymentSuccessScreenStyles as styles } from './PaymentSuccessScreen.styles';
 
 export default function PaymentSuccessScreen() {
-  const { t } = useTranslation();
   const { isDarkMode } = useTheme();
   const colors = getColors(isDarkMode);
   const params = useLocalSearchParams();

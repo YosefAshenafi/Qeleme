@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useLayoutEffect } from 'react';
-import { router, useLocalSearchParams } from 'expo-router';
+import { useLocalSearchParams } from 'expo-router';
 import { useNavigation } from '@react-navigation/native';
 import { useTranslation } from 'react-i18next';
 import i18n from 'i18next';
@@ -19,8 +19,8 @@ import {
   Grade,
   Flashcard,
 } from '@/features/common/services/flashcardService';
-import ActivityTrackingService from '@/features/common/services/activityTrackingService';
 import { resolveDeepLinkSessionMeta } from '@/features/flashcards/utils/resolveDeepLinkSessionMeta';
+import { createFlashcardsHandlers } from './createFlashcardsHandlers';
 
 
 
@@ -259,136 +259,48 @@ export function useFlashcardsScreen() {
     };
   });
 
-  const handleReveal = () => {
-    setIsRevealed(!isRevealed);
-    revealAnimation.value = withSpring(isRevealed ? 0 : 1, {
-      damping: 12,
-      stiffness: 80,
-      mass: 0.8,
-    });
-  };
-
-  const trackFlashcardSessionEnd = async (cardsSnapshot: Flashcard[]) => {
-    if (flashcardSessionTrackedRef.current) return;
-    if (!user?.username || cardsSnapshot.length === 0) return;
-
-    const meta = sessionTrackMetaRef.current;
-    const subjectName = (meta?.subjectName || selectedSubjectData?.name || '').trim();
-    if (!subjectName) {
-      return;
-    }
-
-    flashcardSessionTrackedRef.current = true;
-
-    try {
-      const trackingService = ActivityTrackingService.getInstance();
-      await trackingService.initialize(user.username);
-
-      const cardsReviewed = cardsSnapshot.length;
-      const cardsMastered = cardsSnapshot.filter((card) => card.isChecked).length;
-      const start = sessionStartTime;
-      const timeSpentSec = start != null ? Math.max(0, Math.round((Date.now() - start) / 1000)) : 0;
-
-      const gradeName =
-        meta?.gradeName || selectedGradeData?.name || selectedGrade || user?.grade || 'unknown';
-
-      await trackingService.trackFlashcardActivity({
-        grade: gradeName,
-        subject: subjectName,
-        chapter: meta?.chapterName || selectedChapterData?.name || undefined,
-        cardsReviewed,
-        cardsMastered,
-        timeSpent: timeSpentSec,
-      });
-    } catch {
-      flashcardSessionTrackedRef.current = false;
-    }
-  };
-
-  const handleNext = () => {
-    if (currentFlashcards.length > 0 && currentIndex < currentFlashcards.length - 1) {
-      setCurrentIndex((prev) => prev + 1);
-      progressAnimation.value = withTiming(((currentIndex + 2) / currentFlashcards.length) * 100);
-    }
-  };
-
-  const handleStartFlashcards = async () => {
-    if (!selectedSubject || !selectedChapter) return;
-
-    try {
-      setIsLoading(true);
-
-      const grade = flashcardsData.find((g) => g.name === selectedGrade);
-      const subject = grade?.subjects.find((s) => s.id === selectedSubject);
-      const subjectSlug = subject?.slug;
-
-      if (!subjectSlug) {
-        throw new Error('Subject slug not found');
-      }
-
-      const chapterName = selectedChapterData?.name;
-      if (!chapterName) {
-        throw new Error('Chapter name not found');
-      }
-
-      const flashcards = await getFlashcardsForChapter(selectedGradeId, subjectSlug, chapterName);
-
-      if (!flashcards || flashcards.length === 0) {
-        setError(t('flashcards.noFlashcardsAvailable'));
-        return;
-      }
-
-      setCurrentFlashcards(flashcards.map((c) => ({ ...c, isChecked: false })));
-      flashcardSessionTrackedRef.current = false;
-      sessionTrackMetaRef.current = {
-        subjectName: selectedSubjectData?.name?.trim() || '',
-        chapterName: selectedChapterData?.name,
-        gradeName: selectedGradeData?.name || selectedGrade || user?.grade || 'unknown',
-      };
-      setSessionStartTime(Date.now());
-
-      const updatedFlashcardsData = flashcardsData.map((g) => {
-        if (g.name === selectedGrade) {
-          return {
-            ...g,
-            subjects: g.subjects.map((s) => {
-              if (s.id === selectedSubject) {
-                return {
-                  ...s,
-                  chapters: s.chapters.map((c) => {
-                    if (c.id === selectedChapter) {
-                      return {
-                        ...c,
-                        flashcards,
-                      };
-                    }
-                    return c;
-                  }),
-                };
-              }
-              return s;
-            }),
-          };
-        }
-        return g;
-      });
-
-      setFlashcardsData(updatedFlashcardsData);
-
-      setShowFlashcards(true);
-      setCurrentIndex(0);
-      setIsRevealed(false);
-      revealAnimation.value = withSpring(0, {
-        damping: 12,
-        stiffness: 80,
-        mass: 0.8,
-      });
-    } catch {
-      setError(t('errors.network.message'));
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  const {
+    handleReveal,
+    handleStartFlashcards,
+    handleRetryNetworkError,
+    handleSessionResultsRetry,
+    handleSessionResultsDone,
+    handleEmptyChapterChooseDifferent,
+    onStillLearningPress,
+    onGotItPress,
+  } = createFlashcardsHandlers({
+    user,
+    t,
+    selectedGradeId,
+    selectedGrade,
+    selectedSubject,
+    selectedChapter,
+    flashcardsData,
+    selectedGradeData,
+    selectedSubjectData,
+    selectedChapterData,
+    currentFlashcards,
+    currentIndex,
+    isRevealed,
+    sessionStartTime,
+    revealAnimation,
+    progressAnimation,
+    flashcardSessionTrackedRef,
+    sessionTrackMetaRef,
+    fetchFlashcards,
+    setIsLoading,
+    setError,
+    setCurrentFlashcards,
+    setFlashcardsData,
+    setShowFlashcards,
+    setShowResult,
+    setCurrentIndex,
+    setIsRevealed,
+    setSessionStartTime,
+    setSelectedSubject,
+    setSelectedChapter,
+    setFlashPendingFinish,
+  });
 
   useEffect(() => {
     if (!startFlashcards) return;
@@ -454,98 +366,12 @@ export function useFlashcardsScreen() {
     deepLinkGradeId,
   ]);
 
-  const handleRetryNetworkError = () => {
-    setError(null);
-    setIsLoading(true);
-    fetchFlashcards(selectedGradeId);
-  };
-
-  const handleSessionResultsRetry = () => {
-    setShowResult(false);
-    setShowFlashcards(true);
-    setCurrentIndex(0);
-    setIsRevealed(false);
-    flashcardSessionTrackedRef.current = false;
-    if (selectedSubjectData?.name?.trim()) {
-      sessionTrackMetaRef.current = {
-        subjectName: selectedSubjectData.name.trim(),
-        chapterName: selectedChapterData?.name,
-        gradeName: selectedGradeData?.name || selectedGrade || user?.grade || 'unknown',
-      };
-    }
-    setSessionStartTime(Date.now());
-    setCurrentFlashcards((prev) => prev.map((c) => ({ ...c, isChecked: false })));
-    revealAnimation.value = withSpring(0, { damping: 12, stiffness: 80, mass: 0.8 });
-    progressAnimation.value = withTiming(0);
-  };
-
-  const handleSessionResultsDone = () => {
-    setShowResult(false);
-    setShowFlashcards(false);
-    setCurrentIndex(0);
-    setIsRevealed(false);
-    setCurrentFlashcards([]);
-    setSessionStartTime(null);
-    revealAnimation.value = withSpring(0, { damping: 12, stiffness: 80, mass: 0.8 });
-    progressAnimation.value = withTiming(0);
-    router.replace('/(tabs)/practice');
-  };
-
-  const handleEmptyChapterChooseDifferent = () => {
-    setShowFlashcards(false);
-    setSelectedSubject('');
-    setSelectedChapter('');
-    setCurrentFlashcards([]);
-  };
-
   const totalCards = currentFlashcards.length;
   const masteredCount = currentFlashcards.filter((c) => Boolean(c?.isChecked)).length;
   const stillLearningCount = Math.max(0, totalCards - masteredCount);
   const masteredPct = totalCards > 0 ? Math.round((masteredCount / totalCards) * 100) : 0;
 
   const cardMutedMeta = isDarkMode ? '#93A4C7' : '#9AA3B2';
-
-  const onStillLearningPress = () => {
-    const isLastCard = currentFlashcards.length > 0 && currentIndex === currentFlashcards.length - 1;
-    if (isLastCard) {
-      const nextCards = currentFlashcards.map((c, i) =>
-        i === currentIndex ? { ...c, isChecked: false } : c
-      );
-      setCurrentFlashcards(nextCards);
-      void (async () => {
-        await trackFlashcardSessionEnd(nextCards);
-        setFlashPendingFinish(true);
-      })();
-    } else {
-      setCurrentFlashcards((prev) => {
-        const next = [...prev];
-        if (next[currentIndex]) next[currentIndex] = { ...next[currentIndex], isChecked: false };
-        return next;
-      });
-      handleNext();
-    }
-  };
-
-  const onGotItPress = () => {
-    const isLastCard = currentFlashcards.length > 0 && currentIndex === currentFlashcards.length - 1;
-    if (isLastCard) {
-      const nextCards = currentFlashcards.map((c, i) =>
-        i === currentIndex ? { ...c, isChecked: true } : c
-      );
-      setCurrentFlashcards(nextCards);
-      void (async () => {
-        await trackFlashcardSessionEnd(nextCards);
-        setFlashPendingFinish(true);
-      })();
-    } else {
-      setCurrentFlashcards((prev) => {
-        const next = [...prev];
-        if (next[currentIndex]) next[currentIndex] = { ...next[currentIndex], isChecked: true };
-        return next;
-      });
-      handleNext();
-    }
-  };
 
   return {
     isDarkMode,
@@ -556,6 +382,7 @@ export function useFlashcardsScreen() {
     startFlashcards,
     hasPreSelectedSubject,
     isDeepLinkAutoStart,
+    autoStartConsumed: flashcardsAutoStartConsumedRef.current,
     deepLinkSubjectSlug,
     deepLinkChapterName,
     deepLinkGradeId,

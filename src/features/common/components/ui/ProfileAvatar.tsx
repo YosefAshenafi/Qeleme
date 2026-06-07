@@ -33,7 +33,7 @@ export function ProfileAvatar({
       if (imageUri) {
         setProfileImage(imageUri);
       }
-    } catch (error) {
+    } catch {
     }
   };
 

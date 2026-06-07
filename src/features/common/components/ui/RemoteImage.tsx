@@ -52,7 +52,7 @@ export function RemoteImage({
   const [isLoading, setIsLoading] = useState(false);
   const [cachedImageUri, setCachedImageUri] = useState<string | null>(null);
   const [progress, setProgress] = useState(0);
-  const [imageLoaded, setImageLoaded] = useState(false);
+  const [, setImageLoaded] = useState(false);
   
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const progressAnim = useRef(new Animated.Value(0)).current;
@@ -85,7 +85,7 @@ export function RemoteImage({
           await AsyncStorage.removeItem(key);
         }
       }
-    } catch (error) {
+    } catch {
     }
     
     return null;
@@ -102,7 +102,7 @@ export function RemoteImage({
         timestamp: Date.now()
       };
       await AsyncStorage.setItem(key, JSON.stringify(cacheData));
-    } catch (error) {
+    } catch {
     }
   };
 
@@ -147,7 +147,7 @@ export function RemoteImage({
       setImageLoaded(true);
       fadeInImage();
       
-    } catch (error) {
+    } catch {
       setImageError(true);
       onError?.();
     } finally {

@@ -1,103 +1,25 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-export type ActivityType = 'mcq' | 'flashcard' | 'study' | 'kg_question' | 'picture_mcq';
+import {
+  type ActivityType,
+  type Activity,
+  type NewActivity,
+  type UserStats,
+} from './activityTypes';
+import { computeUserStats } from './activityStats';
 
-export interface BaseActivity {
-  id: string;
-  type: ActivityType;
-  timestamp: number;
-  username: string; 
-  grade: string;
-  subject: string;
-  chapter?: string;
-  duration?: number; 
-  score?: number; 
-  totalQuestions?: number;
-  correctAnswers?: number;
-  details: string;
-  status: 'completed' | 'in_progress' | 'abandoned';
-}
-
-export interface MCQActivity extends BaseActivity {
-  type: 'mcq';
-  examType?: 'national' | 'regular';
-  year?: number;
-  questionsAnswered: number;
-  timeSpent: number; 
-}
-
-export interface FlashcardActivity extends BaseActivity {
-  type: 'flashcard';
-  cardsReviewed: number;
-  cardsMastered: number;
-  timeSpent: number; 
-}
-
-export interface KGQuestionActivity extends BaseActivity {
-  type: 'kg_question';
-  categoryId: number;
-  categoryName: string;
-  subcategoryId?: number;
-  subcategoryName?: string;
-  questionsAnswered: number;
-  correctAnswers: number;
-  timeSpent: number; 
-}
-
-export interface PictureMCQActivity extends BaseActivity {
-  type: 'picture_mcq';
-  categoryId: number;
-  categoryName: string;
-  questionsAnswered: number;
-  correctAnswers: number;
-  timeSpent: number; 
-}
-
-export type Activity = MCQActivity | FlashcardActivity | KGQuestionActivity | PictureMCQActivity;
-type NewActivity = Omit<BaseActivity, 'id' | 'timestamp' | 'username'> & Record<string, unknown>;
-
-function getActivityDurationSeconds(activity: Activity): number {
-  const withTime = activity as { timeSpent?: number };
-  if (typeof withTime.timeSpent === 'number' && withTime.timeSpent >= 0) {
-    return withTime.timeSpent;
-  }
-  return (activity.duration ?? 0) * 60;
-}
-
-export interface UserStats {
-  totalActivities: number;
-  totalStudyTime: number; 
-  totalQuestionsAnswered: number;
-  totalCorrectAnswers: number;
-  averageScore: number;
-  currentStreak: number;
-  bestStreak: number;
-  lastActivityDate: number;
-  subjectBreakdown: {
-    [subject: string]: {
-      activities: number;
-      timeSpent: number;
-      questionsAnswered: number;
-      correctAnswers: number;
-      averageScore: number;
-    };
-  };
-  gradeBreakdown: {
-    [grade: string]: {
-      activities: number;
-      timeSpent: number;
-      questionsAnswered: number;
-      correctAnswers: number;
-    };
-  };
-  activityTypeBreakdown: {
-    [type in ActivityType]: {
-      count: number;
-      timeSpent: number;
-      lastActivity: number;
-    };
-  };
-}
+// Re-exported so existing consumers can keep importing activity types from this
+// module (the definitions now live in ./activityTypes).
+export type {
+  ActivityType,
+  BaseActivity,
+  MCQActivity,
+  FlashcardActivity,
+  KGQuestionActivity,
+  PictureMCQActivity,
+  Activity,
+  UserStats,
+} from './activityTypes';
 
 const getActivitiesKey = (username: string) => `@user_activities_${username}`;
 const getStatsKey = (username: string) => `@user_stats_${username}`;
@@ -132,7 +54,7 @@ class ActivityTrackingService {
         this.stats = null;
         this.currentUsername = null;
       }
-    } catch (error) {
+    } catch {
     }
   }
 
@@ -147,7 +69,7 @@ class ActivityTrackingService {
       } else {
         this.activities = [];
       }
-    } catch (error) {
+    } catch {
       this.activities = [];
     }
   }
@@ -159,7 +81,7 @@ class ActivityTrackingService {
       if (statsJson) {
         this.stats = JSON.parse(statsJson);
       }
-    } catch (error) {
+    } catch {
       this.stats = null;
     }
   }
@@ -170,7 +92,7 @@ class ActivityTrackingService {
       if (this.currentUsername) {
         await AsyncStorage.setItem(getActivitiesKey(this.currentUsername), JSON.stringify(this.activities));
       }
-    } catch (error) {
+    } catch {
     }
   }
 
@@ -180,7 +102,7 @@ class ActivityTrackingService {
       if (this.stats && this.currentUsername) {
         await AsyncStorage.setItem(getStatsKey(this.currentUsername), JSON.stringify(this.stats));
       }
-    } catch (error) {
+    } catch {
     }
   }
 
@@ -208,7 +130,7 @@ class ActivityTrackingService {
       await this.saveActivities();
       await this.updateStats();
       await this.updateRecentActivities(newActivity);
-    } catch (error) {
+    } catch {
     }
   }
 
@@ -238,184 +160,16 @@ class ActivityTrackingService {
       }
       
       await AsyncStorage.setItem(RECENT_ACTIVITIES_KEY, JSON.stringify(activities));
-    } catch (error) {
+    } catch {
     }
   }
 
   
   private async updateStats(): Promise<void> {
     try {
-      const now = Date.now();
-      const oneDay = 24 * 60 * 60 * 1000;
-
-      
-      
-      const completedActivities = this.activities.filter(activity => {
-        return activity.status === 'completed' &&
-               activity.subject &&
-               activity.subject.trim() !== '' &&
-               activity.subject.toLowerCase() !== 'unknown' &&
-               activity.subject.toLowerCase() !== 'undefined';
-      });
-      
-      const stats: UserStats = {
-        totalActivities: completedActivities.length,
-        totalStudyTime: 0,
-        totalQuestionsAnswered: 0,
-        totalCorrectAnswers: 0,
-        averageScore: 0,
-        currentStreak: 0,
-        bestStreak: 0,
-        lastActivityDate: 0,
-        subjectBreakdown: {},
-        gradeBreakdown: {},
-        activityTypeBreakdown: {
-          mcq: { count: 0, timeSpent: 0, lastActivity: 0 },
-          flashcard: { count: 0, timeSpent: 0, lastActivity: 0 },
-          study: { count: 0, timeSpent: 0, lastActivity: 0 },
-          kg_question: { count: 0, timeSpent: 0, lastActivity: 0 },
-          picture_mcq: { count: 0, timeSpent: 0, lastActivity: 0 },
-        },
-      };
-
-      
-      
-      completedActivities.forEach(activity => {
-        const durationSec = getActivityDurationSeconds(activity);
-        const durationMin = durationSec / 60;
-
-        
-        stats.totalStudyTime += durationMin;
-        stats.lastActivityDate = Math.max(stats.lastActivityDate, activity.timestamp);
-
-        
-        if (!stats.subjectBreakdown[activity.subject]) {
-          stats.subjectBreakdown[activity.subject] = {
-            activities: 0,
-            timeSpent: 0,
-            questionsAnswered: 0,
-            correctAnswers: 0,
-            averageScore: 0,
-          };
-        }
-
-        const subjectStats = stats.subjectBreakdown[activity.subject];
-        subjectStats.activities++;
-        subjectStats.timeSpent += durationMin;
-
-        
-        if (!stats.gradeBreakdown[activity.grade]) {
-          stats.gradeBreakdown[activity.grade] = {
-            activities: 0,
-            timeSpent: 0,
-            questionsAnswered: 0,
-            correctAnswers: 0,
-          };
-        }
-
-        const gradeStats = stats.gradeBreakdown[activity.grade];
-        gradeStats.activities++;
-        gradeStats.timeSpent += durationMin;
-
-        
-        const typeStats = stats.activityTypeBreakdown[activity.type];
-        if (typeStats) {
-          typeStats.count++;
-          typeStats.timeSpent += durationMin;
-          typeStats.lastActivity = Math.max(typeStats.lastActivity, activity.timestamp);
-        } else {
-          
-        }
-
-        
-        switch (activity.type) {
-          case 'mcq':
-            const mcqActivity = activity as MCQActivity;
-            stats.totalQuestionsAnswered += mcqActivity.questionsAnswered;
-            stats.totalCorrectAnswers += mcqActivity.correctAnswers || 0;
-            subjectStats.questionsAnswered += mcqActivity.questionsAnswered;
-            subjectStats.correctAnswers += mcqActivity.correctAnswers || 0;
-            gradeStats.questionsAnswered += mcqActivity.questionsAnswered;
-            gradeStats.correctAnswers += mcqActivity.correctAnswers || 0;
-            break;
-
-          case 'flashcard':
-            
-            
-            
-            break;
-
-          case 'kg_question':
-          case 'picture_mcq':
-            const kgActivity = activity as KGQuestionActivity | PictureMCQActivity;
-            stats.totalQuestionsAnswered += kgActivity.questionsAnswered;
-            stats.totalCorrectAnswers += kgActivity.correctAnswers;
-            subjectStats.questionsAnswered += kgActivity.questionsAnswered;
-            subjectStats.correctAnswers += kgActivity.correctAnswers;
-            gradeStats.questionsAnswered += kgActivity.questionsAnswered;
-            gradeStats.correctAnswers += kgActivity.correctAnswers;
-            break;
-        }
-      });
-
-      
-      if (stats.totalQuestionsAnswered > 0) {
-        stats.averageScore = Math.round((stats.totalCorrectAnswers / stats.totalQuestionsAnswered) * 100);
-      }
-
-      
-      Object.keys(stats.subjectBreakdown).forEach(subject => {
-        const subjectStats = stats.subjectBreakdown[subject];
-        if (subjectStats.questionsAnswered > 0) {
-          subjectStats.averageScore = Math.round((subjectStats.correctAnswers / subjectStats.questionsAnswered) * 100);
-        }
-      });
-
-      
-      const sortedActivities = [...completedActivities].sort((a, b) => b.timestamp - a.timestamp);
-      let currentStreak = 0;
-      let bestStreak = 0;
-      let tempStreak = 0;
-      let lastDate = 0;
-
-      for (let i = 0; i < sortedActivities.length; i++) {
-        const activityDate = new Date(sortedActivities[i].timestamp);
-        const activityDay = Math.floor(activityDate.getTime() / oneDay);
-
-        if (i === 0) {
-          lastDate = activityDay;
-          tempStreak = 1;
-          currentStreak = 1;
-        } else {
-          const daysDiff = lastDate - activityDay;
-          if (daysDiff === 1) {
-            tempStreak++;
-            lastDate = activityDay;
-          } else if (daysDiff > 1) {
-            bestStreak = Math.max(bestStreak, tempStreak);
-            tempStreak = 1;
-            lastDate = activityDay;
-          }
-        }
-      }
-
-      bestStreak = Math.max(bestStreak, tempStreak);
-      
-      
-      const today = Math.floor(now / oneDay);
-      const lastActivityDay = Math.floor(stats.lastActivityDate / oneDay);
-      if (today - lastActivityDay <= 1) {
-        currentStreak = tempStreak;
-      } else {
-        currentStreak = 0;
-      }
-
-      stats.currentStreak = currentStreak;
-      stats.bestStreak = bestStreak;
-
-      this.stats = stats;
+      this.stats = computeUserStats(this.activities);
       await this.saveStats();
-    } catch (error) {
+    } catch {
     }
   }
 
@@ -463,7 +217,7 @@ class ActivityTrackingService {
       this.activities = [];
       this.stats = null;
       await AsyncStorage.removeItem(RECENT_ACTIVITIES_KEY);
-    } catch (error) {
+    } catch {
     }
   }
 
@@ -477,7 +231,7 @@ class ActivityTrackingService {
         this.stats = null;
         this.currentUsername = null;
       }
-    } catch (error) {
+    } catch {
     }
   }
 

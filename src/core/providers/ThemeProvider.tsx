@@ -26,7 +26,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
       if (savedTheme !== null) {
         setIsDarkMode(savedTheme === 'dark');
       }
-    } catch (error) {
+    } catch {
       setIsDarkMode(systemColorScheme === 'dark');
     }
   };
@@ -36,7 +36,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     setIsDarkMode(newTheme);
     try {
       await AsyncStorage.setItem(THEME_PREFERENCE_KEY, newTheme ? 'dark' : 'light');
-    } catch (error) {
+    } catch {
     }
   };
 

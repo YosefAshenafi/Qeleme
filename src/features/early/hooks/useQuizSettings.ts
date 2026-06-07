@@ -3,11 +3,6 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const SETTINGS_KEY = 'kgQuizSettings';
 
-interface QuizSettings {
-  soundEnabled: boolean;
-  autoAdvanceDelay: number;
-}
-
 export function useQuizSettings() {
   const [soundEnabled, setSoundEnabled] = useState(true);
   const [autoAdvanceDelay, setAutoAdvanceDelay] = useState(2000);
@@ -20,7 +15,7 @@ export function useQuizSettings() {
         setSoundEnabled(parsed.soundEnabled ?? true);
         setAutoAdvanceDelay(parsed.autoAdvanceDelay ?? 2000);
       }
-    } catch (error) {
+    } catch {
     }
   }, []);
 
@@ -30,7 +25,7 @@ export function useQuizSettings() {
         soundEnabled: newSoundEnabled,
         autoAdvanceDelay: newDelay,
       }));
-    } catch (error) {
+    } catch {
     }
   }, []);
 

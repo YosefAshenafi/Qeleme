@@ -69,7 +69,12 @@ export default function FlashcardsScreen() {
   }
 
   if (!fc.showFlashcards) {
-    if (fc.isDeepLinkAutoStart && fc.selectedSubject && fc.isLoading) {
+    // Arriving via deep-link auto-start (e.g. from the chapter chooser): keep the
+    // loader up until the session actually opens, so the selection form never
+    // flashes in the gap between the initial load finishing and the auto-start
+    // fetch beginning. Once the auto-start is consumed, fall back to the form
+    // (e.g. after a session ends) instead of getting stuck on the loader.
+    if (fc.isDeepLinkAutoStart && !fc.autoStartConsumed) {
       return (
         <FlashcardsLoadingState
           backgroundColor={fc.colors.background}

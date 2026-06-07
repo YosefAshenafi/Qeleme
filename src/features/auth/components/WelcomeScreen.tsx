@@ -23,10 +23,6 @@ export default function WelcomeScreen() {
     router.push('/(auth)/signup');
   };
 
-  const handleBrowseAsGuest = () => {
-    router.push('/(tabs)');
-  };
-
   return (
     <SafeAreaView style={[styles.safeArea, { backgroundColor: isDarkMode ? '#0F172A' : '#FAF8FF' }]}>
       <View style={styles.container}>

@@ -41,7 +41,7 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         await i18n.changeLanguage(lang);
         await saveLanguage(lang);
       }
-    } catch (error) {
+    } catch {
     }
   };
 

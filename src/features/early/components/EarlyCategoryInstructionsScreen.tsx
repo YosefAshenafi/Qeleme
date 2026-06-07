@@ -1,5 +1,5 @@
 import React from 'react';
-import { TouchableOpacity, ScrollView, View, Dimensions, Text, Image } from 'react-native';
+import { TouchableOpacity, ScrollView, View, Text, Image } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useTheme } from '@/core/providers/ThemeProvider';
@@ -20,8 +20,6 @@ import Animated, {
   Extrapolate
 } from 'react-native-reanimated';
 import { EarlyCategoryInstructionsScreenStyles as styles } from './EarlyCategoryInstructionsScreen.styles';
-
-const { width } = Dimensions.get('window');
 
 export default function EarlyCategoryInstructions() {
   const router = useRouter();
@@ -246,23 +244,3 @@ export default function EarlyCategoryInstructions() {
     </SafeAreaView>
   );
 }
-
-const getCategoryIcon = (category: string): string => {
-  const categoryIcons: { [key: string]: string } = {
-    'Animals': 'paw',
-    'Colors': 'color-palette',
-    'Numbers': 'calculator',
-    'Shapes': 'apps',
-    'Fruits': 'nutrition',
-    'Vegetables': 'leaf',
-    'Family': 'people',
-    'Body Parts': 'body',
-    'Clothes': 'shirt',
-    'Weather': 'cloud',
-    'Transport': 'car',
-    'Food': 'fast-food',
-    'School': 'school',
-    'Toys': 'game-controller'
-  };
-  return categoryIcons[category] || 'house.fill';
-}; 

@@ -1,5 +1,3 @@
-import { getColors } from './Colors';
-
 export interface SubcategoryConfig {
   name_en: string;
   name_am: string;
@@ -9,8 +7,7 @@ export interface SubcategoryConfig {
 }
 
 const generateSubcategoryColors = (subcategoryName: string, isDark: boolean): readonly [string, string] => {
-  const colors = getColors(isDark);
-  
+
   
   const hash = subcategoryName.split('').reduce((acc, char) => {
     return char.charCodeAt(0) + ((acc << 5) - acc);

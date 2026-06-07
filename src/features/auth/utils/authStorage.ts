@@ -102,7 +102,7 @@ export const getAuthToken = async (): Promise<string | null> => {
   }
   try {
     return await tokenStorage.getItem();
-  } catch (error) {
+  } catch {
     return null;
   }
 };
@@ -115,7 +115,7 @@ export const getUserData = async (): Promise<UserData | null> => {
   try {
     const userDataString = await AsyncStorage.getItem(USER_DATA_KEY);
     return userDataString ? JSON.parse(userDataString) : null;
-  } catch (error) {
+  } catch {
     return null;
   }
 };
@@ -138,7 +138,7 @@ export const isAuthenticated = async (): Promise<boolean> => {
   try {
     const token = await getAuthToken();
     return !!token;
-  } catch (error) {
+  } catch {
     return false;
   }
 };
@@ -192,7 +192,7 @@ export const getStoredOTP = async (phoneNumber: string): Promise<string | null> 
     }
     
     return otpData.otp;
-  } catch (error) {
+  } catch {
     return null;
   }
 };
@@ -215,7 +215,7 @@ export const isOTPValid = async (phoneNumber: string, otp: string): Promise<bool
   try {
     const storedOTP = await getStoredOTP(phoneNumber);
     return storedOTP === otp;
-  } catch (error) {
+  } catch {
     return false;
   }
 };

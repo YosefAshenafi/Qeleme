@@ -39,7 +39,7 @@ export default function EarlyDashboardScreen() {
         setSoundEnabled(parsed.soundEnabled ?? true);
         setAutoAdvanceDelay(parsed.autoAdvanceDelay ?? 2000);
       }
-    } catch (error) {
+    } catch {
     }
   };
 
@@ -49,7 +49,7 @@ export default function EarlyDashboardScreen() {
         soundEnabled: newSoundEnabled,
         autoAdvanceDelay: newDelay,
       }));
-    } catch (error) {
+    } catch {
     }
   };
 

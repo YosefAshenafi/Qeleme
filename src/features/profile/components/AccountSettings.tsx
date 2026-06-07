@@ -80,7 +80,7 @@ export function AccountSettings({ colors, profileData }: AccountSettingsProps) {
         const updatedProfileData = await profileResponse.json();
         await login(updatedProfileData);
       }
-    } catch (error) {
+    } catch {
     }
   };
 

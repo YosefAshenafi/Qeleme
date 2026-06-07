@@ -301,40 +301,6 @@ const RichText: React.FC<RichTextProps> = ({
   } as const;
 
   
-  const convertHtmlToMarkdown = (htmlText: string): string => {
-    return htmlText
-      .replace(/<strong\b[^>]*>(.*?)<\/strong>/gi, '**$1**')
-      .replace(/<b\b[^>]*>(.*?)<\/b>/gi, '**$1**')
-      .replace(/<em\b[^>]*>(.*?)<\/em>/gi, '*$1*')
-      .replace(/<i\b[^>]*>(.*?)<\/i>/gi, '*$1*')
-      .replace(/<u\b[^>]*>(.*?)<\/u>/gi, '<u>$1</u>')
-      .replace(/<s\b[^>]*>(.*?)<\/s>/gi, '~~$1~~')
-      .replace(/<strike\b[^>]*>(.*?)<\/strike>/gi, '~~$1~~')
-      .replace(/<h1\b[^>]*>(.*?)<\/h1>/gi, '# $1\n\n')
-      .replace(/<h2\b[^>]*>(.*?)<\/h2>/gi, '## $1\n\n')
-      .replace(/<h3\b[^>]*>(.*?)<\/h3>/gi, '### $1\n\n')
-      .replace(/<h4\b[^>]*>(.*?)<\/h4>/gi, '#### $1\n\n')
-      .replace(/<h5\b[^>]*>(.*?)<\/h5>/gi, '##### $1\n\n')
-      .replace(/<h6\b[^>]*>(.*?)<\/h6>/gi, '###### $1\n\n')
-      .replace(/<p\b[^>]*>(.*?)<\/p>/gi, '$1\n\n')
-      .replace(/<br\s*\/?>/gi, '\n')
-      .replace(/<ul\b[^>]*>(.*?)<\/ul>/gi, (match, content) => {
-        return content.replace(/<li\b[^>]*>(.*?)<\/li>/gi, '- $1\n');
-      })
-      .replace(/<ol\b[^>]*>(.*?)<\/ol>/gi, (match, content) => {
-        let counter = 1;
-        return content.replace(/<li\b[^>]*>(.*?)<\/li>/gi, () => `${counter++}. $1\n`);
-      })
-      .replace(/<blockquote\b[^>]*>(.*?)<\/blockquote>/gi, '> $1\n\n')
-      .replace(/<code\b[^>]*>(.*?)<\/code>/gi, '$1')
-      .replace(/<pre\b[^>]*>(.*?)<\/pre>/gi, '$1\n\n')
-      .replace(/<a\b[^>]*href="([^"]*)"[^>]*>(.*?)<\/a>/gi, '[$2]($1)')
-      .replace(/<img\b[^>]*src="([^"]*)"[^>]*alt="([^"]*)"[^>]*>/gi, '![$2]($1)')
-      .replace(/<img\b[^>]*src="([^"]*)"[^>]*>/gi, '![]($1)')
-      .replace(/<[^>]*>/g, '')
-      .replace(/\n\s*\n\s*\n/g, '\n\n')
-      .trim();
-  };
 
   
   return (

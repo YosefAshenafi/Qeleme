@@ -240,6 +240,11 @@ export default {
       subtitle: 'Overall Academic Performance',
       empty: 'Complete an MCQ session to see your score trend.'
     },
+    studyActivity: {
+      title: 'Study Activity',
+      subtitle: 'Time studied each day',
+      empty: 'Complete a session to see when and how long you studied.'
+    },
     topPerformingSubjects: {
       title: 'Top Performing Subjects'
     },
@@ -730,6 +735,7 @@ export default {
       flashcards: 'Flashcards',
       selectSubject: 'Select Subject',
       nationalExam: 'National Exam (A.A)',
+      nationalExamLabel: 'National Exam (A.A)',
       badgeNew: 'New',
       badgeUpdated: 'Updated',
       badgeNational: 'National (A.A)',
@@ -770,7 +776,12 @@ export default {
     stillLearning: 'Still Learning',
     retry: 'Retry',
     done: 'Done',
-    preSelected: 'Pre-selected'
+    preSelected: 'Pre-selected',
+    conceptMastery: 'Concept Mastery',
+    tapToFlip: 'Tap to flip',
+    gotIt: 'Got it',
+    progress: 'Progress',
+    cards: 'cards'
   },
   login: {
     welcome: 'Welcome to MegaTest',

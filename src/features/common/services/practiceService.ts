@@ -111,7 +111,7 @@ export const getPracticeData = async (gradeId: string): Promise<PracticeData> =>
     let rawData: any;
     try {
       rawData = await response.json();
-    } catch (jsonErr) {
+    } catch {
       
       throw new Error('Server returned invalid data. Please try again later.');
     }
