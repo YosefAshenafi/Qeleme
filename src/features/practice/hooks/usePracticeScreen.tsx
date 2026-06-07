@@ -32,6 +32,7 @@ import { BOOK_CARD_IMAGE_HEIGHT, BOOK_CTA_ON, BOOKS_CANVAS, BRAND_BLUE, SUBJECT_
 import type { BooksCategoryFilter } from '@/features/practice/utils/booksCategory';
 import { getSubjectBooksCategory } from '@/features/practice/utils/booksCategory';
 import { formatPracticeTime, getTimeParts } from '@/features/practice/utils/practiceTime';
+import { usePracticeSettings } from '@/features/practice/hooks/usePracticeSettings';
 import { PracticeScreenStyles as styles } from '../components/PracticeScreen.styles';
 
 type BooksChapterIntent = 'practice' | 'flashcards' | 'either' | null;
@@ -62,6 +63,22 @@ export function usePracticeScreen() {
   const booksListScrollRef = useRef<ScrollView>(null);
   const booksSubjectRowY = useRef<Record<string, number>>({});
   const explanationRef = useRef<View>(null);
+
+  // MCQ practice settings (persisted) + auto-next plumbing.
+  const { autoNextEnabled, setAutoNextEnabled, autoNextDelay, setAutoNextDelay } = usePracticeSettings();
+  const [showPracticeSettings, setShowPracticeSettings] = useState(false);
+  const autoNextTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const autoNextEnabledRef = useRef(autoNextEnabled);
+  autoNextEnabledRef.current = autoNextEnabled;
+  const autoNextDelayRef = useRef(autoNextDelay);
+  autoNextDelayRef.current = autoNextDelay;
+  const advanceRef = useRef<() => void>(() => {});
+  const clearAutoNext = React.useCallback(() => {
+    if (autoNextTimerRef.current) {
+      clearTimeout(autoNextTimerRef.current);
+      autoNextTimerRef.current = null;
+    }
+  }, []);
   // Guards one-shot consumption of route preselection params. A focus refetch
   // refreshes practiceData, so without this the preselect effects would re-run
   // and snap the user back to the originally selected subject/national exam.
@@ -544,6 +561,7 @@ export function usePracticeScreen() {
   }, [user?.grade]);
 
   const exitSession = React.useCallback(() => {
+    clearAutoNext();
     setNationalExamQuestions([]);
     setShowResult(false);
     setShowTest(false);
@@ -555,7 +573,21 @@ export function usePracticeScreen() {
     setCurrentQuestionIndex(0);
     setAnsweredQuestions({});
     setSelectedAnswer(null);
-  }, []);
+  }, [clearAutoNext]);
+
+  // Keep advanceRef pointing at the current advance action, and clear any
+  // pending auto-next timer on unmount.
+  React.useEffect(() => {
+    advanceRef.current = () => {
+      if (isLastQuestion) {
+        void handleResult();
+      } else {
+        handleNextQuestion();
+      }
+    };
+  });
+
+  React.useEffect(() => clearAutoNext, [clearAutoNext]);
 
   useLayoutEffect(() => {
 
@@ -637,8 +669,8 @@ export function usePracticeScreen() {
     if (isCorrect) {
       setScore(prev => prev + 1);
     }
-    
-    
+
+
     setTimeout(() => {
       explanationRef.current?.measure((x: number, y: number, width: number, height: number, pageX: number, pageY: number) => {
         scrollViewRef.current?.scrollTo({
@@ -647,10 +679,19 @@ export function usePracticeScreen() {
         });
       });
     }, 100);
+
+    // Auto-advance after the chosen delay when the setting is enabled.
+    clearAutoNext();
+    if (autoNextEnabledRef.current) {
+      autoNextTimerRef.current = setTimeout(() => {
+        autoNextTimerRef.current = null;
+        advanceRef.current();
+      }, autoNextDelayRef.current);
+    }
   };
 
   const handleNextQuestion = () => {
-    
+    clearAutoNext();
     if (currentQuestionIndex < nationalExamQuestions.length - 1) {
       if (!selectedAnswer) {
         setShowAnswerMessage(true);
@@ -666,6 +707,7 @@ export function usePracticeScreen() {
   };
 
   const handlePreviousQuestion = () => {
+    clearAutoNext();
     if (currentQuestionIndex > 0) {
       setCurrentQuestionIndex(prev => prev - 1);
       setSelectedAnswer(answeredQuestions[currentQuestionIndex - 1] || null);
@@ -674,6 +716,7 @@ export function usePracticeScreen() {
   };
 
   const handleResult = async () => {
+    clearAutoNext();
     stopTimer();
     setShowResult(true);
     
@@ -1157,6 +1200,12 @@ export function usePracticeScreen() {
     handlePreviousQuestion,
     handleResult,
     exitSession,
+    autoNextEnabled,
+    setAutoNextEnabled,
+    autoNextDelay,
+    setAutoNextDelay,
+    showPracticeSettings,
+    setShowPracticeSettings,
     handleCheckOtherQuestions,
     handleRetry,
     dismissBooksChapterModal,

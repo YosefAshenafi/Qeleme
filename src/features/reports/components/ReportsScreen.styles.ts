@@ -22,6 +22,7 @@ export const ReportsScreenStyles = StyleSheet.create({
   },
   screenTitle: {
     fontSize: 26,
+    lineHeight: 34,
     fontWeight: '900',
     letterSpacing: -0.6,
   },
@@ -92,9 +93,13 @@ export const ReportsScreenStyles = StyleSheet.create({
   },
   ringPercent: {
     fontSize: 30,
+    lineHeight: 38,
+    paddingTop: 2,
     fontWeight: '900',
     letterSpacing: -1,
     fontVariant: ['tabular-nums'],
+    textAlign: 'center',
+    includeFontPadding: false,
   },
   ringLabel: {
     fontSize: 10,

@@ -27,6 +27,7 @@ import { BASE_URL } from '@/config/constants';
 import ActivityTrackingService from '@/features/common/services/activityTrackingService';
 import { ProfileScreenStyles as styles } from './ProfileScreen.styles';
 import { PROFILE_BRAND_BLUE } from '@/features/profile/constants/brand';
+import { usePracticeSettings, AUTO_NEXT_DELAY_OPTIONS } from '@/features/practice/hooks/usePracticeSettings';
 
 export default function ProfileScreen() {
   const { isDarkMode, toggleTheme } = useTheme();
@@ -34,6 +35,7 @@ export default function ProfileScreen() {
   const { t, i18n } = useTranslation();
   const colors = getColors(isDarkMode);
   const insets = useSafeAreaInsets();
+  const { autoNextEnabled, setAutoNextEnabled, autoNextDelay, setAutoNextDelay } = usePracticeSettings();
 
   const [refreshing, setRefreshing] = useState(false);
   const [showAccountModal, setShowAccountModal] = useState(false);
@@ -376,7 +378,78 @@ export default function ProfileScreen() {
           </View>
         </View>
 
-        
+        {/* PRACTICE */}
+        <Text style={[styles.groupLabel, { color: colors.text + '60' }]}>
+          {t('profile.groups.practice', { defaultValue: 'PRACTICE' })}
+        </Text>
+        <View style={[styles.groupCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
+          <View style={styles.row}>
+            <View style={[styles.rowIcon, { backgroundColor: PROFILE_BRAND_BLUE + '12' }]}>
+              <IconSymbol name="arrow.right.circle.fill" size={18} color={PROFILE_BRAND_BLUE} />
+            </View>
+            <View style={styles.rowText}>
+              <Text style={[styles.rowTitle, { color: colors.text }]}>
+                {t('mcq.settings.autoNext', { defaultValue: 'Auto Next' })}
+              </Text>
+              <Text style={[styles.rowSubtitle, { color: colors.text + '70' }]}>
+                {autoNextEnabled
+                  ? t('mcq.settings.autoNextDescription', {
+                      defaultValue: 'Automatically move to the next question after you answer.',
+                    })
+                  : t('mcq.settings.manualDescription', {
+                      defaultValue: 'Tap Next to move to the next question.',
+                    })}
+              </Text>
+            </View>
+            <Switch value={autoNextEnabled} onValueChange={setAutoNextEnabled} />
+          </View>
+
+          {autoNextEnabled && (
+            <>
+              <View style={[styles.divider, { backgroundColor: colors.border }]} />
+              <View style={styles.row}>
+                <View style={[styles.rowIcon, { backgroundColor: PROFILE_BRAND_BLUE + '12' }]}>
+                  <IconSymbol name="clock.fill" size={18} color={PROFILE_BRAND_BLUE} />
+                </View>
+                <View style={styles.rowText}>
+                  <Text style={[styles.rowTitle, { color: colors.text }]}>
+                    {t('mcq.settings.waitTime', { defaultValue: 'Wait time' })}
+                  </Text>
+                  <Text style={[styles.rowSubtitle, { color: colors.text + '70' }]}>
+                    {`${autoNextDelay / 1000}s`}
+                  </Text>
+                </View>
+              </View>
+              <View style={{ flexDirection: 'row', gap: 7, paddingHorizontal: 14, paddingBottom: 14 }}>
+                {AUTO_NEXT_DELAY_OPTIONS.map((ms) => {
+                  const active = autoNextDelay === ms;
+                  return (
+                    <TouchableOpacity
+                      key={ms}
+                      onPress={() => setAutoNextDelay(ms)}
+                      activeOpacity={0.85}
+                      style={{
+                        flex: 1,
+                        paddingVertical: 9,
+                        borderRadius: 11,
+                        alignItems: 'center',
+                        backgroundColor: active ? PROFILE_BRAND_BLUE : colors.background,
+                        borderWidth: 1,
+                        borderColor: active ? PROFILE_BRAND_BLUE : colors.border,
+                      }}
+                    >
+                      <Text style={{ fontSize: 13, fontWeight: '800', color: active ? '#FFFFFF' : colors.text }}>
+                        {`${ms / 1000}s`}
+                      </Text>
+                    </TouchableOpacity>
+                  );
+                })}
+              </View>
+            </>
+          )}
+        </View>
+
+
         <Text style={[styles.groupLabel, { color: colors.text + '60' }]}>
           {t('profile.groups.about', { defaultValue: 'ABOUT' })}
         </Text>

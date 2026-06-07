@@ -35,6 +35,7 @@ type PracticeMcqQuestionViewProps = {
   onAdvance: () => void;
   onPrevious: () => void;
   onExit: () => void;
+  onOpenSettings: () => void;
   reviewLaterLabel: string;
   finishLabel: string;
   nextLabel: string;
@@ -61,6 +62,7 @@ export function PracticeMcqQuestionView({
   onAdvance,
   onPrevious,
   onExit,
+  onOpenSettings,
   reviewLaterLabel,
   finishLabel,
   nextLabel,
@@ -97,8 +99,16 @@ export function PracticeMcqQuestionView({
               {currentQuestionIndex + 1} of {totalQuestions}
             </ThemedText>
             <TouchableOpacity
+              onPress={onOpenSettings}
+              hitSlop={{ top: 10, bottom: 10, left: 8, right: 8 }}
+              accessibilityRole="button"
+              accessibilityLabel="Quiz settings"
+            >
+              <Ionicons name="settings-outline" size={22} color={isDarkMode ? '#FFFFFF' : '#9AA3B2'} />
+            </TouchableOpacity>
+            <TouchableOpacity
               onPress={onExit}
-              hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+              hitSlop={{ top: 10, bottom: 10, left: 8, right: 10 }}
               accessibilityRole="button"
               accessibilityLabel="End session"
             >

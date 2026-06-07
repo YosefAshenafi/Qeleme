@@ -424,6 +424,7 @@ export default {
     groups: {
       accountManagement: 'ACCOUNT MANAGEMENT',
       appCustomization: 'APP CUSTOMIZATION',
+      practice: 'PRACTICE',
       about: 'ABOUT'
     },
     personalInformation: 'Personal Information',
@@ -689,6 +690,14 @@ export default {
       }
     },
     selectAnswer: 'Please select an answer before proceeding',
+    settings: {
+      title: 'Quiz Settings',
+      autoNext: 'Auto Next',
+      autoNextDescription: 'Automatically move to the next question after you answer.',
+      manualDescription: 'Tap Next to move to the next question.',
+      waitTime: 'Wait time',
+      done: 'Done'
+    },
     noSubjectsFound: {
       title: 'No subjects found for your grade',
       description: 'We couldn\'t find any subjects for grade {{gradeName}}. This could be because:',

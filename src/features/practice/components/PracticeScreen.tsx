@@ -14,6 +14,7 @@ import { PracticeErrorState } from './PracticeErrorState';
 import { PracticeNoSubjectsState } from './PracticeNoSubjectsState';
 import { PracticeSessionResultsPanel } from './PracticeSessionResultsPanel';
 import { PracticeMcqQuestionView } from './PracticeMcqQuestionView';
+import { PracticeSettingsModal } from './PracticeSettingsModal';
 
 export default function PracticeScreen() {
   const {
@@ -125,6 +126,12 @@ export default function PracticeScreen() {
     handlePreviousQuestion,
     handleResult,
     exitSession,
+    autoNextEnabled,
+    setAutoNextEnabled,
+    autoNextDelay,
+    setAutoNextDelay,
+    showPracticeSettings,
+    setShowPracticeSettings,
     handleCheckOtherQuestions,
     handleRetry,
     dismissBooksChapterModal,
@@ -880,6 +887,7 @@ export default function PracticeScreen() {
             onAdvance={() => (isLastQuestion ? handleResult() : handleNextQuestion())}
             onPrevious={handlePreviousQuestion}
             onExit={exitSession}
+            onOpenSettings={() => setShowPracticeSettings(true)}
             reviewLaterLabel={t('mcq.results.reviewLater')}
             finishLabel={t('mcq.finish')}
             nextLabel={t('mcq.next')}
@@ -888,6 +896,15 @@ export default function PracticeScreen() {
           />
         </ThemedView>
       </ThemedView>
+
+      <PracticeSettingsModal
+        visible={showPracticeSettings}
+        onClose={() => setShowPracticeSettings(false)}
+        autoNextEnabled={autoNextEnabled}
+        onToggleAutoNext={setAutoNextEnabled}
+        autoNextDelay={autoNextDelay}
+        onChangeDelay={setAutoNextDelay}
+      />
     </SafeAreaView>
   );
 }

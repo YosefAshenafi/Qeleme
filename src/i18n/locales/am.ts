@@ -618,6 +618,14 @@ export default {
       }
     },
     selectAnswer: 'እባክዎ ከመቀጠልዎ በፊት መልስ ይምረጡ',
+    settings: {
+      title: 'የፈተና ቅንብሮች',
+      autoNext: 'በራስ-ሰር ቀጣይ',
+      autoNextDescription: 'ከመለሱ በኋላ ወደ ቀጣዩ ጥያቄ በራስ-ሰር ይሂዱ።',
+      manualDescription: 'ወደ ቀጣዩ ጥያቄ ለመሄድ ቀጣይን ይንኩ።',
+      waitTime: 'የመጠበቂያ ጊዜ',
+      done: 'ጨርሻለሁ'
+    },
     noSubjectsFound: {
       title: 'ለክፍልዎ የትምህርት ዓይነቶች አልተገኙም',
       description: 'ለ{{gradeName}} ክፍል የትምህርት አይነቶች ማግኘት አልቻልንም። ይህ ሊሆን የቻለው:',
@@ -795,6 +803,7 @@ export default {
     groups: {
       accountManagement: 'የመለያ አስተዳዳሪ',
       appCustomization: 'የመተግበሪያ ብቅርተኝነት',
+      practice: 'ልምምድ',
       about: 'ስለ'
     },
     personalInformation: 'የግል መረጃ',
@@ -813,7 +822,7 @@ export default {
     resetProgressConfirm: 'በዚህ መሳሪያ ላይ የትምህርትዎን እድገት ለመጀመር እርግጠኛ ነዎት?',
     resetProgressSubtitle: 'ሪፖርቶችን እና እንቅስቃሴዎችን ያጸዳል',
     resetProgressCancel: 'ይቅር',
-    resetProgressConfirmButton: 'ያረጋግ',
+    resetProgressConfirmButton: 'ያረጋግጡ',
     imagePicker: {
       permissionRequired: 'ፍቃድ ያስፈልጋል',
       permissionMessage: 'የመገለጫ ስዕልዎን ለመቀየር የፎቶ ቤተሰብዎን መድረስ ፍቃድ ይስጡ።',
