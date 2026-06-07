@@ -142,12 +142,7 @@ export default function FlashcardsScreen() {
       <SafeAreaView style={[styles.safeArea, { backgroundColor: '#FFFFFF' }]} edges={['top', 'left', 'right']}>
         <ThemedView style={[styles.container, { backgroundColor: fc.isDarkMode ? fc.colors.background : '#F4F6FA' }]}>
           <StatusBar translucent={false} backgroundColor="#FFFFFF" barStyle="dark-content" />
-          <FlashcardsScreenTopBar
-            onClose={() => {
-              fc.setShowResult(false);
-              fc.setShowFlashcards(false);
-            }}
-          />
+          <FlashcardsScreenTopBar />
 
           <FlashcardsSessionProgress
             isDarkMode={fc.isDarkMode}

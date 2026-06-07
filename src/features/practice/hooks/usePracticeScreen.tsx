@@ -564,8 +564,10 @@ export function usePracticeScreen() {
         <TouchableOpacity
           onPress={exitSession}
           style={{ padding: 8 }}
+          accessibilityRole="button"
+          accessibilityLabel="Close"
         >
-          <Ionicons name="chevron-back" size={24} color="#111827" />
+          <Ionicons name="close" size={26} color={colors.text} />
         </TouchableOpacity>
       ) : (
         <Image
@@ -578,7 +580,9 @@ export function usePracticeScreen() {
         null
       ) : nationalExamQuestions.length > 0 ? (
         <View style={{ alignItems: 'center' }}>
-          <Text style={{ fontSize: 16, fontWeight: '600', color: '#111827' }}>{selectedChapterName ? `${t('mcq.chapterShort')} ${selectedChapterName.replace(/-(\d+)$/, '')}` : ''}</Text>
+          <Text style={{ fontSize: 16, fontWeight: '600', color: colors.text }}>
+            {`${selectedSubjectData?.name ?? ''}${selectedChapterName ? ` : ${t('mcq.chapterShort')} ${selectedChapterName.replace(/-(\d+)$/, '')}` : ''}`.trim()}
+          </Text>
         </View>
       ) : null,
       headerRight: () => (
@@ -586,7 +590,7 @@ export function usePracticeScreen() {
       ),
       headerTitleAlign: 'center',
     });
-  }, [navigation, colors.text, showResult, nationalExamQuestions.length, selectedChapterName, t, exitSession]);
+  }, [navigation, colors.text, showResult, nationalExamQuestions.length, selectedChapterName, selectedSubjectData?.name, t, exitSession]);
 
   useEffect(() => {
     

@@ -401,9 +401,9 @@ export default function ProfileScreen() {
                 t('common.confirmation', { defaultValue: 'Confirmation' }),
                 t('profile.resetProgressConfirm', { defaultValue: 'Reset your learning progress on this device?' }),
                 [
-                  { text: t('common.cancel', { defaultValue: 'Cancel' }), style: 'cancel' },
+                  { text: t('profile.resetProgressCancel', { defaultValue: 'Cancel' }), style: 'cancel' },
                   {
-                    text: t('common.confirm', { defaultValue: 'Confirm' }),
+                    text: t('profile.resetProgressConfirmButton', { defaultValue: 'Confirm' }),
                     style: 'destructive',
                     onPress: async () => {
                       const tracking = ActivityTrackingService.getInstance();

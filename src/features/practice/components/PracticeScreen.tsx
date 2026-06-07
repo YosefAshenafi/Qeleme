@@ -870,9 +870,6 @@ export default function PracticeScreen() {
             timeHours={timeHours}
             timeMinutes={timeMinutes}
             timeSeconds={timeSeconds}
-            hoursLabel={t('mcq.results.timeLabels.hours')}
-            minutesLabel={t('mcq.results.timeLabels.minutes')}
-            secondsLabel={t('mcq.results.timeLabels.seconds')}
             showAnswerMessage={showAnswerMessage}
             selectAnswerHint={t('mcq.selectAnswer')}
             currentQuestion={currentQuestion}

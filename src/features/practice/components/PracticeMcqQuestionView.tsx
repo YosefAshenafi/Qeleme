@@ -25,9 +25,6 @@ type PracticeMcqQuestionViewProps = {
   timeHours: number;
   timeMinutes: number;
   timeSeconds: number;
-  hoursLabel: string;
-  minutesLabel: string;
-  secondsLabel: string;
   showAnswerMessage: boolean;
   selectAnswerHint: string;
   currentQuestion: NationalExamAPIResponse | undefined;
@@ -54,9 +51,6 @@ export function PracticeMcqQuestionView({
   timeHours,
   timeMinutes,
   timeSeconds,
-  hoursLabel,
-  minutesLabel,
-  secondsLabel,
   showAnswerMessage,
   selectAnswerHint,
   currentQuestion,
@@ -77,10 +71,28 @@ export function PracticeMcqQuestionView({
     <>
       <View style={styles.sessionProgressSection}>
         <View style={styles.sessionProgressTopRow}>
-          <ThemedText style={[styles.sessionProgressLabel, { color: isDarkMode ? '#FFFFFF' : '#6B7280' }]}>
-            {sessionProgressLabel}
-          </ThemedText>
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 14 }}>
+          <View style={styles.sessionProgressSide}>
+            <ThemedText
+              numberOfLines={1}
+              style={[styles.sessionProgressLabel, { color: isDarkMode ? '#FFFFFF' : '#6B7280' }]}
+            >
+              {sessionProgressLabel}
+            </ThemedText>
+          </View>
+
+          <View style={[styles.timeChip, { backgroundColor: colors.cardAlt, borderColor: colors.border }]}>
+            <Ionicons
+              name="time-outline"
+              size={15}
+              color={isDarkMode ? '#FFFFFF' : BRAND_BLUE}
+              style={styles.timeChipIcon}
+            />
+            <ThemedText style={[styles.timeValueText, { color: isDarkMode ? '#FFFFFF' : BRAND_BLUE }]}>
+              {`${String(timeHours).padStart(2, '0')}:${String(timeMinutes).padStart(2, '0')}:${String(timeSeconds).padStart(2, '0')}`}
+            </ThemedText>
+          </View>
+
+          <View style={[styles.sessionProgressSide, styles.sessionProgressSideEnd]}>
             <ThemedText style={[styles.sessionProgressCount, { color: isDarkMode ? '#FFFFFF' : BRAND_BLUE }]}>
               {currentQuestionIndex + 1} of {totalQuestions}
             </ThemedText>
@@ -90,7 +102,7 @@ export function PracticeMcqQuestionView({
               accessibilityRole="button"
               accessibilityLabel="End session"
             >
-              <Ionicons name="close-circle" size={26} color={isDarkMode ? '#FFFFFF' : '#9AA3B2'} />
+              <Ionicons name="close-circle" size={24} color={isDarkMode ? '#FFFFFF' : '#9AA3B2'} />
             </TouchableOpacity>
           </View>
         </View>
@@ -105,21 +117,6 @@ export function PracticeMcqQuestionView({
               },
             ]}
           />
-        </View>
-
-        <View style={styles.timeBoxesRow}>
-          <View style={[styles.timeBox, { backgroundColor: colors.cardAlt, borderColor: colors.border }]}>
-            <ThemedText style={[styles.timeValueText, { color: isDarkMode ? '#FFFFFF' : BRAND_BLUE }]}>{String(timeHours).padStart(2, '0')}</ThemedText>
-            <ThemedText style={[styles.timeLabelText, { color: colors.tabIconDefault }]}>{hoursLabel}</ThemedText>
-          </View>
-          <View style={[styles.timeBox, { backgroundColor: colors.cardAlt, borderColor: colors.border }]}>
-            <ThemedText style={[styles.timeValueText, { color: isDarkMode ? '#FFFFFF' : BRAND_BLUE }]}>{String(timeMinutes).padStart(2, '0')}</ThemedText>
-            <ThemedText style={[styles.timeLabelText, { color: colors.tabIconDefault }]}>{minutesLabel}</ThemedText>
-          </View>
-          <View style={[styles.timeBox, { backgroundColor: colors.cardAlt, borderColor: colors.border }]}>
-            <ThemedText style={[styles.timeValueText, { color: isDarkMode ? '#FFFFFF' : BRAND_BLUE }]}>{String(timeSeconds).padStart(2, '0')}</ThemedText>
-            <ThemedText style={[styles.timeLabelText, { color: colors.tabIconDefault }]}>{secondsLabel}</ThemedText>
-          </View>
         </View>
       </View>
 

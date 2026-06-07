@@ -11,12 +11,12 @@ export function FlashcardsScreenTopBar({ onClose }: { onClose?: () => void }) {
     <View style={styles.flashHeaderWrap}>
       <View style={styles.flashTopBar}>
         <TouchableOpacity
-          onPress={onClose ?? (() => router.back())}
+          onPress={onClose ?? (() => router.replace('/(tabs)/practice'))}
           style={{ padding: 8 }}
           accessibilityRole="button"
-          accessibilityLabel={onClose ? 'End flashcards session' : 'Back'}
+          accessibilityLabel="Close"
         >
-          <Ionicons name={onClose ? 'close' : 'chevron-back'} size={onClose ? 26 : 24} color={FLASH_HEADER_BACK_ICON} />
+          <Ionicons name="close" size={26} color={FLASH_HEADER_BACK_ICON} />
         </TouchableOpacity>
         <Image
           source={require('@/assets/images/logo.png')}

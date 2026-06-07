@@ -242,6 +242,32 @@ export default {
     },
     topPerformingSubjects: {
       title: 'Top Performing Subjects'
+    },
+    dash: {
+      subtitle: 'Your learning at a glance',
+      accuracy: 'Accuracy',
+      correctOfTotal: '{{correct}} of {{total}} correct',
+      questions: 'Questions',
+      studyTime: 'Study Time',
+      currentStreak: 'Current Streak',
+      bestStreak: 'Best',
+      dayOne: '1 day',
+      dayOther: '{{count}} days',
+      practiceMix: 'Practice Mix',
+      mcq: 'MCQ',
+      flashcards: 'Flashcards',
+      sessionsOne: '1 session',
+      sessionsOther: '{{count}} sessions',
+      recentActivity: 'Recent Activity',
+      recentEmpty: 'No recent activity yet.',
+      mcqResult: '{{correct}}/{{total}} correct',
+      flashResult: '{{count}} cards · {{mastered}} mastered',
+      subjectPerformance: 'Subject Performance',
+      justNow: 'Just now',
+      minutesAgo: '{{count}}m ago',
+      hoursAgo: '{{count}}h ago',
+      daysAgo: '{{count}}d ago',
+      yesterday: 'Yesterday'
     }
   },
   homework: {
@@ -415,6 +441,8 @@ export default {
     resetProgress: 'Reset Progress',
     resetProgressConfirm: 'Reset your learning progress on this device?',
     resetProgressSubtitle: 'Clears reports and activity on this device',
+    resetProgressCancel: 'Cancel',
+    resetProgressConfirmButton: 'Confirm',
     imagePicker: {
       permissionRequired: 'Permission Required',
       permissionMessage: 'Please grant permission to access your photo library to change your profile picture.',
@@ -585,7 +613,7 @@ export default {
     subject: 'Subject',
     selectChapter: 'Select Chapter',
     chapter: 'Chapter',
-    chapterShort: 'Ch',
+    chapterShort: 'ch',
     selectSubjectAndChapter: 'Select Subject and Chapter',
     selectSubjectPlaceholder: 'Select a subject',
     selectChapterPlaceholder: 'Select a chapter',

@@ -283,7 +283,6 @@ export const HomeScreenStyles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     marginBottom: 12,
-    paddingHorizontal: 20,
   },
   bookCarouselTitle: {
     fontSize: 18,

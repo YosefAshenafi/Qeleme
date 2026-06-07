@@ -491,6 +491,32 @@ export default {
     },
     topPerformingSubjects: {
       title: 'በጣም የሚዳሰሱ የትምህርት ዓይነቶች'
+    },
+    dash: {
+      subtitle: 'የትምህርትዎ አጠቃላይ እይታ',
+      accuracy: 'ትክክለኛነት',
+      correctOfTotal: 'ከ{{total}} ውስጥ {{correct}} ትክክል',
+      questions: 'ጥያቄዎች',
+      studyTime: 'የጥናት ጊዜ',
+      currentStreak: 'የአሁኑ ተከታታይ',
+      bestStreak: 'ምርጥ',
+      dayOne: '1 ቀን',
+      dayOther: '{{count}} ቀናት',
+      practiceMix: 'የልምምድ ድብልቅ',
+      mcq: 'ምርጫ ጥያቄ',
+      flashcards: 'ፍላሽ ካርዶች',
+      sessionsOne: '1 ክፍለ ጊዜ',
+      sessionsOther: '{{count}} ክፍለ ጊዜያት',
+      recentActivity: 'የቅርብ ጊዜ እንቅስቃሴ',
+      recentEmpty: 'እስካሁን ምንም እንቅስቃሴ የለም።',
+      mcqResult: 'ከ{{total}} ውስጥ {{correct}} ትክክል',
+      flashResult: '{{count}} ካርዶች · {{mastered}} ተክኗል',
+      subjectPerformance: 'የትምህርት አፈጻጸም',
+      justNow: 'አሁን',
+      minutesAgo: 'ከ{{count}} ደቂቃ በፊት',
+      hoursAgo: 'ከ{{count}} ሰዓት በፊት',
+      daysAgo: 'ከ{{count}} ቀን በፊት',
+      yesterday: 'ትናንት'
     }
   },
   common: {
@@ -517,7 +543,7 @@ export default {
     selectSubject: 'የትምህርት ዓይነት ይምረጡ',
     subject: 'የትምህርት ዓይነት',
     chapter: 'ምዕራፍ',
-    chapterShort: 'መዕ',
+    chapterShort: 'ምዕ',
     selectChapter: 'ምዕራፍ ይምረጡ',
     selectSubjectAndChapter: 'የትምህርት ዓይነት እና ምዕራፍ ይምረጡ',
     selectSubjectPlaceholder: 'የትምህርት ዓይነት ይምረጡ',
@@ -786,6 +812,8 @@ export default {
     resetProgress: 'እድገትን ዳግም ጀምር',
     resetProgressConfirm: 'በዚህ መሳሪያ ላይ የትምህርትዎን እድገት ለመጀመር እርግጠኛ ነዎት?',
     resetProgressSubtitle: 'ሪፖርቶችን እና እንቅስቃሴዎችን ያጸዳል',
+    resetProgressCancel: 'ይቅር',
+    resetProgressConfirmButton: 'ያረጋግ',
     imagePicker: {
       permissionRequired: 'ፍቃድ ያስፈልጋል',
       permissionMessage: 'የመገለጫ ስዕልዎን ለመቀየር የፎቶ ቤተሰብዎን መድረስ ፍቃድ ይስጡ።',
