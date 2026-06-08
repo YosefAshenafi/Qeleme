@@ -28,6 +28,7 @@ ios/Podfile.lock
 # Android Keystore (CRITICAL - Never commit)
 android/keystore/
 android/app/*.keystore
+android/keystore.properties
 
 # Metro
 .metro-health-check*
