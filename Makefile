@@ -9,6 +9,7 @@ APK_DEBUG   := $(ANDROID_DIR)/app/build/outputs/apk/debug/app-debug.apk
 IPA_DIR     := build/ipa
 
 .PHONY: help install \
+	server-install server-dev server-build server-deploy \
 	android-keystore android-apk android-aab android-debug-apk android-install android-clean \
 	ios-run ios-ipa ios-testflight ios-submit ios-credentials
 
@@ -16,6 +17,12 @@ help:
 	@echo "MegaTest — make targets"
 	@echo ""
 	@echo "  install              Install JS dependencies (bun)"
+	@echo ""
+	@echo "  API gateway (server/):"
+	@echo "    server-install       Install gateway dependencies"
+	@echo "    server-dev           Run Next.js gateway on :3000"
+	@echo "    server-build         Production build of the gateway"
+	@echo "    server-deploy        Deploy gateway to Vercel (production)"
 	@echo ""
 	@echo "  Android (local):"
 	@echo "    android-keystore   Generate a release keystore (interactive), then create android/keystore.properties"
@@ -34,6 +41,20 @@ help:
 
 install:
 	bun install
+
+# ----- API gateway ---------------------------------------------------------
+
+server-install:
+	cd server && bun install
+
+server-dev:
+	cd server && bun run dev
+
+server-build:
+	cd server && bun run build
+
+server-deploy:
+	cd server && vercel --prod --yes
 
 # ----- Android (local) -----------------------------------------------------
 

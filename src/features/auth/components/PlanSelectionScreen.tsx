@@ -7,7 +7,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useTheme } from '@/core/providers/ThemeProvider';
 import { getColors } from '@/features/common/constants/Colors';
 import { useTranslation } from 'react-i18next';
-import { initiatePayment } from '@/features/auth/services/chappaService';
+import { initiatePayment } from '@/features/auth/services/paymentGatewayService';
 import { PaymentPlan } from '@/features/common/types/payment';
 import { BASE_URL } from '@/config/constants';
 

@@ -12,7 +12,8 @@ import { LanguageToggle } from '@/features/common/components/ui/LanguageToggle';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { WebView } from 'react-native-webview';
 import * as Linking from 'expo-linking';
-import { BASE_URL } from '@/config/constants';
+import { BASE_URL, PAYMENT_SUCCESS_CALLBACK_HOST } from '@/config/constants';
+import { checkPaymentStatus } from '@/features/auth/services/paymentGatewayService';
 import { PaymentScreenStyles as styles } from './PaymentScreen.styles';
 
 export default function PaymentScreen() {
@@ -78,37 +79,17 @@ export default function PaymentScreen() {
   };
 
   const pollPaymentStatus = async (orderId: string) => {
-    
-    
     const interval = setInterval(async () => {
       try {
-        const response = await fetch(`http://localhost:8080/verify`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            tx_ref: orderId
-          }),
-        });
-        const data = await response.json();
-        
-        
-        
+        const data = await checkPaymentStatus(orderId);
+
         const isSuccess = data.success && (
-          data.status?.status === 'COMPLETED' || 
-          data.data?.status === 'SUCCESS' ||
-          data.status?.status === 'SUCCESS' ||
           data.data?.status === 'COMPLETED' ||
-          data.status === 'SUCCESS' ||
-          data.status === 'COMPLETED'
+          data.data?.status === 'SUCCESS'
         );
-        
-        
+
         const isFailed = data.success && (
-          data.status?.status === 'FAILED' || 
           data.data?.status === 'FAILED' ||
-          data.status?.status === 'CANCELLED' ||
           data.data?.status === 'CANCELLED'
         );
         
@@ -218,8 +199,8 @@ export default function PaymentScreen() {
               onNavigationStateChange={(navState) => {
                 
                 
-                if (navState.url.includes('payment-success') || 
-                    navState.url.includes('trustechit.com/payment-success') ||
+                if (navState.url.includes('payment-success') ||
+                    navState.url.includes(`${PAYMENT_SUCCESS_CALLBACK_HOST}/payment-success`) ||
                     navState.url.includes('success') ||
                     navState.url.includes('completed')) {
                   setShowWebView(false);
@@ -228,8 +209,7 @@ export default function PaymentScreen() {
                 }
                 
                 
-                if (navState.url.includes('webhook.site') || 
-                    navState.url.includes('error') ||
+                if (navState.url.includes('error') ||
                     navState.url.includes('failed')) {
                   setShowWebView(false);
                   handlePaymentFailure();

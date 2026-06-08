@@ -1,6 +1,6 @@
 
-import { PaymentResponse, PaymentStatusResponse } from '@/features/common/types/chappa';
-import { CHAPPA_BASE_URL } from '@/config/constants';
+import { PaymentResponse, PaymentStatusResponse } from '@/features/common/types/paymentGateway';
+import { GATEWAY_BASE_URL } from '@/config/constants';
 
 export const initiatePayment = async (
   amount: number,
@@ -11,16 +11,11 @@ export const initiatePayment = async (
   customerName?: string
 ): Promise<PaymentResponse> => {
   try {
-    
     const nameParts = customerName ? customerName.split(' ') : ['Customer', 'User'];
     const firstName = nameParts[0] || 'Customer';
     const lastName = nameParts.slice(1).join(' ') || 'User';
 
-    
-    const callbackUrl = `https://www.trustechit.com/payment-success.html?orderId=${orderId}`;
-    const returnUrl = 'megatest://payment-success';
-
-    const response = await fetch(`${CHAPPA_BASE_URL}/pay`, {
+    const response = await fetch(`${GATEWAY_BASE_URL}/api/payments/pay`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -31,21 +26,18 @@ export const initiatePayment = async (
         first_name: firstName,
         last_name: lastName,
         tx_ref: orderId,
-        callback_url: callbackUrl,
-        return_url: returnUrl
+        return_url: 'megatest://payment-success',
       }),
     });
 
     const data: PaymentResponse = await response.json();
 
-    const transformedResponse: PaymentResponse = {
+    return {
       success: data.success,
       data: data.data,
       paymentUrl: data.data?.checkout_url,
-      error: data.error
+      error: data.error,
     };
-    
-    return transformedResponse;
   } catch (error) {
     throw error;
   }
@@ -55,13 +47,13 @@ export const checkPaymentStatus = async (
   orderId: string
 ): Promise<PaymentStatusResponse> => {
   try {
-    const response = await fetch(`${CHAPPA_BASE_URL}/verify`, {
+    const response = await fetch(`${GATEWAY_BASE_URL}/api/payments/verify`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        tx_ref: orderId
+        tx_ref: orderId,
       }),
     });
 
@@ -70,4 +62,4 @@ export const checkPaymentStatus = async (
   } catch (error) {
     throw error;
   }
-}; 
+};

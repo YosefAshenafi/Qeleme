@@ -300,15 +300,14 @@ Big render blocks (modals, lists, cards) are extracted into presentational compo
 
 ### Configuration
 
-Backend hosts are defined in **`src/core/config/constants.ts`**:
+The mobile app talks **only** to the **API gateway** (`server/` — a Next.js app). Upstream URLs and secrets live in the gateway's `.env`, not in the APK.
 
 ```ts
-export const BASE_URL = 'https://www.trustechit.com';   // main REST API
-export const CHAPPA_BASE_URL = 'https://api.qelem.net';  // payments
-export const OTP_BASE_URL = 'https://api.afromessage.com/api';
+// src/core/config/constants.ts — resolved from app.json extra.apiUrl
+export const GATEWAY_BASE_URL = 'https://megatest-api.vercel.app';
 ```
 
-Point `BASE_URL` at your environment's API host. `app.json` also has an `expo.extra.apiUrl` field — keep these in sync with your deployment so they don't drift.
+All REST, payment, and OTP traffic goes through that single host. See **`server/README.md`** for setup, env vars, and local dev (Android emulator: `http://10.0.2.2:3000`).
 
 ### REST endpoints used by the client (`{BASE_URL}/api/...`)
 

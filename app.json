@@ -36,7 +36,7 @@
     },
     "sdkVersion": "54.0.0",
     "extra": {
-      "apiUrl": "https://api.megatest.app",
+      "apiUrl": "https://megatest-api.vercel.app",
       "router": {
         "origin": false
       },

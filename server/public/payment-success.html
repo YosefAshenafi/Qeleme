@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Payment Success - MegaTest</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .container {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            text-align: center;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            max-width: 400px;
+            width: 100%;
+        }
+        .success-icon {
+            font-size: 80px;
+            color: #10B981;
+            margin-bottom: 20px;
+        }
+        h1 {
+            color: #1F2937;
+            margin-bottom: 15px;
+            font-size: 28px;
+            font-weight: bold;
+            padding-top: 10px;
+        }
+        p {
+            color: #6B7280;
+            margin-bottom: 30px;
+            line-height: 1.6;
+        }
+        .button {
+            background: #7C3AED;
+            color: white;
+            padding: 15px 30px;
+            border-radius: 10px;
+            text-decoration: none;
+            display: inline-block;
+            font-weight: 600;
+            transition: background 0.3s;
+        }
+        .button:hover {
+            background: #6D28D9;
+        }
+        .loading {
+            display: none;
+            margin-top: 20px;
+        }
+        .order-details {
+            background: #F3F4F6;
+            border-radius: 10px;
+            padding: 15px;
+            margin: 20px 0;
+            font-size: 14px;
+            color: #6B7280;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="success-icon">✅</div>
+        <h1>Payment Successful!</h1>
+        <p>Your payment has been processed successfully. You can now access premium features in MegaTest.</p>
+        
+        <div class="order-details" id="orderDetails"></div>
+        
+        <a href="megatest://payment-success" class="button" id="openApp">Open MegaTest</a>
+        
+        <div class="loading" id="loading">
+            <p>Redirecting to app...</p>
+        </div>
+    </div>
+
+    <script>
+        const urlParams = new URLSearchParams(window.location.search);
+        const status = urlParams.get('status');
+        const txRef = urlParams.get('tx_ref');
+        const orderId = urlParams.get('orderId');
+        
+        const orderDetailsElement = document.getElementById('orderDetails');
+        if (orderId) {
+            orderDetailsElement.innerHTML = `
+                <strong>Order ID:</strong> ${orderId}<br>
+                <strong>Transaction Reference:</strong> ${txRef || 'N/A'}<br>
+                <strong>Status:</strong> ${status || 'Success'}
+            `;
+        } else {
+            orderDetailsElement.style.display = 'none';
+        }
+        
+        function openApp() {
+            window.location.href = 'megatest://payment-success';
+        }
+        
+        setTimeout(() => {
+            document.getElementById('loading').style.display = 'block';
+            document.getElementById('openApp').style.display = 'none';
+            openApp();
+        }, 2000);
+        
+        document.getElementById('openApp').addEventListener('click', function(e) {
+            e.preventDefault();
+            document.getElementById('loading').style.display = 'block';
+            document.getElementById('openApp').style.display = 'none';
+            openApp();
+        });
+        
+        setTimeout(() => {
+            if (document.getElementById('loading').style.display === 'block') {
+                window.location.href = 'https://play.google.com/store/apps/details?id=com.megatest.edu';
+            }
+        }, 4000);
+        
+        setTimeout(() => {
+            openApp();
+        }, 100);
+    </script>
+</body>
+</html>

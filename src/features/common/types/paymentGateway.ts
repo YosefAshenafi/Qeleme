@@ -5,7 +5,7 @@ export interface PaymentResponse {
     checkout_url: string;
     status: string;
   };
-  paymentUrl?: string; 
+  paymentUrl?: string;
   error?: string;
 }
 
@@ -24,4 +24,4 @@ export interface PaymentButtonProps {
   onSuccess?: () => void;
   onFailure?: () => void;
   children?: React.ReactNode;
-} 
+}
