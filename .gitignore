@@ -29,6 +29,8 @@ ios/Podfile.lock
 android/keystore/
 android/app/*.keystore
 android/keystore.properties
+android/KEYSTORE_CREDENTIALS.local.txt
+android/app/release.keystore.old-*
 
 # Metro
 .metro-health-check*

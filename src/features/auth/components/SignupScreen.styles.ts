@@ -301,7 +301,8 @@ export const SignupScreenStyles = StyleSheet.create({
     right: 0,
     marginTop: 8,
     marginRight: 16,
-    zIndex: 1,
+    zIndex: 10,
+    elevation: 10,
   },
   sectionTitle: {
     fontSize: 16,

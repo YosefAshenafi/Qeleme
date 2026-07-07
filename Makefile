@@ -10,7 +10,7 @@ IPA_DIR     := build/ipa
 
 .PHONY: help install \
 	server-install server-dev server-build server-deploy \
-	android-keystore android-apk android-aab android-debug-apk android-install android-clean \
+	android-keystore android-apk android-apk-debugkey android-aab android-debug-apk android-install android-clean \
 	ios-run ios-ipa ios-testflight ios-submit ios-credentials
 
 help:
@@ -27,6 +27,7 @@ help:
 	@echo "  Android (local):"
 	@echo "    android-keystore   Generate a release keystore (interactive), then create android/keystore.properties"
 	@echo "    android-apk        Build a signed RELEASE APK (prints the output path)"
+	@echo "    android-apk-debugkey  RELEASE APK signed with the debug key — installs without the Play Protect warning (local testing only)"
 	@echo "    android-aab        Build a signed RELEASE bundle for Play Store (prints the output path)"
 	@echo "    android-debug-apk  Build a debug APK (prints the output path)"
 	@echo "    android-install    adb install the release APK to a device/emulator"
@@ -70,6 +71,21 @@ android-keystore:
 android-apk:
 	cd $(ANDROID_DIR) && ./gradlew assembleRelease
 	@printf '\n✅ Signed release APK\n   path: %s\n   url:  file://%s\n   size: %s\n' "$(CURDIR)/$(APK_RELEASE)" "$(CURDIR)/$(APK_RELEASE)" "$$(du -h '$(CURDIR)/$(APK_RELEASE)' 2>/dev/null | cut -f1)"
+
+# Build a RELEASE APK signed with the DEBUG key (CN=Android Debug) instead of the
+# release keystore, so it installs without the Play Protect "unknown developer"
+# warning — handy for local testing / sharing with a few people. NOT for publishing:
+# debug-signed builds can't be uploaded to Play and can't be updated by a real-key build.
+# Temporarily sets aside keystore.properties (build.gradle then falls back to debug.keystore)
+# and always restores it, even on build failure or Ctrl-C.
+android-apk-debugkey:
+	@cd $(ANDROID_DIR) && \
+		trap 'if [ -f keystore.properties.mkbak ]; then mv -f keystore.properties.mkbak keystore.properties; fi' INT TERM; \
+		if [ -f keystore.properties ]; then mv keystore.properties keystore.properties.mkbak; echo "[keystore.properties set aside -> signing with debug.keystore]"; fi; \
+		./gradlew assembleRelease; status=$$?; \
+		if [ -f keystore.properties.mkbak ]; then mv -f keystore.properties.mkbak keystore.properties; echo "[restored keystore.properties]"; fi; \
+		exit $$status
+	@printf '\n✅ Release APK signed with the DEBUG key (CN=Android Debug) — installs without the Play Protect warning. Local testing only.\n   path: %s\n   url:  file://%s\n   size: %s\n' "$(CURDIR)/$(APK_RELEASE)" "$(CURDIR)/$(APK_RELEASE)" "$$(du -h '$(CURDIR)/$(APK_RELEASE)' 2>/dev/null | cut -f1)"
 
 # Build a signed release App Bundle for Google Play.
 android-aab:
