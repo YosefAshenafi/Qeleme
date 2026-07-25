@@ -549,6 +549,7 @@ export default {
     subject: 'የትምህርት ዓይነት',
     chapter: 'ምዕራፍ',
     chapterShort: 'ምዕ',
+    gradeLabel: '{{grade}}ኛ ክፍል',
     selectChapter: 'ምዕራፍ ይምረጡ',
     selectSubjectAndChapter: 'የትምህርት ዓይነት እና ምዕራፍ ይምረጡ',
     selectSubjectPlaceholder: 'የትምህርት ዓይነት ይምረጡ',

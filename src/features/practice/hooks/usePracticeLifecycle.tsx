@@ -157,6 +157,12 @@ export function usePracticeLifecycle(deps: PracticeLifecycleDeps) {
 
   React.useEffect(() => clearAutoNext, [clearAutoNext]);
 
+  // Session grade, shown as a small line above the subject in the MCQ header.
+  const headerGradeDigit = (selectedGrade?.id || selectedGrade?.name || userGrade || '').replace(
+    /\D/g,
+    ''
+  );
+
   useLayoutEffect(() => {
     (navigation as any)?.setOptions?.({
       headerLeft: () => (showTest || showResult || nationalExamQuestions.length > 0) ? (
@@ -179,7 +185,20 @@ export function usePracticeLifecycle(deps: PracticeLifecycleDeps) {
         null
       ) : nationalExamQuestions.length > 0 ? (
         <View style={{ alignItems: 'center' }}>
-          <Text style={{ fontSize: 16, fontWeight: '600', color: colors.text }}>
+          {headerGradeDigit ? (
+            <Text
+              style={{
+                fontSize: 12,
+                lineHeight: 16,
+                fontWeight: '600',
+                color: colors.text,
+                opacity: 0.65,
+              }}
+            >
+              {t('mcq.gradeLabel', { grade: headerGradeDigit })}
+            </Text>
+          ) : null}
+          <Text style={{ fontSize: 16, lineHeight: 22, fontWeight: '600', color: colors.text }}>
             {`${selectedSubjectData?.name ?? ''}${selectedChapterName ? ` : ${t('mcq.chapterShort')} ${selectedChapterName.replace(/-(\d+)$/, '')}` : ''}`.trim()}
           </Text>
         </View>
@@ -189,7 +208,7 @@ export function usePracticeLifecycle(deps: PracticeLifecycleDeps) {
       ),
       headerTitleAlign: 'center',
     });
-  }, [navigation, colors.text, showTest, showResult, nationalExamQuestions.length, selectedChapterName, selectedSubjectData?.name, t, exitSession]);
+  }, [navigation, colors.text, showTest, showResult, nationalExamQuestions.length, selectedChapterName, selectedSubjectData?.name, headerGradeDigit, t, exitSession]);
 
   useEffect(() => {
     if (params.reset === 'true') {

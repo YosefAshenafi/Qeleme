@@ -620,6 +620,7 @@ export default {
     selectChapter: 'Select Chapter',
     chapter: 'Chapter',
     chapterShort: 'ch',
+    gradeLabel: 'Grade {{grade}}',
     selectSubjectAndChapter: 'Select Subject and Chapter',
     selectSubjectPlaceholder: 'Select a subject',
     selectChapterPlaceholder: 'Select a chapter',
