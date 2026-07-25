@@ -406,7 +406,7 @@ export default {
     edit: 'Edit',
     title: 'Settings',
     about: 'About MegaTest',
-    aboutInfo: 'MegaTest is a high school (secondary) study app: multiple-choice practice, flashcards, and exam prep with progress tracking.',
+    aboutInfo: 'MegaTest is a study app for students from kindergarten to high school, featuring multiple-choice practice, flashcards, and exam prep with progress tracking.',
     contactUs: 'Contact Us',
     version: 'App Version',
     dangerZone: 'Danger Zone',

@@ -753,7 +753,7 @@ export default {
       cardGroups: 'የካርድ ቡድኖች'
     },
     myProfile: 'የእኔ መገለጫ',
-    editProfile: 'መገለጫ ያርትዑ',
+    editProfile: 'ፕሮፋይል ያስተካክሉ',
     myQuestions: 'የእኔ ጥያቄዎች',
     myAnswers: 'የእኔ መልሶች',
     settings: 'ቅንብሮች',
@@ -792,7 +792,7 @@ export default {
     edit: 'አርትዑ',
     title: 'ቅንብሮች',
     about: 'ስለ MegaTest',
-    aboutInfo: 'MegaTest ለከፍተኛ ደረጃ ትምህርት ቤት ተማሪዎች የተዘጋጀ መተግበሪያ ነው፣ የብዙ ምርጫ ጥያቄዎች፣ ፍላሽ ካርዶች እና የፈተና ዝግጅት ከእርምጃ መከታተያ ጋር።',
+    aboutInfo: 'ሜጋቴስት (MegaTest) ከመዋዕለ ህፃናት እስከ ሁለተኛ ደረጃ ትምህርት ቤት ላሉ ተማሪዎች የተዘጋጀ የማጠናከሪያ መተግበሪያ ነው፤ የምርጫ ጥያቄዎች ልምምድ፣ ፍላሽ ካርዶችን (የማስታወሻ ካርዶች) እና የፈተና ዝግጅትን ከሂደት መከታተያ ጋር የያዘ ነው።',
     contactUs: 'እንገናኝ',
     version: 'የመተግበሪያ ሥሪት',
     dangerZone: '',
