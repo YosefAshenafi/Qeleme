@@ -1,5 +1,7 @@
 import React from 'react';
 import { Modal, ScrollView, StatusBar, TouchableOpacity, View } from 'react-native';
+import { useTranslation } from 'react-i18next';
+import { localizeSubjectName } from '@/features/common/utils/subjectDisplayName';
 import { ThemedView } from '@/features/common/components/ThemedView';
 import { ThemedText } from '@/features/common/components/ThemedText';
 import { IconSymbol } from '@/features/common/components/ui/IconSymbol';
@@ -76,6 +78,7 @@ export function FlashcardsSelectionForm({
   onSelectChapter,
   onStart,
 }: FlashcardsSelectionFormProps) {
+  const { t } = useTranslation();
   const subjectBorderColor = isPreSelected
     ? isDarkMode
       ? '#FFFFFF'
@@ -113,7 +116,10 @@ export function FlashcardsSelectionForm({
             >
               <ThemedText style={[styles.formInputText, { color: colors.text }]}>
                 {selectedSubject
-                  ? selectedGradeData?.subjects?.find((s: Subject) => s.id === selectedSubject)?.name
+                  ? localizeSubjectName(
+                      selectedGradeData?.subjects?.find((s: Subject) => s.id === selectedSubject)?.name,
+                      t
+                    )
                   : selectSubjectPlaceholder}
               </ThemedText>
               <IconSymbol name="chevron.right" size={20} color={colors.tint} />
@@ -144,7 +150,7 @@ export function FlashcardsSelectionForm({
                             onPress={() => onSelectSubject(subject.id)}
                           >
                             <ThemedText style={[styles.modalItemText, { color: colors.text }]}>
-                              {subject.name}
+                              {localizeSubjectName(subject.name, t)}
                             </ThemedText>
                             <IconSymbol name="chevron.right" size={20} color={colors.tint} />
                           </TouchableOpacity>

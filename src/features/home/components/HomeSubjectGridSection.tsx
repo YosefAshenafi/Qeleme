@@ -1,6 +1,8 @@
 import React from 'react';
 import { TouchableOpacity, View } from 'react-native';
 import { router } from 'expo-router';
+import { useTranslation } from 'react-i18next';
+import { localizeSubjectName } from '@/features/common/utils/subjectDisplayName';
 import { IconSymbolName } from '@/features/common/components/ui/IconSymbol';
 import { BookCover } from '@/features/common/components/ui/BookCover';
 import { getBookCover } from '@/features/common/services/bookCoverService';
@@ -41,9 +43,11 @@ export function HomeSubjectGridSection({
   homeMcqSubjects,
   onPracticePress,
 }: HomeSubjectGridSectionProps) {
+  const { t } = useTranslation();
 
   const renderSubjectTile = (book: BookItem) => {
     const coverData = getBookCover(book.subject);
+    const displayTitle = localizeSubjectName(book.title, t);
     return (
       <View
         key={book.id}
@@ -58,7 +62,7 @@ export function HomeSubjectGridSection({
           <SubjectCoverAtmosphere dark={isDarkMode} />
           <View style={styles.subjectGridCoverLift}>
             <BookCover
-              title={book.title}
+              title={displayTitle}
               subtitle={book.subtitle}
               coverColor={coverData.coverColor}
               coverGradient={coverData.coverGradient}
@@ -73,7 +77,7 @@ export function HomeSubjectGridSection({
         </View>
         <View style={styles.subjectGridCardBody}>
           <ThemedText numberOfLines={2} style={[styles.subjectGridTitle, { color: sectionHeadingColor }]}>
-            {book.title}
+            {displayTitle}
           </ThemedText>
           <ThemedText style={[styles.subjectGridChapters, { color: metaMuted }]}>
             {formatChapterLabel(book.chapterCount)}

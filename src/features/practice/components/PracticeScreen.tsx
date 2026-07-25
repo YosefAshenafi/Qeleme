@@ -14,6 +14,7 @@ import { PracticeSettingsModal } from './PracticeSettingsModal';
 import { PracticeBooksList, type BooksSubjectIntent } from './PracticeBooksList';
 import { PracticeChapterChooserModal } from './PracticeChapterChooserModal';
 import { getBooksHubPalette } from './practiceBooksPalette';
+import { localizeSubjectName } from '@/features/common/utils/subjectDisplayName';
 
 export default function PracticeScreen() {
   const {
@@ -346,7 +347,7 @@ export default function PracticeScreen() {
                               },
                             ]}
                           >
-                            {subject}
+                            {localizeSubjectName(subject, t)}
                           </Text>
                         </View>
                       </TouchableOpacity>

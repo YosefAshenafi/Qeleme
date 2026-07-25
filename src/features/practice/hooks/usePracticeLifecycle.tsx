@@ -5,6 +5,7 @@ import { router, useFocusEffect } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { LanguageToggle } from '@/features/common/components/ui/LanguageToggle';
+import { localizeSubjectName } from '@/features/common/utils/subjectDisplayName';
 import type { Grade, Subject, NationalExamAPIResponse } from '@/features/common/services/practiceService';
 import type { BooksCategoryFilter } from '@/features/practice/utils/booksCategory';
 import { gradeNeedsExamTypeSelection } from './practiceHelpers';
@@ -199,7 +200,7 @@ export function usePracticeLifecycle(deps: PracticeLifecycleDeps) {
             </Text>
           ) : null}
           <Text style={{ fontSize: 16, lineHeight: 22, fontWeight: '600', color: colors.text }}>
-            {`${selectedSubjectData?.name ?? ''}${selectedChapterName ? ` : ${t('mcq.chapterShort')} ${selectedChapterName.replace(/-(\d+)$/, '')}` : ''}`.trim()}
+            {`${localizeSubjectName(selectedSubjectData?.name, t)}${selectedChapterName ? ` : ${t('mcq.chapterShort')} ${selectedChapterName.replace(/-(\d+)$/, '')}` : ''}`.trim()}
           </Text>
         </View>
       ) : null,

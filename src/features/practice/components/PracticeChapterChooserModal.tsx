@@ -6,6 +6,7 @@ import { ThemedView } from '@/features/common/components/ThemedView';
 import { IconSymbol } from '@/features/common/components/ui/IconSymbol';
 import type { Chapter, Subject } from '@/features/common/services/practiceService';
 import type { BooksChapterIntent } from '@/features/practice/hooks/practiceBooksHandlers';
+import { localizeSubjectName } from '@/features/common/utils/subjectDisplayName';
 import { BRAND_BLUE } from '@/features/practice/constants/practiceUi';
 import { PracticeScreenStyles as styles } from './PracticeScreen.styles';
 import { getBooksHubPalette } from './practiceBooksPalette';
@@ -96,7 +97,7 @@ export function PracticeChapterChooserModal({
                   style={[styles.booksChapterModalSubject, isDarkMode && { color: '#FFFFFF' }]}
                   numberOfLines={2}
                 >
-                  {selectedSubjectData?.name}
+                  {localizeSubjectName(selectedSubjectData?.name, t)}
                 </ThemedText>
                 {booksChapterModeLabel ? (
                   <ThemedText

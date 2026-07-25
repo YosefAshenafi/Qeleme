@@ -1238,5 +1238,36 @@ export default {
     amount: 'መጠን: {{amount}}',
     paymentMethod: 'የክፍያ መንገድ: {{paymentMethod}}',
     orderId: 'የማዘዣ ቁጥር: {{orderId}}',
+  },
+  // Amharic labels for the subject names the API returns in English.
+  // Keys are the API name lowercased with every non-alphanumeric character
+  // removed (see subjectDisplayName.ts). A subject with no entry here falls
+  // back to the API's English name.
+  subjectNames: {
+    afaanoromo: 'አፋን ኦሮሞ',
+    agriculture: 'ግብርና',
+    akebabiscience: 'አካባቢ ሳይንስ',
+    environmentalscience: 'አካባቢ ሳይንስ',
+    amharic: 'አማርኛ',
+    biology: 'ባዮሎጂ',
+    chemistry: 'ኬሚስትሪ',
+    citizenship: 'ዜግነት ትምህርት',
+    citizenshipeducation: 'ዜግነት ትምህርት',
+    civics: 'ሥነ ዜጋ',
+    civicsandethicaleducation: 'ሥነ ዜጋና ሥነ ምግባር ትምህርት',
+    economics: 'ኢኮኖሚክስ',
+    english: 'እንግሊዝኛ',
+    generalscience: 'አጠቃላይ ሳይንስ',
+    geography: 'ጂኦግራፊ',
+    history: 'ታሪክ',
+    informationscience: 'ኢንፎርሜሽን ሳይንስ',
+    informationtechnology: 'ኢንፎርሜሽን ቴክኖሎጂ',
+    maths: 'ሒሳብ',
+    math: 'ሒሳብ',
+    mathematics: 'ሒሳብ',
+    moral: 'ሥነ ምግባር',
+    moraleducation: 'ሥነ ምግባር',
+    physics: 'ፊዚክስ',
+    socialstudies: 'ማኅበራዊ ጥናት',
   }
 }; 

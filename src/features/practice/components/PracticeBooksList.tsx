@@ -7,6 +7,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import type { Subject } from '@/features/common/services/practiceService';
 import type { BooksCategoryFilter } from '@/features/practice/utils/booksCategory';
 import { getBookCover } from '@/features/common/services/bookCoverService';
+import { localizeSubjectName } from '@/features/common/utils/subjectDisplayName';
 import {
   BOOK_CTA_ON,
   BRAND_BLUE,
@@ -162,6 +163,10 @@ export function PracticeBooksList({
             const ext = subject as Subject & { image_url?: string };
             const imageUrl = ext.image_url?.trim() ? ext.image_url : undefined;
             const cover = getBookCover(subject.name);
+            // National-exam rows are synthesized locally and already localized.
+            const subjectLabel = subject.id.startsWith('national-')
+              ? subject.name
+              : localizeSubjectName(subject.name, t);
             return (
               <View
                 key={subject.id}
@@ -187,7 +192,7 @@ export function PracticeBooksList({
                   accessibilityRole="button"
                   accessibilityLabel={t('mcq.subjects.cardTitle', {
                     grade: gradeDigit,
-                    subject: subject.name,
+                    subject: subjectLabel,
                   })}
                   style={[
                     styles.bookRowCover,
@@ -215,7 +220,7 @@ export function PracticeBooksList({
                       />
                       <View style={styles.bookRowNoImageText}>
                         <Text style={styles.bookRowNoImageTitle} numberOfLines={3}>
-                          {subject.name}
+                          {subjectLabel}
                         </Text>
                         <Text style={styles.bookRowNoImageSubtitle}>
                           Grade {gradeDigit}
@@ -240,7 +245,7 @@ export function PracticeBooksList({
                       style={[styles.bookRowTitle, { color: booksPrimaryText }]}
                       numberOfLines={2}
                     >
-                      {t('mcq.subjects.cardTitle', { grade: gradeDigit, subject: subject.name })}
+                      {t('mcq.subjects.cardTitle', { grade: gradeDigit, subject: subjectLabel })}
                     </ThemedText>
                     <ThemedText
                       style={[styles.bookRowDesc, { color: booksMutedText }]}
