@@ -21,6 +21,9 @@ android/.gradle/
 android/app/build/
 ios/build/
 
+# Local build artifacts (make apk / make ios-ipa)
+/build/
+
 # iOS
 ios/Pods/
 ios/Podfile.lock
