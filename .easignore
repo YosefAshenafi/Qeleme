@@ -1,5 +1,8 @@
-# Dependencies (will be installed during build)
+# Dependencies (installed during EAS build)
 node_modules/
+
+# Local API gateway — not part of the mobile app
+server/
 
 # Build artifacts
 dist/
@@ -7,9 +10,15 @@ dist/
 web-build/
 android/app/build/
 android/build/
+android/.gradle/
 ios/build/
 ios/Pods/
-ios/Podfile.lock
+
+# Agent / IDE / design tooling
+.agents/
+.cursor/
+.stitch/
+.claude/
 
 # Development files
 *.log
@@ -17,41 +26,41 @@ ios/Podfile.lock
 *.pem
 *.orig.*
 
-# Keystores (should not be in build)
+# Keystores & secrets (must not ship in build archive)
 android/keystore/
+android/keystore.properties
+android/KEYSTORE_CREDENTIALS.local.txt
+android/app/release.keystore*
 *.keystore
 *.jks
 *.p8
 *.p12
 *.key
 *.mobileprovision
+.env
+.env.*
+!.env.example
 
 # Test files
 **/__tests__/
 **/*.test.*
 **/*.spec.*
 
-# Documentation
+# Docs (keep README)
 *.md
 !README.md
 
-# Scripts (unless needed for build)
-scripts/
+# Local helpers not required on EAS (postinstall tolerates missing patch script)
 Makefile
 
-# Large media files that might not be needed
-# Note: NOT excluding *.mp4 as the app needs assets/animations/*.mp4 files
+# Large media not needed for store builds
 *.mov
 *.avi
 
-# Old build files
+# Old build outputs
 *.ipa
 *.apk
 *.aab
 
-# Environment files
-.env*.local
-
 # TypeScript build info
 *.tsbuildinfo
-

@@ -10,7 +10,7 @@
     "test": "jest --watchAll",
     "lint": "expo lint",
     "strip-comments": "node scripts/strip-ts-comments.mjs .",
-    "postinstall": "node scripts/patch-expo-applescript.mjs"
+    "postinstall": "node scripts/patch-expo-applescript.mjs || true"
   },
   "dependencies": {
     "@expo/cli": "^0.24.20",
